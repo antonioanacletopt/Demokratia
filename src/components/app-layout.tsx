@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText } from "lucide-react";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import {
@@ -30,6 +30,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador" },
   { href: "/simulator", icon: Lightbulb, label: "Simulador" },
+  { href: "/scenarios", icon: NotebookText, label: "Cenários" },
   { href: "/seed", icon: Database, label: "Seed Data" },
 ];
 
@@ -101,5 +102,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
