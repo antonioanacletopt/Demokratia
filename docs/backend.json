@@ -1,0 +1,293 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile and application-wide settings within Demokratia Portugal, excluding authentication credentials.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "A unique username or identifier for the user within the application."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, primarily for communication. Authentication is managed externally.",
+          "format": "email"
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "The user's preferred language for the application interface (e.g., 'pt' for Portuguese, 'en' for English)."
+        },
+        "themePreference": {
+          "type": "string",
+          "description": "The user's preferred UI theme, such as 'light', 'dark', or 'system'."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "preferredLanguage",
+        "themePreference",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SimulationScenario": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SimulationScenario",
+      "type": "object",
+      "description": "Defines a hypothetical political and economic scenario, including user-specified variables, for use in the economic simulator.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SimulationScenario entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile that created this simulation scenario. (Relationship: UserProfile 1:N SimulationScenario)"
+        },
+        "name": {
+          "type": "string",
+          "description": "A human-readable name for the simulation scenario, provided by the user."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed explanation or notes about the simulation scenario, including its objectives or assumptions."
+        },
+        "parameters": {
+          "type": "string",
+          "description": "JSON string representing the hypothetical political and economic variables and their specific values defined for this scenario. This allows for flexible and dynamic scenario inputs."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the simulation scenario was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the simulation scenario was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "parameters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SimulationRun": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SimulationRun",
+      "type": "object",
+      "description": "Stores the results of a specific execution of a simulation scenario at a given point in time.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SimulationRun entity."
+        },
+        "scenarioId": {
+          "type": "string",
+          "description": "Reference to the SimulationScenario that was executed in this run. (Relationship: SimulationScenario 1:N SimulationRun)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who initiated this simulation run. (Relationship: UserProfile 1:N SimulationRun)"
+        },
+        "runAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this simulation run was executed.",
+          "format": "date-time"
+        },
+        "inputParametersSnapshot": {
+          "type": "string",
+          "description": "JSON string representing a snapshot of the scenario's parameters at the exact time of this simulation run, ensuring reproducibility."
+        },
+        "outputResults": {
+          "type": "string",
+          "description": "JSON string containing the detailed simulated economic impact data and analytical results generated by the model for this run."
+        },
+        "dataSourcesUsed": {
+          "type": "array",
+          "description": "An array of strings, each identifying a specific external data source (e.g., 'WorldBank', 'Eurostat', 'INE Portugal') used to inform this simulation run.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional user-provided notes or observations about this specific simulation run and its results."
+        }
+      },
+      "required": [
+        "id",
+        "scenarioId",
+        "userId",
+        "runAt",
+        "inputParametersSnapshot",
+        "outputResults",
+        "dataSourcesUsed"
+      ]
+    },
+    "SavedDataExploration": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SavedDataExploration",
+      "type": "object",
+      "description": "Allows users to save and revisit specific configurations or views within the Public Data Explorer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SavedDataExploration entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who saved this data exploration configuration. (Relationship: UserProfile 1:N SavedDataExploration)"
+        },
+        "name": {
+          "type": "string",
+          "description": "A user-friendly name for the saved data exploration view."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of what this saved exploration represents, including the types of data, filters, or insights it provides."
+        },
+        "configuration": {
+          "type": "string",
+          "description": "JSON string defining the specific filters, selected external data sources, visualization settings, and other parameters that constitute this saved data exploration view."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this data exploration configuration was saved.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when this data exploration configuration was last updated.",
+          "format": "date-time"
+        },
+        "lastAccessedAt": {
+          "type": "string",
+          "description": "Timestamp indicating the last time this saved data exploration was accessed or viewed by the user.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "configuration",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "userProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores individual user profiles and application settings. Access is restricted to the authenticated user matching the {userId}. The 'id' field in the document matches the {userId} in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user, corresponding to Firebase Authentication's UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/simulationScenarios/{scenarioId}",
+        "definition": {
+          "entityName": "simulationScenario",
+          "schema": {
+            "$ref": "#/backend/entities/SimulationScenario"
+          },
+          "description": "Stores user-defined hypothetical political and economic simulation scenarios. Each scenario is owned by a specific user. Includes denormalized 'userId' field for authorization independence, ensuring it matches the parent path's {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who owns this simulation scenario."
+            },
+            {
+              "name": "scenarioId",
+              "description": "The unique ID for a specific simulation scenario."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/simulationScenarios/{scenarioId}/simulationRuns/{runId}",
+        "definition": {
+          "entityName": "simulationRun",
+          "schema": {
+            "$ref": "#/backend/entities/SimulationRun"
+          },
+          "description": "Stores the results of specific executions of a simulation scenario. These runs are nested under their respective scenarios and users. Includes denormalized 'userId' and 'scenarioId' fields for authorization independence, ensuring they match the respective path segments.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who initiated this simulation run."
+            },
+            {
+              "name": "scenarioId",
+              "description": "The unique ID of the parent simulation scenario."
+            },
+            {
+              "name": "runId",
+              "description": "The unique ID for a specific simulation run."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/savedDataExplorations/{explorationId}",
+        "definition": {
+          "entityName": "savedDataExploration",
+          "schema": {
+            "$ref": "#/backend/entities/SavedDataExploration"
+          },
+          "description": "Allows users to save and revisit specific configurations of the Public Data Explorer. Each saved exploration is owned by a specific user. Includes denormalized 'userId' field for authorization independence, ensuring it matches the parent path's {userId}.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who saved this data exploration configuration."
+            },
+            {
+              "name": "explorationId",
+              "description": "The unique ID for a specific saved data exploration."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for Demokratia Portugal is designed with a strong emphasis on authorization independence, structural segregation, and predictable access modeling, aligning with the core design principles to ensure security, scalability, and debuggability. All user-specific data is nested under a top-level `/users/{userId}` collection. This path-based ownership ensures that all documents belonging to a specific user are logically grouped and easily secured.\n\n**Authorization Independence:** This is achieved by explicitly denormalizing ownership IDs into the documents themselves. For instance, `SimulationScenario` documents are stored under `/users/{userId}/simulationScenarios/{scenarioId}`. Crucially, each `SimulationScenario` document will *also* contain a `userId` field that matches the `{userId}` in its path. Similarly, `SimulationRun` documents, nested under `/users/{userId}/simulationScenarios/{scenarioId}/simulationRuns/{runId}`, will contain both `userId` and `scenarioId` fields that match their respective path segments. This strategy eliminates the need for `get()` calls in Firestore Security Rules to check parent document ownership or attributes, thus enabling atomic operations and simplifying rule logic. Rules can directly check `request.auth.uid == resource.data.userId` (and `request.path[3] == resource.data.scenarioId` for `SimulationRun`) which is highly performant and secure.\n\n**QAPs (Rules are not Filters):** The structural segregation inherently supports secure `list` operations. By organizing user-owned data under `/users/{userId}/...`, users can only perform `list` queries within their own `/users/{request.auth.uid}/...` subcollections. This prevents accidental exposure of other users' data during collection-level queries, as the security rules will enforce that `request.auth.uid` matches the `userId` in the path segment for any read operation. The data structure itself acts as a filter, allowing users to query only data explicitly owned by them, making security rules simple and efficient for both `get` and `list` operations. There are no global collections mixing different ownership types, ensuring a homogeneous security posture per collection.\n\n**Structural Segregation & Access Modeling:** All collections like `simulationScenarios`, `simulationRuns`, and `savedDataExplorations` within a user's path are homogenous in their security requirements – they are strictly owned by that user. This consistent pattern of 'Private Data' and 'Hierarchical Paths for User-Owned Data' simplifies rule writing significantly, as the context for authorization is always clear and directly derivable from the document path and its denormalized fields. There are no 'public' versions of these entities, as they represent user-created, private configurations and results."
+  }
+}
