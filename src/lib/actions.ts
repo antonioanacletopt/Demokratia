@@ -10,6 +10,11 @@ import {
   ExplainPublicDataInsightsInput,
   ExplainPublicDataInsightsOutput,
 } from '@/ai/flows/explain-public-data-insights';
+import {
+  findPublicStatistic,
+  FindPublicStatisticInput,
+  FindPublicStatisticOutput,
+} from '@/ai/flows/find-public-statistic';
 
 export async function getEconomicSimulation(
   input: EconomicPolicySimulationInput
@@ -21,4 +26,10 @@ export async function getDataExplanation(
   input: ExplainPublicDataInsightsInput
 ): Promise<ExplainPublicDataInsightsOutput> {
   return await explainPublicDataInsights(input);
+}
+
+export async function getPublicStatistic(
+  input: FindPublicStatisticInput
+): Promise<FindPublicStatisticOutput> {
+  return await findPublicStatistic(input);
 }

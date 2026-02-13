@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { collection } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { getPublicStatistic } from '@/lib/actions';
+import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
+
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Bot, Loader2, Frown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface StatisticalData {
   id: string;
@@ -25,7 +31,6 @@ function DataTable({ jsonData }: { jsonData: string }) {
   const data = useMemo(() => {
     try {
       const parsedData = JSON.parse(jsonData);
-      // Ensure data is an array before processing
       return Array.isArray(parsedData) ? parsedData : [];
     } catch (e) {
       console.error("Failed to parse JSON data:", e);
@@ -40,7 +45,7 @@ function DataTable({ jsonData }: { jsonData: string }) {
   const headers = Object.keys(data[0]);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,7 +55,7 @@ function DataTable({ jsonData }: { jsonData: string }) {
         <TableBody>
           {data.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
-              {headers.map(header => <TableCell key={`${rowIndex}-${header}`}>{row[header]}</TableCell>)}
+              {headers.map(header => <TableCell key={`${rowIndex}-${header}`}>{String(row[header])}</TableCell>)}
             </TableRow>
           ))}
         </TableBody>
@@ -62,13 +67,13 @@ function DataTable({ jsonData }: { jsonData: string }) {
 function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   return (
     <AccordionItem value={dataset.id}>
-      <AccordionTrigger>
+      <AccordionTrigger className="px-4">
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-left">
           <span className="font-semibold">{dataset.title}</span>
           <Badge variant="secondary">{dataset.category}</Badge>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="space-y-4">
+      <AccordionContent className="space-y-4 px-4">
         <p className="text-sm text-muted-foreground">{dataset.description}</p>
         
         {dataset.dataType === 'table' ? (
@@ -101,56 +106,146 @@ export default function ExplorerPage() {
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
 
-  const filteredDatasets = useMemo(() => {
-    if (!datasets) return [];
-    return datasets.filter(dataset =>
-      dataset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dataset.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      dataset.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const [statRequest, setStatRequest] = useState('');
+  const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
+  const [isAiLoading, startAiTransition] = useTransition();
+
+  const handleStatRequest = () => {
+    if (!statRequest.trim()) return;
+    startAiTransition(async () => {
+      setAiResponse(null);
+      const result = await getPublicStatistic({ request: statRequest });
+      setAiResponse(result);
+    });
+  };
+
+  const groupedAndFilteredDatasets = useMemo(() => {
+    if (!datasets) return {};
+
+    const filtered = searchTerm
+      ? datasets.filter(dataset =>
+          dataset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dataset.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dataset.category.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : datasets;
+
+    return filtered.reduce((acc, dataset) => {
+      const category = dataset.category || 'Outros';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(dataset);
+      return acc;
+    }, {} as Record<string, StatisticalData[]>);
   }, [datasets, searchTerm]);
 
+  const totalDatasets = datasets?.length || 0;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-3xl font-bold font-headline tracking-tight">Explorador de Dados Sociais e Económicos</h1>
         <p className="text-muted-foreground">Explore conjuntos de dados sobre demografia, economia e sociedade em Portugal.</p>
       </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="text-accent" />
+            <span>Pergunte à IA por uma Estatística</span>
+          </CardTitle>
+          <CardDescription>Não encontra o que procura? Descreva a estatística que deseja e a IA tentará encontrá-la em fontes públicas.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea
+            placeholder="Ex: Qual a evolução da dívida pública em percentagem do PIB nos últimos 5 anos?"
+            value={statRequest}
+            onChange={(e) => setStatRequest(e.target.value)}
+            disabled={isAiLoading}
+          />
+          {isAiLoading && (
+            <div className="space-y-2 pt-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+            </div>
+          )}
+          {aiResponse && !isAiLoading && (
+            <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
+              <Bot className="h-4 w-4" />
+              <AlertTitle>Resposta da IA</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">{aiResponse.explanation}</p>
+                {aiResponse.isFound && aiResponse.data && (
+                  <div className="mt-4 space-y-2">
+                    <DataTable jsonData={aiResponse.data} />
+                    {aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>Fonte:</strong> {aiResponse.source}</p>}
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleStatRequest} disabled={isAiLoading || !statRequest.trim()}>
+            {isAiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Procurar Estatística
+          </Button>
+        </CardFooter>
+      </Card>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Pesquisar por título, descrição ou categoria..."
-          className="w-full pl-10"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+      <div>
+        <h2 className="text-2xl font-bold font-headline tracking-tight">Explorar Dados Existentes</h2>
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Pesquisar por título, descrição ou categoria..."
+            className="w-full pl-10"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       {isLoading ? (
         <StatAccordionSkeleton />
-      ) : filteredDatasets && filteredDatasets.length > 0 ? (
-        <Accordion type="single" collapsible className="w-full border rounded-lg px-4">
-          {filteredDatasets.map(dataset => (
-            <StatAccordionItem key={dataset.id} dataset={dataset} />
-          ))}
-        </Accordion>
-      ) : (
-        <div className="lg:col-span-2">
+      ) : totalDatasets > 0 ? (
+        Object.keys(groupedAndFilteredDatasets).length > 0 ? (
+          <div className="space-y-6">
+            {Object.entries(groupedAndFilteredDatasets)
+              .sort(([catA], [catB]) => catA.localeCompare(catB))
+              .map(([category, categoryDatasets]) => (
+              <div key={category}>
+                <h3 className="text-lg font-semibold mb-2 tracking-tight">{category}</h3>
+                <Accordion type="single" collapsible className="w-full border rounded-lg">
+                  {categoryDatasets.map(dataset => (
+                    <StatAccordionItem key={dataset.id} dataset={dataset} />
+                  ))}
+                </Accordion>
+              </div>
+            ))}
+          </div>
+        ) : (
           <Card className="flex flex-col items-center justify-center text-center py-12">
             <CardHeader>
-              <CardTitle>Nenhuns dados encontrados</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Frown className="h-6 w-6"/> Nenhum resultado</CardTitle>
             </CardHeader>
             <CardContent>
-              {searchTerm ? (
-                <p>A sua pesquisa não encontrou nenhum resultado. Tente outros termos.</p>
-              ) : (
-                <p>Não foi possível carregar os dados estatísticos. Tente carregar os dados na página 'Seed Data'.</p>
-              )}
+              <p>A sua pesquisa não encontrou nenhum conjunto de dados existente.</p>
             </CardContent>
           </Card>
-        </div>
+        )
+      ) : (
+        <Card className="flex flex-col items-center justify-center text-center py-12">
+          <CardHeader>
+            <CardTitle>Nenhuns dados encontrados</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Não foi possível carregar os dados estatísticos. Tente carregar os dados na página 'Seed Data'.</p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
