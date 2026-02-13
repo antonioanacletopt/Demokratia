@@ -4,23 +4,26 @@ import { useState } from 'react';
 import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
+import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function SeedPage() {
-  const [isSeeding, setIsSeeding] = useState(false);
+  const [isSeedingPublic, setIsSeedingPublic] = useState(false);
+  const [isSeedingStats, setIsSeedingStats] = useState(false);
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const handleSeedData = async () => {
-    setIsSeeding(true);
+  const handleSeedPublicData = async () => {
+    setIsSeedingPublic(true);
     toast({
-      title: 'A semear os dados...',
-      description: 'A carregar os dados públicos iniciais para o Firestore.',
+      title: 'A semear os dados de indicadores...',
+      description: 'A carregar os dados públicos (PIB, etc.) para o Firestore.',
     });
 
     try {
@@ -29,30 +32,62 @@ export default function SeedPage() {
       for (const key of dataKeys) {
         const dataSet = publicDataToSeed[key];
         const docRef = doc(firestore, 'publicData', key);
-        
-        // Using setDoc which creates or overwrites.
-        // We use the non-blocking version to avoid waiting and let the UI remain responsive.
-        // Error handling is done globally via the error emitter.
         setDocumentNonBlocking(docRef, dataSet, {});
       }
       
-      // Give feedback to the user.
       setTimeout(() => {
         toast({
-          title: 'Concluído!',
+          title: 'Indicadores carregados!',
           description: 'Os dados foram carregados. Pode navegar para o Dashboard para os ver.',
         });
-        setIsSeeding(false);
-      }, 1500); // A small delay to make it feel like an async operation
+        setIsSeedingPublic(false);
+      }, 1500); 
 
     } catch (error) {
-      console.error("Error seeding data: ", error);
+      console.error("Error seeding public data: ", error);
       toast({
         variant: 'destructive',
         title: 'Oh não! Algo correu mal.',
-        description: 'Não foi possível carregar os dados. Verifique a consola para mais detalhes.',
+        description: 'Não foi possível carregar os dados de indicadores.',
       });
-      setIsSeeding(false);
+      setIsSeedingPublic(false);
+    }
+  };
+
+  const handleSeedStatisticalData = async () => {
+    setIsSeedingStats(true);
+    toast({
+      title: 'A semear os dados estatísticos...',
+      description: 'A carregar os dados para o Explorador para o Firestore.',
+    });
+
+    try {
+      for (const dataSet of statisticalDataToSeed) {
+        // We need to stringify the 'data' field before sending it to Firestore
+        const docData = {
+          ...dataSet,
+          data: JSON.stringify(dataSet.data),
+        };
+        const docRef = doc(firestore, 'statisticalData', dataSet.id);
+        setDocumentNonBlocking(docRef, docData, {});
+      }
+      
+      setTimeout(() => {
+        toast({
+          title: 'Dados estatísticos carregados!',
+          description: 'Os dados foram carregados. Pode navegar para o Explorador para os ver.',
+        });
+        setIsSeedingStats(false);
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error seeding statistical data: ", error);
+      toast({
+        variant: 'destructive',
+        title: 'Oh não! Algo correu mal.',
+        description: 'Não foi possível carregar os dados estatísticos.',
+      });
+      setIsSeedingStats(false);
     }
   };
 
@@ -60,23 +95,42 @@ export default function SeedPage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold font-headline tracking-tight">Carregar Dados Iniciais (Seed)</h1>
       <p className="text-muted-foreground">
-        Use este ecrã para carregar os conjuntos de dados públicos iniciais para a sua base de dados Firestore.
-        Esta é uma operação que só precisa de ser executada uma vez. Depois de executar, pode remover esta página.
+        Use este ecrã para carregar os conjuntos de dados iniciais para a sua base de dados Firestore.
+        Esta é uma operação que só precisa de ser executada uma vez.
       </p>
       <Card>
         <CardHeader>
-          <CardTitle>Controlo de Dados</CardTitle>
+          <CardTitle>Dados de Indicadores (Dashboard)</CardTitle>
           <CardDescription>
-            Clique no botão abaixo para popular a coleção 'publicData' no Firestore com os dados de PIB, Desemprego e Inflação.
+            Clique no botão abaixo para popular a coleção 'publicData' com os dados de PIB, Desemprego e Inflação.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleSeedData} disabled={isSeeding}>
-            {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSeeding ? 'A carregar...' : 'Carregar Dados para o Firestore'}
+          <Button onClick={handleSeedPublicData} disabled={isSeedingPublic}>
+            {isSeedingPublic && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSeedingPublic ? 'A carregar...' : 'Carregar Dados do Dashboard'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados Estatísticos (Explorador)</CardTitle>
+          <CardDescription>
+            Clique no botão abaixo para popular a coleção 'statisticalData' com dados sobre demografia e economia para a nova página do Explorador.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats}>
+            {isSeedingStats && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSeedingStats ? 'A carregar...' : 'Carregar Dados do Explorador'}
           </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    

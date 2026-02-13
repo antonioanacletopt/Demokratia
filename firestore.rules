@@ -8,7 +8,7 @@
  *
  * Key Security Decisions:
  * - User Isolation: A user can only ever read or write documents within their own `/users/{userId}` path.
- * - Public Data Access: All users (authenticated or not) can read from the `/publicData` collection. Write access is disabled.
+ * - Public Data Access: All users (authenticated or not) can read from the `/publicData` and `/statisticalData` collections. Write access is restricted to signed-in users.
  * - No User Enumeration: Listing the top-level `/users` collection is explicitly disallowed to protect user privacy.
  * - Path-Based Security: For private data, authorization is primarily derived from the `{userId}` parameter in the
  *   document path, checked against the authenticated user's UID.
@@ -61,13 +61,25 @@ service cloud.firestore {
     //-------------------------------------------------------------------------
 
     /**
-     * @description Rules for public data sets. Allows anyone to read, but no one to write.
+     * @description Rules for public data sets. Allows anyone to read, but only signed-in users to write.
      * @path /publicData/{dataSetId}
      * @allow (get, list) Any user, authenticated or not, can read public data.
-     * @deny (write) All write operations are disallowed to protect data integrity.
-     * @principle Provides public, read-only access to shared application data.
+     * @allow (write) Signed-in users can write to seed the data.
+     * @principle Provides public, read-only access to shared application data, with secured write for admin/seeding.
      */
     match /publicData/{dataSetId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+    
+    /**
+     * @description Rules for complex statistical data sets. Allows anyone to read, but only signed-in users to write.
+     * @path /statisticalData/{dataId}
+     * @allow (get, list) Any user, authenticated or not, can read statistical data.
+     * @allow (write) Signed-in users can write to seed the data.
+     * @principle Provides public, read-only access to structured statistical data, with secured write for admin/seeding.
+     */
+    match /statisticalData/{dataId} {
       allow get, list: if true;
       allow write: if isSignedIn();
     }
@@ -150,3 +162,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
