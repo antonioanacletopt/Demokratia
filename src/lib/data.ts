@@ -1,19 +1,19 @@
-import { collection, doc, getFirestore } from "firebase/firestore";
-
-export const publicDataCollection = collection(getFirestore(), 'publicData');
-
-export const gdpDoc = doc(publicDataCollection, 'gdp');
-export const unemploymentDoc = doc(publicDataCollection, 'unemployment');
-export const inflationDoc = doc(publicDataCollection, 'inflation');
+// Data is now fetched from Firestore. This file provides the types
+// and the initial data for seeding the database.
 
 export type PublicData = {
+  // The 'id' is added by the useCollection hook from the document ID
+  id?: string; 
   label: string;
   description: string;
   unit: string;
   data: { year: number; value: number }[];
 };
 
-export const publicDataSets = {
+export type DataSetKey = 'gdp' | 'unemployment' | 'inflation';
+
+// This object is now just for seeding purposes and not exported for general app use.
+export const publicDataToSeed: Record<DataSetKey, Omit<PublicData, 'id'>> = {
   gdp: {
     label: "PIB (Produto Interno Bruto)",
     description: "Variação homóloga do Produto Interno Bruto em Portugal, em percentagem.",
@@ -54,6 +54,3 @@ export const publicDataSets = {
     ],
   },
 };
-
-export type DataSetKey = keyof typeof publicDataSets;
-    

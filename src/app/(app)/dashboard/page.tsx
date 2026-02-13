@@ -3,9 +3,9 @@
 import { useState, useTransition, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Loader2, Lightbulb } from 'lucide-react';
-import { collection, doc } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { publicDataSets, DataSetKey, PublicData } from '@/lib/data';
+import { DataSetKey, PublicData } from '@/lib/data';
 import { getDataExplanation } from '@/lib/actions';
 
 import {
@@ -64,7 +64,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
           <CardTitle>Dados não encontrados</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Não foi possível carregar os dados para este gráfico.</p>
+          <p>Não foi possível carregar os dados para este gráfico. Tente carregar os dados na página 'Seed Data'.</p>
         </CardContent>
       </Card>
     );
@@ -187,4 +187,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-    

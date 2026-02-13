@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Bot } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Bot, Database } from "lucide-react";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import {
@@ -29,6 +29,7 @@ import {
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/simulator", icon: Lightbulb, label: "Simulador" },
+  { href: "/seed", icon: Database, label: "Seed Data" },
 ];
 
 const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
