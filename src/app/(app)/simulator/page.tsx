@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from 'react';
-import { Loader2, Zap, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function SimulatorPage() {
   const [policy, setPolicy] = useState('');
@@ -34,19 +36,19 @@ export default function SimulatorPage() {
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="lg:col-span-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">Simulador Económico</h1>
-        <p className="text-muted-foreground">Simule o impacto de políticas económicas hipotéticas em Portugal.</p>
+        <p className="text-muted-foreground">Simule o impacto de políticas económicas hipotéticas ou reais em Portugal.</p>
       </div>
 
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Descreva a Política</CardTitle>
           <CardDescription>
-            Introduza uma descrição em linguagem natural da política económica que deseja simular.
+            Introduza uma descrição em linguagem natural da política económica que deseja simular. A IA tentará identificar se é uma proposta real.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
-            placeholder="Ex: 'Reduzir o IVA na restauração de 13% para 6%' ou 'Aumentar o salário mínimo nacional em 10%'"
+            placeholder="Ex: 'Reduzir o IVA na restauração de 13% para 6%' ou 'proposta de Orçamento do Estado para 2024'"
             value={policy}
             onChange={(e) => setPolicy(e.target.value)}
             rows={4}
@@ -87,6 +89,24 @@ export default function SimulatorPage() {
 
       {simulation && (
         <>
+         {simulation.isRealPolicy && (
+            <div className="lg:col-span-2">
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Política Real Identificada</AlertTitle>
+                <AlertDescription>
+                  A política que descreveu parece ser uma proposta ou medida real. A análise abaixo é uma simulação e não deve ser considerada uma previsão oficial.
+                  {simulation.source && (
+                    <Link href={simulation.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
+                      <LinkIcon className="h-4 w-4" />
+                      Ver Fonte Oficial
+                    </Link>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -145,7 +165,7 @@ export default function SimulatorPage() {
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                <BarChart data={simulation.keyIndicators} layout="vertical" margin={{ left: 50 }}>
+                <BarChart data={simulation.keyIndicators} layout="vertical" margin={{ left: 120 }}>
                   <CartesianGrid horizontal={false} />
                   <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={8} width={120} />
                   <XAxis type="number" dataKey="projectedValue" hide />
