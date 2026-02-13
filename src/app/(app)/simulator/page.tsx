@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import Link from 'next/link';
@@ -25,6 +26,15 @@ export default function SimulatorPage() {
   const [policy, setPolicy] = useState('');
   const [simulation, setSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const policyFromQuery = searchParams.get('policy');
+    if (policyFromQuery) {
+      setPolicy(decodeURIComponent(policyFromQuery));
+    }
+  }, [searchParams]);
 
   const handleSimulation = async () => {
     startTransition(async () => {

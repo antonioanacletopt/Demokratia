@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -152,7 +153,11 @@ export default function ScenariosPage() {
                         <p className="text-xs text-muted-foreground">
                           Criado em: {new Date(scenario.createdAt?.seconds * 1000).toLocaleDateString()}
                         </p>
-                        <Button variant="outline" size="sm" disabled>Carregar no Simulador</Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/simulator?policy=${encodeURIComponent(scenario.description)}`}>
+                            Carregar no Simulador
+                          </Link>
+                        </Button>
                       </div>
                     </div>
                   ))}
