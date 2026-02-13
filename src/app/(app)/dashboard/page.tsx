@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { Loader2, Lightbulb } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { Loader2, Bot, Frown } from 'lucide-react';
 import { collection } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { DataSetKey, PublicData } from '@/lib/data';
-import { getDataExplanation } from '@/lib/actions';
+import { getChartFromRequest } from '@/lib/actions';
+import type { GenerateChartOutput } from '@/ai/flows/generate-chart-from-request';
 
 import {
   Card,
@@ -20,7 +21,6 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -103,87 +103,118 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
 
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<DataSetKey>('gdp');
-  const [question, setQuestion] = useState('');
-  const [explanation, setExplanation] = useState('');
+  const [request, setRequest] = useState('');
+  const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const firestore = useFirestore();
-  const publicDataCollection = useMemoFirebase(() => collection(firestore, 'publicData'), [firestore]);
-  const { data: publicData } = useCollection<PublicData>(publicDataCollection);
-
-  const handleExplanation = async () => {
+  const handleChartRequest = async () => {
     startTransition(async () => {
-      const currentData = publicData?.find(d => d.id === activeTab);
-      if (!currentData) return;
-      const contextData = `Data: ${currentData.label}\nDescription: ${currentData.description}\nValues: ${JSON.stringify(currentData.data)}`;
-      
-      const result = await getDataExplanation({ question, contextData });
-      setExplanation(result.explanation);
+      setChartResponse(null);
+      const result = await getChartFromRequest({ request });
+      setChartResponse(result);
     });
   };
 
+  const dynamicChartConfig = useMemo(() => {
+    if (!chartResponse?.isChartable) return {};
+    return {
+      value: {
+        label: chartResponse.yAxisLabel || '',
+        color: 'hsl(var(--primary))',
+      },
+    };
+  }, [chartResponse]);
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">Dashboard de Dados Públicos</h1>
-          <p className="text-muted-foreground">Explore dados económicos e sociais de Portugal.</p>
-        </div>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">Dashboard Interativo</h1>
+        <p className="text-muted-foreground">Peça à IA para gerar gráficos sobre dados económicos e sociais de Portugal.</p>
       </div>
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DataSetKey)} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="gdp">PIB</TabsTrigger>
-          <TabsTrigger value="unemployment">Desemprego</TabsTrigger>
-          <TabsTrigger value="inflation">Inflação</TabsTrigger>
-        </TabsList>
-        <TabsContent value="gdp">
-          <DataSetChart dataSetKey="gdp" />
-        </TabsContent>
-        <TabsContent value="unemployment">
-          <DataSetChart dataSetKey="unemployment" />
-        </TabsContent>
-        <TabsContent value="inflation">
-          <DataSetChart dataSetKey="inflation" />
-        </TabsContent>
-      </Tabs>
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="text-accent" />
-            <span>Explorar com IA</span>
+            <Bot className="text-accent" />
+            <span>Gerar Gráfico com IA</span>
           </CardTitle>
-          <CardDescription>Faça uma pergunta sobre os dados selecionados para obter uma explicação gerada por IA.</CardDescription>
+          <CardDescription>Descreva o gráfico que pretende visualizar. A IA tentará encontrar os dados e geri-lo para si.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <Textarea
-            placeholder="Ex: Qual a tendência do PIB nos últimos 3 anos e porquê?"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ex: 'Evolução da taxa de desemprego jovem em Portugal desde 2015' ou 'Número de empresas criadas por ano na última década'"
+            value={request}
+            onChange={(e) => setRequest(e.target.value)}
           />
-           {isPending && (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-           )}
-          {explanation && !isPending && (
-            <Alert>
-              <AlertTitle>Análise da IA</AlertTitle>
-              <AlertDescription>
-                {explanation}
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
         <CardFooter>
-          <Button onClick={handleExplanation} disabled={isPending || !question.trim()}>
+          <Button onClick={handleChartRequest} disabled={isPending || !request.trim()}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Gerar Explicação
+            Gerar Gráfico
           </Button>
         </CardFooter>
       </Card>
+
+      {isPending && (
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-4 w-full mt-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+      )}
+
+      {chartResponse && (
+        chartResponse.isChartable && chartResponse.chartData ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{chartResponse.chartTitle}</CardTitle>
+              <CardDescription>{chartResponse.explanation}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={dynamicChartConfig} className="h-[350px] w-full">
+                {chartResponse.chartType === 'line' ? (
+                  <LineChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
+                    <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
+                  </LineChart>
+                ) : (
+                  <BarChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
+                    <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+                  </BarChart>
+                )}
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        ) : (
+          <Alert variant="destructive">
+            <Frown className="h-4 w-4" />
+            <AlertTitle>Não foi possível gerar o gráfico</AlertTitle>
+            <AlertDescription>
+              {chartResponse.explanation}
+            </AlertDescription>
+          </Alert>
+        )
+      )}
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold font-headline tracking-tight">Principais Indicadores Económicos</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <DataSetChart dataSetKey="gdp" />
+          <DataSetChart dataSetKey="unemployment" />
+          <DataSetChart dataSetKey="inflation" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -15,6 +15,11 @@ import {
   FindPublicStatisticInput,
   FindPublicStatisticOutput,
 } from '@/ai/flows/find-public-statistic';
+import {
+  generateChartFromRequest,
+  GenerateChartInput,
+  GenerateChartOutput,
+} from '@/ai/flows/generate-chart-from-request';
 
 export async function getEconomicSimulation(
   input: EconomicPolicySimulationInput
@@ -32,4 +37,10 @@ export async function getPublicStatistic(
   input: FindPublicStatisticInput
 ): Promise<FindPublicStatisticOutput> {
   return await findPublicStatistic(input);
+}
+
+export async function getChartFromRequest(
+  input: GenerateChartInput
+): Promise<GenerateChartOutput> {
+  return await generateChartFromRequest(input);
 }
