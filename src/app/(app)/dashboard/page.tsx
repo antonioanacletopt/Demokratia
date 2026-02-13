@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Loader2, Lightbulb } from 'lucide-react';
-import { publicDataSets, DataSetKey } from '@/lib/data';
+import { collection, doc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { publicDataSets, DataSetKey, PublicData } from '@/lib/data';
 import { getDataExplanation } from '@/lib/actions';
 
 import {
@@ -24,27 +26,101 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
+  const firestore = useFirestore();
+  const publicDataCollection = useMemoFirebase(() => collection(firestore, 'publicData'), [firestore]);
+  const { data: publicData, isLoading } = useCollection<PublicData>(publicDataCollection);
+
+  const dataSet = useMemo(() => {
+    if (!publicData) return null;
+    return publicData.find(d => d.id === dataSetKey);
+  }, [publicData, dataSetKey]);
+
+  const chartConfig = {
+    value: {
+      label: dataSet?.unit || '%',
+      color: 'hsl(var(--primary))',
+    },
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-full mt-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[300px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!dataSet) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados não encontrados</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Não foi possível carregar os dados para este gráfico.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{dataSet.label}</CardTitle>
+        <CardDescription>{dataSet.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <BarChart data={dataSet.data} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="year"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
+            <YAxis
+              tickFormatter={(value) => `${value}${dataSet.unit}`}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
+            <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+            <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<DataSetKey>('gdp');
   const [question, setQuestion] = useState('');
   const [explanation, setExplanation] = useState('');
   const [isPending, startTransition] = useTransition();
 
+  const firestore = useFirestore();
+  const publicDataCollection = useMemoFirebase(() => collection(firestore, 'publicData'), [firestore]);
+  const { data: publicData } = useCollection<PublicData>(publicDataCollection);
+
   const handleExplanation = async () => {
     startTransition(async () => {
-      const currentData = publicDataSets[activeTab];
+      const currentData = publicData?.find(d => d.id === activeTab);
+      if (!currentData) return;
       const contextData = `Data: ${currentData.label}\nDescription: ${currentData.description}\nValues: ${JSON.stringify(currentData.data)}`;
       
       const result = await getDataExplanation({ question, contextData });
       setExplanation(result.explanation);
     });
-  };
-
-  const chartConfig = {
-    value: {
-      label: publicDataSets[activeTab].unit,
-      color: 'hsl(var(--primary))',
-    },
   };
 
   return (
@@ -61,41 +137,15 @@ export default function DashboardPage() {
           <TabsTrigger value="unemployment">Desemprego</TabsTrigger>
           <TabsTrigger value="inflation">Inflação</TabsTrigger>
         </TabsList>
-        {Object.keys(publicDataSets).map((key) => {
-          const dataSet = publicDataSets[key as DataSetKey];
-          return (
-            <TabsContent key={key} value={key}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{dataSet.label}</CardTitle>
-                  <CardDescription>{dataSet.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                    <BarChart data={dataSet.data} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                      <CartesianGrid vertical={false} />
-                      <XAxis
-                        dataKey="year"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                        
-                      />
-                      <YAxis
-                        tickFormatter={(value) => `${value}${dataSet.unit}`}
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                      />
-                       <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                      <Bar dataKey="value" fill="var(--color-value)" radius={4} />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          );
-        })}
+        <TabsContent value="gdp">
+          <DataSetChart dataSetKey="gdp" />
+        </TabsContent>
+        <TabsContent value="unemployment">
+          <DataSetChart dataSetKey="unemployment" />
+        </TabsContent>
+        <TabsContent value="inflation">
+          <DataSetChart dataSetKey="inflation" />
+        </TabsContent>
       </Tabs>
       <Card>
         <CardHeader>
@@ -137,3 +187,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+    

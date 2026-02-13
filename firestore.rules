@@ -1,24 +1,21 @@
 /**
- * Core Philosophy: This ruleset enforces a strict user-ownership security model. All application data, including user profiles,
- * simulation scenarios, and saved data explorations, is private and exclusively controlled by the user who created it.
+ * Core Philosophy: This ruleset enforces a strict user-ownership security model for user-specific data, while allowing
+ * public read access for non-sensitive, shared data.
  *
- * Data Structure: All user-specific data is hierarchically nested under the `/users/{userId}` path. This structural segregation
- * ensures that a user's data is isolated within their own data tree, simplifying security and preventing accidental data leakage.
- * There are no top-level collections with mixed ownership.
+ * Data Structure: All user-specific data is hierarchically nested under the `/users/{userId}` path. A separate top-level
+ * collection, `/publicData`, is used for information that is accessible to all users. This structural segregation
+ * ensures that private data is isolated, while public data is efficiently served.
  *
  * Key Security Decisions:
  * - User Isolation: A user can only ever read or write documents within their own `/users/{userId}` path.
+ * - Public Data Access: All users (authenticated or not) can read from the `/publicData` collection. Write access is disabled.
  * - No User Enumeration: Listing the top-level `/users` collection is explicitly disallowed to protect user privacy.
- * - Path-Based Security: Authorization is primarily derived from the `{userId}` parameter in the document path, which is
- *   checked against the authenticated user's UID.
+ * - Path-Based Security: For private data, authorization is primarily derived from the `{userId}` parameter in the
+ *   document path, checked against the authenticated user's UID.
  *
  * Denormalization for Authorization: To ensure performant and simple security rules, ownership and relational information (e.g., `userId`)
- * is denormalized directly onto every document. This allows rules to validate ownership by looking at the document's data itself,
- * avoiding slow and costly `get()` calls to parent documents. For example, a `SimulationScenario` document contains a `userId` field
- * that must match the `{userId}` in its path.
- *
- * Structural Segregation: The entire data model is segregated by user. There are no public collections or documents. This design makes
- * list operations inherently secure, as a user can only query collections that are already scoped to their own UID.
+ * is denormalized directly onto every private document. This allows rules to validate ownership by looking at the document's data itself,
+ * avoiding slow and costly `get()` calls to parent documents.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -57,6 +54,22 @@ service cloud.firestore {
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && isExistingDocument();
+    }
+    
+    //-------------------------------------------------------------------------
+    // Public Data Rules
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Rules for public data sets. Allows anyone to read, but no one to write.
+     * @path /publicData/{dataSetId}
+     * @allow (get, list) Any user, authenticated or not, can read public data.
+     * @deny (write) All write operations are disallowed to protect data integrity.
+     * @principle Provides public, read-only access to shared application data.
+     */
+    match /publicData/{dataSetId} {
+      allow get, list: if true;
+      allow write: if false;
     }
 
     //-------------------------------------------------------------------------
@@ -137,3 +150,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

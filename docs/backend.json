@@ -197,6 +197,43 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "PublicData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PublicData",
+      "type": "object",
+      "description": "Represents a public data set, such as economic indicators.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "The human-readable name of the data set."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the data set."
+        },
+        "unit": {
+          "type": "string",
+          "description": "The unit of measurement for the data values."
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "year": {
+                "type": "number"
+              },
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": ["year", "value"]
+          },
+          "description": "An array of data points for the data set."
+        }
+      },
+      "required": ["label", "description", "unit", "data"]
     }
   },
   "auth": {
@@ -286,8 +323,26 @@
             }
           ]
         }
+      },
+      {
+        "path": "/publicData/{dataSetId}",
+        "definition": {
+          "entityName": "publicData",
+          "schema": {
+            "$ref": "#/backend/entities/PublicData"
+          },
+          "description": "Stores public data sets that are accessible to all users.",
+          "params": [
+            {
+              "name": "dataSetId",
+              "description": "The unique ID for a specific public data set (e.g., 'gdp', 'unemployment')."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure for Demokratia Portugal is designed with a strong emphasis on authorization independence, structural segregation, and predictable access modeling, aligning with the core design principles to ensure security, scalability, and debuggability. All user-specific data is nested under a top-level `/users/{userId}` collection. This path-based ownership ensures that all documents belonging to a specific user are logically grouped and easily secured.\n\n**Authorization Independence:** This is achieved by explicitly denormalizing ownership IDs into the documents themselves. For instance, `SimulationScenario` documents are stored under `/users/{userId}/simulationScenarios/{scenarioId}`. Crucially, each `SimulationScenario` document will *also* contain a `userId` field that matches the `{userId}` in its path. Similarly, `SimulationRun` documents, nested under `/users/{userId}/simulationScenarios/{scenarioId}/simulationRuns/{runId}`, will contain both `userId` and `scenarioId` fields that match their respective path segments. This strategy eliminates the need for `get()` calls in Firestore Security Rules to check parent document ownership or attributes, thus enabling atomic operations and simplifying rule logic. Rules can directly check `request.auth.uid == resource.data.userId` (and `request.path[3] == resource.data.scenarioId` for `SimulationRun`) which is highly performant and secure.\n\n**QAPs (Rules are not Filters):** The structural segregation inherently supports secure `list` operations. By organizing user-owned data under `/users/{userId}/...`, users can only perform `list` queries within their own `/users/{request.auth.uid}/...` subcollections. This prevents accidental exposure of other users' data during collection-level queries, as the security rules will enforce that `request.auth.uid` matches the `userId` in the path segment for any read operation. The data structure itself acts as a filter, allowing users to query only data explicitly owned by them, making security rules simple and efficient for both `get` and `list` operations. There are no global collections mixing different ownership types, ensuring a homogeneous security posture per collection.\n\n**Structural Segregation & Access Modeling:** All collections like `simulationScenarios`, `simulationRuns`, and `savedDataExplorations` within a user's path are homogenous in their security requirements – they are strictly owned by that user. This consistent pattern of 'Private Data' and 'Hierarchical Paths for User-Owned Data' simplifies rule writing significantly, as the context for authorization is always clear and directly derivable from the document path and its denormalized fields. There are no 'public' versions of these entities, as they represent user-created, private configurations and results."
+    "reasoning": "The Firestore structure for Demokratia Portugal is designed with a strong emphasis on authorization independence, structural segregation, and predictable access modeling, aligning with the core design principles to ensure security, scalability, and debuggability. All user-specific data is nested under a top-level `/users/{userId}` collection. This path-based ownership ensures that all documents belonging to a specific user are logically grouped and easily secured. A new top-level collection `publicData` is introduced for information that should be accessible by all users, following the principle of structural segregation for public vs. private data.\n\n**Authorization Independence:** This is achieved by explicitly denormalizing ownership IDs into the documents themselves. For instance, `SimulationScenario` documents are stored under `/users/{userId}/simulationScenarios/{scenarioId}`. Crucially, each `SimulationScenario` document will *also* contain a `userId` field that matches the `{userId}` in its path. Similarly, `SimulationRun` documents, nested under `/users/{userId}/simulationScenarios/{scenarioId}/simulationRuns/{runId}`, will contain both `userId` and `scenarioId` fields that match their respective path segments. This strategy eliminates the need for `get()` calls in Firestore Security Rules to check parent document ownership or attributes, thus enabling atomic operations and simplifying rule logic. Rules can directly check `request.auth.uid == resource.data.userId` (and `request.path[3] == resource.data.scenarioId` for `SimulationRun`) which is highly performant and secure.\n\n**QAPs (Rules are not Filters):** The structural segregation inherently supports secure `list` operations. By organizing user-owned data under `/users/{userId}/...`, users can only perform `list` queries within their own `/users/{request.auth.uid}/...` subcollections. This prevents accidental exposure of other users' data during collection-level queries, as the security rules will enforce that `request.auth.uid` matches the `userId` in the path segment for any read operation. The data structure itself acts as a filter, allowing users to query only data explicitly owned by them, making security rules simple and efficient for both `get` and `list` operations. There are no global collections mixing different ownership types, ensuring a homogeneous security posture per collection.\n\n**Structural Segregation & Access Modeling:** All collections like `simulationScenarios`, `simulationRuns`, and `savedDataExplorations` within a user's path are homogenous in their security requirements – they are strictly owned by that user. The `publicData` collection is separate and has its own distinct, public-read security model. This consistent pattern simplifies rule writing significantly, as the context for authorization is always clear and directly derivable from the document path and its denormalized fields."
   }
 }
+
+    

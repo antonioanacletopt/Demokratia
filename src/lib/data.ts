@@ -1,3 +1,18 @@
+import { collection, doc, getFirestore } from "firebase/firestore";
+
+export const publicDataCollection = collection(getFirestore(), 'publicData');
+
+export const gdpDoc = doc(publicDataCollection, 'gdp');
+export const unemploymentDoc = doc(publicDataCollection, 'unemployment');
+export const inflationDoc = doc(publicDataCollection, 'inflation');
+
+export type PublicData = {
+  label: string;
+  description: string;
+  unit: string;
+  data: { year: number; value: number }[];
+};
+
 export const publicDataSets = {
   gdp: {
     label: "PIB (Produto Interno Bruto)",
@@ -41,3 +56,4 @@ export const publicDataSets = {
 };
 
 export type DataSetKey = keyof typeof publicDataSets;
+    
