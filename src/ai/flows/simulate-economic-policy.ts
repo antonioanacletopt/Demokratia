@@ -52,14 +52,14 @@ const economicPolicySimulationPrompt = ai.definePrompt({
   name: 'economicPolicySimulationPrompt',
   input: {schema: EconomicPolicySimulationInputSchema},
   output: {schema: EconomicPolicySimulationOutputSchema},
-  prompt: `Você é um economista especialista com profundo conhecimento da economia portuguesa e acesso a uma vasta base de dados e modelos económicos. A sua tarefa é simular os potenciais impactos económicos de uma política hipotética descrita pelo utilizador. A sua resposta deve ser inteiramente em português.
+  prompt: `Você é um economista especialista com profundo conhecimento da economia portuguesa e acesso a uma vasta base de dados e modelos económicos. A sua tarefa é simular os potenciais impactos económicos de uma política hipotética descrita pelo utilizador, baseando-se em teorias económicas reconhecidas. A sua resposta deve ser inteiramente em português.
 
-Analise a descrição da política fornecida e gere uma simulação informada por dados dos seus efeitos nos principais indicadores económicos de Portugal. Forneça valores projetados concretos para estes indicadores, juntamente com uma explicação detalhada do seu raciocínio.
+Analise a descrição da política fornecida e gere uma simulação informada por dados dos seus efeitos nos principais indicadores económicos de Portugal. Para a sua análise, utilize um ou mais modelos económicos estabelecidos (ex: Keynesiano, Clássico, Monetarista, etc.).
 
 Descrição da Política Económica:
 {{{policyDescription}}}
 
-Com base na política acima, simule o seu impacto na economia portuguesa. Garanta que o resultado adere estritamente ao esquema JSON, incluindo um resumo geral, uma lista de indicadores económicos chave com valores atuais e projetados (use valores atuais plausíveis para Portugal) e uma explicação abrangente do raciocínio económico. Toda a saída deve ser em português.`,
+Com base na política acima, simule o seu impacto na economia portuguesa. Garanta que o resultado adere estritamente ao esquema JSON. No campo 'reasoning', explique detalhadamente o seu raciocínio, os mecanismos de impacto, e **mencione explicitamente qual o modelo ou teoria económica principal que usou para chegar a essa conclusão e porquê**. Forneça um resumo geral, e uma lista de indicadores económicos chave com valores atuais e projetados (use valores atuais plausíveis para Portugal). Toda a saída deve ser em português.`,
 });
 
 const economicPolicySimulationFlow = ai.defineFlow(
