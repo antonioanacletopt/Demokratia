@@ -14,6 +14,13 @@ import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+const suggestedPolicies = [
+  { label: "Aumento do Salário Mínimo", value: "Aumento do salário mínimo nacional para 1000€ mensais." },
+  { label: "Redução do IRC", value: "Redução da taxa geral de IRC de 21% para 15%." },
+  { label: "Fim das Portagens SCUT", value: "Abolição das portagens em todas as antigas autoestradas SCUT." },
+  { label: "IVA da Eletricidade a 6%", value: "Redução da taxa de IVA sobre o consumo de eletricidade para 6%." },
+];
+
 export default function SimulatorPage() {
   const [policy, setPolicy] = useState('');
   const [simulation, setSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
@@ -53,6 +60,16 @@ export default function SimulatorPage() {
             onChange={(e) => setPolicy(e.target.value)}
             rows={4}
           />
+          <div className="mt-4">
+            <p className="mb-2 text-sm text-muted-foreground">Ou experimente uma sugestão:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedPolicies.map((p) => (
+                <Button key={p.label} variant="outline" size="sm" onClick={() => setPolicy(p.value)}>
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+          </div>
         </CardContent>
         <CardFooter>
           <Button onClick={handleSimulation} disabled={isPending || !policy.trim()}>
