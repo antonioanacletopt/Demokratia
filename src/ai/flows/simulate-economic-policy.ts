@@ -60,6 +60,8 @@ Analise a descrição da política fornecida. Primeiro, determine se corresponde
 
 De seguida, gere uma simulação informada por dados dos seus efeitos nos principais indicadores económicos de Portugal. Para a sua análise, utilize um ou mais modelos económicos estabelecidos (ex: Keynesiano, Clássico, Monetarista, etc.).
 
+É crucial que a sua análise não seja monolítica. Considere e discuta os impactos diferenciais da política em diferentes segmentos da sociedade e da economia. Por exemplo, para um aumento do salário mínimo, analise o impacto provável em micro vs. grandes empresas, ou para uma alteração de impostos, considere o efeito em diferentes escalões de rendimento. No campo 'reasoning', detalhe estas nuances, pois esta análise diferenciada é uma parte essencial da sua resposta.
+
 Descrição da Política:
 {{{policyDescription}}}
 
