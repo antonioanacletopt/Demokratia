@@ -69,7 +69,7 @@ service cloud.firestore {
      */
     match /publicData/{dataSetId} {
       allow get, list: if true;
-      allow write: if false;
+      allow write: if isSignedIn();
     }
 
     //-------------------------------------------------------------------------
@@ -150,5 +150,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
