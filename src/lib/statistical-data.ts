@@ -84,5 +84,20 @@ export const statisticalDataToSeed: StatisticalData[] = [
         { "Ano": 2022, "População": "781.915" },
         { "Ano": 2023, "População": "1.040.000 (Estimativa)" }
     ]
+  },
+  {
+    id: 'government-debt-to-gdp',
+    title: 'Dívida Pública em % do PIB',
+    description: 'Dívida bruta das administrações públicas em percentagem do Produto Interno Bruto. A redução tem sido uma prioridade.',
+    category: 'Economia',
+    source: 'Eurostat / Banco de Portugal',
+    lastUpdated: '2024-04-22',
+    dataType: 'table',
+    data: [
+      { "Ano": 2020, "Dívida (% PIB)": "134,9%" },
+      { "Ano": 2021, "Dívida (% PIB)": "124,5%" },
+      { "Ano": 2022, "Dívida (% PIB)": "112,4%" },
+      { "Ano": 2023, "Dívida (% PIB)": "99,1%" }
+    ]
   }
 ];
