@@ -99,5 +99,33 @@ export const statisticalDataToSeed: StatisticalData[] = [
       { "Ano": 2022, "Dívida (% PIB)": "112,4%" },
       { "Ano": 2023, "Dívida (% PIB)": "99,1%" }
     ]
+  },
+  {
+    id: 'live-births-deaths',
+    title: 'Nados-vivos e Óbitos',
+    description: 'Número total de nados-vivos e óbitos registados em Portugal. O saldo natural (diferença entre nascimentos e mortes) tem sido negativo.',
+    category: 'Demografia',
+    source: 'INE, Estatísticas Vitais',
+    lastUpdated: '2024-05-30',
+    dataType: 'table',
+    data: [
+      { "Ano": 2021, "Nados-vivos": "79.582", "Óbitos": "123.837", "Saldo Natural": "-44.255" },
+      { "Ano": 2022, "Nados-vivos": "83.671", "Óbitos": "124.755", "Saldo Natural": "-41.084" },
+      { "Ano": 2023, "Nados-vivos": "85.698", "Óbitos": "119.789", "Saldo Natural": "-34.091" }
+    ]
+  },
+  {
+    id: 'higher-education-students',
+    title: 'Alunos Inscritos no Ensino Superior',
+    description: 'Número de alunos inscritos em estabelecimentos de ensino superior em Portugal, por ciclo de estudos.',
+    category: 'Sociedade',
+    source: 'DGEEC',
+    lastUpdated: '2024-01-15',
+    dataType: 'table',
+    data: [
+      { "Ano Letivo": "2020/2021", "Total": "412.353", "Licenciatura": "237.917", "Mestrado": "127.382", "Doutoramento": "29.981" },
+      { "Ano Letivo": "2021/2022", "Total": "433.217", "Licenciatura": "245.891", "Mestrado": "136.314", "Doutoramento": "32.091" },
+      { "Ano Letivo": "2022/2023", "Total": "446.028", "Licenciatura": "251.309", "Mestrado": "141.042", "Doutoramento": "33.799" }
+    ]
   }
 ];
