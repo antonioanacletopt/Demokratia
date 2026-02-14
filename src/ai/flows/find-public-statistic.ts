@@ -44,7 +44,7 @@ Search for the requested statistic from reliable public sources only, such as IN
 
 - If you cannot find the data:
   - Set 'isFound' to false.
-  - In 'explanation', clearly explain why the data could not be found. For example, it might not be publicly available, it's too specific, not collected by official bodies, or it requires a deeper analysis that you cannot perform. Do NOT suggest the user provide a source, simply state the result of your search.
+  - In 'explanation', clearly explain why the data could not be found (e.g., it's not publicly available, it's too specific, or not collected by official bodies) and suggest that the user could propose a reliable source if they know one.
   - Leave 'source' and 'data' empty.
 
 User's Request:
