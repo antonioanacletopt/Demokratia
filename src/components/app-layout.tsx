@@ -16,6 +16,7 @@ import {
   SidebarTrigger,
   SidebarRail,
   SidebarInset,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,8 +39,41 @@ const navItems = [
 
 const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+// Extracted component to access useSidebar context
+function AppSidebarContent() {
   const pathname = usePathname();
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
+  return (
+    <SidebarContent className="p-2">
+      <SidebarMenu>
+        {navItems.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith(item.href)}
+              tooltip={{ children: item.label, side: 'right' }}
+              onClick={handleLinkClick}
+            >
+              <Link href={item.href}>
+                <item.icon />
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarContent>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
@@ -52,24 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <h1 className="text-xl font-semibold font-headline text-primary-dark">Demokratia</h1>
           </div>
         </SidebarHeader>
-        <SidebarContent className="p-2">
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith(item.href)}
-                  tooltip={{ children: item.label, side: 'right' }}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
+        <AppSidebarContent />
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
