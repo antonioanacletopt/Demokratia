@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { doc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -17,6 +17,7 @@ export default function SeedPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const firestore = useFirestore();
+  const { isUserLoading } = useUser();
   const { toast } = useToast();
 
   const handleSeedPublicData = async () => {
@@ -106,9 +107,9 @@ export default function SeedPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleSeedPublicData} disabled={isSeedingPublic}>
-            {isSeedingPublic && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSeedingPublic ? 'A carregar...' : 'Carregar Dados do Dashboard'}
+          <Button onClick={handleSeedPublicData} disabled={isUserLoading || isSeedingPublic}>
+            {(isUserLoading || isSeedingPublic) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isUserLoading ? 'A autenticar...' : isSeedingPublic ? 'A carregar...' : 'Carregar Dados do Dashboard'}
           </Button>
         </CardContent>
       </Card>
@@ -123,14 +124,12 @@ export default function SeedPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats}>
-            {isSeedingStats && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSeedingStats ? 'A carregar...' : 'Carregar Dados do Explorador'}
+          <Button onClick={handleSeedStatisticalData} disabled={isUserLoading || isSeedingStats}>
+            {(isUserLoading || isSeedingStats) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isUserLoading ? 'A autenticar...' : isSeedingStats ? 'A carregar...' : 'Carregar Dados do Explorador'}
           </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
