@@ -35,17 +35,14 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if false; // Do not allow listing all user profiles
       // Allow creation if the user is creating their own profile
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.id == resource.data.id;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && isExistingDoc();
       allow delete: if isOwner(userId) && isExistingDoc();
     }
 
     match /simulationModelDefinitions/{modelId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin() && isExistingDoc();
-      allow delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     match /roles_admin/{uid} {
@@ -63,3 +60,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
