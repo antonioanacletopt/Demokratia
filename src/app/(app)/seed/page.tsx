@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { redirect } from 'next/navigation';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
@@ -13,19 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// NOTE: In a real-world application, user roles should be managed through
-// Firebase Custom Claims for better security and scalability.
-// For this prototype, we use the hardcoded email below.
-const ADMIN_EMAIL = "user@demokratia.pt";
-
 
 export default function SeedPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const { isUserLoading } = useUser();
   const { toast } = useToast();
 
   const handleSeedPublicData = async () => {
@@ -99,29 +91,6 @@ export default function SeedPage() {
       setIsSeedingStats(false);
     }
   };
-
-  if (isUserLoading) {
-    return (
-       <div className="space-y-6">
-        <Skeleton className="h-10 w-3/4" />
-        <Skeleton className="h-6 w-full" />
-        <Card>
-          <CardHeader>
-            <CardTitle>A verificar permissões...</CardTitle>
-            <CardDescription>A validar o seu acesso a esta secção.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-10 w-48" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!user || user.email !== ADMIN_EMAIL) {
-    redirect('/dashboard');
-    return null;
-  }
 
   return (
     <div className="flex flex-col gap-6">

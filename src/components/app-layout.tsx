@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText } from "lucide-react";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useUser } from "@/firebase";
 
 import {
   SidebarProvider,
@@ -30,15 +29,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const allNavItems = [
+const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador" },
   { href: "/simulator", icon: Lightbulb, label: "Simulador" },
   { href: "/scenarios", icon: NotebookText, label: "Cenários" },
-  { href: "/seed", icon: Database, label: "Seed Data", adminOnly: true },
+  { href: "/seed", icon: Database, label: "Seed Data" },
 ];
-
-const ADMIN_EMAIL = "user@demokratia.pt";
 
 const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 
@@ -46,18 +43,12 @@ const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 function AppSidebarContent() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
-  const { user } = useUser();
 
   const handleLinkClick = () => {
     if (isMobile) {
       setOpenMobile(false);
     }
   };
-
-  const navItems = allNavItems.filter(item => {
-    if (!item.adminOnly) return true;
-    return user?.email === ADMIN_EMAIL;
-  });
 
   return (
     <SidebarContent className="p-2">
