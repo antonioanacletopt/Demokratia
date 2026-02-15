@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText, LogOut } from "lucide-react";
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth, useUser } from "@/firebase";
+import { signOut } from "firebase/auth";
 
 import {
   SidebarProvider,
@@ -37,12 +39,14 @@ const navItems = [
   { href: "/seed", icon: Database, label: "Seed Data" },
 ];
 
-const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+const ADMIN_EMAIL = 'admin@demokratia.pt';
 
 // Extracted component to access useSidebar context
 function AppSidebarContent() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
+  const { user } = useUser();
+  const isAdmin = user && user.email === ADMIN_EMAIL;
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -53,27 +57,43 @@ function AppSidebarContent() {
   return (
     <SidebarContent className="p-2">
       <SidebarMenu>
-        {navItems.map((item) => (
-          <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname.startsWith(item.href)}
-              tooltip={{ children: item.label, side: 'right' }}
-              onClick={handleLinkClick}
-            >
-              <Link href={item.href}>
-                <item.icon />
-                <span>{item.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+        {navItems.map((item) => {
+          if (item.href === '/seed' && !isAdmin) {
+            return null;
+          }
+          return (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith(item.href)}
+                tooltip={{ children: item.label, side: 'right' }}
+                onClick={handleLinkClick}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
+        })}
       </SidebarMenu>
     </SidebarContent>
   );
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+
+  const defaultUserAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
+  const initials = user?.displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'DP';
 
   return (
     <SidebarProvider>
@@ -92,6 +112,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger className="md:hidden" />
+            <div />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -99,13 +120,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         className="relative h-10 w-10 rounded-full"
                     >
                         <Avatar className="h-10 w-10 border">
-                            {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="Avatar" data-ai-hint={userAvatar.imageHint} />}
-                            <AvatarFallback>DP</AvatarFallback>
+                            <AvatarImage src={user?.photoURL ?? defaultUserAvatar?.imageUrl} alt={user?.displayName ?? "Avatar"} data-ai-hint={defaultUserAvatar?.imageHint} />
+                            <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuLabel>
+                      <p className="font-medium truncate">{user?.displayName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
@@ -114,7 +138,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Sair</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair</span>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </header>

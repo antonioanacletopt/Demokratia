@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
@@ -13,12 +14,26 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
+const ADMIN_EMAIL = 'admin@demokratia.pt';
+
 export default function SeedPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const firestore = useFirestore();
-  const { isUserLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
+      toast({
+        variant: 'destructive',
+        title: 'Acesso Negado',
+        description: 'Não tem permissão para aceder a esta página.',
+      });
+      router.replace('/dashboard');
+    }
+  }, [user, isUserLoading, router, toast]);
 
   const handleSeedPublicData = async () => {
     setIsSeedingPublic(true);
@@ -91,6 +106,15 @@ export default function SeedPage() {
       setIsSeedingStats(false);
     }
   };
+
+  if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <h3 className="mt-4 text-lg font-medium text-muted-foreground">A verificar permissões...</h3>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
