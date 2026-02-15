@@ -49,6 +49,15 @@ export default function ScenariosPage() {
       return;
     }
     
+    if (!scenariosCollection) {
+        toast({
+            variant: "destructive",
+            title: "Erro",
+            description: "Não foi possível aceder à coleção de cenários. Por favor, tente novamente."
+        });
+        return;
+    }
+
     if (!newScenarioName.trim() || !newScenarioDescription.trim()) {
       toast({
         variant: 'destructive',
