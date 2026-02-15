@@ -79,18 +79,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser) => { // Auth state determined
-        if (firebaseUser) {
-          // User is signed in, ensure a user profile exists
-          const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
-          // Non-blocking write
-          setDoc(userProfileRef, { 
-            id: firebaseUser.uid,
-            email: firebaseUser.email || "", // Ensure email is always a string
-            displayName: firebaseUser.displayName,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }, { merge: true });
-        }
+        // Temporarily disable profile creation to isolate auth error
+        // if (firebaseUser) {
+        //   // User is signed in, ensure a user profile exists
+        //   const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
+        //   // Non-blocking write
+        //   setDoc(userProfileRef, { 
+        //     id: firebaseUser.uid,
+        //     email: firebaseUser.email || "", // Ensure email is always a string
+        //     displayName: firebaseUser.displayName,
+        //     createdAt: new Date().toISOString(),
+        //     updatedAt: new Date().toISOString(),
+        //   }, { merge: true });
+        // }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => { // Auth listener error
