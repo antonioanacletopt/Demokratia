@@ -40,7 +40,7 @@ const allNavItems = [
   { href: "/seed", icon: Database, label: "Seed Data", public: false, adminOnly: true },
 ];
 
-const ADMIN_EMAIL = 'admin@demokratia.pt';
+const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
 // Extracted component to access useSidebar context
 function AppSidebarContent() {

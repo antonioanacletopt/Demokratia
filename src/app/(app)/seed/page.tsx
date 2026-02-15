@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-const ADMIN_EMAIL = 'admin@demokratia.pt';
+const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
 export default function SeedPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
