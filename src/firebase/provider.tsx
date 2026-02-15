@@ -4,7 +4,9 @@ import React, { DependencyList, createContext, useContext, ReactNode, useMemo, u
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, setDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -79,19 +81,27 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser) => { // Auth state determined
-        // Temporarily disable profile creation to isolate auth error
-        // if (firebaseUser) {
-        //   // User is signed in, ensure a user profile exists
-        //   const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
-        //   // Non-blocking write
-        //   setDoc(userProfileRef, { 
-        //     id: firebaseUser.uid,
-        //     email: firebaseUser.email || "", // Ensure email is always a string
-        //     displayName: firebaseUser.displayName,
-        //     createdAt: new Date().toISOString(),
-        //     updatedAt: new Date().toISOString(),
-        //   }, { merge: true });
-        // }
+        if (firebaseUser) {
+          // User is signed in, ensure a user profile exists
+          const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
+          const profileData = { 
+            id: firebaseUser.uid,
+            email: firebaseUser.email || "", // Ensure email is always a string
+            displayName: firebaseUser.displayName,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          // Non-blocking write with merge to create/update profile
+          setDoc(userProfileRef, profileData, { merge: true })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                path: userProfileRef.path,
+                operation: 'write',
+                requestResourceData: profileData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+        }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => { // Auth listener error
