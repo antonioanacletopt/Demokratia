@@ -117,16 +117,9 @@ export default function DashboardPage() {
   };
 
   const dynamicChartConfig = useMemo((): ChartConfig => {
-    if (!chartResponse?.isChartable) {
-      return {
-        value: {
-          label: '',
-        },
-      };
-    }
     return {
       value: {
-        label: chartResponse.yAxisLabel || '',
+        label: chartResponse?.isChartable ? chartResponse.yAxisLabel || '' : '',
         color: 'hsl(var(--primary))',
       },
     };
