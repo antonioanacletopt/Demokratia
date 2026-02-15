@@ -20,6 +20,11 @@ import {
   GenerateChartInput,
   GenerateChartOutput,
 } from '@/ai/flows/generate-chart-from-request';
+import {
+  factCheckClaim,
+  FactCheckInput,
+  FactCheckOutput,
+} from '@/ai/flows/fact-check-claim';
 
 export async function getEconomicSimulation(
   input: EconomicPolicySimulationInput
@@ -43,4 +48,10 @@ export async function getChartFromRequest(
   input: GenerateChartInput
 ): Promise<GenerateChartOutput> {
   return await generateChartFromRequest(input);
+}
+
+export async function getFactCheck(
+  input: FactCheckInput
+): Promise<FactCheckOutput> {
+  return await factCheckClaim(input);
 }
