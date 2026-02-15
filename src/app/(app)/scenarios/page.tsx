@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, NotebookText } from 'lucide-react';
+import { Loader2, PlusCircle, NotebookText, User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface SimulationScenario {
@@ -23,6 +24,7 @@ interface SimulationScenario {
 export default function ScenariosPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
   const { toast } = useToast();
 
   const [newScenarioName, setNewScenarioName] = useState('');
@@ -37,7 +39,17 @@ export default function ScenariosPage() {
   const { data: scenarios, isLoading: isLoadingScenarios } = useCollection<SimulationScenario>(scenariosCollection);
 
   const handleSaveScenario = () => {
-    if (!user || !scenariosCollection || !newScenarioName.trim() || !newScenarioDescription.trim()) {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Ação Requer Autenticação',
+        description: 'Por favor, inicie sessão para guardar um cenário.',
+      });
+      router.push('/login');
+      return;
+    }
+    
+    if (!newScenarioName.trim() || !newScenarioDescription.trim()) {
       toast({
         variant: 'destructive',
         title: 'Campos em falta',
@@ -79,6 +91,8 @@ export default function ScenariosPage() {
       });
   };
 
+  const isFormDisabled = isSaving || (!isUserLoading && !user);
+
   return (
     <div className="space-y-6">
       <div>
@@ -94,7 +108,13 @@ export default function ScenariosPage() {
                 <PlusCircle className="h-5 w-5" />
                 Criar Novo Cenário
               </CardTitle>
-              <CardDescription>Defina uma nova hipótese para simulação.</CardDescription>
+              {!user && !isUserLoading ? (
+                 <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
+                  <User className="h-4 w-4" /> <span>Inicie sessão para criar cenários.</span>
+                </CardDescription>
+              ) : (
+                <CardDescription>Defina uma nova hipótese para simulação.</CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -104,7 +124,7 @@ export default function ScenariosPage() {
                   placeholder="Ex: Impacto da seca na agricultura"
                   value={newScenarioName}
                   onChange={(e) => setNewScenarioName(e.target.value)}
-                  disabled={isSaving}
+                  disabled={isFormDisabled}
                 />
               </div>
               <div className="space-y-2">
@@ -115,12 +135,12 @@ export default function ScenariosPage() {
                   value={newScenarioDescription}
                   onChange={(e) => setNewScenarioDescription(e.target.value)}
                   rows={6}
-                  disabled={isSaving}
+                  disabled={isFormDisabled}
                 />
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveScenario} disabled={isSaving || isUserLoading}>
+              <Button onClick={handleSaveScenario} disabled={isFormDisabled}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Guardar Cenário
               </Button>
@@ -135,15 +155,17 @@ export default function ScenariosPage() {
                 <NotebookText className="h-5 w-5" />
                 Cenários Guardados
               </CardTitle>
-              <CardDescription>Os seus cenários guardados aparecerão aqui.</CardDescription>
+              <CardDescription>
+                {user ? 'Os seus cenários guardados aparecerão aqui.' : 'Inicie sessão para ver e gerir os seus cenários.'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {isUserLoading || isLoadingScenarios ? (
+              {isUserLoading || (user && isLoadingScenarios) ? (
                 <div className="space-y-4">
                   <Skeleton className="h-24 w-full" />
                   <Skeleton className="h-24 w-full" />
                 </div>
-              ) : scenarios && scenarios.length > 0 ? (
+              ) : user && scenarios && scenarios.length > 0 ? (
                 <div className="space-y-4">
                   {scenarios.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds).map((scenario) => (
                     <div key={scenario.id} className="rounded-lg border p-4 space-y-2">
@@ -165,8 +187,12 @@ export default function ScenariosPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
                   <NotebookText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <h3 className="mt-4 text-lg font-medium text-muted-foreground">Ainda não guardou nenhum cenário.</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">Use o formulário ao lado para criar o seu primeiro.</p>
+                  <h3 className="mt-4 text-lg font-medium text-muted-foreground">
+                    {user ? 'Ainda não guardou nenhum cenário.' : 'Inicie sessão para começar'}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {user ? 'Use o formulário ao lado para criar o seu primeiro.' : 'Crie uma conta para guardar e gerir os seus cenários.'}
+                  </p>
                 </div>
               )}
             </CardContent>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,53 +12,29 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 const defaultUserAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If auth state is checked and there's no user, redirect to login.
+    if (!isUserLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, isUserLoading, router]);
+
   const initials = user?.displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'DP';
 
-  if (isUserLoading) {
+  // Show a loader while checking auth or if user is null (before redirect).
+  if (isUserLoading || !user) {
     return (
-       <div className="space-y-6">
-        <div>
-          <Skeleton className="h-9 w-1/3" />
-          <Skeleton className="h-5 w-2/3 mt-2" />
-        </div>
-        <Separator />
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Foto de Perfil</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <Skeleton className="h-32 w-32 rounded-full" />
-                <Skeleton className="h-10 w-28" />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="md:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações Pessoais</CardTitle>
-                <CardDescription>Atualize os seus dados pessoais.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome</Label>
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <Skeleton className="h-10 w-36" />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+       <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+          <h3 className="mt-4 text-lg font-medium text-muted-foreground">A carregar dados do utilizador...</h3>
       </div>
     )
   }
