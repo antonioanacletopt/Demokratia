@@ -1,108 +1,45 @@
-/**
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model combined with role-based access for administrative tasks.
- * The primary security goal is to ensure that users can only access and manage their own data, while designated administrators
- * can manage global, shared resources.
- *
- * Data Structure:
- * - /userProfiles/{userId}: Stores a user's public profile. The document ID is the user's auth UID.
- * - /simulationModelDefinitions/{modelId}: A public, read-only collection of simulation models available to all users.
- * - /users/{userId}/...: A private data tree for each user, containing their personal simulation runs and saved data views.
- * - /roles_admin/{uid}: An administrative collection where the existence of a document grants a user admin privileges.
- *
- * Key Security Decisions:
- * - User Data Isolation: All user-generated content (simulation runs, saved views) is stored in a subcollection under a path
- *   containing their user ID (e.g., /users/{userId}/...). This structurally prevents one user from accessing another's data.
- * - Administrator Privileges: A separate /roles_admin collection is used for Database Access Control (DBAC). This collection
- *   is read-only from the client to prevent privilege escalation and should be managed server-side.
- * - Public Data Segregation: Globally available data like simulation models is stored in its own top-level collection with
- *   public read and admin-only write access, ensuring a clear and secure separation from private user data.
- * - User Listing Disabled: The ability to list all documents in the /userProfiles collection is disabled to protect user privacy.
- * - Frontend Auth Configuration: The user-reported error 'auth/operation-not-allowed' indicates that the sign-in providers
- *   (e.g., Email/Password, Anonymous) must be enabled in the Firebase Console under Authentication -> Sign-in method.
- *
- * Denormalization for Authorization:
- * To create simpler and more performant rules, user-owned documents (like UserSimulationRun) contain a denormalized 'userId' field.
- * This allows rules to validate ownership directly from the document's data without needing costly `get()` calls to parent documents,
- * a principle known as Authorization Independence.
- *
- * Structural Segregation:
- * Private user data is structurally segregated into /users/{userId}/... subcollections. Public data resides in the top-level
- * /simulationModelDefinitions collection. This separation allows for simple, powerful rules that grant broad access to public
- * collections while strictly locking down private ones based on the path structure.
- */
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // =====================================================================
-    // Helper Functions
-    // =====================================================================
-
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the authenticated user's UID matches the provided userId.
-     * This is the foundation of the user-ownership model.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    /**
-     * Checks if a document exists before an update or delete operation.
-     * This prevents operations on non-existent documents.
-     */
     function isExistingDoc() {
       return resource != null;
     }
 
-    /**
-     * Checks if the user is an administrator by verifying the existence of
-     * a document in the roles_admin collection.
-     */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
+    
+    // Public data is readable by anyone
+    match /publicData/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Statistical data is readable by anyone
+    match /statisticalData/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    // =====================================================================
-    // User Profile Rules
-    // =====================================================================
-
-    /**
-     * @description Controls access to a user's own profile document.
-     * @path /userProfiles/{userId}
-     * @allow (get, update, delete) A user retrieves their own profile document. Auth UID must match {userId}.
-     * @allow (create) A new user creates their own profile document. Auth UID must match {userId}.
-     * @deny (list) A user attempts to list all profiles, which is disallowed to protect privacy.
-     * @deny (get) A user attempts to read another user's profile.
-     * @principle Restricts access to a user's own data tree and enforces self-creation of root documents.
-     */
     match /userProfiles/{userId} {
       allow get: if isOwner(userId);
-      allow list: if false;
+      allow list: if false; // Do not allow listing all user profiles
+      // Allow creation if the user is creating their own profile
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.id == resource.data.id;
       allow delete: if isOwner(userId) && isExistingDoc();
     }
 
-    // =====================================================================
-    // Global Data Rules
-    // =====================================================================
-
-    /**
-     * @description Controls access to the globally available simulation model definitions.
-     * @path /simulationModelDefinitions/{modelId}
-     * @allow (get, list) Any user, signed in or not, can read the model definitions.
-     * @allow (create, update, delete) An administrator modifies a model definition.
-     * @deny (create, update, delete) A regular signed-in user attempts to modify a model definition.
-     * @principle Implements a "Public Read with Admin-Only Writes" pattern for shared, global data.
-     */
     match /simulationModelDefinitions/{modelId} {
       allow get: if true;
       allow list: if true;
@@ -111,55 +48,17 @@ service cloud.firestore {
       allow delete: if isAdmin() && isExistingDoc();
     }
 
-    /**
-     * @description Locks down the admin roles collection to prevent client-side modifications.
-     * @path /roles_admin/{uid}
-     * @allow (none) All client-side read and write operations are denied.
-     * @deny (get, list, create, update, delete) Any user, including an admin, attempts to read or write to this collection from the client.
-     * @principle Secures administrative roles by making them read-only and manageable only through a trusted server environment.
-     */
     match /roles_admin/{uid} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read, write: if false; // Should be managed server-side
     }
     
-    // =====================================================================
-    // Nested User Data Rules
-    // =====================================================================
-    
     match /users/{userId} {
-    
-      /**
-       * @description Secures a user's individual simulation run documents.
-       * @path /users/{userId}/simulationRuns/{runId}
-       * @allow (get, list, create, update, delete) A user accesses simulation runs within their own data tree (auth UID matches {userId}).
-       * @deny (get) A user attempts to read a simulation run from another user's path.
-       * @principle Enforces document ownership using path-based security, a core tenant of Query-as-Permission (QAP).
-       */
-      match /simulationRuns/{runId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId;
-        allow delete: if isOwner(userId) && isExistingDoc();
+      match /simulationScenarios/{scenarioId} {
+        allow read, write: if isOwner(userId);
       }
 
-      /**
-       * @description Secures a user's saved data view configurations.
-       * @path /users/{userId}/savedDataViews/{viewId}
-       * @allow (get, list, create, update, delete) A user accesses saved views within their own data tree (auth UID matches {userId}).
-       * @deny (list) A user attempts to list all saved views from another user's path.
-       * @principle Enforces document ownership using path-based security and validates relational integrity on writes.
-       */
       match /savedDataViews/{viewId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId;
-        allow delete: if isOwner(userId) && isExistingDoc();
+        allow read, write: if isOwner(userId);
       }
     }
   }
