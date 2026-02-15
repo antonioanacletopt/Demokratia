@@ -116,13 +116,15 @@ export default function DashboardPage() {
     });
   };
 
-  const dynamicChartConfig = useMemo((): ChartConfig => {
-    return {
-      value: {
-        label: chartResponse?.isChartable ? chartResponse.yAxisLabel || '' : '',
+  const dynamicChartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    if (chartResponse?.isChartable) {
+      config.value = {
+        label: chartResponse.yAxisLabel || '',
         color: 'hsl(var(--primary))',
-      },
-    };
+      };
+    }
+    return config;
   }, [chartResponse]);
 
   return (
