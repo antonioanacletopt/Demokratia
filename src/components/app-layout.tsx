@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn } from "lucide-react";
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -105,7 +104,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  const defaultUserAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
   const initials = user?.displayName?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'DP';
 
   return (
@@ -124,7 +122,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger className="md:hidden" />
+            <SidebarTrigger className="md:hidden">
+              <SheetTitle>Menu de Navegação</SheetTitle>
+            </SidebarTrigger>
             <div />
             {user ? (
               <DropdownMenu>
@@ -134,7 +134,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           className="relative h-10 w-10 rounded-full"
                       >
                           <Avatar className="h-10 w-10 border">
-                              <AvatarImage src={user?.photoURL ?? defaultUserAvatar?.imageUrl} alt={user?.displayName ?? "Avatar"} data-ai-hint={defaultUserAvatar?.imageHint} />
+                              <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "Avatar"} />
                               <AvatarFallback>{initials}</AvatarFallback>
                           </Avatar>
                       </Button>

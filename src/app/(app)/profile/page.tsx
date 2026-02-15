@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,8 +12,6 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
-
-const defaultUserAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar');
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -54,7 +51,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               <Avatar className="h-32 w-32 border-2 border-primary">
-                <AvatarImage src={user?.photoURL ?? defaultUserAvatar?.imageUrl} alt="Avatar" data-ai-hint={defaultUserAvatar?.imageHint} />
+                <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? 'Avatar'} />
                 <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
               </Avatar>
               <Button disabled>Alterar Foto</Button>
