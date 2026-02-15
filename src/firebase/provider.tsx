@@ -86,7 +86,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
               const newUserProfile = {
                 id: firebaseUser.uid,
                 username: firebaseUser.displayName || 'Utilizador Anónimo',
-                email: firebaseUser.email || '', // email is required in schema
+                email: firebaseUser.email || '',
                 preferredLanguage: 'pt',
                 themePreference: 'system',
                 createdAt: serverTimestamp(),
