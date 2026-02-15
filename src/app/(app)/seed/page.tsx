@@ -6,6 +6,7 @@ import { doc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
+import { systemDataSources } from '@/lib/system-data-sources';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 export default function SeedPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
+  const [isSeedingSources, setIsSeedingSources] = useState(false);
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
@@ -107,6 +109,39 @@ export default function SeedPage() {
     }
   };
 
+  const handleSeedDataSources = async () => {
+    setIsSeedingSources(true);
+    toast({
+      title: 'A semear as fontes de dados...',
+      description: 'A carregar as fontes de dados do sistema para o Firestore.',
+    });
+
+    try {
+      for (const source of systemDataSources) {
+        const id = source.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
+        const docRef = doc(firestore, 'dataSources', id);
+        setDocumentNonBlocking(docRef, { ...source, id }, { merge: true });
+      }
+
+      setTimeout(() => {
+        toast({
+          title: 'Fontes de dados carregadas!',
+          description: 'As fontes foram carregadas. Pode geri-las na página de Admin.',
+        });
+        setIsSeedingSources(false);
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error seeding data sources: ", error);
+      toast({
+        variant: 'destructive',
+        title: 'Oh não! Algo correu mal.',
+        description: 'Não foi possível carregar as fontes de dados.',
+      });
+      setIsSeedingSources(false);
+    }
+  };
+
   if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
@@ -123,37 +158,54 @@ export default function SeedPage() {
         Use este ecrã para carregar os conjuntos de dados iniciais para a sua base de dados Firestore.
         Esta é uma operação que só precisa de ser executada uma vez.
       </p>
+      
       <Card>
         <CardHeader>
           <CardTitle>Dados de Indicadores (Dashboard)</CardTitle>
           <CardDescription>
-            Clique no botão abaixo para popular a coleção 'publicData' com os dados de PIB, Desemprego e Inflação.
+            Popula a coleção 'publicData' com os dados de PIB, Desemprego e Inflação.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={handleSeedPublicData} disabled={isUserLoading || isSeedingPublic}>
             {(isUserLoading || isSeedingPublic) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isUserLoading ? 'A autenticar...' : isSeedingPublic ? 'A carregar...' : 'Carregar Dados do Dashboard'}
+            {isSeedingPublic ? 'A carregar...' : 'Carregar Dados do Dashboard'}
           </Button>
         </CardContent>
       </Card>
-
-      <Separator />
 
       <Card>
         <CardHeader>
           <CardTitle>Dados Estatísticos (Explorador)</CardTitle>
           <CardDescription>
-            Clique no botão abaixo para popular a coleção 'statisticalData' com dados sobre demografia e economia para a nova página do Explorador.
+            Popula a coleção 'statisticalData' com dados para a página do Explorador.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={handleSeedStatisticalData} disabled={isUserLoading || isSeedingStats}>
             {(isUserLoading || isSeedingStats) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isUserLoading ? 'A autenticar...' : isSeedingStats ? 'A carregar...' : 'Carregar Dados do Explorador'}
+            {isSeedingStats ? 'A carregar...' : 'Carregar Dados do Explorador'}
           </Button>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Fontes de Dados (Admin)</CardTitle>
+          <CardDescription>
+            Popula a coleção 'dataSources' com as fontes de dados do sistema para a página de Admin.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={handleSeedDataSources} disabled={isUserLoading || isSeedingSources}>
+            {(isUserLoading || isSeedingSources) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSeedingSources ? 'A carregar...' : 'Carregar Fontes de Dados'}
+          </Button>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
+
+    

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Bot, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -39,6 +39,7 @@ const allNavItems = [
   { href: "/scenarios", icon: NotebookText, label: "Cenários", public: false },
   { href: "/profile", icon: User, label: "Perfil", public: false },
   { href: "/seed", icon: Database, label: "Seed Data", public: false, adminOnly: true },
+  { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
 ];
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
@@ -55,21 +56,12 @@ function AppSidebarContent() {
       setOpenMobile(false);
     }
   };
-  
-  const navItems = allNavItems.filter(item => {
-    if (item.public) return true;
-    if (!user) return false; // Hide private items if not logged in
-    if (item.adminOnly) return isAdmin; // Show admin items only to admin
-    if (item.href === '/profile') return true; // Show profile to any logged in user
-    return true; // Show other private items to logged in users
-  });
 
-  // Specifically hide scenarios if not logged in
-   const finalNavItems = allNavItems.filter(item => {
-    if (item.href === '/scenarios' && !user) return false;
-    if (item.href === '/profile' && !user) return false;
-    if (item.href === '/seed' && !isAdmin) return false;
-    return true;
+  const finalNavItems = allNavItems.filter(item => {
+    if (item.public) return true; // Public items are always visible
+    if (!user) return false; // Private items require a user
+    if (item.adminOnly && !isAdmin) return false; // Admin items require admin role
+    return true; // Other private items are visible to logged-in users
   });
 
 
@@ -173,3 +165,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    

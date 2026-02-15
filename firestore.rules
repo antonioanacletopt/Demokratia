@@ -48,6 +48,11 @@ service cloud.firestore {
     match /roles_admin/{uid} {
       allow read, write: if false; // Should be managed server-side
     }
+
+    match /dataSources/{dataSourceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
     
     match /users/{userId} {
       match /simulationScenarios/{scenarioId} {
@@ -64,3 +69,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
