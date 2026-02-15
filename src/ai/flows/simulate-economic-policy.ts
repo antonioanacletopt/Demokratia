@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview This file defines a Genkit flow for simulating the economic impact
  * of hypothetical policies on Portugal's economy.
