@@ -20,6 +20,7 @@ import {
 import {
   ChartContainer,
   ChartTooltipContent,
+  type ChartConfig,
 } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +37,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
     return publicData.find(d => d.id === dataSetKey);
   }, [publicData, dataSetKey]);
 
-  const chartConfig = {
+  const chartConfig: ChartConfig = {
     value: {
       label: dataSet?.unit || '%',
       color: 'hsl(var(--primary))',
@@ -115,8 +116,14 @@ export default function DashboardPage() {
     });
   };
 
-  const dynamicChartConfig = useMemo(() => {
-    if (!chartResponse?.isChartable) return {};
+  const dynamicChartConfig = useMemo((): ChartConfig => {
+    if (!chartResponse?.isChartable) {
+      return {
+        value: {
+          label: '',
+        },
+      };
+    }
     return {
       value: {
         label: chartResponse.yAxisLabel || '',
