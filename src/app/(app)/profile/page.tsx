@@ -51,7 +51,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               <Avatar className="h-32 w-32 border-2 border-primary">
-                <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? 'Avatar'} />
+                <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'Avatar'} />
                 <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
               </Avatar>
               <Button disabled>Alterar Foto</Button>
@@ -67,11 +67,11 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome</Label>
-                <Input id="name" value={user?.displayName || 'Utilizador Demokratia'} readOnly />
+                <Input id="name" value={user.displayName ?? ''} readOnly />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={user?.email || 'user@demokratia.pt'} readOnly />
+                <Input id="email" type="email" value={user.email ?? ''} readOnly />
               </div>
               <Button disabled>Guardar Alterações</Button>
             </CardContent>
