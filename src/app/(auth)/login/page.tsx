@@ -35,10 +35,21 @@ export default function LoginPage() {
       });
     } catch (error: any) {
       console.error("Error signing in with Google", error);
+
+      let title = 'Erro de Autenticação';
+      let description = error.message || 'Não foi possível iniciar sessão com o Google.';
+
+      // Provide a more specific error message for the most common configuration issue.
+      if (error.code === 'auth/operation-not-allowed') {
+        title = 'Login com Google Desativado';
+        description = 'O método de autenticação com Google precisa de ser ativado na consola Firebase. Vá a Authentication -> Sign-in method e ative o provedor Google.';
+      }
+
       toast({
         variant: 'destructive',
-        title: 'Erro de Autenticação',
-        description: error.message || 'Não foi possível iniciar sessão com o Google.',
+        title: title,
+        description: description,
+        duration: 9000, // Give user more time to read the suggestion
       });
     }
   };
