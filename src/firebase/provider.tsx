@@ -2,7 +2,7 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
+import { Firestore, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 
@@ -69,15 +69,37 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
-    if (!auth) {
-      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
+    if (!auth || !firestore) {
+      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth/Firestore service not provided.") });
       return;
     }
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      (firebaseUser) => {
-        // User is signed in, or null if not signed in.
+      async (firebaseUser) => {
+        if (firebaseUser) {
+          // User is signed in. Check/Create profile document in Firestore.
+          const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+          try {
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+              const newUserProfile = {
+                id: firebaseUser.uid,
+                username: firebaseUser.displayName || 'Utilizador Anónimo',
+                email: firebaseUser.email || '', // email is required in schema
+                preferredLanguage: 'pt',
+                themePreference: 'system',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              };
+              await setDoc(userDocRef, newUserProfile);
+            }
+          } catch (error) {
+            // This might happen if the user logs in before Firestore rules are applied
+            // or if there's a network issue. We'll log it but not block the login.
+            console.error("Error checking/creating user profile:", error);
+          }
+        }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => {
@@ -87,7 +109,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     );
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, firestore]);
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
