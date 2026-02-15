@@ -2,9 +2,10 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
+import { Firestore, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -69,8 +70,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
-    if (!auth) { // If no Auth service instance, cannot determine user state
-      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
+    if (!auth || !firestore) { // If no Auth service instance, cannot determine user state
+      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth or Firestore service not provided.") });
       return;
     }
 
@@ -78,7 +79,28 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      (firebaseUser) => { // Auth state determined
+      async (firebaseUser) => { // Auth state determined
+        if (firebaseUser) {
+          // User is signed in, check for profile and create if it doesn't exist
+          const userRef = doc(firestore, 'users', firebaseUser.uid);
+          try {
+            const userDoc = await getDoc(userRef);
+            if (!userDoc.exists()) {
+              // Profile doesn't exist, create it non-blockingly
+              const { displayName, email, photoURL } = firebaseUser;
+              const profileData = {
+                displayName: displayName || 'Utilizador Anónimo',
+                email: email || 'sem-email@demokratia.pt',
+                photoURL: photoURL || '',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              };
+              setDocumentNonBlocking(userRef, profileData, { merge: true });
+            }
+          } catch (e) {
+            console.error("Error checking or creating user profile:", e);
+          }
+        }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => { // Auth listener error
@@ -87,7 +109,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [auth]); // Depends on the auth instance
+  }, [auth, firestore]); // Depends on the auth instance
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {

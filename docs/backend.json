@@ -1,189 +1,73 @@
 {
   "entities": {
     "UserProfile": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserProfile",
+      "title": "User Profile",
+      "description": "Stores public profile information for a user, linked to their Firebase Authentication account.",
       "type": "object",
-      "description": "Represents the profile information and settings for a user of the Demokratia Portugal application. This entity stores basic user details and preferences, not authentication credentials.",
       "properties": {
-        "id": {
+        "displayName": {
           "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
+          "description": "The user's public display name."
         },
         "email": {
           "type": "string",
           "description": "The user's email address.",
           "format": "email"
         },
-        "firstName": {
+        "photoURL": {
           "type": "string",
-          "description": "The first name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the user."
-        },
-        "preferredLanguage": {
-          "type": "string",
-          "description": "The user's preferred language for the application interface (e.g., 'pt', 'en')."
+          "description": "URL of the user's profile picture."
         },
         "createdAt": {
           "type": "string",
           "description": "Timestamp indicating when the user profile was created.",
           "format": "date-time"
         },
-        "updatedAt": {
+         "updatedAt": {
           "type": "string",
           "description": "Timestamp indicating when the user profile was last updated.",
           "format": "date-time"
         }
       },
       "required": [
-        "id",
+        "displayName",
         "email",
-        "firstName",
-        "lastName",
         "createdAt",
         "updatedAt"
       ]
     },
-    "Simulation": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Simulation",
+    "SimulationScenario": {
+      "title": "Simulation Scenario",
       "type": "object",
-      "description": "Defines a user-created economic simulation, including its configurable input parameters and metadata. This represents the definition or template for a simulation.",
+      "description": "Defines a user-created economic simulation scenario, including its name and a detailed description of the policy to be simulated.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Simulation entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who created this simulation definition. (Relationship: UserProfile 1:N Simulation)"
-        },
         "name": {
           "type": "string",
-          "description": "A user-defined name for this simulation template."
+          "description": "A user-defined name for this simulation scenario."
         },
         "description": {
           "type": "string",
-          "description": "A detailed description of what this simulation aims to model or explore."
+          "description": "A detailed description of what this simulation aims to model or explore. This is used as the input for the simulation AI."
         },
-        "defaultInputParameters": {
+        "userId": {
           "type": "string",
-          "description": "A JSON string representing the default set of hypothetical policy variables and their initial values for this simulation."
+          "description": "The UID of the user who created this scenario."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when the simulation definition was created.",
+          "description": "Timestamp indicating when the scenario was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp indicating when the simulation definition was last updated.",
+          "description": "Timestamp indicating when the scenario was last updated.",
           "format": "date-time"
         }
       },
       "required": [
-        "id",
-        "userId",
         "name",
-        "defaultInputParameters",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "SimulationRun": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SimulationRun",
-      "type": "object",
-      "description": "Captures the results of a specific execution (run) of an economic simulation, including the parameters used and the generated output.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the SimulationRun entity."
-        },
-        "simulationId": {
-          "type": "string",
-          "description": "Reference to the Simulation definition that this run belongs to. (Relationship: Simulation 1:N SimulationRun)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who executed this simulation run. (Relationship: UserProfile 1:N SimulationRun)"
-        },
-        "runName": {
-          "type": "string",
-          "description": "An optional name given by the user to this specific run, allowing for easier identification of saved results."
-        },
-        "runDescription": {
-          "type": "string",
-          "description": "An optional description for this specific run, perhaps detailing specific hypotheses tested."
-        },
-        "executedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when this specific simulation run was executed.",
-          "format": "date-time"
-        },
-        "inputParametersSnapshot": {
-          "type": "string",
-          "description": "A JSON string representing the exact input parameters used for this specific simulation run. This snapshot ensures reproducibility."
-        },
-        "outputData": {
-          "type": "string",
-          "description": "A JSON string representing the simulated economic impact results generated by this run."
-        }
-      },
-      "required": [
-        "id",
-        "simulationId",
+        "description",
         "userId",
-        "executedAt",
-        "inputParametersSnapshot",
-        "outputData"
-      ]
-    },
-    "SavedDataView": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SavedDataView",
-      "type": "object",
-      "description": "Allows users to save specific configurations, filters, and visualizations of public economic and social data for quick access and analysis.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the SavedDataView entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who saved this data view. (Relationship: UserProfile 1:N SavedDataView)"
-        },
-        "name": {
-          "type": "string",
-          "description": "A user-defined name for this saved data view."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description detailing what data this view encompasses or its purpose."
-        },
-        "dataSourceConfig": {
-          "type": "string",
-          "description": "A JSON string specifying the external API (e.g., Banco Mundial, Eurostat), dataset ID, applied filters, aggregations, and visualization settings for this saved view."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the data view was saved.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the saved data view was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "name",
-        "dataSourceConfig",
         "createdAt",
         "updatedAt"
       ]
@@ -191,93 +75,29 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores individual user profile details. The document ID (`userId`) directly corresponds to the Firebase Authentication UID, ensuring path-based ownership for secure access. Allows users to manage their own profile information.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, matching Firebase Authentication UID."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/UserProfile"
       },
-      {
-        "path": "/users/{userId}/simulations/{simulationId}",
-        "definition": {
-          "entityName": "Simulation",
-          "schema": {
-            "$ref": "#/backend/entities/Simulation"
-          },
-          "description": "Stores user-created economic simulation definitions. Nested under the user's profile to enforce ownership. Includes denormalized 'userId' for explicit ownership and authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns this simulation definition."
-            },
-            {
-              "name": "simulationId",
-              "description": "The unique identifier for a specific simulation definition."
-            }
-          ]
-        }
+      "description": "Stores the public profile for each user. The document ID must match the user's Firebase Auth UID."
+    },
+    "/users/{userId}/simulationScenarios/{scenarioId}": {
+      "schema": {
+        "$ref": "#/backend/entities/SimulationScenario"
       },
-      {
-        "path": "/users/{userId}/simulations/{simulationId}/runs/{runId}",
-        "definition": {
-          "entityName": "SimulationRun",
-          "schema": {
-            "$ref": "#/backend/entities/SimulationRun"
-          },
-          "description": "Captures the results of specific executions (runs) of an economic simulation. Nested under its parent simulation and user to maintain hierarchy and enforce ownership. Includes denormalized 'userId' and 'simulationId' for full authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns this simulation run."
-            },
-            {
-              "name": "simulationId",
-              "description": "The unique identifier of the parent simulation definition to which this run belongs."
-            },
-            {
-              "name": "runId",
-              "description": "The unique identifier for a specific simulation run."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/savedDataViews/{viewId}",
-        "definition": {
-          "entityName": "SavedDataView",
-          "schema": {
-            "$ref": "#/backend/entities/SavedDataView"
-          },
-          "description": "Allows users to save specific configurations and visualizations of public economic and social data. Nested under the user's profile to enforce ownership. Includes denormalized 'userId' for explicit ownership and authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who saved this data view."
-            },
-            {
-              "name": "viewId",
-              "description": "The unique identifier for a specific saved data view."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The recommended Firestore structure is designed to be secure, scalable, and highly debuggable by adhering strictly to the core design principles, especially Authorization Independence and QAPs (Queries as Permissions). All user-specific data, including profiles, simulation definitions, simulation runs, and saved data views, is nested under a top-level `/users/{userId}` collection. This strategy inherently links documents to their owners via the path, making authorization rules simple and explicit.\n\nAuthorization Independence is achieved primarily through this hierarchical path-based ownership. For example, a simulation definition is stored at `/users/{userId}/simulations/{simulationId}`. When a user requests to access a simulation, the `userId` in the path directly corresponds to `request.auth.uid`, making the ownership check trivial (`request.auth.uid == userId`) without requiring any `get()` operations on parent documents. While the schemas for `Simulation`, `SimulationRun`, and `SavedDataView` already include a `userId` field, this field acts as a denormalized authorization context, explicitly stating the owner within each document. This redundancy further enhances debuggability and allows for efficient queries if needed, without compromising security rules logic which can rely solely on the path for owner verification.\n\nQAPs (Queries as Permissions) are fully supported by this structure. By placing all user-owned data under `/users/{userId}/...`, any `list` operation performed by an authenticated user on a subcollection (e.g., querying `/users/{request.auth.uid}/simulations`) will automatically only retrieve documents belonging to that user. The security rules can simply `allow list: request.auth.uid == userId;`, ensuring that users can only list their own data and preventing unintended data exposure or the need for expensive, insecure rule filters. This structural segregation ensures that all documents within a given user's subcollections (`simulations`, `runs`, `savedDataViews`) share the same security posture (private to the user), simplifying rule sets and minimizing potential errors."
+      "description": "Stores user-created economic simulation scenarios. Nested under the user's profile to enforce ownership."
+    },
+    "/publicData/{dataSetId}": {
+      "schema": "PublicData",
+      "description": "Stores public datasets for key economic indicators (e.g., GDP, unemployment) used in the main dashboard. This data is publicly readable."
+    },
+    "/statisticalData/{dataId}": {
+      "schema": "StatisticalData",
+      "description": "Stores various public statistical datasets for the 'Explorer' page. This data is publicly readable."
+    }
   }
 }
