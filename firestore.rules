@@ -1,29 +1,43 @@
 /**
- * Core Philosophy: This ruleset enforces a strict user-ownership security model for user-specific data, while allowing
- * public read access for non-sensitive, shared data.
+ * Core Philosophy: This ruleset enforces a strict user-ownership model where all
+ * data is private to the user who created it. Access control is primarily
+ * managed through the document path, ensuring that users can only interact
+ * with data nested under their own unique user ID.
  *
- * Data Structure: All user-specific data is hierarchically nested under the `/users/{userId}` path. A separate top-level
- * collection, `/publicData`, is used for information that is accessible to all users. This structural segregation
- * ensures that private data is isolated, while public data is efficiently served.
+ * Data Structure: All user-generated content is organized hierarchically under a
+ * top-level `/users/{userId}` collection. This includes user profiles,
+ * simulation definitions, simulation runs, and saved data views. This
+ * structure inherently isolates each user's data, simplifying security logic.
  *
  * Key Security Decisions:
- * - User Isolation: A user can only ever read or write documents within their own `/users/{userId}` path.
- * - Public Data Access: All users (authenticated or not) can read from the `/publicData` and `/statisticalData` collections. Write access is restricted to signed-in users.
- * - No User Enumeration: Listing the top-level `/users` collection is explicitly disallowed to protect user privacy.
- * - Path-Based Security: For private data, authorization is primarily derived from the `{userId}` parameter in the
- *   document path, checked against the authenticated user's UID.
+ * - User Enumeration Disabled: Listing the top-level `/users` collection is
+ *   explicitly forbidden to prevent scraping user IDs and other profile data.
+ * - Path-Based Security: The primary authorization check for all nested data
+ *   (simulations, runs, etc.) relies on matching the `{userId}` in the path
+ *   with the authenticated user's UID. This is fast, secure, and avoids costly
+ *   database reads (`get` calls) in rules.
+ * - Relational Integrity: On document creation, rules enforce that internal
+ *   ID fields (like `userId` or `simulationId`) match the corresponding IDs in
+ *   the document's path. These fields are then made immutable on update to
+ *   prevent data from being moved or re-parented.
  *
- * Denormalization for Authorization: To ensure performant and simple security rules, ownership and relational information (e.g., `userId`)
- * is denormalized directly onto every private document. This allows rules to validate ownership by looking at the document's data itself,
- * avoiding slow and costly `get()` calls to parent documents.
+ * Denormalization for Authorization: The data model denormalizes the `userId`
+ * onto every document. While the rules primarily use the path for security,
+ * these denormalized fields are validated to ensure data integrity and
+ * consistency between a document's content and its location in the database.
+ *
+ * Structural Segregation: The entire data model is built on structural
+ * segregation. By placing each user's data in a distinct document tree
+ * starting with `/users/{userId}`, we guarantee that queries for a user's
+ * private content can never accidentally leak data from another user.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    //-------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
     // Helper Functions
-    //-------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     /**
      * Checks if the user is authenticated.
@@ -33,134 +47,162 @@ service cloud.firestore {
     }
 
     /**
-     * Checks if the authenticated user's UID matches the provided userId from the path.
-     * This is the foundation of the user-ownership model.
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the cornerstone of the user-ownership model.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * Checks if a document currently exists in Firestore.
-     * Used to prevent updates or deletes on non-existent documents.
-     */
-    function isExistingDocument() {
-      return resource != null;
-    }
-
-    /**
-     * Combines ownership and existence checks for state-changing operations.
-     * Ensures an authenticated owner is modifying an existing document.
+     * A robust check for update/delete operations, ensuring the user is the
+     * owner AND the document they are trying to modify actually exists.
      */
     function isExistingOwner(userId) {
-      return isOwner(userId) && isExistingDocument();
+      return isOwner(userId) && resource != null;
+    }
+
+    // --- UserProfile Validation ---
+
+    /**
+     * Validates that a new UserProfile has an 'id' field matching the path.
+     */
+    function hasValidUserProfileDataForCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Enforces immutability of the UserProfile 'id' on updates.
+     */
+    function hasValidUserProfileDataForUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    // --- Simulation Validation ---
+
+    /**
+     * Validates that a new Simulation has a 'userId' field matching the path.
+     */
+    function hasValidSimulationDataForCreate(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Enforces immutability of the Simulation's 'userId' on updates.
+     */
+    function hasValidSimulationDataForUpdate() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    // --- SimulationRun Validation ---
+
+    /**
+     * Validates that a new SimulationRun has 'userId' and 'simulationId' fields
+     * that match its path, ensuring correct parent-child relationships.
+     */
+    function hasValidSimulationRunDataForCreate(userId, simulationId) {
+      return request.resource.data.userId == userId && request.resource.data.simulationId == simulationId;
+    }
+
+    /**
+     * Enforces immutability of the SimulationRun's relational IDs on updates.
+     */
+    function hasValidSimulationRunDataForUpdate() {
+      let isUserIdImmutable = request.resource.data.userId == resource.data.userId;
+      let isSimulationIdImmutable = request.resource.data.simulationId == resource.data.simulationId;
+      return isUserIdImmutable && isSimulationIdImmutable;
     }
     
-    //-------------------------------------------------------------------------
-    // Public Data Rules
-    //-------------------------------------------------------------------------
+    // --- SavedDataView Validation ---
 
     /**
-     * @description Rules for public data sets. Allows anyone to read, but only signed-in users to write.
-     * @path /publicData/{dataSetId}
-     * @allow (get, list) Any user, authenticated or not, can read public data.
-     * @allow (write) Signed-in users can write to seed the data.
-     * @principle Provides public, read-only access to shared application data, with secured write for admin/seeding.
+     * Validates that a new SavedDataView has a 'userId' field matching the path.
      */
-    match /publicData/{dataSetId} {
-      allow get, list: if true;
-      allow write: if isSignedIn();
+    function hasValidSavedDataViewDataForCreate(userId) {
+      return request.resource.data.userId == userId;
     }
     
     /**
-     * @description Rules for complex statistical data sets. Allows anyone to read, but only signed-in users to write.
-     * @path /statisticalData/{dataId}
-     * @allow (get, list) Any user, authenticated or not, can read statistical data.
-     * @allow (write) Signed-in users can write to seed the data.
-     * @principle Provides public, read-only access to structured statistical data, with secured write for admin/seeding.
+     * Enforces immutability of the SavedDataView's 'userId' on updates.
      */
-    match /statisticalData/{dataId} {
-      allow get, list: if true;
-      allow write: if isSignedIn();
+    function hasValidSavedDataViewDataForUpdate() {
+      return request.resource.data.userId == resource.data.userId;
     }
 
-    //-------------------------------------------------------------------------
-    // User Profile Rules
-    //-------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
+    // Collection Rules
+    // ------------------------------------------------------------------------
 
     /**
-     * @description Rules for a user's own profile document. Users can create, read, and update their own profile. Deletion is also allowed.
+     * @description Manages user profile documents. Only the owner can read or
+     *              modify their own profile. Listing all users is forbidden.
      * @path /users/{userId}
-     * @allow (create) An authenticated user with uid 'user_abc' creating their own profile at '/users/user_abc'.
-     * @deny (get) User 'user_xyz' trying to read the profile at '/users/user_abc'.
-     * @principle Restricts access to a user's own data tree and enforces self-creation. Prevents user enumeration.
+     * @allow (create) An authenticated user creating their own profile document.
+     *        auth: { uid: 'user123' }, path: /users/user123
+     * @deny  (get) An authenticated user trying to read another user's profile.
+     *        auth: { uid: 'user456' }, path: /users/user123
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow create: if isOwner(userId) && hasValidUserProfileDataForCreate(userId);
+      allow update: if isExistingOwner(userId) && hasValidUserProfileDataForUpdate();
       allow delete: if isExistingOwner(userId);
 
-      //-----------------------------------------------------------------------
-      // Simulation Scenario Rules
-      //-----------------------------------------------------------------------
-
       /**
-       * @description Rules for a user's simulation scenarios. Users have full CRUD access to their own scenarios.
-       * @path /users/{userId}/simulationScenarios/{scenarioId}
-       * @allow (create) User 'user_abc' creating a new scenario at '/users/user_abc/simulationScenarios/new_scenario'.
-       * @deny (list) User 'user_xyz' trying to list scenarios at '/users/user_abc/simulationScenarios'.
-       * @principle Enforces document ownership within a user's private subcollection and validates relational integrity on writes.
+       * @description Manages user-created economic simulation definitions.
+       *              Access is restricted to the owner of the user profile.
+       * @path /users/{userId}/simulations/{simulationId}
+       * @allow (list) A user listing their own simulations.
+       *        auth: { uid: 'user123' }, path: /users/user123/simulations
+       * @deny  (create) A user trying to create a simulation under another user's profile.
+       *        auth: { uid: 'user456' }, path: /users/user123/simulations/simABC
+       * @principle Enforces strict data ownership within a user's private subcollection.
        */
-      match /simulationScenarios/{scenarioId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      match /simulations/{simulationId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && hasValidSimulationDataForCreate(userId);
+        allow update: if isExistingOwner(userId) && hasValidSimulationDataForUpdate();
         allow delete: if isExistingOwner(userId);
 
-        //---------------------------------------------------------------------
-        // Simulation Run Rules
-        //---------------------------------------------------------------------
-
         /**
-         * @description Rules for a simulation run, which is a child of a scenario. Access is controlled by the top-level user owner.
-         * @path /users/{userId}/simulationScenarios/{scenarioId}/simulationRuns/{runId}
-         * @allow (get) User 'user_abc' reading a simulation run at '/users/user_abc/simulationScenarios/scenario_123/simulationRuns/run_456'.
-         * @deny (create) User 'user_abc' creating a run where the document's 'scenarioId' does not match the path.
-         * @principle Enforces ownership from the top-level user path and validates relational integrity with both the user and parent scenario.
+         * @description Manages the results of specific simulation runs. Access is
+         *              restricted to the owner of the parent simulation.
+         * @path /users/{userId}/simulations/{simulationId}/runs/{runId}
+         * @allow (get) A user reading one of their own simulation runs.
+         *        auth: { uid: 'user123' }, path: /users/user123/simulations/simABC/runs/runXYZ
+         * @deny  (delete) A user trying to delete a simulation run owned by someone else.
+         *        auth: { uid: 'user456' }, path: /users/user123/simulations/simABC/runs/runXYZ
+         * @principle Validates relational integrity to ensure runs are created under the correct user and simulation.
          */
-        match /simulationRuns/{runId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId)
-                       && request.resource.data.userId == userId
-                       && request.resource.data.scenarioId == scenarioId;
-          allow update: if isExistingOwner(userId)
-                       && request.resource.data.userId == resource.data.userId
-                       && request.resource.data.scenarioId == resource.data.scenarioId;
+        match /runs/{runId} {
+          allow get: if isOwner(userId);
+          allow list: if isOwner(userId);
+          allow create: if isOwner(userId) && hasValidSimulationRunDataForCreate(userId, simulationId);
+          allow update: if isExistingOwner(userId) && hasValidSimulationRunDataForUpdate();
           allow delete: if isExistingOwner(userId);
         }
       }
 
-      //-----------------------------------------------------------------------
-      // Saved Data Exploration Rules
-      //-----------------------------------------------------------------------
-
       /**
-       * @description Rules for a user's saved data explorations. Users have full CRUD access to their own saved explorations.
-       * @path /users/{userId}/savedDataExplorations/{explorationId}
-       * @allow (update) User 'user_abc' updating their own exploration at '/users/user_abc/savedDataExplorations/explore_789'.
-       * @deny (delete) User 'user_xyz' trying to delete an exploration at '/users/user_abc/savedDataExplorations/explore_789'.
-       * @principle Enforces document ownership within a user's private subcollection and validates relational integrity on writes.
+       * @description Manages user-saved data views. Access is restricted to the
+       *              owner of the user profile.
+       * @path /users/{userId}/savedDataViews/{viewId}
+       * @allow (update) A user updating one of their own saved views.
+       *        auth: { uid: 'user123' }, path: /users/user123/savedDataViews/viewABC
+       * @deny  (list) A user trying to list views belonging to another user.
+       *        auth: { uid: 'user456' }, path: /users/user123/savedDataViews
+       * @principle Enforces strict data ownership within a user's private subcollection.
        */
-      match /savedDataExplorations/{explorationId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      match /savedDataViews/{viewId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && hasValidSavedDataViewDataForCreate(userId);
+        allow update: if isExistingOwner(userId) && hasValidSavedDataViewDataForUpdate();
         allow delete: if isExistingOwner(userId);
       }
     }
   }
 }
-
-    
