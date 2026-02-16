@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { getLegislationInfo } from '@/lib/actions';
 import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Scale, History, User, FileText } from 'lucide-react';
+import { Loader2, Scale, History, User, FileText, Bot, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/AdBanner';
 
@@ -20,6 +20,13 @@ interface LegislationQuery extends ConsultLegislationOutput {
   question: string;
   createdAt: any; // Firestore Timestamp
 }
+
+interface PublicLegislationQuery extends ConsultLegislationOutput {
+  id: string;
+  question: string;
+  createdAt: any;
+}
+
 
 export default function LegislationPage() {
   const [question, setQuestion] = useState('');
@@ -37,25 +44,69 @@ export default function LegislationPage() {
     }
   }, [searchParams]);
 
+  // Private history for logged-in users
   const legislationQueriesCollection = useMemoFirebase(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'legislationQueries');
   }, [firestore, user]);
-
   const { data: pastQueries, isLoading: isLoadingHistory } = useCollection<LegislationQuery>(legislationQueriesCollection);
 
+  // Public queries for engagement
+  const publicQueriesCollection = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(5));
+  }, [firestore]);
+  const { data: recentQueries, isLoading: isLoadingRecent } = useCollection<PublicLegislationQuery>(publicQueriesCollection);
+
+
   const handleConsultation = async () => {
-    if (!question.trim()) return;
+    if (!question.trim() || !firestore) return;
+    const trimmedQuestion = question.trim();
 
     startTransition(async () => {
       setResult(null);
-      const response = await getLegislationInfo({ question });
+
+      // 1. Check public cache first
+      try {
+        const q = query(collection(firestore, "publicLegislationQueries"), where("question", "==", trimmedQuestion), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const cachedDoc = querySnapshot.docs[0];
+          const cachedResult = cachedDoc.data() as ConsultLegislationOutput;
+          setResult(cachedResult);
+          toast({ title: "Resposta encontrada na cache!", description: "Esta pergunta já foi respondida anteriormente." });
+          
+          const docRef = doc(firestore, "publicLegislationQueries", cachedDoc.id);
+          updateDoc(docRef, { lastAccessedAt: serverTimestamp() }).catch(e => console.warn("Failed to update cache timestamp", e));
+          
+          return;
+        }
+      } catch (e) {
+        console.error("Error checking public cache:", e);
+        // If cache check fails, proceed to AI, but notify user.
+        toast({ variant: "destructive", title: "Aviso", description: "Não foi possível verificar a cache. A contactar a IA diretamente."});
+      }
+      
+      // 2. If not in cache, call AI
+      const response = await getLegislationInfo({ question: trimmedQuestion });
       setResult(response);
 
+      // 3. Save to public cache (non-blocking)
+      const publicCollection = collection(firestore, 'publicLegislationQueries');
+      const cacheData = {
+        question: trimmedQuestion,
+        ...response,
+        createdAt: serverTimestamp(),
+        lastAccessedAt: serverTimestamp(),
+      };
+      addDoc(publicCollection, cacheData).catch(err => console.warn("Failed to write to public cache", err));
+
+      // 4. Save to user's private history (if logged in)
       if (user && legislationQueriesCollection) {
         const historyData = {
           userId: user.uid,
-          question,
+          question: trimmedQuestion,
           ...response,
           createdAt: serverTimestamp(),
         };
@@ -130,6 +181,7 @@ export default function LegislationPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
+              <Bot className="h-6 w-6" />
               Resposta da Análise
             </CardTitle>
           </CardHeader>
@@ -158,12 +210,52 @@ export default function LegislationPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-accent" />
+            Consultas Recentes da Comunidade
+          </CardTitle>
+          <CardDescription>Veja o que outros utilizadores andaram a perguntar.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingRecent ? (
+            <div className="space-y-4">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : recentQueries && recentQueries.length > 0 ? (
+            <div className="space-y-4">
+              {recentQueries.map(query => (
+                <button 
+                  key={query.id} 
+                  className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+                  onClick={() => setQuestion(query.question)}
+                >
+                  <p className="font-semibold text-muted-foreground italic">"{query.question}"</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-medium text-muted-foreground">
+                Nenhuma consulta pública encontrada
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Seja o primeiro a fazer uma pergunta!
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            Histórico de Consultas
+            O Meu Histórico de Consultas
           </CardTitle>
           {!user ? (
              <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
@@ -218,3 +310,5 @@ export default function LegislationPage() {
     </div>
   );
 }
+
+    
