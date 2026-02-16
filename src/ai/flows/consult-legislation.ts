@@ -28,6 +28,26 @@ const prompt = ai.definePrompt({
   name: 'consultLegislationPrompt',
   input: { schema: ConsultLegislationInputSchema },
   output: { schema: ConsultLegislationOutputSchema },
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+    ],
+  },
   prompt: `Você é um assistente jurídico especialista em legislação portuguesa. A sua tarefa é responder a perguntas de utilizadores de forma clara, precisa e baseada estritamente na lei em vigor.
 
 Fontes primárias de consulta:
