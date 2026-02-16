@@ -2,7 +2,7 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, setDoc } from 'firebase/firestore';
+import { Firestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -80,27 +80,34 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      async (firebaseUser) => { // Auth state determined
+      (firebaseUser) => { // Auth state determined
         if (firebaseUser) {
-          // User is signed in, ensure a user profile exists
+          // This logic now checks if a profile exists before writing.
+          // This prevents a write loop that was causing high requests and errors.
           const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
-          const profileData = { 
-            id: firebaseUser.uid,
-            email: firebaseUser.email || "", // Ensure email is always a string
-            displayName: firebaseUser.displayName,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          // Non-blocking write with merge to create/update profile
-          setDoc(userProfileRef, profileData, { merge: true })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                path: userProfileRef.path,
-                operation: 'write',
-                requestResourceData: profileData,
+          
+          getDoc(userProfileRef).then(docSnap => {
+            if (!docSnap.exists()) {
+              // The profile doesn't exist, create it once.
+              const profileData = { 
+                id: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                displayName: firebaseUser.displayName || "Novo Utilizador",
+                preferredLanguage: 'pt',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+              setDoc(userProfileRef, profileData)
+                .catch(serverError => {
+                    const permissionError = new FirestorePermissionError({
+                    path: userProfileRef.path,
+                    operation: 'create',
+                    requestResourceData: profileData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
                 });
-                errorEmitter.emit('permission-error', permissionError);
-            });
+            }
+          });
         }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
@@ -110,7 +117,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [auth, firestore]); // Depends on the auth instance
+  }, [auth, firestore]); // Depends on the auth and firestore instances
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
