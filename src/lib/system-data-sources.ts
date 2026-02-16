@@ -56,6 +56,40 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     authMethod: 'None',
     isSystemSource: true,
   },
+  {
+    name: 'Público',
+    url: 'https://www.publico.pt',
+    type: 'Website',
+    description: 'Jornal diário de referência em Portugal.',
+    requiresAuth: false,
+    authMethod: 'None',
+    isSystemSource: true,
+  },
+  {
+    name: 'Expresso',
+    url: 'https://expresso.pt',
+    type: 'Website',
+    description: 'Jornal semanário de referência em Portugal.',
+    requiresAuth: false,
+    authMethod: 'None',
+    isSystemSource: true,
+  },
+  {
+    name: 'Observador',
+    url: 'https://observador.pt',
+    type: 'Website',
+    description: 'Jornal diário digital.',
+    requiresAuth: false,
+    authMethod: 'None',
+    isSystemSource: true,
+  },
+  {
+    name: 'Agência Lusa',
+    url: 'https://www.lusa.pt',
+    type: 'Website',
+    description: 'Principal agência de notícias de Portugal.',
+    requiresAuth: false,
+    authMethod: 'None',
+    isSystemSource: true,
+  },
 ];
-
-    
