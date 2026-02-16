@@ -3,8 +3,8 @@
 import { useState, useTransition, useMemo } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Loader2, Bot, Frown } from 'lucide-react';
-import { collection } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { DataSetKey, PublicData } from '@/lib/data';
 import { getChartFromRequest } from '@/lib/actions';
 import type { GenerateChartOutput } from '@/ai/flows/generate-chart-from-request';
@@ -30,13 +30,13 @@ import { AdBanner } from '@/components/AdBanner';
 
 function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   const firestore = useFirestore();
-  const publicDataCollection = useMemoFirebase(() => collection(firestore, 'publicData'), [firestore]);
-  const { data: publicData, isLoading } = useCollection<PublicData>(publicDataCollection);
+  
+  const dataSetDocRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'publicData', dataSetKey);
+  }, [firestore, dataSetKey]);
 
-  const dataSet = useMemo(() => {
-    if (!publicData) return null;
-    return publicData.find(d => d.id === dataSetKey);
-  }, [publicData, dataSetKey]);
+  const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
 
   const chartConfig: ChartConfig = {
     value: {
