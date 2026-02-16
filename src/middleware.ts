@@ -2,28 +2,27 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Em ambientes de produção por trás de um proxy, 'x-forwarded-host' é mais fiável.
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+  // O domínio canónico que queremos impor.
+  const canonicalDomain = 'demokratia.pt';
+  
+  // O cabeçalho 'x-forwarded-host' é a fonte mais fiável para o anfitrião original num ambiente de proxy.
+  const host = request.headers.get('x-forwarded-host');
 
-  // Lógica de redirecionamento robusta:
-  // Se o anfitrião do pedido existir e terminar com '.hosted.app',
-  // redireciona para o domínio canónico.
-  if (host && host.endsWith('.hosted.app')) {
-    
-    // Confirma que não estamos já no domínio canónico para evitar loops
-    if (!host.includes('demokratia.pt')) {
-      const newUrl = new URL(request.url)
-      newUrl.hostname = 'demokratia.pt'
-      newUrl.protocol = 'https'
-      newUrl.port = '' // Garante que a porta não é incluída no URL final
+  // Se o cabeçalho 'host' existir e NÃO for o nosso domínio canónico, então devemos redirecionar.
+  // Esta verificação é mais direta e evita loops, pois apenas redireciona se o anfitrião
+  // não for exatamente o que pretendemos.
+  if (host && !host.endsWith(canonicalDomain)) {
+      const newUrl = new URL(request.url);
+      newUrl.hostname = canonicalDomain;
+      newUrl.protocol = 'https';
+      newUrl.port = ''; // Garante que a porta não é incluída
 
-      // Usa um redirecionamento permanente (308), que preserva o método do pedido.
-      return NextResponse.redirect(newUrl, 308)
-    }
+      // Usa um redirecionamento permanente (308) que preserva o método do pedido (GET, POST, etc.)
+      return NextResponse.redirect(newUrl, 308);
   }
 
-  // Se não houver correspondência, continua para o pedido original.
-  return NextResponse.next()
+  // Se não houver necessidade de redirecionar, continua para o pedido.
+  return NextResponse.next();
 }
 
 export const config = {
@@ -34,7 +33,8 @@ export const config = {
      * - _next/static (ficheiros estáticos)
      * - _next/image (ficheiros de otimização de imagem)
      * - favicon.ico (ficheiro favicon)
+     * - ads.txt (ficheiro de verificação do AdSense)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|ads.txt).*)',
   ],
 }
