@@ -11,13 +11,8 @@ export function middleware(request: NextRequest) {
   const canonicalDomain = process.env.CANONICAL_DOMAIN
   const hostedDomain = process.env.HOSTED_DOMAIN
 
-  // Se as variáveis de ambiente não estiverem definidas, ou se o domínio canónico
-  // ainda for o valor de placeholder, não faz nada.
-  if (
-    !canonicalDomain ||
-    !hostedDomain ||
-    canonicalDomain === 'www.your-custom-domain.com'
-  ) {
+  // Se as variáveis de ambiente não estiverem definidas, não faz nada.
+  if (!canonicalDomain || !hostedDomain) {
     return NextResponse.next()
   }
 
