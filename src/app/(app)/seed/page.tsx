@@ -44,12 +44,11 @@ export default function SeedPage() {
 
     try {
       const dataKeys = Object.keys(publicDataToSeed) as DataSetKey[];
-      const seedPromises = dataKeys.map(key => {
+      for (const key of dataKeys) {
         const dataSet = publicDataToSeed[key];
         const docRef = doc(firestore, 'publicData', key);
-        return setDoc(docRef, dataSet);
-      });
-      await Promise.all(seedPromises);
+        await setDoc(docRef, dataSet);
+      }
       
       toast({
         title: 'Indicadores carregados!',
@@ -81,15 +80,14 @@ export default function SeedPage() {
     });
 
     try {
-      const seedPromises = statisticalDataToSeed.map(dataSet => {
+      for (const dataSet of statisticalDataToSeed) {
         const docData = {
           ...dataSet,
           data: JSON.stringify(dataSet.data),
         };
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
-        return setDoc(docRef, docData);
-      });
-      await Promise.all(seedPromises);
+        await setDoc(docRef, docData);
+      }
       
       toast({
         title: 'Dados estatísticos carregados!',
@@ -121,12 +119,11 @@ export default function SeedPage() {
     });
 
     try {
-      const seedPromises = systemDataSources.map(source => {
+      for (const source of systemDataSources) {
         const id = source.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
         const docRef = doc(firestore, 'dataSources', id);
-        return setDoc(docRef, { ...source, id }, { merge: true });
-      });
-      await Promise.all(seedPromises);
+        await setDoc(docRef, { ...source, id }, { merge: true });
+      }
 
       toast({
         title: 'Fontes de dados carregadas!',
