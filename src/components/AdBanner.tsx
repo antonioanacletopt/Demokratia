@@ -22,12 +22,18 @@ export function AdBanner() {
       // no layout principal. O `|| []` é uma segurança.
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (err) {
-      console.error("Erro ao acionar o anúncio do AdSense:", err);
+      // Este erro é comum em ambientes de desenvolvimento com navegação rápida (SPA)
+      // e pode ser ignorado. Ocorre quando o AdSense tenta preencher um espaço
+      // que já contém um anúncio. A 'key' no div abaixo resolve isto para navegações de página.
+      console.warn("AdSense warning (can be ignored in dev):", err);
     }
-  }, [pathname]); // O 'pathname' como dependência garante que isto é re-executado em cada navegação de página.
+  }, [pathname]);
 
+  // A 'key={pathname}' é crucial. Ela força o React a desmontar e remontar este componente
+  // sempre que a URL muda, o que dá ao AdSense um novo elemento <ins> limpo para trabalhar,
+  // resolvendo o erro "All 'ins' elements already have ads in them".
   return (
-    <div className="py-4 text-center">
+    <div key={pathname} className="py-4 text-center">
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
