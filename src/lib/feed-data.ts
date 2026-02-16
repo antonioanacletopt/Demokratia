@@ -61,6 +61,10 @@ export const feedData: FeedItem[] = [
         source: 'Diário da República',
         date: '2024-07-19',
         description: 'Foram publicadas novas alterações à Lei de Bases da Habitação, com foco no reforço do arrendamento acessível e na simplificação de licenciamentos para construção.',
+        actionLink: {
+            href: '/simulator?policy=Analisar o impacto das novas alterações à Lei de Bases da Habitação, com foco no reforço do arrendamento acessível e na simplificação de licenciamentos para construção.',
+            label: 'Analisar Impacto'
+        },
         icon: FileText,
     },
 ];
