@@ -1,32 +1,32 @@
 'use client';
         
+import React from 'react';
 import Script from 'next/script';
 import { Card } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 
 // =================================================================================
-//  PASSO CRÍTICO: CONFIGURAR OS SEUS CÓDIGOS DE ANÚNCIOS DO GOOGLE ADMOB
+//  PASSO CRÍTICO: CONFIGURAR O SEU CÓDIGO DE ANÚNCIO DO GOOGLE ADSENSE
 // =================================================================================
-// Para que a publicidade funcione e para que possa receber pagamentos da Google,
-// tem de substituir os valores abaixo pelos seus próprios códigos.
+// O seu ID de Editor já foi configurado. Só precisa de substituir o valor
+// de AD_SLOT abaixo quando o tiver.
 //
-// 1. Crie uma conta GRATUITA no Google AdMob: https://admob.google.com/
-// 2. No AdMob, crie um novo bloco de anúncios ("Ad unit") para a sua aplicação.
-// 3. Copie o seu "ID do editor" (Publisher ID) e cole-o em `AD_CLIENT`.
-//    O formato é "ca-pub-XXXXXXXXXXXXXXXX".
-// 4. Copie o seu "ID do bloco de anúncios" (Ad unit ID) e cole-o em `AD_SLOT`.
-//    É um número de 10 dígitos.
+// 1. Após o seu site ser aprovado no AdSense, crie um "Bloco de anúncios" (Ad Unit).
+// 2. Copie o seu "ID do bloco de anúncios" (Ad unit ID) e cole-o em `AD_SLOT`.
+//    É um número com cerca de 10 dígitos.
 //
-// DEIXAR OS VALORES DE EXEMPLO ABAIXO NÃO VAI FUNCIONAR.
+// DEIXAR O VALOR DE EXEMPLO ABAIXO NÃO VAI FUNCIONAR.
 // =================================================================================
-const AD_CLIENT = 'ca-pub-0000000000000000'; // SUBSTITUA ESTE VALOR
-const AD_SLOT = '0000000000';             // SUBSTITUA ESTE VALOR
+const AD_CLIENT = 'ca-pub-9018474620860214'; // O seu ID de Editor (Já configurado)
+const AD_SLOT = '0000000000';             // SUBSTITUA ESTE VALOR PELO SEU ID DE BLOCO DE ANÚNCIOS
 
 
-// Verifica se os códigos de anúncio ainda são os valores de exemplo
-const isPlaceholder = AD_CLIENT.includes('0000000000000000') || AD_SLOT.includes('0000000000');
+// Verifica se o código do bloco de anúncio ainda é o valor de exemplo
+const isPlaceholder = AD_SLOT.includes('0000000000');
 
 export function AdBanner() {
+  const id = React.useId();
+
   // Em ambiente de desenvolvimento, mostramos sempre um placeholder informativo.
   if (process.env.NODE_ENV !== 'production') {
     return (
@@ -40,7 +40,7 @@ export function AdBanner() {
     );
   }
 
-  // Em produção, se os códigos não foram substituídos, mostramos um aviso bem visível.
+  // Em produção, se o código do bloco de anúncio não foi substituído, mostramos um aviso bem visível.
   if (isPlaceholder) {
     return (
       <div className="py-4 text-center">
@@ -48,7 +48,7 @@ export function AdBanner() {
           <div className="flex items-center justify-center gap-2">
             <AlertCircle className="h-5 w-5" />
             <p className="text-sm font-medium">
-              Ação necessária: Configure os seus códigos de anúncio em <code className="bg-destructive/20 px-1 py-0.5 rounded text-red-900 dark:text-red-200">src/components/AdBanner.tsx</code> para ativar a publicidade.
+              Ação necessária: Configure o seu código <code className="bg-destructive/20 px-1 py-0.5 rounded text-red-900 dark:text-red-200">AD_SLOT</code> em <code className="bg-destructive/20 px-1 py-0.5 rounded text-red-900 dark:text-red-200">src/components/AdBanner.tsx</code> para ativar a publicidade.
             </p>
           </div>
         </Card>
@@ -57,27 +57,21 @@ export function AdBanner() {
   }
 
   // Em produção e com os códigos configurados, mostramos o anúncio real.
+  // O script principal do AdSense já é carregado no layout (src/app/layout.tsx).
+  // Aqui, apenas "empurramos" um anúncio para o espaço <ins>.
   return (
-    <>
-      <Script
-        async
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`}
-        crossOrigin="anonymous"
-        strategy="afterInteractive"
-      />
-      <div className="py-4 text-center">
-        <ins
-          className="adsbygoogle"
-          style={{ display: 'block' }}
-          data-ad-client={AD_CLIENT}
-          data-ad-slot={AD_SLOT}
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        ></ins>
-        <Script id="adsbygoogle-init" strategy="afterInteractive">
-          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
-        </Script>
-      </div>
-    </>
+    <div className="py-4 text-center">
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client={AD_CLIENT}
+        data-ad-slot={AD_SLOT}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+      <Script id={`adsbygoogle-init-${id}`} strategy="afterInteractive">
+        {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+      </Script>
+    </div>
   );
 }
