@@ -2,11 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Apenas executa esta lógica em produção.
-  if (process.env.NODE_ENV !== 'production') {
-    return NextResponse.next()
-  }
-
   const requestHost = request.nextUrl.hostname
   const canonicalDomain = process.env.CANONICAL_DOMAIN
   const hostedDomain = process.env.HOSTED_DOMAIN
