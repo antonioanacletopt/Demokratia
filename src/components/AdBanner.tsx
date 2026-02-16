@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react';
 // DEIXAR O VALOR DE EXEMPLO ABAIXO NÃO VAI FUNCIONAR.
 // =================================================================================
 const AD_CLIENT = 'ca-pub-9018474620860214'; // O seu ID de Editor (Já configurado)
-const AD_SLOT = '0000000000';             // SUBSTITUA ESTE VALOR PELO SEU ID DE BLOCO DE ANÚNCIOS
+const AD_SLOT = '6109446763';             // SUBSTITUA ESTE VALOR PELO SEU ID DE BLOCO DE ANÚNCIOS
 
 
 // Verifica se o código do bloco de anúncio ainda é o valor de exemplo
