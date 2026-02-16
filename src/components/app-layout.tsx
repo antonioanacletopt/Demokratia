@@ -37,7 +37,7 @@ const allNavItems = [
   { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador", public: true },
   { href: "/simulator", icon: Lightbulb, label: "Simulador", public: true },
   { href: "/fact-check", icon: ShieldCheck, label: "Fact Check", public: true },
-  { href: "/scenarios", icon: NotebookText, label: "Cenários", public: false },
+  { href: "/scenarios", icon: NotebookText, label: "Cenários", public: true },
   { href: "/profile", icon: User, label: "Perfil", public: false },
   { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
 ];
