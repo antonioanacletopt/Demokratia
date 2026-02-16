@@ -3,24 +3,26 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const canonicalDomain = 'demokratia.pt'
-  const hostedDomain = 'studio--studio-1716481110-b0153.us-central1.hosted.app'
-
-  // Tenta obter o anfitrião a partir dos cabeçalhos, que é o método mais fiável
-  // em ambientes de produção com proxies.
   const requestHost = request.headers.get('host')
 
-  // Se o pedido for para o domínio de alojamento padrão, redireciona para o domínio canónico.
-  if (requestHost === hostedDomain) {
-    const newUrl = new URL(request.url)
-    newUrl.hostname = canonicalDomain
-    newUrl.protocol = 'https'
-    newUrl.port = ''
+  // Lógica de redirecionamento robusta:
+  // Se o anfitrião do pedido existir e terminar com '.hosted.app',
+  // redireciona para o domínio canónico.
+  if (requestHost && requestHost.endsWith('.hosted.app')) {
+    
+    // Confirma que não estamos já no domínio canónico para evitar loops
+    if (requestHost !== canonicalDomain) {
+      const newUrl = new URL(request.url)
+      newUrl.hostname = canonicalDomain
+      newUrl.protocol = 'https'
+      newUrl.port = '' // Garante que a porta não é incluída no URL final
 
-    // Usa um redirecionamento permanente 301, que é o correto para SEO.
-    return NextResponse.redirect(newUrl, 301)
+      // Usa um redirecionamento permanente (301), que é o correto para SEO.
+      return NextResponse.redirect(newUrl, 301)
+    }
   }
 
-  // Para todos os outros pedidos, continua normalmente.
+  // Se não houver correspondência, continua para o pedido original.
   return NextResponse.next()
 }
 
