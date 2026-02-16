@@ -5,6 +5,3 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
-  environmentVariables:
-    CANONICAL_DOMAIN: 'demokratia.pt'
-    HOSTED_DOMAIN: 'studio--studio-1716481110-b0153.us-central1.hosted.app'

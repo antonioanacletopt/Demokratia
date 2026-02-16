@@ -2,19 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Directamente codificamos os domínios para garantir que o redirecionamento funciona,
-  // contornando qualquer problema com as variáveis de ambiente em produção.
   const canonicalDomain = 'demokratia.pt'
   const hostedDomain = 'studio--studio-1716481110-b0153.us-central1.hosted.app'
 
-  const requestHost = request.nextUrl.hostname
+  // Tenta obter o anfitrião a partir dos cabeçalhos, que é o método mais fiável
+  // em ambientes de produção com proxies.
+  const requestHost = request.headers.get('host')
 
   // Se o pedido for para o domínio de alojamento padrão, redireciona para o domínio canónico.
   if (requestHost === hostedDomain) {
     const newUrl = new URL(request.url)
     newUrl.hostname = canonicalDomain
-    newUrl.protocol = 'https' // Forçar HTTPS
-    newUrl.port = '' // Garantir que não há porta
+    newUrl.protocol = 'https'
+    newUrl.port = ''
 
     // Usa um redirecionamento permanente 301, que é o correto para SEO.
     return NextResponse.redirect(newUrl, 301)
