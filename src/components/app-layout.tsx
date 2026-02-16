@@ -39,7 +39,6 @@ const allNavItems = [
   { href: "/fact-check", icon: ShieldCheck, label: "Fact Check", public: true },
   { href: "/scenarios", icon: NotebookText, label: "Cenários", public: false },
   { href: "/profile", icon: User, label: "Perfil", public: false },
-  { href: "/seed", icon: Database, label: "Seed Data", public: false, adminOnly: true },
   { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
 ];
 
