@@ -3,6 +3,13 @@
 import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
+// Declaração para informar ao TypeScript sobre a propriedade adsbygoogle no objeto window.
+declare global {
+  interface Window {
+    adsbygoogle?: unknown[];
+  }
+}
+
 const AD_CLIENT = 'ca-pub-9018474620860214';
 const AD_SLOT = '6109446763';
 
