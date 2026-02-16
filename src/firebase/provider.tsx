@@ -107,6 +107,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
                     errorEmitter.emit('permission-error', permissionError);
                 });
             }
+          }).catch(error => {
+            // This catch is for getDoc() failing, which might also be a permission issue.
+            // Although less common for reads on a user's own profile check, it's good practice.
+            console.error("Error checking user profile existence:", error);
           });
         }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
