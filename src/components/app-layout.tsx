@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger className="md:hidden" />
-            <div />
+            <div className="flex-1" />
             {user ? (
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
