@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { getFactCheck } from '@/lib/actions';
@@ -36,6 +37,14 @@ export default function FactCheckPage() {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const claimFromQuery = searchParams.get('claim');
+    if (claimFromQuery) {
+      setClaim(decodeURIComponent(claimFromQuery.replace(/\+/g, ' ')));
+    }
+  }, [searchParams]);
 
   const factChecksCollection = useMemoFirebase(() => {
     if (!user) return null;

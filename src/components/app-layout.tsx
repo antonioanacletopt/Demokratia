@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -32,6 +32,7 @@ import {
 import { Logo } from "@/components/Logo";
 
 const allNavItems = [
+  { href: "/home", icon: Home, label: "Início", public: true },
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", public: true },
   { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador", public: true },
   { href: "/simulator", icon: Lightbulb, label: "Simulador", public: true },
