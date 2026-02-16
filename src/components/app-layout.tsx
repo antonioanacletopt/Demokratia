@@ -29,7 +29,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AdBanner } from "./AdBanner";
 
 const allNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", public: true },
@@ -160,10 +159,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
         </header>
         <div className="flex-1 p-4 sm:p-6">{children}</div>
-        <AdBanner />
       </SidebarInset>
     </SidebarProvider>
   );
 }
-
-    

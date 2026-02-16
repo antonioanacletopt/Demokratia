@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdBanner } from '@/components/AdBanner';
 
 function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   const firestore = useFirestore();
@@ -208,6 +209,8 @@ export default function DashboardPage() {
           </Alert>
         )
       )}
+
+      <AdBanner />
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold font-headline tracking-tight">Principais Indicadores Económicos</h2>

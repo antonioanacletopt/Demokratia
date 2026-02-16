@@ -16,6 +16,7 @@ import { Search, Bot, Loader2, Frown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AdBanner } from '@/components/AdBanner';
 
 interface StatisticalData {
   id: string;
@@ -194,6 +195,8 @@ export default function ExplorerPage() {
           </Button>
         </CardFooter>
       </Card>
+      
+      <AdBanner />
 
       <div>
         <h2 className="text-2xl font-bold font-headline tracking-tight">Explorar Dados Existentes</h2>

@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AdBanner } from '@/components/AdBanner';
 
 const suggestedPolicies = [
   { label: "Aumento do Salário Mínimo", value: "Aumento do salário mínimo nacional para 1000€ mensais." },
@@ -88,6 +89,10 @@ export default function SimulatorPage() {
           </Button>
         </CardFooter>
       </Card>
+      
+      <div className="lg:col-span-2">
+        <AdBanner />
+      </div>
 
       {isPending && (
         <>

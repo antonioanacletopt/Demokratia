@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldCheck, History, User, FileText, Check, X, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdBanner } from '@/components/AdBanner';
 
 interface FactCheckResult extends FactCheckOutput {
   id: string;
@@ -115,6 +116,8 @@ export default function FactCheckPage() {
         </CardFooter>
       </Card>
       
+      <AdBanner />
+
       {isPending && (
         <Card>
             <CardHeader>
