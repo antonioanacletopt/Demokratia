@@ -35,6 +35,10 @@
     --sidebar-accent: 240 11% 95%;
     --sidebar-accent-foreground: 240 10% 3.9%;
     --sidebar-ring: 240 69% 45%;
+    /* Flag colors for logo */
+    --flag-green: 145 63% 32%;
+    --flag-red: 0 84.2% 60.2%;
+    --flag-yellow: 45 100% 51%;
   }
 
   .dark {
@@ -65,6 +69,10 @@
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-ring: 212 82% 60%;
+    /* Flag colors for logo */
+    --flag-green: 145 50% 42%;
+    --flag-red: 0 84.2% 65.2%;
+    --flag-yellow: 45 90% 56%;
   }
 }
 
