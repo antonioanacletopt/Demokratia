@@ -3,20 +3,28 @@
 import Script from 'next/script';
 import { Card } from '@/components/ui/card';
 
-// IMPORTANTE: Para usar os seus próprios anúncios, substitua estes valores
-// pelos seus códigos de cliente e de bloco de anúncios do Google AdMob.
+// =================================================================================
+//  PASSO CRÍTICO: CONFIGURAR OS SEUS CÓDIGOS DE ANÚNCIOS
+// =================================================================================
+// Para que a publicidade funcione e para que possa receber pagamentos da Google,
+// tem de substituir os valores abaixo pelos seus próprios códigos do Google AdMob.
 //
-// CRIAR UMA CONTA ADMOB É GRATUITO. Esta conta serve para que a Google
-// lhe possa pagar pela publicidade mostrada na sua app. Não tem qualquer
-// custo associado e é um serviço separado dos custos de alojamento da Firebase.
+// 1. Crie uma conta GRATUITA no Google AdMob: https://admob.google.com/
+// 2. Crie um novo bloco de anúncios para a sua aplicação.
+// 3. Copie o seu "ID do editor" (Publisher ID) e cole-o em `AD_CLIENT`.
+// 4. Copie o seu "ID do bloco de anúncios" (Ad unit ID) e cole-o em `AD_SLOT`.
 //
-// Pode criar a sua conta e obter os códigos em: https://admob.google.com/
-const AD_CLIENT = 'ca-pub-xxxxxxxxxxxxxxxx'; // Este é um código de teste
-const AD_SLOT = 'yyyyyyyyyy'; // Este é um código de teste
+// DEIXAR OS VALORES DE EXEMPLO ABAIXO NÃO VAI FUNCIONAR EM PRODUÇÃO.
+// =================================================================================
+const AD_CLIENT = 'ca-pub-YOUR_PUBLISHER_ID'; // SUBSTITUA ESTE VALOR
+const AD_SLOT = 'YOUR_AD_UNIT_ID'; // SUBSTITUA ESTE VALOR
+
+
+// Verifica se os códigos de anúncio ainda são os valores de exemplo
+const isPlaceholder = AD_CLIENT.includes('YOUR_PUBLISHER_ID') || AD_SLOT.includes('YOUR_AD_UNIT_ID');
 
 export function AdBanner() {
-  // Para evitar mostrar anúncios em ambiente de desenvolvimento e violar
-  // as políticas do AdSense, mostramos um placeholder.
+  // Em ambiente de desenvolvimento, mostramos sempre um placeholder.
   if (process.env.NODE_ENV !== 'production') {
     return (
       <div className="p-4 text-center">
@@ -29,6 +37,20 @@ export function AdBanner() {
     );
   }
 
+  // Em produção, se os códigos não foram substituídos, mostramos um aviso.
+  if (isPlaceholder) {
+    return (
+      <div className="p-4 text-center">
+        <Card className="p-4 bg-destructive/10 border-destructive/50 border-dashed">
+          <p className="text-sm font-medium text-destructive">
+            Ação necessária: Configure os seus códigos de anúncio em <code className="bg-destructive/20 px-1 py-0.5 rounded">src/components/AdBanner.tsx</code>.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  // Em produção e com os códigos configurados, mostramos o anúncio real.
   return (
     <>
       <Script
