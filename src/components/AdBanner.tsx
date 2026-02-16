@@ -1,64 +1,49 @@
 'use client';
         
-import React from 'react';
-import Script from 'next/script';
+import React, { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
 
-// =================================================================================
-//  PASSO CRÍTICO: CONFIGURAR O SEU CÓDIGO DE ANÚNCIO DO GOOGLE ADSENSE
-// =================================================================================
-// O seu ID de Editor já foi configurado. Só precisa de substituir o valor
-// de AD_SLOT abaixo quando o tiver.
-//
-// 1. Após o seu site ser aprovado no AdSense, crie um "Bloco de anúncios" (Ad Unit).
-// 2. Copie o seu "ID do bloco de anúncios" (Ad unit ID) e cole-o em `AD_SLOT`.
-//    É um número com cerca de 10 dígitos.
-//
-// DEIXAR O VALOR DE EXEMPLO ABAIXO NÃO VAI FUNCIONAR.
-// =================================================================================
-const AD_CLIENT = 'ca-pub-9018474620860214'; // O seu ID de Editor (Já configurado)
-const AD_SLOT = '6109446763';             // SUBSTITUA ESTE VALOR PELO SEU ID DE BLOCO DE ANÚNCIOS
-
-
-// Verifica se o código do bloco de anúncio ainda é o valor de exemplo
-const isPlaceholder = AD_SLOT.includes('0000000000');
+const AD_CLIENT = 'ca-pub-9018474620860214'; 
+const AD_SLOT = '6109446763';
 
 export function AdBanner() {
-  const id = React.useId();
 
-  // Em ambiente de desenvolvimento, mostramos sempre um placeholder informativo.
+  useEffect(() => {
+    // Apenas executamos a lógica de anúncios em ambiente de produção
+    if (process.env.NODE_ENV !== 'production') {
+      return;
+    }
+
+    try {
+      // A chamada .push() diz ao AdSense para renderizar um anúncio neste espaço.
+      // Colocamos num try/catch porque os bloqueadores de anúncios (ad blockers)
+      // podem bloquear o 'adsbygoogle' e causar um erro.
+      if (typeof window !== 'undefined') {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      }
+    } catch (err) {
+      // É normal que isto dê erro se um bloqueador de anúncios estiver ativo,
+      // por isso podemos ignorar silenciosamente em produção.
+      if (process.env.NODE_ENV === 'development') {
+        console.error("AdSense error:", err);
+      }
+    }
+  }, []); // O array vazio [] garante que este efeito corre apenas uma vez
+
+  // Em desenvolvimento, mostramos um placeholder para saber que o componente está lá.
   if (process.env.NODE_ENV !== 'production') {
     return (
       <div className="py-4 text-center">
         <Card className="p-4 bg-muted/30 border-dashed">
           <p className="text-sm text-muted-foreground">
-            Espaço reservado para anúncio (visível apenas em produção após configuração).
+            Espaço reservado para anúncio (visível apenas em produção).
           </p>
         </Card>
       </div>
     );
   }
 
-  // Em produção, se o código do bloco de anúncio não foi substituído, mostramos um aviso bem visível.
-  if (isPlaceholder) {
-    return (
-      <div className="py-4 text-center">
-        <Card className="p-4 bg-destructive/10 border-destructive/50 border-dashed text-destructive">
-          <div className="flex items-center justify-center gap-2">
-            <AlertCircle className="h-5 w-5" />
-            <p className="text-sm font-medium">
-              Ação necessária: Configure o seu código <code className="bg-destructive/20 px-1 py-0.5 rounded text-red-900 dark:text-red-200">AD_SLOT</code> em <code className="bg-destructive/20 px-1 py-0.5 rounded text-red-900 dark:text-red-200">src/components/AdBanner.tsx</code> para ativar a publicidade.
-            </p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // Em produção e com os códigos configurados, mostramos o anúncio real.
-  // O script principal do AdSense já é carregado no layout (src/app/layout.tsx).
-  // Aqui, apenas "empurramos" um anúncio para o espaço <ins>.
+  // Em produção, renderizamos o espaço <ins> que o useEffect irá preencher.
   return (
     <div className="py-4 text-center">
       <ins
@@ -69,9 +54,6 @@ export function AdBanner() {
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
-      <Script id={`adsbygoogle-init-${id}`} strategy="afterInteractive">
-        {`(adsbygoogle = window.adsbygoogle || []).push({});`}
-      </Script>
     </div>
   );
 }
