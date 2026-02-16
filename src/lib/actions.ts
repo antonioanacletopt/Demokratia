@@ -25,6 +25,11 @@ import {
   FactCheckInput,
   FactCheckOutput,
 } from '@/ai/flows/fact-check-claim';
+import {
+  consultLegislation,
+  ConsultLegislationInput,
+  ConsultLegislationOutput,
+} from '@/ai/flows/consult-legislation';
 
 export async function getEconomicSimulation(
   input: EconomicPolicySimulationInput
@@ -54,4 +59,10 @@ export async function getFactCheck(
   input: FactCheckInput
 ): Promise<FactCheckOutput> {
   return await factCheckClaim(input);
+}
+
+export async function getLegislationInfo(
+  input: ConsultLegislationInput
+): Promise<ConsultLegislationOutput> {
+  return await consultLegislation(input);
 }

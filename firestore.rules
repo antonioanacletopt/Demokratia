@@ -66,6 +66,10 @@ service cloud.firestore {
       match /factChecks/{factCheckId} {
         allow read, write: if isOwner(userId);
       }
+
+      match /legislationQueries/{queryId} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }
