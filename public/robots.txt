@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /admin
+Disallow: /seed
+Disallow: /scenarios

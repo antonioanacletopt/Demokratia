@@ -2,26 +2,28 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // O domínio canónico que queremos impor.
-  const canonicalDomain = 'demokratia.pt';
+  // O domínio que queremos redirecionar (a origem)
+  const sourceDomain = 'studio--studio-1716481110-b0153.us-central1.hosted.app';
+  // O domínio final para onde queremos apontar (o destino)
+  const targetDomain = 'demokratia.pt';
   
-  // O cabeçalho 'x-forwarded-host' é a fonte mais fiável para o anfitrião original num ambiente de proxy.
-  const host = request.headers.get('x-forwarded-host');
+  // 'x-forwarded-host' é o cabeçalho mais fiável para obter o anfitrião original num ambiente de proxy.
+  // Usamos o 'host' normal como alternativa.
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
 
-  // Se o cabeçalho 'host' existir e NÃO for o nosso domínio canónico, então devemos redirecionar.
-  // Esta verificação é mais direta e evita loops, pois apenas redireciona se o anfitrião
-  // não for exatamente o que pretendemos.
-  if (host && !host.endsWith(canonicalDomain)) {
+  // A lógica agora é simples e segura:
+  // SÓ redirecionamos se o pedido vier EXATAMENTE do nosso domínio de alojamento.
+  if (host === sourceDomain) {
       const newUrl = new URL(request.url);
-      newUrl.hostname = canonicalDomain;
+      newUrl.hostname = targetDomain;
       newUrl.protocol = 'https';
       newUrl.port = ''; // Garante que a porta não é incluída
 
-      // Usa um redirecionamento permanente (308) que preserva o método do pedido (GET, POST, etc.)
+      // Usamos 308 (redirecionamento permanente que preserva o método do pedido)
       return NextResponse.redirect(newUrl, 308);
   }
 
-  // Se não houver necessidade de redirecionar, continua para o pedido.
+  // Para todos os outros casos (incluindo já estar em demokratia.pt), não fazemos nada.
   return NextResponse.next();
 }
 
@@ -32,9 +34,10 @@ export const config = {
      * - api (rotas de API)
      * - _next/static (ficheiros estáticos)
      * - _next/image (ficheiros de otimização de imagem)
-     * - favicon.ico (ficheiro favicon)
      * - ads.txt (ficheiro de verificação do AdSense)
+     * - robots.txt (ficheiro de instruções para crawlers)
+     * - favicon.ico (ficheiro favicon)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|ads.txt).*)',
+    '/((?!api|_next/static|_next/image|ads.txt|robots.txt|favicon.ico).*)',
   ],
 }
