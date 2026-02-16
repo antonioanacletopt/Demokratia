@@ -44,6 +44,9 @@ export default function LoginPage() {
       if (error.code === 'auth/operation-not-allowed') {
         title = 'Login com Google Desativado';
         description = 'Esta operação não é permitida. É necessário ativar o método de autenticação com Google na consola Firebase. Vá a Authentication -> Sign-in method e ative o provedor Google.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        title = 'Domínio Não Autorizado';
+        description = `O domínio atual não está autorizado para autenticação. É necessário adicioná-lo à lista de "Domínios autorizados" nas definições de Autenticação da sua consola Firebase.`;
       }
       
       setAuthError({ title, description });
