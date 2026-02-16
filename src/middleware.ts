@@ -2,28 +2,25 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const requestHost = request.nextUrl.hostname
-  const canonicalDomain = process.env.CANONICAL_DOMAIN
-  const hostedDomain = process.env.HOSTED_DOMAIN
+  // Directamente codificamos os domínios para garantir que o redirecionamento funciona,
+  // contornando qualquer problema com as variáveis de ambiente em produção.
+  const canonicalDomain = 'demokratia.pt'
+  const hostedDomain = 'studio--studio-1716481110-b0153.us-central1.hosted.app'
 
-  // Se as variáveis de ambiente não estiverem definidas, não faz nada.
-  // Esta verificação é importante para a robustez.
-  if (!canonicalDomain || !hostedDomain) {
-    console.warn("CANONICAL_DOMAIN or HOSTED_DOMAIN environment variables are not set. Skipping redirect middleware.");
-    return NextResponse.next()
-  }
+  const requestHost = request.nextUrl.hostname
 
   // Se o pedido for para o domínio de alojamento padrão, redireciona para o domínio canónico.
   if (requestHost === hostedDomain) {
     const newUrl = new URL(request.url)
     newUrl.hostname = canonicalDomain
-    newUrl.protocol = 'https'
-    newUrl.port = '' // Garante que não transportamos um número de porta
+    newUrl.protocol = 'https' // Forçar HTTPS
+    newUrl.port = '' // Garantir que não há porta
 
-    // Usa um redirecionamento permanente 301
+    // Usa um redirecionamento permanente 301, que é o correto para SEO.
     return NextResponse.redirect(newUrl, 301)
   }
 
+  // Para todos os outros pedidos, continua normalmente.
   return NextResponse.next()
 }
 
