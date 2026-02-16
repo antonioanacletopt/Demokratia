@@ -31,7 +31,7 @@ export default function SeedPage() {
         title: 'Acesso Negado',
         description: 'Não tem permissão para aceder a esta página.',
       });
-      router.replace('/dashboard');
+      router.replace('/home');
     }
   }, [user, isUserLoading, router, toast]);
 

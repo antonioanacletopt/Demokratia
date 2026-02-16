@@ -220,7 +220,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
       toast({ variant: 'destructive', title: 'Acesso Negado' });
-      router.replace('/dashboard');
+      router.replace('/home');
     }
   }, [user, isUserLoading, router, toast]);
 
@@ -389,5 +389,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
