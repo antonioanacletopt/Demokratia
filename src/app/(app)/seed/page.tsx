@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { systemDataSources } from '@/lib/system-data-sources';
@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -58,10 +57,16 @@ export default function SeedPage() {
       });
     } catch (error: any) {
       console.error("Error seeding public data: ", error);
+      const permissionError = new FirestorePermissionError({
+        path: 'publicData',
+        operation: 'create',
+        requestResourceData: { detail: 'Batch write for publicData from seed page failed.' },
+      });
+      errorEmitter.emit('permission-error', permissionError);
       toast({
         variant: 'destructive',
-        title: 'Oh não! Algo correu mal.',
-        description: error.message || 'Não foi possível carregar os dados de indicadores.',
+        title: 'Erro ao carregar dados de indicadores',
+        description: error.message || 'Verifique as permissões e tente novamente.',
       });
     } finally {
       setIsSeedingPublic(false);
@@ -92,10 +97,16 @@ export default function SeedPage() {
       });
     } catch (error: any) {
       console.error("Error seeding statistical data: ", error);
+      const permissionError = new FirestorePermissionError({
+        path: 'statisticalData',
+        operation: 'create',
+        requestResourceData: { detail: 'Batch write for statisticalData from seed page failed.' },
+      });
+      errorEmitter.emit('permission-error', permissionError);
       toast({
         variant: 'destructive',
-        title: 'Oh não! Algo correu mal.',
-        description: error.message || 'Não foi possível carregar os dados estatísticos.',
+        title: 'Erro ao carregar dados estatísticos',
+        description: error.message || 'Verifique as permissões e tente novamente.',
       });
     } finally {
       setIsSeedingStats(false);
@@ -123,10 +134,16 @@ export default function SeedPage() {
       });
     } catch (error: any) {
       console.error("Error seeding data sources: ", error);
+      const permissionError = new FirestorePermissionError({
+        path: 'dataSources',
+        operation: 'create',
+        requestResourceData: { detail: 'Batch write for dataSources from seed page failed.' },
+      });
+      errorEmitter.emit('permission-error', permissionError);
       toast({
         variant: 'destructive',
-        title: 'Oh não! Algo correu mal.',
-        description: error.message || 'Não foi possível carregar as fontes de dados.',
+        title: 'Erro ao carregar fontes de dados',
+        description: error.message || 'Verifique as permissões e tente novamente.',
       });
     } finally {
       setIsSeedingSources(false);
