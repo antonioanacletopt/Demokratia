@@ -12,7 +12,9 @@ export function middleware(request: NextRequest) {
   const hostedDomain = process.env.HOSTED_DOMAIN
 
   // Se as variáveis de ambiente não estiverem definidas, não faz nada.
+  // Esta verificação é importante para a robustez.
   if (!canonicalDomain || !hostedDomain) {
+    console.warn("CANONICAL_DOMAIN or HOSTED_DOMAIN environment variables are not set. Skipping redirect middleware.");
     return NextResponse.next()
   }
 
