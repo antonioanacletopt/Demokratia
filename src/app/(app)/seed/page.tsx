@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { systemDataSources } from '@/lib/system-data-sources';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,28 +45,25 @@ export default function SeedPage() {
 
     try {
       const dataKeys = Object.keys(publicDataToSeed) as DataSetKey[];
-
-      for (const key of dataKeys) {
+      const seedPromises = dataKeys.map(key => {
         const dataSet = publicDataToSeed[key];
         const docRef = doc(firestore, 'publicData', key);
-        setDocumentNonBlocking(docRef, dataSet, {});
-      }
+        return setDoc(docRef, dataSet);
+      });
+      await Promise.all(seedPromises);
       
-      setTimeout(() => {
-        toast({
-          title: 'Indicadores carregados!',
-          description: 'Os dados foram carregados. Pode navegar para o Dashboard para os ver.',
-        });
-        setIsSeedingPublic(false);
-      }, 1500); 
-
-    } catch (error) {
+      toast({
+        title: 'Indicadores carregados!',
+        description: 'Os dados foram carregados. Pode navegar para o Dashboard para os ver.',
+      });
+    } catch (error: any) {
       console.error("Error seeding public data: ", error);
       toast({
         variant: 'destructive',
         title: 'Oh não! Algo correu mal.',
-        description: 'Não foi possível carregar os dados de indicadores.',
+        description: error.message || 'Não foi possível carregar os dados de indicadores.',
       });
+    } finally {
       setIsSeedingPublic(false);
     }
   };
@@ -80,31 +76,28 @@ export default function SeedPage() {
     });
 
     try {
-      for (const dataSet of statisticalDataToSeed) {
-        // We need to stringify the 'data' field before sending it to Firestore
+      const seedPromises = statisticalDataToSeed.map(dataSet => {
         const docData = {
           ...dataSet,
           data: JSON.stringify(dataSet.data),
         };
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
-        setDocumentNonBlocking(docRef, docData, {});
-      }
+        return setDoc(docRef, docData);
+      });
+      await Promise.all(seedPromises);
       
-      setTimeout(() => {
-        toast({
-          title: 'Dados estatísticos carregados!',
-          description: 'Os dados foram carregados. Pode navegar para o Explorador para os ver.',
-        });
-        setIsSeedingStats(false);
-      }, 1500);
-
-    } catch (error) {
+      toast({
+        title: 'Dados estatísticos carregados!',
+        description: 'Os dados foram carregados. Pode navegar para o Explorador para os ver.',
+      });
+    } catch (error: any) {
       console.error("Error seeding statistical data: ", error);
       toast({
         variant: 'destructive',
         title: 'Oh não! Algo correu mal.',
-        description: 'Não foi possível carregar os dados estatísticos.',
+        description: error.message || 'Não foi possível carregar os dados estatísticos.',
       });
+    } finally {
       setIsSeedingStats(false);
     }
   };
@@ -117,27 +110,25 @@ export default function SeedPage() {
     });
 
     try {
-      for (const source of systemDataSources) {
+      const seedPromises = systemDataSources.map(source => {
         const id = source.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
         const docRef = doc(firestore, 'dataSources', id);
-        setDocumentNonBlocking(docRef, { ...source, id }, { merge: true });
-      }
+        return setDoc(docRef, { ...source, id }, { merge: true });
+      });
+      await Promise.all(seedPromises);
 
-      setTimeout(() => {
-        toast({
-          title: 'Fontes de dados carregadas!',
-          description: 'As fontes foram carregadas. Pode geri-las na página de Admin.',
-        });
-        setIsSeedingSources(false);
-      }, 1500);
-
-    } catch (error) {
+      toast({
+        title: 'Fontes de dados carregadas!',
+        description: 'As fontes foram carregadas. Pode geri-las na página de Admin.',
+      });
+    } catch (error: any) {
       console.error("Error seeding data sources: ", error);
       toast({
         variant: 'destructive',
         title: 'Oh não! Algo correu mal.',
-        description: 'Não foi possível carregar as fontes de dados.',
+        description: error.message || 'Não foi possível carregar as fontes de dados.',
       });
+    } finally {
       setIsSeedingSources(false);
     }
   };
@@ -207,5 +198,3 @@ export default function SeedPage() {
     </div>
   );
 }
-
-    
