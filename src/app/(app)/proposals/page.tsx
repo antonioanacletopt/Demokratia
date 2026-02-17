@@ -39,7 +39,9 @@ export default function ProposalsPage() {
   
   const proposalsCollectionRef = useMemoFirebase(() => {
       if (!firestore) return null;
-      return query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), orderBy('createdAt', 'desc'));
+      // A consulta foi simplificada para ordenar apenas por 'voteCount' para evitar a necessidade de um índice composto,
+      // que estava provavelmente a causar erros de permissão para utilizadores não autenticados.
+      return query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'));
   }, [firestore]);
 
   const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommunityProposal>(proposalsCollectionRef);
