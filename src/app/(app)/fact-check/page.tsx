@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useMemo, useEffect } from 'react';
+import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
@@ -38,6 +38,7 @@ export default function FactCheckPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
+  const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const claimFromQuery = searchParams.get('claim');
@@ -45,6 +46,12 @@ export default function FactCheckPage() {
       setClaim(decodeURIComponent(claimFromQuery.replace(/\+/g, ' ')));
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if ((result || isPending) && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [result, isPending]);
 
   const factChecksCollection = useMemoFirebase(() => {
     if (!user) return null;
@@ -127,61 +134,63 @@ export default function FactCheckPage() {
       
       <AdBanner />
 
-      {isPending && (
-        <Card>
+      <div ref={resultRef}>
+        {isPending && (
+          <Card>
+              <CardHeader>
+                  <Skeleton className="h-8 w-1/3" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-20 w-full mt-4" />
+                   <Skeleton className="h-6 w-1/4 mt-4" />
+                  <Skeleton className="h-12 w-full" />
+              </CardContent>
+          </Card>
+        )}
+
+        {result && (
+          <Card>
             <CardHeader>
-                <Skeleton className="h-8 w-1/3" />
+              <CardTitle className="flex items-center gap-3">
+                Resultado da Análise
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-20 w-full mt-4" />
-                 <Skeleton className="h-6 w-1/4 mt-4" />
-                <Skeleton className="h-12 w-full" />
-            </CardContent>
-        </Card>
-      )}
-
-      {result && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              Resultado da Análise
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Veredicto</h3>
-              <div className={`flex items-center gap-2 rounded-md border p-3 ${verdictColor}`}>
-                {VerdictIcon && <VerdictIcon className="h-6 w-6" />}
-                <span className="text-lg font-bold">{result.verdict}</span>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Veredicto</h3>
+                <div className={`flex items-center gap-2 rounded-md border p-3 ${verdictColor}`}>
+                  {VerdictIcon && <VerdictIcon className="h-6 w-6" />}
+                  <span className="text-lg font-bold">{result.verdict}</span>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Explicação Detalhada</h3>
-              <p className="text-muted-foreground whitespace-pre-wrap">{result.explanation}</p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Fontes Utilizadas</h3>
-              {result.sources.length > 0 ? (
-                <ul className="space-y-2">
-                  {result.sources.map((source, index) => (
-                    <li key={index} className="text-sm">
-                      <Link href={source} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
-                        {source}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma fonte específica foi citada para esta análise.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Explicação Detalhada</h3>
+                <p className="text-muted-foreground whitespace-pre-wrap">{result.explanation}</p>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Fontes Utilizadas</h3>
+                {result.sources.length > 0 ? (
+                  <ul className="space-y-2">
+                    {result.sources.map((source, index) => (
+                      <li key={index} className="text-sm">
+                        <Link href={source} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                          {source}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhuma fonte específica foi citada para esta análise.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
       
       <Card>
         <CardHeader>

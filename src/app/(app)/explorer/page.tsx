@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
 import { collection } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic } from '@/lib/actions';
@@ -110,6 +110,13 @@ export default function ExplorerPage() {
   const [statRequest, setStatRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if ((aiResponse || isAiLoading) && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [aiResponse, isAiLoading]);
 
   const handleStatRequest = () => {
     if (!statRequest.trim()) return;
@@ -165,28 +172,30 @@ export default function ExplorerPage() {
             onChange={(e) => setStatRequest(e.target.value)}
             disabled={isAiLoading}
           />
-          {isAiLoading && (
-            <div className="space-y-2 pt-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-            </div>
-          )}
-          {aiResponse && !isAiLoading && (
-            <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
-              <Bot className="h-4 w-4" />
-              <AlertTitle>Resposta da IA</AlertTitle>
-              <AlertDescription>
-                <p className="mb-2">{aiResponse.explanation}</p>
-                {aiResponse.isFound && aiResponse.data && (
-                  <div className="mt-4 space-y-2">
-                    <DataTable jsonData={aiResponse.data} />
-                    {aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>Fonte:</strong> {aiResponse.source}</p>}
-                  </div>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
+          <div ref={resultRef}>
+            {isAiLoading && (
+              <div className="space-y-2 pt-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+              </div>
+            )}
+            {aiResponse && !isAiLoading && (
+              <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
+                <Bot className="h-4 w-4" />
+                <AlertTitle>Resposta da IA</AlertTitle>
+                <AlertDescription>
+                  <p className="mb-2">{aiResponse.explanation}</p>
+                  {aiResponse.isFound && aiResponse.data && (
+                    <div className="mt-4 space-y-2">
+                      <DataTable jsonData={aiResponse.data} />
+                      {aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>Fonte:</strong> {aiResponse.source}</p>}
+                    </div>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
         </CardContent>
         <CardFooter>
           <Button onClick={handleStatRequest} disabled={isAiLoading || !statRequest.trim()}>

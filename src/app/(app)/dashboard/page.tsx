@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Loader2, Bot, Frown, Save, User, NotebookText } from 'lucide-react';
@@ -128,6 +128,7 @@ export default function DashboardPage() {
   const [newViewName, setNewViewName] = useState('');
   const [newViewDescription, setNewViewDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -139,6 +140,12 @@ export default function DashboardPage() {
   }, [firestore, user]);
 
   const { data: savedViews, isLoading: isLoadingViews } = useCollection<SavedDataView>(savedViewsCollectionRef);
+
+  useEffect(() => {
+    if ((chartResponse || isPending) && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [chartResponse, isPending]);
 
   const handleChartRequest = async () => {
     startTransition(async () => {
@@ -261,57 +268,59 @@ export default function DashboardPage() {
         </CardFooter>
       </Card>
 
-      {isPending && (
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/2" />
-            <Skeleton className="h-4 w-full mt-2" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-      )}
-
-      {chartResponse && (
-        chartResponse.isChartable && chartResponse.chartData ? (
+      <div ref={resultRef}>
+        {isPending && (
           <Card>
             <CardHeader>
-              <CardTitle>{chartResponse.chartTitle}</CardTitle>
-              <CardDescription>{chartResponse.explanation}</CardDescription>
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-4 w-full mt-2" />
             </CardHeader>
             <CardContent>
-              <ChartContainer config={dynamicChartConfig} className="h-[350px] w-full">
-                {chartResponse.chartType === 'line' ? (
-                  <LineChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                    <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
-                  </LineChart>
-                ) : (
-                  <BarChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                    <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                    <Bar dataKey="value" fill="var(--color-value)" radius={4} />
-                  </BarChart>
-                )}
-              </ChartContainer>
+              <Skeleton className="h-[300px] w-full" />
             </CardContent>
           </Card>
-        ) : (
-          <Alert variant="destructive">
-            <Frown className="h-4 w-4" />
-            <AlertTitle>Não foi possível gerar o gráfico</AlertTitle>
-            <AlertDescription>
-              {chartResponse.explanation}
-            </AlertDescription>
-          </Alert>
-        )
-      )}
+        )}
+
+        {chartResponse && (
+          chartResponse.isChartable && chartResponse.chartData ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{chartResponse.chartTitle}</CardTitle>
+                <CardDescription>{chartResponse.explanation}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={dynamicChartConfig} className="h-[350px] w-full">
+                  {chartResponse.chartType === 'line' ? (
+                    <LineChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                      <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
+                      <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                      <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  ) : (
+                    <BarChart data={chartResponse.chartData} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                      <CartesianGrid vertical={false} />
+                      <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                      <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
+                      <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                      <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+                    </BarChart>
+                  )}
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          ) : (
+            <Alert variant="destructive">
+              <Frown className="h-4 w-4" />
+              <AlertTitle>Não foi possível gerar o gráfico</AlertTitle>
+              <AlertDescription>
+                {chartResponse.explanation}
+              </AlertDescription>
+            </Alert>
+          )
+        )}
+      </div>
 
       <AdBanner />
 

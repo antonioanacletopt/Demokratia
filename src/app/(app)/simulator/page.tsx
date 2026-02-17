@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -93,6 +93,7 @@ export default function SimulatorPage() {
   const [simulation2, setSimulation2] = useState<EconomicPolicySimulationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isComparing, setIsComparing] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -103,6 +104,12 @@ export default function SimulatorPage() {
       setPolicy1(decodeURIComponent(policyFromQuery));
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if ((simulation1 || isPending) && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [simulation1, isPending]);
 
   const handleSimulate = () => {
     if (!policy1.trim()) return;
@@ -201,158 +208,160 @@ export default function SimulatorPage() {
       
       <AdBanner />
 
-      {isPending && (
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/2" />
-            <Skeleton className="h-4 w-full mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 pt-4">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-40 w-full" />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div ref={resultRef}>
+        {isPending && (
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-4 w-full mt-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 pt-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-40 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-      {simulation1 && (
+        {simulation1 && (
+            <div className="space-y-6">
+              <Separator />
+               <div>
+                  <h2 className="text-2xl font-bold font-headline tracking-tight">Resultados da Simulação</h2>
+                  <p className="text-muted-foreground">Análise do impacto da{isComparing && simulation2 ? 's' : ''} política{isComparing && simulation2 ? 's' : ''} simulada{isComparing && simulation2 ? 's' : ''}.</p>
+              </div>
+            </div>
+        )}
+
+
+        {simulation1 && simulation2 && isComparing ? (
+          // Comparison View
           <div className="space-y-6">
-            <Separator />
-             <div>
-                <h2 className="text-2xl font-bold font-headline tracking-tight">Resultados da Simulação</h2>
-                <p className="text-muted-foreground">Análise do impacto da{isComparing && simulation2 ? 's' : ''} política{isComparing && simulation2 ? 's' : ''} simulada{isComparing && simulation2 ? 's' : ''}.</p>
-            </div>
-          </div>
-      )}
-
-
-      {simulation1 && simulation2 && isComparing ? (
-        // Comparison View
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 pt-6 lg:grid-cols-2">
-              {simulation1.isRealPolicy && (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Política 1 Real Identificada</AlertTitle>
-                    <AlertDescription>
-                      {simulation1.source && (
-                        <Link href={simulation1.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
-                          <LinkIcon className="h-4 w-4" />
-                          Ver Fonte Oficial
-                        </Link>
-                      )}
-                    </AlertDescription>
-                  </Alert>
-              )}
-               {!simulation1.isRealPolicy && <div />}
+              <div className="grid grid-cols-1 gap-6 pt-6 lg:grid-cols-2">
+                {simulation1.isRealPolicy && (
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Política 1 Real Identificada</AlertTitle>
+                      <AlertDescription>
+                        {simulation1.source && (
+                          <Link href={simulation1.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
+                            <LinkIcon className="h-4 w-4" />
+                            Ver Fonte Oficial
+                          </Link>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                )}
+                 {!simulation1.isRealPolicy && <div />}
+                
+                {simulation2.isRealPolicy && (
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Política 2 Real Identificada</AlertTitle>
+                      <AlertDescription>
+                        {simulation2.source && (
+                          <Link href={simulation2.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
+                            <LinkIcon className="h-4 w-4" />
+                            Ver Fonte Oficial
+                          </Link>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                )}
+              </div>
               
-              {simulation2.isRealPolicy && (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Política 2 Real Identificada</AlertTitle>
-                    <AlertDescription>
-                      {simulation2.source && (
-                        <Link href={simulation2.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
-                          <LinkIcon className="h-4 w-4" />
-                          Ver Fonte Oficial
-                        </Link>
-                      )}
-                    </AlertDescription>
-                  </Alert>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Zap className="text-primary" />
-                            <span>Sumário (Política 1)</span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">{simulation1.simulatedImpact}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Zap className="text-primary" />
-                            <span>Sumário (Política 2)</span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">{simulation2.simulatedImpact}</p>
-                    </CardContent>
-                </Card>
-            </div>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                   <Card>
+                      <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                              <Zap className="text-primary" />
+                              <span>Sumário (Política 1)</span>
+                          </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                          <p className="text-muted-foreground">{simulation1.simulatedImpact}</p>
+                      </CardContent>
+                  </Card>
+                  <Card>
+                      <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                              <Zap className="text-primary" />
+                              <span>Sumário (Política 2)</span>
+                          </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                          <p className="text-muted-foreground">{simulation2.simulatedImpact}</p>
+                      </CardContent>
+                  </Card>
+              </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Comparação de Indicadores Chave</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Indicador</TableHead>
-                                <TableHead className="text-right">Política 1 (Projetado)</TableHead>
-                                <TableHead className="text-right">Política 2 (Projetado)</TableHead>
-                                <TableHead className="text-right">Diferença (P2 vs P1)</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {simulation1.keyIndicators.map((indicator1, index) => {
-                                const indicator2 = simulation2.keyIndicators[index];
-                                if (!indicator2 || indicator1.name !== indicator2.name) return null;
-                                const diff = indicator2.projectedValue - indicator1.projectedValue;
-                                return (
-                                    <TableRow key={indicator1.name}>
-                                        <TableCell className="font-medium">{indicator1.name}</TableCell>
-                                        <TableCell className="text-right font-semibold">
-                                            {indicator1.projectedValue.toFixed(2)}{indicator1.unit}
-                                        </TableCell>
-                                        <TableCell className="text-right font-semibold text-primary">
-                                            {indicator2.projectedValue.toFixed(2)}{indicator2.unit}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <span className={`flex items-center justify-end gap-1 ${diff === 0 ? 'text-muted-foreground' : diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                {diff !== 0 && (diff > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-                                                {diff === 0 ? '-' : `${Math.abs(diff).toFixed(2)}${indicator1.unit}`}
-                                            </span>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Comparação de Indicadores Chave</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <Table>
+                          <TableHeader>
+                              <TableRow>
+                                  <TableHead>Indicador</TableHead>
+                                  <TableHead className="text-right">Política 1 (Projetado)</TableHead>
+                                  <TableHead className="text-right">Política 2 (Projetado)</TableHead>
+                                  <TableHead className="text-right">Diferença (P2 vs P1)</TableHead>
+                              </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                              {simulation1.keyIndicators.map((indicator1, index) => {
+                                  const indicator2 = simulation2.keyIndicators[index];
+                                  if (!indicator2 || indicator1.name !== indicator2.name) return null;
+                                  const diff = indicator2.projectedValue - indicator1.projectedValue;
+                                  return (
+                                      <TableRow key={indicator1.name}>
+                                          <TableCell className="font-medium">{indicator1.name}</TableCell>
+                                          <TableCell className="text-right font-semibold">
+                                              {indicator1.projectedValue.toFixed(2)}{indicator1.unit}
+                                          </TableCell>
+                                          <TableCell className="text-right font-semibold text-primary">
+                                              {indicator2.projectedValue.toFixed(2)}{indicator2.unit}
+                                          </TableCell>
+                                          <TableCell className="text-right">
+                                              <span className={`flex items-center justify-end gap-1 ${diff === 0 ? 'text-muted-foreground' : diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                  {diff !== 0 && (diff > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+                                                  {diff === 0 ? '-' : `${Math.abs(diff).toFixed(2)}${indicator1.unit}`}
+                                              </span>
+                                          </TableCell>
+                                      </TableRow>
+                                  );
+                              })}
+                          </TableBody>
+                      </Table>
+                  </CardContent>
+              </Card>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Raciocínio (Política 1)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{simulation1.reasoning}</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Raciocínio (Política 2)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{simulation2.reasoning}</p>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-      ) : simulation1 && (
-        // Single Simulation View
-        <SimulationResult simulation={simulation1} />
-      )}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <Card>
+                      <CardHeader>
+                          <CardTitle>Raciocínio (Política 1)</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <p className="text-muted-foreground whitespace-pre-wrap">{simulation1.reasoning}</p>
+                      </CardContent>
+                  </Card>
+                   <Card>
+                      <CardHeader>
+                          <CardTitle>Raciocínio (Política 2)</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <p className="text-muted-foreground whitespace-pre-wrap">{simulation2.reasoning}</p>
+                      </CardContent>
+                  </Card>
+              </div>
+          </div>
+        ) : simulation1 && (
+          // Single Simulation View
+          <SimulationResult simulation={simulation1} />
+        )}
+      </div>
     </div>
   );
 }
