@@ -88,7 +88,12 @@ service cloud.firestore {
     
     match /contactMessages/{messageId} {
       allow create: if isSignedIn();
-      allow read, update, delete: if isAdmin();
+
+      // Admins can read/update/delete any message.
+      // Users can only read their own messages.
+      // This rule requires the client to query with `where('userId', '==', auth.uid)`.
+      allow read: if isAdmin() || (isExistingDoc() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     match /users/{userId} {
