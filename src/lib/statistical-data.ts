@@ -118,7 +118,7 @@ export const statisticalDataToSeed: StatisticalData[] = [
     id: 'higher-education-students',
     title: 'Alunos Inscritos no Ensino Superior',
     description: 'Número de alunos inscritos em estabelecimentos de ensino superior em Portugal, por ciclo de estudos.',
-    category: 'Sociedade',
+    category: 'Educação',
     source: 'DGEEC',
     lastUpdated: '2024-01-15',
     dataType: 'table',
@@ -126,6 +126,63 @@ export const statisticalDataToSeed: StatisticalData[] = [
       { "Ano Letivo": "2020/2021", "Total": "412.353", "Licenciatura": "237.917", "Mestrado": "127.382", "Doutoramento": "29.981" },
       { "Ano Letivo": "2021/2022", "Total": "433.217", "Licenciatura": "245.891", "Mestrado": "136.314", "Doutoramento": "32.091" },
       { "Ano Letivo": "2022/2023", "Total": "446.028", "Licenciatura": "251.309", "Mestrado": "141.042", "Doutoramento": "33.799" }
+    ]
+  },
+  {
+    id: 'doctors-in-nhs',
+    title: 'Médicos no Serviço Nacional de Saúde (SNS)',
+    description: 'Número de médicos inscritos no SNS em Portugal continental. O número tem vindo a aumentar, mas a distribuição geográfica e por especialidade continua a ser um desafio.',
+    category: 'Saúde',
+    source: 'INE / Ordem dos Médicos',
+    lastUpdated: '2024-02-20',
+    dataType: 'table',
+    data: [
+      { "Ano": 2020, "Número de Médicos": "54.893" },
+      { "Ano": 2021, "Número de Médicos": "56.983" },
+      { "Ano": 2022, "Número de Médicos": "58.773" }
+    ]
+  },
+  {
+    id: 'early-school-leaving',
+    title: 'Taxa de Abandono Precoce de Educação e Formação',
+    description: 'Percentagem da população dos 18 aos 24 anos que não completou o ensino secundário e que não se encontra a estudar ou a formar-se. Portugal tem feito progressos significativos na redução desta taxa.',
+    category: 'Educação',
+    source: 'Eurostat / INE',
+    lastUpdated: '2024-04-25',
+    dataType: 'table',
+    data: [
+      { "Ano": 2020, "Taxa": "8,9%" },
+      { "Ano": 2021, "Taxa": "5,9%" },
+      { "Ano": 2022, "Taxa": "6,0%" },
+      { "Ano": 2023, "Taxa": "8.0%" }
+    ]
+  },
+  {
+    id: 'justice-case-duration',
+    title: 'Duração Média dos Processos Judiciais',
+    description: 'Tempo médio (em meses) que um processo demora a ser concluído na primeira instância. A pendência processual é um dos principais desafios do sistema de justiça.',
+    category: 'Justiça',
+    source: 'Direção-Geral da Política de Justiça (DGPJ)',
+    lastUpdated: '2023-10-15',
+    dataType: 'table',
+    data: [
+      { "Tipo de Processo": "Ações Cíveis Declarativas", "Duração Média (meses) em 2022": "10" },
+      { "Tipo de Processo": "Processos de Insolvência", "Duração Média (meses) em 2022": "27" },
+      { "Tipo de Processo": "Processos Executivos", "Duração Média (meses) em 2022": "39" }
+    ]
+  },
+  {
+    id: 'emigrants-by-year',
+    title: 'Emigrantes Portugueses (Saídas Permanentes)',
+    description: 'Estimativa do número de emigrantes permanentes portugueses por ano. Após um pico em 2013, os números têm variado, refletindo as condições económicas em Portugal e no estrangeiro.',
+    category: 'Emigração',
+    source: 'Observatório da Emigração',
+    lastUpdated: '2023-12-10',
+    dataType: 'table',
+    data: [
+      { "Ano": 2020, "Total de Saídas (Estimativa)": "45.000" },
+      { "Ano": 2021, "Total de Saídas (Estimativa)": "60.000" },
+      { "Ano": 2022, "Total de Saídas (Estimativa)": "66.000" }
     ]
   }
 ];
