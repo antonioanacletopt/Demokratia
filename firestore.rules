@@ -61,29 +61,36 @@ service cloud.firestore {
     }
 
     match /communityProposals/{proposalId} {
-      allow read: if true;
+      // Allow public read access to all proposals
+      allow get, list: if true;
+    
+      // Allow authenticated users to create proposals
       allow create: if isSignedIn()
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.voteCount == 0
                     && request.resource.data.votedBy.size() == 0;
+    
+      // Allow authenticated users to vote (update)
       allow update: if isSignedIn()
-                    && !(request.auth.uid in resource.data.votedBy)
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy'])
-                    && request.resource.data.voteCount == resource.data.voteCount + 1
-                    && request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]);
+                    && !(request.auth.uid in resource.data.votedBy) // User has not voted yet
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']) // Only voteCount and votedBy can change
+                    && request.resource.data.voteCount == resource.data.voteCount + 1 // voteCount increments by 1
+                    && request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]); // Adds user's UID to votedBy
+    
+      // Allow admins to delete proposals
       allow delete: if isAdmin();
     }
     
     match /contactMessages/{messageId} {
+      // Allow authenticated users to create new messages.
       allow create: if isSignedIn();
-
-      // Admins can list all messages. This is required for the admin page.
-      allow list: if isAdmin();
       
-      // An admin or the message owner can get a single message.
-      allow get: if isAdmin() || (isExistingDoc() && resource.data.userId == request.auth.uid);
+      // Define read permissions:
+      // - Admins can read the entire collection (list) or individual documents (get).
+      // - Non-admin users can only get their own specific documents.
+      allow read: if isAdmin() || (isExistingDoc() && resource.data.userId == request.auth.uid && request.method == 'get');
 
-      // Admins can update or delete any message.
+      // Allow admins to update or delete any message.
       allow update, delete: if isAdmin();
     }
 
