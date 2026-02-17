@@ -61,22 +61,16 @@ service cloud.firestore {
     }
 
     match /communityProposals/{proposalId} {
-      // PUBLIC ACCESS: Anyone can get a single proposal or list all proposals.
-      allow get: if true;
-      allow list: if true;
+      // DIAGNOSTIC STEP: Simplify rules to isolate read error.
+      // Public read access.
+      allow read: if true;
 
-      // AUTHENTICATED-ONLY ACTIONS
-      // Create: Only signed-in users can create a new proposal.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      // Allow create for signed-in users.
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
       
-      // Update (Vote): Allow authenticated users to vote, but only once.
-      // The update can only modify the 'voteCount' and 'votedBy' fields.
-      allow update: if isSignedIn() 
-                    && request.auth.uid !in resource.data.votedBy
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']);
-
-      // Delete: Allow the owner of the proposal or an admin to delete it.
-      allow delete: if isAdmin() || isOwner(resource.data.userId);
+      // Temporarily disable update and delete to debug.
+      allow update, delete: if false;
     }
     
     match /contactMessages/{messageId} {
