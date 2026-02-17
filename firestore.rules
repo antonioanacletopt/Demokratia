@@ -61,13 +61,19 @@ service cloud.firestore {
     }
 
     match /communityProposals/{proposalId} {
-        allow read: if true;
+        // Allow anyone, authenticated or not, to read proposals.
+        allow get, list: if true;
+
+        // Only authenticated users can create a new proposal.
         allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        // User can only update to add their vote.
+        
+        // Allow authenticated users to vote, but only once.
         allow update: if isSignedIn() 
                       && request.auth.uid !in resource.data.votedBy // User has not voted yet
                       // And no other fields are being modified except voteCount and votedBy
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']);
+
+        // Allow the owner of the proposal or an admin to delete it.
         allow delete: if isAdmin() || isOwner(resource.data.userId);
     }
     
