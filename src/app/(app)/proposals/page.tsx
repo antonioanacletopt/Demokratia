@@ -280,9 +280,9 @@ export default function ProposalsPage() {
         {!isLoadingProposals && proposals && proposals.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             {proposals.map((proposal) => {
-               const hasVoted = user ? proposal.votedBy.includes(user.uid) : false;
+               const hasVoted = !!(user && proposal.votedBy?.includes(user.uid));
                const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
-               const isOwner = user?.uid === proposal.userId;
+               const isOwner = !!(user && user.uid === proposal.userId);
 
               return (
               <Card key={proposal.id} className="flex flex-col">
