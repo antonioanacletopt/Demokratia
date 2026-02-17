@@ -70,15 +70,24 @@ service cloud.firestore {
                     && request.resource.data.voteCount == 0
                     && request.resource.data.votedBy.size() == 0;
     
-      // Allow authenticated users to vote (update)
-      allow update: if isSignedIn()
-                    && !(request.auth.uid in resource.data.votedBy) // User has not voted yet
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']) // Only voteCount and votedBy can change
-                    && request.resource.data.voteCount == resource.data.voteCount + 1 // voteCount increments by 1
-                    && request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]); // Adds user's UID to votedBy
+      // Allow authenticated users to vote (update) or owner to edit
+      allow update: if isSignedIn() && (
+        // Case 1: A user is voting
+        (
+          !(request.auth.uid in resource.data.votedBy) &&
+          request.resource.data.voteCount == resource.data.voteCount + 1 &&
+          request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy'])
+        ) ||
+        // Case 2: The owner is editing the proposal title or description.
+        (
+          isOwner(resource.data.userId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description'])
+        )
+      );
     
-      // Allow admins to delete proposals
-      allow delete: if isAdmin();
+      // Allow admins OR owner to delete proposals
+      allow delete: if isAdmin() || isOwner(resource.data.userId);
     }
     
     match /contactMessages/{messageId} {

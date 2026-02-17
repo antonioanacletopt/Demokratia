@@ -2,17 +2,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit } from 'lucide-react';
+import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -28,14 +36,22 @@ interface CommunityProposal {
   votedBy: string[];
 }
 
+const proposalFormSchema = z.object({
+  title: z.string().min(10, 'O título deve ter pelo menos 10 caracteres.'),
+  description: z.string().min(30, 'A descrição deve ter pelo menos 30 caracteres.'),
+});
+
+type ProposalFormValues = z.infer<typeof proposalFormSchema>;
+
+
 export default function ProposalsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const [newProposalTitle, setNewProposalTitle] = useState('');
-  const [newProposalDescription, setNewProposalDescription] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProposal, setEditingProposal] = useState<CommunityProposal | null>(null);
   
   const proposalsCollectionRef = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -43,27 +59,40 @@ export default function ProposalsPage() {
   }, [firestore]);
 
   const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommunityProposal>(proposalsCollectionRef);
+  
+  const form = useForm<ProposalFormValues>({
+    resolver: zodResolver(proposalFormSchema),
+    defaultValues: { title: '', description: '' },
+  });
 
-  const handleSaveProposal = async () => {
+  const handleOpenEditDialog = (proposal: CommunityProposal) => {
+    setEditingProposal(proposal);
+    form.reset({
+      title: proposal.title,
+      description: proposal.description,
+    });
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditingProposal(null);
+    form.reset({ title: '', description: '' });
+  };
+  
+  const handleNewProposalSubmit = async (values: ProposalFormValues) => {
     if (!user || !firestore) {
       toast({ variant: 'destructive', title: 'Ação Requer Autenticação' });
       return;
     }
-    
-    if (!newProposalTitle.trim() || !newProposalDescription.trim()) {
-      toast({ variant: 'destructive', title: 'Campos em falta', description: 'Por favor, preencha o título e a descrição.' });
-      return;
-    }
 
-    setIsSaving(true);
+    setIsSubmitting(true);
     const proposalsCollection = collection(firestore, 'communityProposals');
 
     const proposalData = {
       userId: user.uid,
       userName: user.displayName || 'Utilizador Anónimo',
       userPhotoURL: user.photoURL || '',
-      title: newProposalTitle,
-      description: newProposalDescription,
+      title: values.title,
+      description: values.description,
       createdAt: serverTimestamp(),
       voteCount: 0,
       votedBy: [],
@@ -72,8 +101,7 @@ export default function ProposalsPage() {
     try {
         await addDoc(proposalsCollection, proposalData);
         toast({ title: 'Proposta submetida!', description: 'A sua proposta está visível para toda a comunidade.' });
-        setNewProposalTitle('');
-        setNewProposalDescription('');
+        form.reset();
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
           path: proposalsCollection.path,
@@ -83,9 +111,51 @@ export default function ProposalsPage() {
         errorEmitter.emit('permission-error', permissionError);
         toast({ variant: 'destructive', title: 'Erro ao submeter', description: 'Não foi possível guardar a sua proposta.' });
     } finally {
-        setIsSaving(false);
+        setIsSubmitting(false);
     }
   };
+
+  const handleEditProposalSubmit = async (values: ProposalFormValues) => {
+    if (!user || !firestore || !editingProposal) return;
+    
+    setIsEditing(true);
+    const proposalRef = doc(firestore, 'communityProposals', editingProposal.id);
+
+    try {
+        await updateDoc(proposalRef, {
+            title: values.title,
+            description: values.description,
+        });
+        toast({ title: 'Proposta atualizada!' });
+        handleCloseEditDialog();
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+          path: proposalRef.path,
+          operation: 'update',
+          requestResourceData: values,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Erro ao atualizar', description: 'Não foi possível guardar as alterações.' });
+    } finally {
+        setIsEditing(false);
+    }
+  };
+
+  const handleDeleteProposal = async (proposalId: string) => {
+    if (!user || !firestore) return;
+    const proposalRef = doc(firestore, 'communityProposals', proposalId);
+    try {
+        await deleteDoc(proposalRef);
+        toast({ title: 'Proposta apagada.' });
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+          path: proposalRef.path,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({ variant: 'destructive', title: 'Erro ao apagar', description: 'Não foi possível apagar a proposta.' });
+    }
+  }
 
   const handleVote = async (proposalId: string) => {
     if (!user || !firestore) {
@@ -102,16 +172,13 @@ export default function ProposalsPage() {
         });
         toast({ title: 'Obrigado pelo seu apoio!' });
     } catch (serverError: any) {
-         // Because Firestore security rules might reject the update, we create a contextual error.
-         // This is more likely to happen if the user has already voted.
          const permissionError = new FirestorePermissionError({
           path: proposalRef.path,
           operation: 'update',
-          requestResourceData: { voteCount: 'increment(1)', votedBy: `arrayUnion(${user.uid})` }, // Approximate data
+          requestResourceData: { voteCount: 'increment(1)', votedBy: `arrayUnion(${user.uid})` },
         });
         errorEmitter.emit('permission-error', permissionError);
         
-        // Also provide user-facing feedback
         toast({ variant: 'destructive', title: 'Erro ao votar', description: 'Poderá já ter votado nesta proposta ou ocorreu um erro de permissões.' });
     }
   }
@@ -125,14 +192,45 @@ export default function ProposalsPage() {
         <p className="text-muted-foreground">Submeta as suas próprias propostas de políticas e apoie as ideias da comunidade.</p>
       </div>
 
+      <Dialog open={!!editingProposal} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Editar Proposta</DialogTitle>
+                <DialogDescription>Refine os detalhes da sua proposta. O corretor ortográfico do seu navegador está ativo.</DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleEditProposalSubmit)} className="space-y-4 pt-4">
+                    <FormField control={form.control} name="title" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Título</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="description" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Descrição</FormLabel>
+                            <FormControl><Textarea rows={6} {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <DialogFooter>
+                        <DialogClose asChild><Button type="button" variant="ghost">Cancelar</Button></DialogClose>
+                        <Button type="submit" disabled={isEditing}>
+                            {isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Guardar Alterações
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PlusCircle className="h-5 w-5" />
-            Submeter Nova Proposta
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"><PlusCircle className="h-5 w-5" />Submeter Nova Proposta</CardTitle>
           { user ? (
-            <CardDescription>Descreva a sua ideia. As propostas mais votadas podem ser destacadas na aplicação.</CardDescription>
+            <CardDescription>Descreva a sua ideia. O corretor ortográfico do seu navegador está ativo para ajudar.</CardDescription>
           ) : (
              <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
                 <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">Inicie sessão</Link> para submeter uma proposta.</span>
@@ -140,37 +238,32 @@ export default function ProposalsPage() {
           )}
         </CardHeader>
         { user && (
-            <>
-                <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="proposal-title">Título da Proposta</Label>
-                    <Input
-                    id="proposal-title"
-                    placeholder="Ex: Passe cultural gratuito para jovens até aos 25 anos"
-                    value={newProposalTitle}
-                    onChange={(e) => setNewProposalTitle(e.target.value)}
-                    disabled={isSaving}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="proposal-description">Descrição Detalhada</Label>
-                    <Textarea
-                    id="proposal-description"
-                    placeholder="Descreva a sua proposta, os seus objetivos e como poderia ser implementada."
-                    value={newProposalDescription}
-                    onChange={(e) => setNewProposalDescription(e.target.value)}
-                    rows={5}
-                    disabled={isSaving}
-                    />
-                </div>
-                </CardContent>
-                <CardFooter>
-                <Button onClick={handleSaveProposal} disabled={isSaving}>
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Submeter Proposta
-                </Button>
-                </CardFooter>
-            </>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleNewProposalSubmit)}>
+                    <CardContent className="space-y-4">
+                        <FormField control={form.control} name="title" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Título da Proposta</FormLabel>
+                                <FormControl><Input placeholder="Ex: Passe cultural gratuito para jovens até aos 25 anos" {...field} disabled={isSubmitting} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="description" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Descrição Detalhada</FormLabel>
+                                <FormControl><Textarea placeholder="Descreva a sua proposta, os seus objetivos e como poderia ser implementada." rows={5} {...field} disabled={isSubmitting} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Submeter Proposta
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Form>
         )}
       </Card>
 
@@ -179,8 +272,8 @@ export default function ProposalsPage() {
         
         {isLoadingProposals && (
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
              </div>
         )}
 
@@ -189,24 +282,42 @@ export default function ProposalsPage() {
             {proposals.map((proposal) => {
                const hasVoted = user ? proposal.votedBy.includes(user.uid) : false;
                const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
+               const isOwner = user?.uid === proposal.userId;
 
               return (
               <Card key={proposal.id} className="flex flex-col">
                 <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border">
-                            <AvatarImage src={proposal.userPhotoURL} alt={proposal.userName} />
-                            <AvatarFallback>{getInitials(proposal.userName)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold">{proposal.userName}</p>
-                            <p className="text-xs text-muted-foreground">Submetido {timeAgo}</p>
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border">
+                                <AvatarImage src={proposal.userPhotoURL} alt={proposal.userName} />
+                                <AvatarFallback>{getInitials(proposal.userName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold">{proposal.userName}</p>
+                                <p className="text-xs text-muted-foreground">Submetido {timeAgo}</p>
+                            </div>
                         </div>
+                        {isOwner && (
+                            <div className="flex">
+                                <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(proposal)}><Edit className="h-4 w-4" /></Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação é irreversível e irá apagar a proposta e todos os seus votos.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteProposal(proposal.id)}>Apagar</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        )}
                     </div>
                   <CardTitle className="pt-4">{proposal.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <p className="text-muted-foreground line-clamp-4">{proposal.description}</p>
+                  <p className="text-muted-foreground whitespace-pre-wrap">{proposal.description}</p>
                 </CardContent>
                  <CardFooter className="flex justify-between items-center bg-muted/50 py-3 px-6">
                     <div className="flex items-center gap-2 font-bold text-lg text-primary">
@@ -220,7 +331,7 @@ export default function ProposalsPage() {
                                 Simular
                             </Link>
                         </Button>
-                        <Button size="sm" onClick={() => handleVote(proposal.id)} disabled={!user || hasVoted}>
+                        <Button size="sm" onClick={() => handleVote(proposal.id)} disabled={!user || hasVoted || isOwner}>
                             <ThumbsUp className="mr-2 h-4 w-4" />
                             {hasVoted ? 'Apoiado' : 'Apoiar'}
                         </Button>

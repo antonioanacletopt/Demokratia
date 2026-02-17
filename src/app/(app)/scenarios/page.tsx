@@ -2,16 +2,22 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, NotebookText, User } from 'lucide-react';
+import { Loader2, PlusCircle, NotebookText, User, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 interface SimulationScenario {
   id: string;
@@ -20,14 +26,22 @@ interface SimulationScenario {
   createdAt: any; // Firestore Timestamp
 }
 
+const scenarioSchema = z.object({
+  name: z.string().min(5, 'O nome deve ter pelo menos 5 caracteres.'),
+  description: z.string().min(20, 'A descrição deve ter pelo menos 20 caracteres.'),
+});
+
+type ScenarioFormValues = z.infer<typeof scenarioSchema>;
+
+
 export default function ScenariosPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const [newScenarioName, setNewScenarioName] = useState('');
-  const [newScenarioDescription, setNewScenarioDescription] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingScenario, setEditingScenario] = useState<SimulationScenario | null>(null);
   
   const scenariosCollection = useMemoFirebase(() => {
     if (!user) return null;
@@ -36,69 +50,125 @@ export default function ScenariosPage() {
 
   const { data: scenarios, isLoading: isLoadingScenarios } = useCollection<SimulationScenario>(scenariosCollection);
 
-  const handleSaveScenario = () => {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Ação Requer Autenticação',
-        description: 'Por favor, inicie sessão para guardar um cenário.',
-      });
-      return;
-    }
-    
-    if (!scenariosCollection) {
-        toast({
-            variant: "destructive",
-            title: "Erro",
-            description: "Não foi possível aceder à coleção de cenários. Por favor, tente novamente."
-        });
-        return;
-    }
+  const form = useForm<ScenarioFormValues>({
+    resolver: zodResolver(scenarioSchema),
+    defaultValues: { name: '', description: '' },
+  });
 
-    if (!newScenarioName.trim() || !newScenarioDescription.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Campos em falta',
-        description: 'Por favor, preencha o nome e a descrição do cenário.',
-      });
-      return;
-    }
+  const handleOpenEditDialog = (scenario: SimulationScenario) => {
+    setEditingScenario(scenario);
+    form.reset({ name: scenario.name, description: scenario.description });
+  };
 
-    setIsSaving(true);
+  const handleCloseEditDialog = () => {
+    setEditingScenario(null);
+    form.reset({ name: '', description: '' });
+  };
 
+  const handleNewScenarioSubmit = async (values: ScenarioFormValues) => {
+    if (!user || !scenariosCollection) return;
+
+    setIsSubmitting(true);
     const scenarioData = {
       userId: user.uid,
-      name: newScenarioName,
-      description: newScenarioDescription,
-      parameters: '{}', // Placeholder for future structured parameters
+      name: values.name,
+      description: values.description,
+      parameters: '{}',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
 
-    addDoc(scenariosCollection, scenarioData)
-      .then(() => {
-        toast({
-          title: 'Cenário guardado!',
-          description: 'O seu novo cenário de simulação foi guardado com sucesso.',
+    try {
+      await addDoc(scenariosCollection, scenarioData);
+      toast({ title: 'Cenário guardado!' });
+      form.reset();
+    } catch (serverError) {
+      const permissionError = new FirestorePermissionError({
+        path: scenariosCollection.path,
+        operation: 'create',
+        requestResourceData: scenarioData,
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleEditScenarioSubmit = async (values: ScenarioFormValues) => {
+      if (!user || !firestore || !editingScenario) return;
+      setIsEditing(true);
+      const scenarioRef = doc(firestore, 'users', user.uid, 'simulationScenarios', editingScenario.id);
+
+      try {
+        await updateDoc(scenarioRef, {
+            name: values.name,
+            description: values.description,
+            updatedAt: serverTimestamp(),
         });
-        setNewScenarioName('');
-        setNewScenarioDescription('');
-      })
-      .catch((serverError) => {
+        toast({ title: 'Cenário atualizado!' });
+        handleCloseEditDialog();
+      } catch(e) {
+          const permissionError = new FirestorePermissionError({
+            path: scenarioRef.path,
+            operation: 'update',
+            requestResourceData: values,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+      } finally {
+        setIsEditing(false);
+      }
+  };
+  
+  const handleDeleteScenario = async (scenarioId: string) => {
+    if (!user || !firestore) return;
+    const scenarioRef = doc(firestore, 'users', user.uid, 'simulationScenarios', scenarioId);
+    try {
+        await deleteDoc(scenarioRef);
+        toast({ title: 'Cenário apagado.' });
+    } catch(e) {
         const permissionError = new FirestorePermissionError({
-          path: scenariosCollection.path,
-          operation: 'create',
-          requestResourceData: scenarioData,
+            path: scenarioRef.path,
+            operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-      })
-      .finally(() => {
-        setIsSaving(false);
-      });
+    }
   };
 
   return (
     <div className="space-y-6">
+      <Dialog open={!!editingScenario} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Cenário</DialogTitle>
+            <DialogDescription>Refine o seu cenário de simulação. O corretor ortográfico do seu navegador está ativo.</DialogDescription>
+          </DialogHeader>
+           <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleEditScenarioSubmit)} className="space-y-4 pt-4">
+                    <FormField control={form.control} name="name" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Nome do Cenário</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField control={form.control} name="description" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Descrição Detalhada</FormLabel>
+                            <FormControl><Textarea rows={6} {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                    <DialogFooter>
+                        <DialogClose asChild><Button type="button" variant="ghost">Cancelar</Button></DialogClose>
+                        <Button type="submit" disabled={isEditing}>
+                            {isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Guardar Alterações
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
+      </Dialog>
       <div>
         <h1 className="text-3xl font-bold font-headline tracking-tight">Meus Cenários de Simulação</h1>
         <p className="text-muted-foreground">Crie e gira os seus próprios cenários para usar no simulador económico.</p>
@@ -108,56 +178,47 @@ export default function ScenariosPage() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlusCircle className="h-5 w-5" />
-                Criar Novo Cenário
-              </CardTitle>
-              <CardDescription>Defina uma nova hipótese para simulação. Qualquer pessoa pode criar, mas só utilizadores autenticados podem guardar.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><PlusCircle className="h-5 w-5" />Criar Novo Cenário</CardTitle>
+              <CardDescription>Defina uma nova hipótese para simulação. Inicie sessão para poder guardar.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="scenario-name">Nome do Cenário</Label>
-                <Input
-                  id="scenario-name"
-                  placeholder="Ex: Impacto da seca na agricultura"
-                  value={newScenarioName}
-                  onChange={(e) => setNewScenarioName(e.target.value)}
-                  disabled={isSaving}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="scenario-description">Descrição Detalhada</Label>
-                <Textarea
-                  id="scenario-description"
-                  placeholder="Descreva as premissas, variáveis e o que pretende analisar. Ex: Uma seca prolongada de 6 meses no Alentejo que afeta a produção de azeite e vinho..."
-                  value={newScenarioDescription}
-                  onChange={(e) => setNewScenarioDescription(e.target.value)}
-                  rows={6}
-                  disabled={isSaving}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col items-start gap-4">
-              <Button onClick={handleSaveScenario} disabled={isSaving || !user}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar Cenário
-              </Button>
-               {!user && !isUserLoading && (
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">Inicie sessão</Link> para guardar.</span>
-                </p>
-              )}
-            </CardFooter>
+             <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleNewScenarioSubmit)}>
+                    <CardContent className="space-y-4">
+                        <FormField control={form.control} name="name" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nome do Cenário</FormLabel>
+                                <FormControl><Input placeholder="Ex: Impacto da seca na agricultura" {...field} disabled={isSubmitting || !user} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="description" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Descrição Detalhada</FormLabel>
+                                <FormControl><Textarea placeholder="Descreva as premissas, variáveis e o que pretende analisar." rows={6} {...field} disabled={isSubmitting || !user} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </CardContent>
+                    <CardFooter className="flex flex-col items-start gap-4">
+                        <Button type="submit" disabled={isSubmitting || !user}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Guardar Cenário
+                        </Button>
+                        {!user && !isUserLoading && (
+                            <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">Inicie sessão</Link> para guardar.</span>
+                            </p>
+                        )}
+                    </CardFooter>
+                </form>
+             </Form>
           </Card>
         </div>
 
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <NotebookText className="h-5 w-5" />
-                Cenários Guardados
-              </CardTitle>
+              <CardTitle className="flex items-center gap-2"><NotebookText className="h-5 w-5" />Cenários Guardados</CardTitle>
                {!user && !isUserLoading && (
                 <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
                   <User className="h-4 w-4" /> <span><Link href="/login" className="underline font-semibold">Inicie sessão</Link> para ver e gerir os seus cenários guardados.</span>
@@ -179,8 +240,23 @@ export default function ScenariosPage() {
                 ) : scenarios && scenarios.length > 0 ? (
                   <div className="space-y-4">
                     {scenarios.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds).map((scenario) => (
-                      <div key={scenario.id} className="rounded-lg border p-4 space-y-2">
-                        <h3 className="font-semibold">{scenario.name}</h3>
+                      <div key={scenario.id} className="rounded-lg border p-4 space-y-2 group">
+                        <div className="flex justify-between items-start">
+                            <h3 className="font-semibold pr-16">{scenario.name}</h3>
+                            <div className="flex -mt-2 -mr-2">
+                                <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(scenario)}><Edit className="h-4 w-4"/></Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive"/></Button></AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteScenario(scenario.id)}>Apagar</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">{scenario.description}</p>
                         <div className="flex items-center justify-between pt-2">
                           <p className="text-xs text-muted-foreground">
