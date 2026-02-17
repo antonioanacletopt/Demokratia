@@ -39,7 +39,7 @@ Fontes permitidas:
 - Dados de institutos de estatística oficiais (INE, Pordata, Eurostat, Banco de Portugal).
 - Publicações científicas revistas por pares (peer-reviewed).
 - Documentos oficiais do governo ou parlamento (leis, decretos, relatórios).
-- Jornais e agências de notícias de referência em Portugal (Público, Expresso, Observador, Lusa) e internacionais (Reuters, Associated Press, etc.).
+- Jornais e agências de notícias de referência em Portugal (Público, Expresso, Observador, Lusa, TSF, SIC Notícias, RTP Notícias, CNN Portugal) e internacionais (Reuters, Associated Press, etc.).
 - Consórcios de jornalismo de investigação ou de fact-checking reconhecidos.
 
 Processo:
