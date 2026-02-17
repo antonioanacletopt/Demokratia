@@ -3,12 +3,14 @@
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, Checkbox } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, Checkbox, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit } from 'firebase/firestore';
+import { formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -24,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox as ShadCheckbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 interface UserSimulationRun {
@@ -33,6 +36,17 @@ interface UserSimulationRun {
   notes?: string;
   inputVariables: string; // The policy description
   simulationResults: string; // JSON.stringified EconomicPolicySimulationOutput
+  runTimestamp: any;
+}
+
+interface PublicSimulationRun {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhotoURL?: string;
+  title: string;
+  inputVariables: string;
+  simulationResults: string;
   runTimestamp: any;
 }
 
@@ -114,6 +128,7 @@ export default function SimulationsPage() {
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [simulationNotes, setSimulationNotes] = useState('');
+  const [shareWithCommunity, setShareWithCommunity] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
@@ -131,6 +146,13 @@ export default function SimulationsPage() {
   }, [firestore, user]);
 
   const { data: savedSimulations, isLoading: isLoadingSimulations } = useCollection<UserSimulationRun>(savedSimulationsCollectionRef);
+  
+  const publicSimulationsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'publicSimulations'), orderBy('runTimestamp', 'desc'), limit(10));
+  }, [firestore]);
+
+  const { data: publicSimulations, isLoading: isLoadingPublicSimulations } = useCollection<PublicSimulationRun>(publicSimulationsCollectionRef);
 
   useEffect(() => {
     const policyFromQuery = searchParams.get('policy');
@@ -144,6 +166,8 @@ export default function SimulationsPage() {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [currentSimulation, isSimulating, comparisonView]);
+
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   const handleSimulate = () => {
     if (!policyInput.trim()) return;
@@ -161,7 +185,7 @@ export default function SimulationsPage() {
         return;
     }
     setIsSaving(true);
-    const collectionRef = collection(firestore, 'users', user.uid, 'simulationScenarios');
+    const privateCollectionRef = collection(firestore, 'users', user.uid, 'simulationScenarios');
     const simulationData = {
         userId: user.uid,
         title: simulationTitle,
@@ -171,13 +195,37 @@ export default function SimulationsPage() {
         runTimestamp: serverTimestamp(),
     };
     try {
-        await addDoc(collectionRef, simulationData);
+        await addDoc(privateCollectionRef, simulationData);
         toast({ title: 'Simulação guardada!' });
+
+        if (shareWithCommunity) {
+            const publicCollectionRef = collection(firestore, 'publicSimulations');
+            const publicSimulationData = {
+                userId: user.uid,
+                userName: user.displayName || 'Utilizador Anónimo',
+                userPhotoURL: user.photoURL || '',
+                title: simulationTitle,
+                inputVariables: policyInput,
+                simulationResults: JSON.stringify(currentSimulation),
+                runTimestamp: serverTimestamp(),
+            };
+            addDoc(publicCollectionRef, publicSimulationData).catch(serverError => {
+                console.warn('Could not share simulation', serverError);
+                 const permissionError = new FirestorePermissionError({
+                    path: publicCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: publicSimulationData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+        }
+
         setSaveDialogOpen(false);
         setSimulationTitle('');
         setSimulationNotes('');
+        setShareWithCommunity(true);
     } catch (error) {
-        const permissionError = new FirestorePermissionError({ path: collectionRef.path, operation: 'create', requestResourceData: simulationData });
+        const permissionError = new FirestorePermissionError({ path: privateCollectionRef.path, operation: 'create', requestResourceData: simulationData });
         errorEmitter.emit('permission-error', permissionError);
         toast({ variant: 'destructive', title: 'Erro ao guardar', description: 'Não foi possível guardar a sua simulação.' });
     } finally {
@@ -196,6 +244,18 @@ export default function SimulationsPage() {
         errorEmitter.emit('permission-error', permissionError);
     }
   };
+
+  const handleDeletePublicSimulation = async (id: string) => {
+    if (!user || !firestore) return;
+    const docRef = doc(firestore, 'publicSimulations', id);
+    try {
+        await deleteDoc(docRef);
+        toast({ title: 'Simulação pública apagada.' });
+    } catch(e) {
+        const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
+        errorEmitter.emit('permission-error', permissionError);
+    }
+  }
 
   const handleCompareSelection = (id: string, checked: boolean | 'indeterminate') => {
     if (checked) {
@@ -254,8 +314,6 @@ export default function SimulationsPage() {
         </CardFooter>
       </Card>
       
-      <AdBanner />
-      
       <div ref={resultRef}>
         {isSimulating && (
           <Card>
@@ -303,7 +361,11 @@ export default function SimulationsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="sim-notes">Notas (Opcional)</Label>
-                                    <Textarea id="sim-notes" value={simulationNotes} onChange={(e) => setSimulationNotes(e.target.value)} placeholder="Uma breve nota sobre esta simulação." />
+                                    <Textarea id="sim-notes" value={simulationNotes} onChange={(e) => setSimulationNotes(e.target.value)} placeholder="Uma breve nota sobre esta simulação. (Não será partilhada)" />
+                                </div>
+                                <div className="flex items-center space-x-2 pt-2">
+                                  <ShadCheckbox id="share-community" checked={shareWithCommunity} onCheckedChange={(checked) => setShareWithCommunity(checked === 'indeterminate' ? false : checked)} />
+                                  <Label htmlFor="share-community" className="cursor-pointer">Partilhar com a comunidade</Label>
                                 </div>
                             </div>
                             <DialogFooter>
@@ -471,6 +533,78 @@ export default function SimulationsPage() {
           </Card>
         )}
       </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold font-headline tracking-tight">Simulações da Comunidade</h2>
+        {isLoadingPublicSimulations && (
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
+            </div>
+        )}
+        {!isLoadingPublicSimulations && publicSimulations && publicSimulations.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+            {publicSimulations.map((sim) => {
+              const timeAgo = sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
+              const isOwner = user && user.uid === sim.userId;
+
+              return (
+              <Card key={sim.id} className="flex flex-col">
+                <CardHeader>
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border">
+                                <AvatarImage src={sim.userPhotoURL} alt={sim.userName} />
+                                <AvatarFallback>{getInitials(sim.userName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold">{sim.userName}</p>
+                                <p className="text-xs text-muted-foreground">Partilhado {timeAgo}</p>
+                            </div>
+                        </div>
+                         {(user?.email === 'antonio.anacleto@gmail.com' || isOwner) && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação é irreversível e irá apagar a simulação pública.</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeletePublicSimulation(sim.id)}>Apagar</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                         )}
+                    </div>
+                  <CardTitle className="pt-4">{sim.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
+                </CardContent>
+                 <CardFooter className="flex justify-end items-center bg-muted/50 py-3 px-6">
+                    <Button size="sm" onClick={() => { setCurrentSimulation(JSON.parse(sim.simulationResults)); setComparisonView(null); }}>
+                        Ver Simulação
+                    </Button>
+                </CardFooter>
+              </Card>
+            )})}
+          </div>
+        ) : !isLoadingPublicSimulations && (
+           <Card className="flex flex-col items-center justify-center text-center py-16">
+            <CardHeader>
+                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                <CardTitle className="mt-4">Nenhuma simulação pública</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Seja o primeiro a partilhar uma simulação com a comunidade!</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      
+      <AdBanner />
+
     </div>
   );
 }
