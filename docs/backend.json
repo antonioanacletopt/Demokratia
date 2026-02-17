@@ -392,6 +392,54 @@
         "createdAt"
       ]
     },
+    "PublicStatisticQuery": {
+      "title": "Public Statistic Query",
+      "type": "object",
+      "description": "Represents a statistic query made by any user (anonymous or authenticated) that is stored publicly for caching and analysis. Deduplication should be handled by application logic before creating new entries.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the PublicStatisticQuery entity."
+        },
+        "request": {
+          "type": "string",
+          "description": "The original question submitted by the user, used as a cache key."
+        },
+        "isFound": {
+          "type": "boolean",
+          "description": "Indicates whether the requested statistic could be found."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "A summary of the findings or why the data could not be found."
+        },
+        "source": {
+          "type": "string",
+          "description": "The official source of the data if found."
+        },
+        "data": {
+          "type": "string",
+          "description": "The structured data, if found, as a JSON string."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the query was first performed and cached.",
+          "format": "date-time"
+        },
+        "lastAccessedAt": {
+          "type": "string",
+          "description": "Timestamp indicating the last time this cached query was accessed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "request",
+        "isFound",
+        "explanation",
+        "createdAt"
+      ]
+    },
     "CommunityProposal": {
       "title": "Community Proposal",
       "type": "object",
@@ -641,6 +689,22 @@
         }
       },
       {
+        "path": "/publicStatisticQueries/{queryId}",
+        "definition": {
+          "entityName": "PublicStatisticQuery",
+          "schema": {
+            "$ref": "#/backend/entities/PublicStatisticQuery"
+          },
+          "description": "A public collection of statistical queries and their answers. Used for caching to reduce AI costs and for data analysis. Writable by anyone to allow caching of new questions, but readable by everyone.",
+          "params": [
+            {
+              "name": "queryId",
+              "description": "The unique identifier for the public query."
+            }
+          ]
+        }
+      },
+      {
         "path": "/communityProposals/{proposalId}",
         "definition": {
           "entityName": "CommunityProposal",
@@ -708,3 +772,4 @@
     "reasoning": "The Firestore structure is designed following the core principles of Authorization Independence, Clarity of Intent, and Structural Segregation to ensure secure, scalable, and debuggable security rules. \n\n1.  **Authorization Independence (Denormalization for Rules):**\n    *   For user-specific data like `UserSimulationRun` and `SavedDataView`, the `userId` is explicitly stored within each document and is also part of the document path (e.g., `/users/{userId}/simulationRuns/{simulationRunId}`). This denormalization is critical. It allows security rules to check ownership using `request.auth.uid == resource.data.userId` AND `request.auth.uid == {userId}` (from the path wildcard) without needing to perform `get()` operations on parent documents. This prevents hierarchical authorization dependencies, enabling atomic operations and simplifying rule debugging.\n    *   For `UserProfile`, the document ID itself is the `userId` (i.e., `/userProfiles/$(request.auth.uid)`), which intrinsically links the document to its owner, providing atomic ownership checks.\n\n2.  **Structural Segregation (Homogeneous Security Posture):**\n    *   `UserProfile` documents are individual, private resources, exclusively owned by the authenticated user. Their access rules are simple: `request.auth.uid == userId`.\n    *   `SimulationModelDefinition` documents are global and publicly readable. This collection is designed for homogeneous public read access, with write access restricted to administrators (managed via a separate `/roles_admin/{uid}` collection for DBAC). This clear segregation simplifies rules, as all documents within this collection share the same access requirements.\n    *   `UserSimulationRun` and `SavedDataView` are segregated under `/users/{userId}/...` subcollections. All documents within a specific user's subcollection share the same ownership-based security posture, making rules straightforward: `allow read, write: if request.auth.uid == {userId};`.\n\n3.  **QAPs (Query-as-Permission):**\n    *   For user-owned collections (`/users/{userId}/simulationRuns` and `/users/{userId}/savedDataViews`), the path structure itself enforces permissions for `list` operations. Users can only `list` documents within their own `/users/{userId}/` segment, inherently preventing them from querying other users' data. This eliminates the need for complex filter logic in rules, fulfilling the QAP principle robustly.\n    *   For `SimulationModelDefinition`, since it's globally readable, `list` operations are open, as intended.\n\n4.  **DBAC (Database Access Control):** Global roles (e.g., for managing `SimulationModelDefinition`s) would be implemented using an existence check on a dedicated collection like `/roles_admin/{uid}`, allowing for a simple, data-based access control.\n\nRegarding the reported `FirebaseError: Firebase: Error (auth/operation-not-allowed)`, this indicates that the authentication providers specified in the `auth.providers` section ('google.com') may not be enabled in your Firebase project's Authentication settings in the Firebase Console. This is an environment configuration issue and not a data structure problem; you will need to enable these providers there to resolve the error."
 }
 }
+    
