@@ -184,5 +184,33 @@ export const statisticalDataToSeed: StatisticalData[] = [
       { "Ano": 2021, "Total de Saídas (Estimativa)": "60.000" },
       { "Ano": 2022, "Total de Saídas (Estimativa)": "66.000" }
     ]
+  },
+  {
+    id: 'tourism-arrivals-revenue',
+    title: 'Turismo: Hóspedes e Proveitos',
+    description: 'Número de hóspedes em estabelecimentos de alojamento turístico e proveitos totais do setor.',
+    category: 'Turismo',
+    source: 'INE, Estatísticas do Turismo',
+    lastUpdated: '2024-05-15',
+    dataType: 'table',
+    data: [
+      { "Ano": 2021, "Hóspedes (Milhões)": 15.3, "Proveitos (Mil Milhões €)": 2.7 },
+      { "Ano": 2022, "Hóspedes (Milhões)": 26.5, "Proveitos (Mil Milhões €)": 5.0 },
+      { "Ano": 2023, "Hóspedes (Milhões)": 30.0, "Proveitos (Mil Milhões €)": 6.0 }
+    ]
+  },
+  {
+    id: 'renewable-energy-production',
+    title: 'Produção de Eletricidade a partir de Fontes Renováveis',
+    description: 'Percentagem da eletricidade consumida em Portugal que foi gerada a partir de fontes renováveis (hídrica, eólica, solar, etc.).',
+    category: 'Energia',
+    source: 'REN - Redes Energéticas Nacionais',
+    lastUpdated: '2024-06-01',
+    dataType: 'table',
+    data: [
+      { "Ano": 2021, "Percentagem Renovável": "58%" },
+      { "Ano": 2022, "Percentagem Renovável": "49%" },
+      { "Ano": 2023, "Percentagem Renovável": "61%" }
+    ]
   }
 ];

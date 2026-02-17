@@ -35,12 +35,11 @@ const allNavItems = [
   { href: "/home", icon: Home, label: "Início", public: true },
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", public: true },
   { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador", public: true },
-  { href: "/simulator", icon: Lightbulb, label: "Simulador", public: true },
+  { href: "/simulations", icon: Lightbulb, label: "Simulações", public: true },
   { href: "/fact-check", icon: ShieldCheck, label: "Fact Check", public: true },
   { href: "/legislation", icon: Scale, label: "Legislação", public: true },
   { href: "/proposals", icon: MessageSquare, label: "Propostas", public: true },
   { href: "/contact", icon: Mail, label: "Contacto", public: true },
-  { href: "/scenarios", icon: NotebookText, label: "Cenários", public: true },
   { href: "/profile", icon: User, label: "Perfil", public: false },
   { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
 ];

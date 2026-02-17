@@ -154,7 +154,6 @@
       "required": [
         "id",
         "userId",
-        "simulationModelDefinitionId",
         "inputVariables",
         "simulationResults",
         "runTimestamp"

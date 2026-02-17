@@ -400,7 +400,10 @@ export default function AdminPage() {
             <Card>
                 <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Carregar Dados Iniciais (Seed)</CardTitle>
-                <CardDescription>Popule as coleções da base de dados com os conjuntos de dados iniciais.</CardDescription>
+                <CardDescription>
+                  Estes botões populam a base de dados com os conjuntos de dados iniciais. 
+                  **Ação necessária:** Se forem adicionados novos dados ao código, é preciso clicar nestes botões para que apareçam na aplicação.
+                </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-3">
                     <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
