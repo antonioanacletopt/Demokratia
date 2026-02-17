@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, setDoc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, setDoc, query } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
@@ -242,8 +242,20 @@ export default function AdminPage() {
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
   const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<DataSource>(dataSourcesCollection);
   
-  const contactMessagesCollection = useMemoFirebase(() => query(collection(firestore, 'contactMessages'), orderBy('createdAt', 'desc')), [firestore]);
+  const contactMessagesCollection = useMemoFirebase(() => collection(firestore, 'contactMessages'), [firestore]);
   const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>(contactMessagesCollection);
+  
+  const sortedMessages = useMemo(() => {
+    if (!contactMessages) return [];
+    return [...contactMessages].sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return b.createdAt.seconds - a.createdAt.seconds;
+      }
+      if (!a.createdAt) return 1;
+      if (!b.createdAt) return -1;
+      return 0;
+    });
+  }, [contactMessages]);
 
 
   useEffect(() => {
@@ -531,10 +543,10 @@ export default function AdminPage() {
                     {isLoadingMessages && Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}><TableCell><Skeleton className="h-5 w-28" /></TableCell><TableCell><Skeleton className="h-5 w-36" /></TableCell><TableCell><Skeleton className="h-5 w-20" /></TableCell><TableCell><Skeleton className="h-5 w-24" /></TableCell><TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell></TableRow>
                     ))}
-                    {!isLoadingMessages && contactMessages?.length === 0 && (
+                    {!isLoadingMessages && sortedMessages.length === 0 && (
                         <TableRow><TableCell colSpan={5} className="h-24 text-center">Nenhuma mensagem recebida.</TableCell></TableRow>
                     )}
-                    {!isLoadingMessages && contactMessages?.map((msg) => {
+                    {!isLoadingMessages && sortedMessages.map((msg) => {
                         const StatusIcon = statusConfig[msg.status].icon;
                         const timeAgo = msg.createdAt ? formatDistanceToNow(msg.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A';
                         return (

@@ -85,13 +85,13 @@ service cloud.firestore {
       // Allow authenticated users to create new messages.
       allow create: if isSignedIn();
       
-      // Define read permissions:
-      // - Admins can read the entire collection (list) or individual documents (get).
-      // - Non-admin users can only get their own specific documents.
-      allow read: if isAdmin() || (isExistingDoc() && resource.data.userId == request.auth.uid && request.method == 'get');
+      // Admins can read, update or delete any message.
+      allow read, update, delete: if isAdmin();
 
-      // Allow admins to update or delete any message.
-      allow update, delete: if isAdmin();
+      // A non-admin user can read their own messages.
+      // This is secure for list operations because the client query MUST
+      // include `where('userId', '==', request.auth.uid)`.
+      allow read: if isOwner(resource.data.userId);
     }
 
     match /users/{userId} {
