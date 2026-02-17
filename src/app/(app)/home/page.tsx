@@ -14,6 +14,9 @@ import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 
+// Revalida esta página no máximo a cada hora (3600 segundos) para obter notícias frescas.
+export const revalidate = 3600;
+
 const typeConfig = {
   Alegação: {
     icon: Check,
