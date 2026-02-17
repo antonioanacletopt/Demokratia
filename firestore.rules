@@ -70,6 +70,11 @@ service cloud.firestore {
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']);
         allow delete: if isAdmin() || isOwner(resource.data.userId);
     }
+    
+    match /contactMessages/{messageId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
 
     match /users/{userId} {
       match /simulationScenarios/{scenarioId} {
@@ -90,5 +95,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

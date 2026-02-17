@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
+import { formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, ArchiveRestore } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -54,6 +56,23 @@ const dataSourceSchema = z.object({
   }, { message: "Se requer autenticação, as credenciais são obrigatórias.", path: ["credentials"] });
 
 type DataSourceFormValues = z.infer<typeof dataSourceSchema>;
+
+interface ContactMessage {
+  id: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  message: string;
+  status: 'new' | 'read' | 'archived';
+  createdAt: any;
+}
+
+const statusConfig = {
+  new: { label: 'Nova', icon: MailWarning, color: 'text-blue-500' },
+  read: { label: 'Lida', icon: MailCheck, color: 'text-green-500' },
+  archived: { label: 'Arquivada', icon: Archive, color: 'text-muted-foreground' },
+};
+
 
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
   const form = useForm<DataSourceFormValues>({
@@ -212,18 +231,20 @@ export default function AdminPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // State for data sources
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingSource, setEditingSource] = useState<DataSource | undefined>(undefined);
-
-  // State for seeding
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
+  const [viewingMessage, setViewingMessage] = useState<ContactMessage | null>(null);
 
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
   const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<DataSource>(dataSourcesCollection);
+  
+  const contactMessagesCollection = useMemoFirebase(() => query(collection(firestore, 'contactMessages'), orderBy('createdAt', 'desc')), [firestore]);
+  const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>(contactMessagesCollection);
+
 
   useEffect(() => {
     if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
@@ -242,15 +263,13 @@ export default function AdminPage() {
     }
 
     const docRef = doc(firestore, 'dataSources', id);
-    // Use the robust non-blocking update
     setDocumentNonBlocking(docRef, { ...data, id }, { merge: true });
 
-    // Optimistic UI update
     setTimeout(() => {
       toast({ title: 'Fonte de dados guardada!' });
       setIsSaving(false);
       handleDialogClose();
-    }, 1000); // Give Firestore a moment
+    }, 1000);
   };
 
   const handleDeleteDataSource = (source: DataSource) => {
@@ -267,8 +286,6 @@ export default function AdminPage() {
       setIsFormOpen(false);
       setEditingSource(undefined);
   }
-
-  // --- SEEDING LOGIC ---
 
   const handleSeedPublicData = async () => {
     setIsSeedingPublic(true);
@@ -334,6 +351,18 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateMessageStatus = (message: ContactMessage, status: 'new' | 'read' | 'archived') => {
+    const docRef = doc(firestore, 'contactMessages', message.id);
+    updateDocumentNonBlocking(docRef, { status });
+    toast({ title: 'Estado da mensagem atualizado!' });
+  };
+
+  const handleDeleteMessage = (message: ContactMessage) => {
+    const docRef = doc(firestore, 'contactMessages', message.id);
+    deleteDocumentNonBlocking(docRef);
+    toast({ title: 'Mensagem apagada.' });
+  };
+
 
   if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
     return (
@@ -349,154 +378,199 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <div>
             <h1 className="text-3xl font-bold font-headline tracking-tight">Painel de Administração</h1>
-            <p className="text-muted-foreground">Gira as fontes de dados e carregue dados iniciais.</p>
+            <p className="text-muted-foreground">Gira as fontes de dados, carregue dados iniciais e veja as mensagens.</p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={(open) => {
-            if (!open) handleDialogClose();
-            else setIsFormOpen(true);
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Adicionar Fonte Manual
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editingSource ? 'Editar' : 'Adicionar'} Fonte de Dados</DialogTitle>
-              <DialogDescription>
-                Preencha os detalhes da fonte de dados.
-              </DialogDescription>
-            </DialogHeader>
-            <DataSourceForm 
-              source={editingSource} 
-              onSave={handleSaveDataSource}
-              onFinished={handleDialogClose}
-              isSaving={isSaving}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
 
-      <div className="space-y-6">
-        <Card>
-            <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Carregar Dados Iniciais (Seed)</CardTitle>
-            <CardDescription>Popule as coleções da base de dados com os conjuntos de dados iniciais. Esta operação só precisa de ser executada uma vez.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-3">
-                 <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
-                    <h3 className="font-semibold">Dados de Indicadores</h3>
-                    <p className="text-sm text-muted-foreground">Popula a coleção 'publicData' para o Dashboard.</p>
-                    <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} className="mt-auto">
-                        {isSeedingPublic ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {isSeedingPublic ? 'A carregar...' : 'Carregar Indicadores'}
-                    </Button>
-                </div>
-                 <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
-                    <h3 className="font-semibold">Dados Estatísticos</h3>
-                    <p className="text-sm text-muted-foreground">Popula a coleção 'statisticalData' para o Explorador.</p>
-                    <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} className="mt-auto">
-                        {isSeedingStats ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {isSeedingStats ? 'A carregar...' : 'Carregar Estatísticas'}
-                    </Button>
-                </div>
-                <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
-                    <h3 className="font-semibold">Fontes de Dados do Sistema</h3>
-                    <p className="text-sm text-muted-foreground">Popula a coleção 'dataSources' com as fontes de dados padrão.</p>
-                     <Button onClick={handleSeedDataSources} disabled={isSeedingSources} className="mt-auto">
-                        {isSeedingSources ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        {isSeedingSources ? 'A carregar...' : 'Carregar Fontes'}
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+         <div className="space-y-6">
 
-        <Card>
+            <Card>
+                <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Carregar Dados Iniciais (Seed)</CardTitle>
+                <CardDescription>Popule as coleções da base de dados com os conjuntos de dados iniciais.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-3">
+                    <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
+                        <h3 className="font-semibold">Indicadores</h3>
+                        <p className="text-sm text-muted-foreground">Popula 'publicData'.</p>
+                        <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} className="mt-auto w-full">
+                            {isSeedingPublic ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Carregar
+                        </Button>
+                    </div>
+                    <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
+                        <h3 className="font-semibold">Estatísticas</h3>
+                        <p className="text-sm text-muted-foreground">Popula 'statisticalData'.</p>
+                        <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} className="mt-auto w-full">
+                            {isSeedingStats ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Carregar
+                        </Button>
+                    </div>
+                    <div className="flex flex-col items-start gap-2 rounded-lg border p-4">
+                        <h3 className="font-semibold">Fontes de Dados</h3>
+                        <p className="text-sm text-muted-foreground">Popula 'dataSources'.</p>
+                        <Button onClick={handleSeedDataSources} disabled={isSeedingSources} className="mt-auto w-full">
+                            {isSeedingSources ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Carregar
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Fontes de Dados Atuais</CardTitle>
+                        <CardDescription>Lista de todas as fontes de dados configuradas no sistema.</CardDescription>
+                    </div>
+                     <Dialog open={isFormOpen} onOpenChange={(open) => {
+                        if (!open) handleDialogClose();
+                        else setIsFormOpen(true);
+                     }}>
+                        <DialogTrigger asChild>
+                            <Button size="sm">
+                            <PlusCircle className="mr-2" />
+                            Adicionar Fonte
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                            <DialogTitle>{editingSource ? 'Editar' : 'Adicionar'} Fonte de Dados</DialogTitle>
+                            </DialogHeader>
+                            <DataSourceForm 
+                            source={editingSource} 
+                            onSave={handleSaveDataSource}
+                            onFinished={handleDialogClose}
+                            isSaving={isSaving}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                <div className="rounded-md border">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoadingDataSources && Array.from({ length: 3 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                        </TableRow>
+                        ))}
+                        {!isLoadingDataSources && dataSources?.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center">
+                            Nenhuma fonte de dados encontrada.
+                            </TableCell>
+                        </TableRow>
+                        )}
+                        {!isLoadingDataSources && dataSources?.map((source) => (
+                        <TableRow key={source.id}>
+                            <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                    <span>{source.name}</span>
+                                    {source.isSystemSource && <Badge variant="secondary">Sistema</Badge>}
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                            <Badge variant="outline" className="flex items-center gap-1.5 w-fit">
+                                {source.type === 'API' ? <Server className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
+                                {source.type}
+                            </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => {
+                                setEditingSource(source);
+                                setIsFormOpen(true);
+                                }}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" disabled={source.isSystemSource}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteDataSource(source)}>Apagar</AlertDialogAction>
+                                </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                            </TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                    </Table>
+                </div>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div className="space-y-6">
+            <Card>
             <CardHeader>
-            <CardTitle>Fontes de Dados Atuais</CardTitle>
-            <CardDescription>Lista de todas as fontes de dados configuradas no sistema. As fontes do sistema são usadas pela IA.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Inbox />Caixa de Entrada</CardTitle>
+                <CardDescription>Mensagens de contacto enviadas pelos utilizadores.</CardDescription>
             </CardHeader>
             <CardContent>
-            <div className="rounded-md border">
+                <div className="rounded-md border">
                 <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead className="hidden md:table-cell">URL</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {isLoadingDataSources && Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-48" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
-                    </TableRow>
+                    <TableHeader><TableRow><TableHead>De</TableHead><TableHead>Assunto</TableHead><TableHead>Estado</TableHead><TableHead>Data</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                    {isLoadingMessages && Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}><TableCell><Skeleton className="h-5 w-28" /></TableCell><TableCell><Skeleton className="h-5 w-36" /></TableCell><TableCell><Skeleton className="h-5 w-20" /></TableCell><TableCell><Skeleton className="h-5 w-24" /></TableCell><TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell></TableRow>
                     ))}
-                    {!isLoadingDataSources && dataSources?.length === 0 && (
-                    <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
-                        Nenhuma fonte de dados encontrada. Carregue as fontes de dados do sistema acima.
-                        </TableCell>
-                    </TableRow>
+                    {!isLoadingMessages && contactMessages?.length === 0 && (
+                        <TableRow><TableCell colSpan={5} className="h-24 text-center">Nenhuma mensagem recebida.</TableCell></TableRow>
                     )}
-                    {!isLoadingDataSources && dataSources?.map((source) => (
-                    <TableRow key={source.id}>
-                        <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                            <span>{source.name}</span>
-                            {source.isSystemSource && <Badge variant="secondary">Sistema</Badge>}
-                        </div>
-                        </TableCell>
-                        <TableCell>
-                        <Badge variant="outline" className="flex items-center gap-1.5 w-fit">
-                            {source.type === 'API' ? <Server className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                            {source.type}
-                        </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                        <a href={source.url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary truncate max-w-xs block">{source.url}</a>
-                        </TableCell>
-                        <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => {
-                            setEditingSource(source);
-                            setIsFormOpen(true);
-                            }}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={source.isSystemSource}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Tem a certeza?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                Esta ação não pode ser desfeita. Isto irá apagar permanentemente a fonte de dados.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteDataSource(source)}>Apagar</AlertDialogAction>
-                            </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
+                    {!isLoadingMessages && contactMessages?.map((msg) => {
+                        const StatusIcon = statusConfig[msg.status].icon;
+                        const timeAgo = msg.createdAt ? formatDistanceToNow(msg.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A';
+                        return (
+                        <TableRow key={msg.id} className={msg.status === 'new' ? 'bg-blue-50 dark:bg-blue-900/10' : ''}>
+                            <TableCell className="font-medium">{msg.userName}</TableCell>
+                            <TableCell>{msg.subject}</TableCell>
+                            <TableCell>
+                            <div className={`flex items-center gap-2 text-sm ${statusConfig[msg.status].color}`}>
+                                <StatusIcon className="h-4 w-4" />
+                                <span>{statusConfig[msg.status].label}</span>
+                            </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{timeAgo}</TableCell>
+                            <TableCell className="text-right">
+                                <Dialog open={viewingMessage?.id === msg.id} onOpenChange={(open) => !open && setViewingMessage(null)}>
+                                    <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => { setViewingMessage(msg); if(msg.status === 'new') handleUpdateMessageStatus(msg, 'read')}}>Ver</Button></DialogTrigger>
+                                    <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{msg.subject}</DialogTitle><DialogDescription>De: {msg.userName} ({msg.userEmail})</DialogDescription></DialogHeader><div className="my-4 whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">{msg.message}</div></DialogContent>
+                                </Dialog>
+                                {msg.status !== 'archived' ? (
+                                    <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(msg, 'archived')}><Archive className="h-4 w-4" /></Button>
+                                ) : (
+                                    <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(msg, 'read')}><ArchiveRestore className="h-4 w-4" /></Button>
+                                )}
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteMessage(msg)}>Apagar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                                </AlertDialog>
+                            </TableCell>
+                        </TableRow>
+                    )})}
+                    </TableBody>
                 </Table>
-            </div>
+                </div>
             </CardContent>
-        </Card>
+            </Card>
+        </div>
       </div>
     </div>
   );
