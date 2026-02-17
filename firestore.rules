@@ -61,16 +61,29 @@ service cloud.firestore {
     }
 
     match /communityProposals/{proposalId} {
-      // DIAGNOSTIC STEP: Simplify rules to isolate read error.
-      // Public read access.
+      // Allow public read access for everyone (get and list).
       allow read: if true;
-
-      // Allow create for signed-in users.
+    
+      // Allow creation for any signed-in user.
+      // The submitted data must have the correct owner userId and start with a voteCount of 0.
       allow create: if isSignedIn()
-                    && request.resource.data.userId == request.auth.uid;
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.voteCount == 0
+                    && request.resource.data.votedBy.size() == 0;
+    
+      // Allow updates for voting.
+      allow update: if isSignedIn()
+                    // The user must not have voted before.
+                    && !(request.auth.uid in resource.data.votedBy)
+                    // The only fields that can change are voteCount and votedBy.
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy'])
+                    // The voteCount must be incremented by exactly 1.
+                    && request.resource.data.voteCount == resource.data.voteCount + 1
+                    // The user's UID must be the only one added to the votedBy array.
+                    && request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]);
       
-      // Temporarily disable update and delete to debug.
-      allow update, delete: if false;
+      // Only an admin can delete a proposal.
+      allow delete: if isAdmin();
     }
     
     match /contactMessages/{messageId} {
