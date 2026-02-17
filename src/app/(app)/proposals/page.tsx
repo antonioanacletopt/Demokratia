@@ -39,8 +39,6 @@ export default function ProposalsPage() {
   
   const proposalsCollectionRef = useMemoFirebase(() => {
       if (!firestore) return null;
-      // A consulta foi simplificada para ordenar apenas por 'voteCount' para evitar a necessidade de um índice composto,
-      // que estava provavelmente a causar erros de permissão para utilizadores não autenticados.
       return query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'));
   }, [firestore]);
 
@@ -189,7 +187,7 @@ export default function ProposalsPage() {
         {!isLoadingProposals && proposals && proposals.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             {proposals.map((proposal) => {
-               const hasVoted = user && proposal.votedBy.includes(user.uid);
+               const hasVoted = user ? proposal.votedBy.includes(user.uid) : false;
                const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
 
               return (
@@ -246,5 +244,3 @@ export default function ProposalsPage() {
     </div>
   );
 }
-
-    
