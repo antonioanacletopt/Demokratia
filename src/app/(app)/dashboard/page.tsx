@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Loader2, Bot, Frown, Save, User, NotebookText } from 'lucide-react';
 import { doc, collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/card';
 import {
   ChartContainer,
+  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
@@ -99,7 +100,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
               axisLine={false}
               tickMargin={8}
             />
-            <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
             <Bar dataKey="value" fill="var(--color-value)" radius={4} />
           </BarChart>
         </ChartContainer>
@@ -286,7 +287,7 @@ export default function DashboardPage() {
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                    <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                     <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
                   </LineChart>
                 ) : (
@@ -294,7 +295,7 @@ export default function DashboardPage() {
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis tickFormatter={(value) => `${value}${chartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                    <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                     <Bar dataKey="value" fill="var(--color-value)" radius={4} />
                   </BarChart>
                 )}
@@ -375,7 +376,7 @@ export default function DashboardPage() {
                           <CartesianGrid vertical={false} />
                           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
                           <YAxis tickFormatter={(value) => `${value}${savedChartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                          <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                           <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
                         </LineChart>
                       ) : (
@@ -383,7 +384,7 @@ export default function DashboardPage() {
                           <CartesianGrid vertical={false} />
                           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
                           <YAxis tickFormatter={(value) => `${value}${savedChartResponse.yAxisLabel || ''}`} tickLine={false} axisLine={false} tickMargin={8} />
-                          <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                           <Bar dataKey="value" fill="var(--color-value)" radius={4} />
                         </BarChart>
                       )}
