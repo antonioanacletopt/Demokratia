@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, Checkbox, MessageSquare } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, Checkbox, MessageSquare, Search, Frown } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
@@ -134,6 +134,9 @@ export default function SimulationsPage() {
   const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
   const [comparisonView, setComparisonView] = useState<{ sim1: UserSimulationRun, sim2: UserSimulationRun } | null>(null);
 
+  const [mySimsSearch, setMySimsSearch] = useState('');
+  const [publicSimsSearch, setPublicSimsSearch] = useState('');
+
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -153,6 +156,28 @@ export default function SimulationsPage() {
   }, [firestore]);
 
   const { data: publicSimulations, isLoading: isLoadingPublicSimulations } = useCollection<PublicSimulationRun>(publicSimulationsCollectionRef);
+
+  const filteredSavedSimulations = useMemo(() => {
+    if (!savedSimulations) return [];
+    if (!mySimsSearch.trim()) return savedSimulations;
+    const lowercased = mySimsSearch.toLowerCase();
+    return savedSimulations.filter(sim => 
+      sim.title.toLowerCase().includes(lowercased) || 
+      sim.inputVariables.toLowerCase().includes(lowercased)
+    );
+  }, [savedSimulations, mySimsSearch]);
+
+  const filteredPublicSimulations = useMemo(() => {
+    if (!publicSimulations) return [];
+    if (!publicSimsSearch.trim()) return publicSimulations;
+    const lowercased = publicSimsSearch.toLowerCase();
+    return publicSimulations.filter(sim =>
+      sim.title.toLowerCase().includes(lowercased) ||
+      sim.inputVariables.toLowerCase().includes(lowercased) ||
+      sim.userName.toLowerCase().includes(lowercased)
+    );
+  }, [publicSimulations, publicSimsSearch]);
+
 
   useEffect(() => {
     const policyFromQuery = searchParams.get('policy');
@@ -462,10 +487,22 @@ export default function SimulationsPage() {
                  <h2 className="text-2xl font-bold font-headline tracking-tight">Minhas Simulações Guardadas</h2>
                  <p className="text-muted-foreground">Reveja, apague ou compare as suas simulações anteriores.</p>
             </div>
-            <Button onClick={handleStartComparison} disabled={selectedForComparison.length !== 2}>
-                <GitCompareArrows className="mr-2 h-4 w-4" />
-                Comparar Selecionados ({selectedForComparison.length}/2)
-            </Button>
+            <div className="flex items-center gap-2">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                    type="search"
+                    placeholder="Pesquisar..."
+                    className="w-full sm:w-48 pl-10 h-9"
+                    value={mySimsSearch}
+                    onChange={(e) => setMySimsSearch(e.target.value)}
+                    />
+                </div>
+                <Button onClick={handleStartComparison} disabled={selectedForComparison.length !== 2} size="sm">
+                    <GitCompareArrows className="mr-2 h-4 w-4" />
+                    Comparar ({selectedForComparison.length}/2)
+                </Button>
+            </div>
         </div>
 
         { !user && (
@@ -486,9 +523,9 @@ export default function SimulationsPage() {
               <Skeleton className="h-24 w-full" />
             </div>
         )}
-        { user && !isLoadingSimulations && savedSimulations && savedSimulations.length > 0 ? (
+        { user && !isLoadingSimulations && filteredSavedSimulations && filteredSavedSimulations.length > 0 ? (
             <div className="space-y-4">
-            {savedSimulations.map((sim) => (
+            {filteredSavedSimulations.map((sim) => (
               <Card key={sim.id}>
                 <CardContent className="flex items-center gap-4 p-4">
                   <ShadCheckbox 
@@ -524,11 +561,13 @@ export default function SimulationsPage() {
         ) : user && !isLoadingSimulations && (
            <Card className="flex flex-col items-center justify-center text-center py-12">
             <CardHeader>
-                <NotebookText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <CardTitle className="mt-4">Nenhuma simulação guardada</CardTitle>
+                {mySimsSearch ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <NotebookText className="mx-auto h-12 w-12 text-muted-foreground/50" />}
+                <CardTitle className="mt-4">{mySimsSearch ? 'Nenhuma simulação encontrada' : 'Nenhuma simulação guardada'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Use o formulário acima para criar e guardar a sua primeira simulação.</p>
+              <p className="text-muted-foreground">
+                {mySimsSearch ? 'Tente uma pesquisa diferente.' : 'Use o formulário acima para criar e guardar a sua primeira simulação.'}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -537,16 +576,29 @@ export default function SimulationsPage() {
       <Separator />
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold font-headline tracking-tight">Simulações da Comunidade</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h2 className="text-2xl font-bold font-headline tracking-tight">Simulações da Comunidade</h2>
+           <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                type="search"
+                placeholder="Pesquisar públicas..."
+                className="w-full sm:w-72 pl-10 h-9"
+                value={publicSimsSearch}
+                onChange={(e) => setPublicSimsSearch(e.target.value)}
+                />
+            </div>
+        </div>
+
         {isLoadingPublicSimulations && (
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
             </div>
         )}
-        {!isLoadingPublicSimulations && publicSimulations && publicSimulations.length > 0 ? (
+        {!isLoadingPublicSimulations && filteredPublicSimulations && filteredPublicSimulations.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {publicSimulations.map((sim) => {
+            {filteredPublicSimulations.map((sim) => {
               const timeAgo = sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
               const isOwner = user && user.uid === sim.userId;
 
@@ -593,11 +645,13 @@ export default function SimulationsPage() {
         ) : !isLoadingPublicSimulations && (
            <Card className="flex flex-col items-center justify-center text-center py-16">
             <CardHeader>
-                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <CardTitle className="mt-4">Nenhuma simulação pública</CardTitle>
+                {publicSimsSearch ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />}
+                <CardTitle className="mt-4">{publicSimsSearch ? 'Nenhuma simulação encontrada' : 'Nenhuma simulação pública'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Seja o primeiro a partilhar uma simulação com a comunidade!</p>
+              <p className="text-muted-foreground">
+                {publicSimsSearch ? 'Tente uma pesquisa diferente.' : 'Seja o primeiro a partilhar uma simulação com a comunidade!'}
+              </p>
             </CardContent>
           </Card>
         )}

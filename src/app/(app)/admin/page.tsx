@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, ArchiveRestore } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, ArchiveRestore, Search, Frown } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -239,6 +239,11 @@ export default function AdminPage() {
   const [isSeedingSources, setIsSeedingSources] = useState(false);
   const [viewingMessage, setViewingMessage] = useState<ContactMessage | null>(null);
 
+  const [dataSourceSearch, setDataSourceSearch] = useState('');
+  const [messageSearch, setMessageSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
+
+
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
   const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<DataSource>(dataSourcesCollection);
   
@@ -256,6 +261,27 @@ export default function AdminPage() {
       return 0;
     });
   }, [contactMessages]);
+
+  const filteredDataSources = useMemo(() => {
+    if (!dataSources) return [];
+    if (!dataSourceSearch.trim()) return dataSources;
+    const lowercased = dataSourceSearch.toLowerCase();
+    return dataSources.filter(source => source.name.toLowerCase().includes(lowercased));
+  }, [dataSources, dataSourceSearch]);
+
+  const filteredMessages = useMemo(() => {
+    if (!sortedMessages) return [];
+    return sortedMessages.filter(msg => {
+      const matchesFilter = statusFilter === 'all' || msg.status === statusFilter;
+      if (!matchesFilter) return false;
+
+      if (!messageSearch.trim()) return true;
+      const lowercased = messageSearch.toLowerCase();
+      return msg.subject.toLowerCase().includes(lowercased) ||
+             msg.userName.toLowerCase().includes(lowercased) ||
+             msg.userEmail.toLowerCase().includes(lowercased);
+    });
+  }, [sortedMessages, messageSearch, statusFilter]);
 
 
   useEffect(() => {
@@ -434,33 +460,45 @@ export default function AdminPage() {
             </Card>
 
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>Fontes de Dados Atuais</CardTitle>
-                        <CardDescription>Lista de todas as fontes de dados configuradas no sistema.</CardDescription>
+                <CardHeader>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <CardTitle>Fontes de Dados Atuais</CardTitle>
+                            <CardDescription className="mt-1.5">Lista de todas as fontes de dados configuradas no sistema.</CardDescription>
+                        </div>
+                        <Dialog open={isFormOpen} onOpenChange={(open) => {
+                            if (!open) handleDialogClose();
+                            else setIsFormOpen(true);
+                        }}>
+                            <DialogTrigger asChild>
+                                <Button size="sm">
+                                <PlusCircle className="mr-2" />
+                                Adicionar Fonte
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                <DialogTitle>{editingSource ? 'Editar' : 'Adicionar'} Fonte de Dados</DialogTitle>
+                                </DialogHeader>
+                                <DataSourceForm 
+                                source={editingSource} 
+                                onSave={handleSaveDataSource}
+                                onFinished={handleDialogClose}
+                                isSaving={isSaving}
+                                />
+                            </DialogContent>
+                        </Dialog>
                     </div>
-                     <Dialog open={isFormOpen} onOpenChange={(open) => {
-                        if (!open) handleDialogClose();
-                        else setIsFormOpen(true);
-                     }}>
-                        <DialogTrigger asChild>
-                            <Button size="sm">
-                            <PlusCircle className="mr-2" />
-                            Adicionar Fonte
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                            <DialogTitle>{editingSource ? 'Editar' : 'Adicionar'} Fonte de Dados</DialogTitle>
-                            </DialogHeader>
-                            <DataSourceForm 
-                            source={editingSource} 
-                            onSave={handleSaveDataSource}
-                            onFinished={handleDialogClose}
-                            isSaving={isSaving}
-                            />
-                        </DialogContent>
-                    </Dialog>
+                     <div className="relative pt-4">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                        type="search"
+                        placeholder="Pesquisar fontes..."
+                        className="w-full pl-10"
+                        value={dataSourceSearch}
+                        onChange={(e) => setDataSourceSearch(e.target.value)}
+                        />
+                    </div>
                 </CardHeader>
                 <CardContent>
                 <div className="rounded-md border">
@@ -480,14 +518,14 @@ export default function AdminPage() {
                             <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                         </TableRow>
                         ))}
-                        {!isLoadingDataSources && dataSources?.length === 0 && (
+                        {!isLoadingDataSources && filteredDataSources?.length === 0 && (
                         <TableRow>
                             <TableCell colSpan={3} className="h-24 text-center">
-                            Nenhuma fonte de dados encontrada.
+                            {dataSourceSearch ? 'Nenhum resultado encontrado.' : 'Nenhuma fonte de dados encontrada.'}
                             </TableCell>
                         </TableRow>
                         )}
-                        {!isLoadingDataSources && dataSources?.map((source) => (
+                        {!isLoadingDataSources && filteredDataSources?.map((source) => (
                         <TableRow key={source.id}>
                             <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
@@ -537,6 +575,29 @@ export default function AdminPage() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Inbox />Caixa de Entrada</CardTitle>
                 <CardDescription>Mensagens de contacto enviadas pelos utilizadores.</CardDescription>
+                 <div className="flex flex-col gap-4 sm:flex-row pt-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Pesquisar por assunto, nome ou email..."
+                            className="w-full pl-10"
+                            value={messageSearch}
+                            onChange={(e) => setMessageSearch(e.target.value)}
+                        />
+                    </div>
+                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Filtrar por estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Estados</SelectItem>
+                            <SelectItem value="new">Novas</SelectItem>
+                            <SelectItem value="read">Lidas</SelectItem>
+                            <SelectItem value="archived">Arquivadas</SelectItem>
+                        </SelectContent>
+                    </Select>
+                 </div>
             </CardHeader>
             <CardContent>
                 <div className="rounded-md border">
@@ -546,10 +607,20 @@ export default function AdminPage() {
                     {isLoadingMessages && Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}><TableCell><Skeleton className="h-5 w-28" /></TableCell><TableCell><Skeleton className="h-5 w-36" /></TableCell><TableCell><Skeleton className="h-5 w-20" /></TableCell><TableCell><Skeleton className="h-5 w-24" /></TableCell><TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell></TableRow>
                     ))}
-                    {!isLoadingMessages && sortedMessages.length === 0 && (
-                        <TableRow><TableCell colSpan={5} className="h-24 text-center">Nenhuma mensagem recebida.</TableCell></TableRow>
+                    {!isLoadingMessages && filteredMessages.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                                {messageSearch || statusFilter !== 'all' ? (
+                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                        <Frown className="h-8 w-8" />
+                                        <p className="font-medium">Nenhum resultado encontrado</p>
+                                        <p className="text-sm">Tente ajustar a sua pesquisa ou filtros.</p>
+                                    </div>
+                                ) : 'Nenhuma mensagem recebida.'}
+                            </TableCell>
+                        </TableRow>
                     )}
-                    {!isLoadingMessages && sortedMessages.map((msg) => {
+                    {!isLoadingMessages && filteredMessages.map((msg) => {
                         const StatusIcon = statusConfig[msg.status].icon;
                         const timeAgo = msg.createdAt ? formatDistanceToNow(msg.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A';
                         return (

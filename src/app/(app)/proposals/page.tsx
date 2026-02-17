@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -52,6 +52,7 @@ export default function ProposalsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProposal, setEditingProposal] = useState<CommunityProposal | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
   const proposalsCollectionRef = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -59,6 +60,19 @@ export default function ProposalsPage() {
   }, [firestore]);
 
   const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommunityProposal>(proposalsCollectionRef);
+
+  const filteredProposals = useMemo(() => {
+    if (!proposals) return [];
+    if (!searchTerm.trim()) return proposals;
+
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    return proposals.filter(
+      (proposal) =>
+        proposal.title.toLowerCase().includes(lowercasedSearchTerm) ||
+        proposal.description.toLowerCase().includes(lowercasedSearchTerm) ||
+        proposal.userName.toLowerCase().includes(lowercasedSearchTerm)
+    );
+  }, [proposals, searchTerm]);
   
   const form = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalFormSchema),
@@ -268,7 +282,19 @@ export default function ProposalsPage() {
       </Card>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold font-headline tracking-tight">Propostas da Comunidade</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h2 className="text-2xl font-bold font-headline tracking-tight">Propostas da Comunidade</h2>
+           <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Pesquisar propostas..."
+              className="w-full sm:w-72 pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
         
         {isLoadingProposals && (
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
@@ -277,9 +303,9 @@ export default function ProposalsPage() {
              </div>
         )}
 
-        {!isLoadingProposals && proposals && proposals.length > 0 ? (
+        {!isLoadingProposals && filteredProposals && filteredProposals.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {proposals.map((proposal) => {
+            {filteredProposals.map((proposal) => {
                const hasVoted = !!(user && proposal.votedBy?.includes(user.uid));
                const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
                const isOwner = !!(user && user.uid === proposal.userId);
@@ -343,11 +369,13 @@ export default function ProposalsPage() {
         ) : !isLoadingProposals && (
            <Card className="flex flex-col items-center justify-center text-center py-16">
             <CardHeader>
-                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <CardTitle className="mt-4">Nenhuma proposta encontrada</CardTitle>
+                {searchTerm ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />}
+                <CardTitle className="mt-4">{searchTerm ? 'Nenhuma proposta encontrada' : 'Nenhuma proposta submetida'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Seja o primeiro a submeter uma proposta à comunidade!</p>
+              <p className="text-muted-foreground">
+                {searchTerm ? 'Tente uma pesquisa diferente ou limpe o campo de pesquisa.' : 'Seja o primeiro a submeter uma proposta à comunidade!'}
+              </p>
             </CardContent>
           </Card>
         )}
