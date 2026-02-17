@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, Checkbox, MessageSquare, Search, Frown } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
