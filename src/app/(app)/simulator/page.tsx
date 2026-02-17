@@ -1,9 +1,9 @@
+
 "use client";
 
 import { useState, useTransition, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
@@ -11,213 +11,238 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
-
-const suggestedPolicies = [
-  { label: "Aumento do Salário Mínimo", value: "Aumento do salário mínimo nacional para 1000€ mensais." },
-  { label: "Redução do IRC", value: "Redução da taxa geral de IRC de 21% para 15%." },
-  { label: "Fim das Portagens SCUT", value: "Abolição das portagens em todas as antigas autoestradas SCUT." },
-  { label: "IVA da Eletricidade a 6%", value: "Redução da taxa de IVA sobre o consumo de eletricidade para 6%." },
-];
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 export default function SimulatorPage() {
-  const [policy, setPolicy] = useState('');
-  const [simulation, setSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
+  const [policy1, setPolicy1] = useState('');
+  const [policy2, setPolicy2] = useState('');
+  const [simulation1, setSimulation1] = useState<EconomicPolicySimulationOutput | null>(null);
+  const [simulation2, setSimulation2] = useState<EconomicPolicySimulationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   useEffect(() => {
     const policyFromQuery = searchParams.get('policy');
     if (policyFromQuery) {
-      setPolicy(decodeURIComponent(policyFromQuery));
+      setPolicy1(decodeURIComponent(policyFromQuery));
     }
   }, [searchParams]);
 
-  const handleSimulation = async () => {
+  const handleComparison = () => {
+    if (!policy1.trim() || !policy2.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Políticas em falta',
+        description: 'Por favor, descreva as duas políticas que pretende comparar.',
+      });
+      return;
+    }
     startTransition(async () => {
-      setSimulation(null);
-      const result = await getEconomicSimulation({ policyDescription: policy });
-      setSimulation(result);
+      setSimulation1(null);
+      setSimulation2(null);
+      const [result1, result2] = await Promise.all([
+        getEconomicSimulation({ policyDescription: policy1 }),
+        getEconomicSimulation({ policyDescription: policy2 }),
+      ]);
+      setSimulation1(result1);
+      setSimulation2(result2);
     });
   };
 
-  const chartConfig = {
-    current: { label: 'Atual', color: 'hsl(var(--muted-foreground))' },
-    projected: { label: 'Projetado', color: 'hsl(var(--primary))' },
-  };
-
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="lg:col-span-2">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Simulador Económico</h1>
-        <p className="text-muted-foreground">Simule o impacto de políticas económicas hipotéticas ou reais em Portugal.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">Comparador de Políticas Económicas</h1>
+        <p className="text-muted-foreground">Simule o impacto de duas políticas e compare os resultados lado a lado.</p>
       </div>
 
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
-          <CardTitle>Descreva a Política</CardTitle>
+          <CardTitle>Descreva as Políticas a Comparar</CardTitle>
           <CardDescription>
-            Introduza uma descrição em linguagem natural da política económica que deseja simular. A IA tentará identificar se é uma proposta real.
+            Introduza uma política em cada caixa. A IA tentará identificar se são propostas reais e simulará o seu impacto.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="Ex: 'Reduzir o IVA na restauração de 13% para 6%' ou 'proposta de Orçamento do Estado para 2024'"
-            value={policy}
-            onChange={(e) => setPolicy(e.target.value)}
-            rows={4}
-          />
-          <div className="mt-4">
-            <p className="mb-2 text-sm text-muted-foreground">Ou experimente uma sugestão:</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedPolicies.map((p) => (
-                <Button key={p.label} variant="outline" size="sm" onClick={() => setPolicy(p.value)}>
-                  {p.label}
-                </Button>
-              ))}
-            </div>
+        <CardContent className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="space-y-2">
+            <h3 className="font-semibold">Política 1</h3>
+            <Textarea
+              placeholder="Ex: 'Reduzir o IVA na restauração de 13% para 6%'"
+              value={policy1}
+              onChange={(e) => setPolicy1(e.target.value)}
+              rows={4}
+              disabled={isPending}
+            />
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-semibold">Política 2</h3>
+            <Textarea
+              placeholder="Ex: 'Aumentar o salário mínimo nacional para 1000€'"
+              value={policy2}
+              onChange={(e) => setPolicy2(e.target.value)}
+              rows={4}
+              disabled={isPending}
+            />
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSimulation} disabled={isPending || !policy.trim()}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Simular Impacto
+          <Button onClick={handleComparison} disabled={isPending || !policy1.trim() || !policy2.trim()}>
+            <GitCompareArrows className="mr-2 h-4 w-4" />
+            {isPending ? 'A comparar...' : 'Comparar Impacto'}
           </Button>
         </CardFooter>
       </Card>
       
-      <div className="lg:col-span-2">
-        <AdBanner />
-      </div>
+      <AdBanner />
 
       {isPending && (
-        <>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-4 w-full mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-40 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-1/3" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-64 w-full" />
-            </CardContent>
-          </Card>
-        </>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-4 w-full mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 pt-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {simulation && (
-        <>
-         {simulation.isRealPolicy && (
-            <div className="lg:col-span-2">
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Política Real Identificada</AlertTitle>
-                <AlertDescription>
-                  A política que descreveu parece ser uma proposta ou medida real. A análise abaixo é uma simulação e não deve ser considerada uma previsão oficial.
-                  {simulation.source && (
-                    <Link href={simulation.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
-                      <LinkIcon className="h-4 w-4" />
-                      Ver Fonte Oficial
-                    </Link>
-                  )}
-                </AlertDescription>
-              </Alert>
+      {simulation1 && simulation2 && (
+        <div className="space-y-6">
+            <Separator />
+            <div>
+                <h2 className="text-2xl font-bold font-headline tracking-tight">Resultados da Comparação</h2>
+                <p className="text-muted-foreground">Análise comparativa do impacto das políticas simuladas.</p>
             </div>
-          )}
 
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="text-primary" />
-                <span>Sumário do Impacto</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{simulation.simulatedImpact}</p>
-            </CardContent>
-          </Card>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {simulation1.isRealPolicy && (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Política 1 Real Identificada</AlertTitle>
+                    <AlertDescription>
+                      {simulation1.source && (
+                        <Link href={simulation1.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
+                          <LinkIcon className="h-4 w-4" />
+                          Ver Fonte Oficial
+                        </Link>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+              )}
+               {!simulation1.isRealPolicy && <div />}
+              
+              {simulation2.isRealPolicy && (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Política 2 Real Identificada</AlertTitle>
+                    <AlertDescription>
+                      {simulation2.source && (
+                        <Link href={simulation2.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
+                          <LinkIcon className="h-4 w-4" />
+                          Ver Fonte Oficial
+                        </Link>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Zap className="text-primary" />
+                            <span>Sumário (Política 1)</span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">{simulation1.simulatedImpact}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Zap className="text-primary" />
+                            <span>Sumário (Política 2)</span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">{simulation2.simulatedImpact}</p>
+                    </CardContent>
+                </Card>
+            </div>
 
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Indicadores Chave</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Indicador</TableHead>
-                    <TableHead className="text-right">Valor Atual</TableHead>
-                    <TableHead className="text-right">Valor Projetado</TableHead>
-                    <TableHead className="text-right">Variação</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {simulation.keyIndicators.map((indicator) => {
-                    const change = indicator.projectedValue - indicator.currentValue;
-                    return (
-                      <TableRow key={indicator.name}>
-                        <TableCell className="font-medium">{indicator.name}</TableCell>
-                        <TableCell className="text-right">
-                          {indicator.currentValue}{indicator.unit}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold text-primary">
-                          {indicator.projectedValue}{indicator.unit}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className={`flex items-center justify-end gap-1 ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {change >= 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                            {Math.abs(change).toFixed(2)}{indicator.unit}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Visualização</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                <BarChart data={simulation.keyIndicators} layout="vertical" margin={{ left: 120 }}>
-                  <CartesianGrid horizontal={false} />
-                  <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={8} width={120} />
-                  <XAxis type="number" dataKey="projectedValue" hide />
-                  <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                  <Bar dataKey="currentValue" name="Atual" fill="var(--color-current)" radius={4} />
-                  <Bar dataKey="projectedValue" name="Projetado" fill="var(--color-projected)" radius={4} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Comparação de Indicadores Chave</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Indicador</TableHead>
+                                <TableHead className="text-right">Política 1 (Projetado)</TableHead>
+                                <TableHead className="text-right">Política 2 (Projetado)</TableHead>
+                                <TableHead className="text-right">Diferença (P2 vs P1)</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {simulation1.keyIndicators.map((indicator1, index) => {
+                                const indicator2 = simulation2.keyIndicators[index];
+                                if (!indicator2 || indicator1.name !== indicator2.name) return null;
+                                const diff = indicator2.projectedValue - indicator1.projectedValue;
+                                return (
+                                    <TableRow key={indicator1.name}>
+                                        <TableCell className="font-medium">{indicator1.name}</TableCell>
+                                        <TableCell className="text-right font-semibold">
+                                            {indicator1.projectedValue.toFixed(2)}{indicator1.unit}
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold text-primary">
+                                            {indicator2.projectedValue.toFixed(2)}{indicator2.unit}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <span className={`flex items-center justify-end gap-1 ${diff === 0 ? 'text-muted-foreground' : diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {diff !== 0 && (diff > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+                                                {diff === 0 ? '-' : `${Math.abs(diff).toFixed(2)}${indicator1.unit}`}
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Raciocínio Económico</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap">{simulation.reasoning}</p>
-            </CardContent>
-          </Card>
-        </>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Raciocínio (Política 1)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{simulation1.reasoning}</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Raciocínio (Política 2)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{simulation2.reasoning}</p>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
       )}
     </div>
   );
