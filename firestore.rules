@@ -82,16 +82,18 @@ service cloud.firestore {
     }
     
     match /contactMessages/{messageId} {
-      // Allow authenticated users to create new messages.
-      allow create: if isSignedIn();
+      // Admins can do anything.
+      allow read, write: if isAdmin();
+    
+      // Authenticated users can create messages for themselves.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       
-      // Admins can read, update or delete any message.
-      allow read, update, delete: if isAdmin();
-
-      // A non-admin user can read their own messages.
-      // This is secure for list operations because the client query MUST
-      // include `where('userId', '==', request.auth.uid)`.
-      allow read: if isOwner(resource.data.userId);
+      // Authenticated users can get their own single message.
+      allow get: if isOwner(resource.data.userId);
+      
+      // Authenticated users can list their own messages,
+      // as long as the query filters by their user ID.
+      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
     }
 
     match /users/{userId} {
