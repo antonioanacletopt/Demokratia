@@ -60,6 +60,17 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    match /communityProposals/{proposalId} {
+        allow read: if true;
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        // User can only update to add their vote.
+        allow update: if isSignedIn() 
+                      && request.auth.uid !in resource.data.votedBy // User has not voted yet
+                      // And no other fields are being modified except voteCount and votedBy
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy']);
+        allow delete: if isAdmin() || isOwner(resource.data.userId);
+    }
+
     match /users/{userId} {
       match /simulationScenarios/{scenarioId} {
         allow read, write: if isOwner(userId);

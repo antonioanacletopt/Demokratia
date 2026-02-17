@@ -392,6 +392,63 @@
         "answer",
         "createdAt"
       ]
+    },
+    "CommunityProposal": {
+      "title": "Community Proposal",
+      "type": "object",
+      "description": "Represents a policy proposal submitted by a user for community discussion and voting.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CommunityProposal entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who submitted this proposal."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The display name of the user who submitted the proposal."
+        },
+        "userPhotoURL": {
+          "type": "string",
+          "description": "The photo URL of the user who submitted the proposal."
+        },
+        "title": {
+          "type": "string",
+          "description": "A concise title for the policy proposal."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the proposal, explaining its goals and mechanisms."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the proposal was submitted.",
+          "format": "date-time"
+        },
+        "voteCount": {
+          "type": "number",
+          "description": "The total number of votes (upvotes) this proposal has received."
+        },
+        "votedBy": {
+          "type": "array",
+          "description": "An array of user UIDs who have voted for this proposal, to prevent duplicate votes.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "userName",
+        "title",
+        "description",
+        "createdAt",
+        "voteCount",
+        "votedBy"
+      ]
     }
   },
   "auth": {
@@ -525,6 +582,22 @@
             {
               "name": "queryId",
               "description": "The unique identifier for the public query."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/communityProposals/{proposalId}",
+        "definition": {
+          "entityName": "CommunityProposal",
+          "schema": {
+            "$ref": "#/backend/entities/CommunityProposal"
+          },
+          "description": "A public collection of policy proposals submitted by the community. Readable by everyone, creatable by authenticated users, and updatable for voting.",
+          "params": [
+            {
+              "name": "proposalId",
+              "description": "The unique identifier for the community proposal."
             }
           ]
         }

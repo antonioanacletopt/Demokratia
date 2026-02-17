@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -39,6 +39,7 @@ const allNavItems = [
   { href: "/fact-check", icon: ShieldCheck, label: "Fact Check", public: true },
   { href: "/legislation", icon: Scale, label: "Legislação", public: true },
   { href: "/scenarios", icon: NotebookText, label: "Cenários", public: true },
+  { href: "/proposals", icon: MessageSquare, label: "Propostas", public: true },
   { href: "/profile", icon: User, label: "Perfil", public: false },
   { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
 ];
@@ -165,3 +166,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
