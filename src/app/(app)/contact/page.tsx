@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, serverTimestamp, addDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, query, where } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -58,10 +58,22 @@ export default function ContactPage() {
 
   const userMessagesQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid));
   }, [user, firestore]);
   
   const { data: pastMessages, isLoading: isLoadingHistory } = useCollection<ContactMessage>(userMessagesQuery);
+  
+  const sortedPastMessages = useMemo(() => {
+    if (!pastMessages) return [];
+    return [...pastMessages].sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+            return b.createdAt.seconds - a.createdAt.seconds;
+        }
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return 0;
+    });
+  }, [pastMessages]);
 
   const onSubmit = async (data: ContactFormValues) => {
     if (!user || !firestore) {
@@ -202,9 +214,9 @@ export default function ContactPage() {
                   </h3>
                 </div>
           )}
-          {user && !isLoadingHistory && pastMessages && pastMessages.length > 0 ? (
+          {user && !isLoadingHistory && sortedPastMessages && sortedPastMessages.length > 0 ? (
             <div className="space-y-4">
-              {pastMessages.map(msg => {
+              {sortedPastMessages.map(msg => {
                 const statusInfo = statusConfig[msg.status] || statusConfig.new;
                 const timeAgo = msg.createdAt ? formatDistanceToNow(msg.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
                 return (
