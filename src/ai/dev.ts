@@ -8,3 +8,4 @@ import '@/ai/flows/find-public-statistic.ts';
 import '@/ai/flows/generate-chart-from-request.ts';
 import '@/ai/flows/fact-check-claim.ts';
 import '@/ai/flows/consult-legislation.ts';
+import '@/ai/flows/generate-news-feed.ts';

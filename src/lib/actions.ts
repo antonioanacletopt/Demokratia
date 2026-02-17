@@ -30,6 +30,10 @@ import {
   ConsultLegislationInput,
   ConsultLegislationOutput,
 } from '@/ai/flows/consult-legislation';
+import {
+  generateNewsFeed,
+  GenerateNewsFeedOutput,
+} from '@/ai/flows/generate-news-feed';
 
 export async function getEconomicSimulation(
   input: EconomicPolicySimulationInput
@@ -65,4 +69,8 @@ export async function getLegislationInfo(
   input: ConsultLegislationInput
 ): Promise<ConsultLegislationOutput> {
   return await consultLegislation(input);
+}
+
+export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
+  return await generateNewsFeed();
 }
