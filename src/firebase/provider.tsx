@@ -96,6 +96,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
                 preferredLanguage: 'pt',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
+                notificationPreferences: {
+                    emailNotifications: true,
+                    weeklyNewsletter: true,
+                },
               };
               setDoc(userProfileRef, profileData)
                 .catch(serverError => {
@@ -208,3 +212,5 @@ export const useUser = (): UserHookResult => { // Renamed from useAuthUser
   const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
   return { user, isUserLoading, userError };
 };
+
+    

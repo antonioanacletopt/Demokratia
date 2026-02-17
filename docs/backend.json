@@ -32,6 +32,24 @@
           "type": "string",
           "description": "Timestamp indicating the last time the user profile's information was updated.",
           "format": "date-time"
+        },
+        "notificationPreferences": {
+          "type": "object",
+          "description": "Defines user's preferences for receiving notifications from the application.",
+          "properties": {
+            "emailNotifications": {
+              "type": "boolean",
+              "description": "Receive emails about new features and major updates."
+            },
+            "weeklyNewsletter": {
+              "type": "boolean",
+              "description": "Receive a weekly summary newsletter of the main analyses and simulations."
+            }
+          },
+          "required": [
+            "emailNotifications",
+            "weeklyNewsletter"
+          ]
         }
       },
       "required": [
