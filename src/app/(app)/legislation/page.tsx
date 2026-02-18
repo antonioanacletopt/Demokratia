@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Scale, History, User, FileText, Bot, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/AdBanner';
+import { useTranslation } from '@/lib/i18n';
 
 interface LegislationQuery extends ConsultLegislationOutput {
   id: string;
@@ -34,6 +35,7 @@ export default function LegislationPage() {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { user } = useUser();
+  const { language } = useTranslation();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const resultRef = useRef<HTMLDivElement>(null);
@@ -96,7 +98,7 @@ export default function LegislationPage() {
       }
       
       // 2. If not in cache, call AI
-      const response = await getLegislationInfo({ question: trimmedQuestion });
+      const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 
       // 3. Save to public cache (non-blocking)

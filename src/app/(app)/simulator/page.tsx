@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from 'react';
@@ -16,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from '@/lib/i18n';
 
 function SimulationResult({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
     return (
@@ -97,6 +97,7 @@ export default function SimulatorPage() {
 
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { language } = useTranslation();
 
   useEffect(() => {
     const policyFromQuery = searchParams.get('policy');
@@ -129,13 +130,13 @@ export default function SimulatorPage() {
 
       if (isComparing && policy2.trim()) {
         const [result1, result2] = await Promise.all([
-          getEconomicSimulation({ policyDescription: policy1 }),
-          getEconomicSimulation({ policyDescription: policy2 }),
+          getEconomicSimulation({ policyDescription: policy1 }, language),
+          getEconomicSimulation({ policyDescription: policy2 }, language),
         ]);
         setSimulation1(result1);
         setSimulation2(result2);
       } else {
-        const result1 = await getEconomicSimulation({ policyDescription: policy1 });
+        const result1 = await getEconomicSimulation({ policyDescription: policy1 }, language);
         setSimulation1(result1);
       }
     });

@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldCheck, History, User, FileText, Check, X, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/AdBanner';
+import { useTranslation } from '@/lib/i18n';
 
 interface FactCheckResult extends FactCheckOutput {
   id: string;
@@ -36,6 +37,7 @@ export default function FactCheckPage() {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { user } = useUser();
+  const { language } = useTranslation();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const resultRef = useRef<HTMLDivElement>(null);
@@ -65,7 +67,7 @@ export default function FactCheckPage() {
 
     startTransition(async () => {
       setResult(null);
-      const response = await getFactCheck({ claim });
+      const response = await getFactCheck({ claim }, language);
       setResult(response);
 
       if (user && factChecksCollection) {
@@ -227,8 +229,8 @@ export default function FactCheckPage() {
           {user && !isLoadingHistory && pastChecks && pastChecks.length > 0 ? (
             <div className="space-y-4">
               {pastChecks.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds).map(check => {
-                const VerdictIcon = verdictConfig[check.verdict]?.icon || HelpCircle;
-                const verdictColor = verdictConfig[check.verdict]?.color || verdictConfig['Sem Evidência'].color;
+                const VerdictIcon = verdictConfig[check.verdict as keyof typeof verdictConfig]?.icon || HelpCircle;
+                const verdictColor = verdictConfig[check.verdict as keyof typeof verdictConfig]?.color || verdictConfig['Sem Evidência'].color;
                 return (
                   <div key={check.id} className="rounded-lg border p-4">
                     <p className="font-semibold text-muted-foreground italic">"{check.claim}"</p>
