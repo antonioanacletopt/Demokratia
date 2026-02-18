@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
 export type Language = 'pt' | 'en';
 
@@ -37,7 +37,10 @@ export const translations = {
       sources: 'Fontes Oficiais',
       share: 'Partilhar com a comunidade',
       error: 'Ocorreu um erro.',
-      success: 'Sucesso!'
+      success: 'Sucesso!',
+      portuguese: 'Português',
+      english: 'Inglês',
+      language: 'Idioma'
     },
     home: {
       title: 'Feed de Atualizações',
@@ -87,7 +90,10 @@ export const translations = {
       sources: 'Official Sources',
       share: 'Share with community',
       error: 'An error occurred.',
-      success: 'Success!'
+      success: 'Success!',
+      portuguese: 'Portuguese',
+      english: 'English',
+      language: 'Language'
     },
     home: {
       title: 'Updates Feed',
@@ -115,8 +121,27 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children, initialLanguage = 'pt' }: { children: ReactNode, initialLanguage?: Language }) {
-  const [language, setLanguage] = useState<Language>(initialLanguage);
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>('pt');
+
+  useEffect(() => {
+    // 1. Try to load from localStorage
+    const saved = localStorage.getItem('preferred-language') as Language;
+    if (saved && (saved === 'pt' || saved === 'en')) {
+      setLanguageState(saved);
+    } else {
+      // 2. Try browser detection
+      const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'pt';
+      if (browserLang === 'en') {
+        setLanguageState('en');
+      }
+    }
+  }, []);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('preferred-language', lang);
+  };
 
   const t = (path: string) => {
     const keys = path.split('.');

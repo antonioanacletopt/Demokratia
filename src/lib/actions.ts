@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -38,39 +37,29 @@ import {
 
 import { initializeFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-
-async function getUserLanguage(userId?: string): Promise<'Portuguese' | 'English'> {
-  if (!userId) return 'Portuguese';
-  const { firestore } = initializeFirebase();
-  const userRef = doc(firestore, 'userProfiles', userId);
-  const snap = await getDoc(userRef);
-  if (snap.exists() && snap.data().preferredLanguage === 'en') {
-    return 'English';
-  }
-  return 'Portuguese';
-}
+import type { Language } from './i18n';
 
 export async function getEconomicSimulation(
   input: Omit<EconomicPolicySimulationInput, 'language'>,
-  userId?: string
+  lang: Language
 ): Promise<EconomicPolicySimulationOutput> {
-  const language = await getUserLanguage(userId);
+  const language = lang === 'en' ? 'English' : 'Portuguese';
   return await simulateEconomicPolicy({ ...input, language });
 }
 
 export async function getFactCheck(
   input: Omit<FactCheckInput, 'language'>,
-  userId?: string
+  lang: Language
 ): Promise<FactCheckOutput> {
-  const language = await getUserLanguage(userId);
+  const language = lang === 'en' ? 'English' : 'Portuguese';
   return await factCheckClaim({ ...input, language });
 }
 
 export async function getLegislationInfo(
   input: Omit<ConsultLegislationInput, 'language'>,
-  userId?: string
+  lang: Language
 ): Promise<ConsultLegislationOutput> {
-  // Similarly update other flows as needed...
+  // Update legislation flow if needed to accept language, currently it simulates PT law
   return await consultLegislation({ ...input } as any);
 }
 

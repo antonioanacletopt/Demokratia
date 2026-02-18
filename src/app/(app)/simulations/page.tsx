@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
@@ -11,6 +10,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, Fi
 import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -34,8 +34,8 @@ interface UserSimulationRun {
   userId: string;
   title: string;
   notes?: string;
-  inputVariables: string; // The policy description
-  simulationResults: string; // JSON.stringified EconomicPolicySimulationOutput
+  inputVariables: string;
+  simulationResults: string;
   runTimestamp: any;
 }
 
@@ -140,6 +140,7 @@ export default function SimulationsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { language } = useTranslation();
   const searchParams = useSearchParams();
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -199,7 +200,7 @@ export default function SimulationsPage() {
     setComparisonView(null);
     startSimulation(async () => {
       setCurrentSimulation(null);
-      const result = await getEconomicSimulation({ policyDescription: policyInput });
+      const result = await getEconomicSimulation({ policyDescription: policyInput }, language);
       setCurrentSimulation(result);
     });
   };
@@ -283,13 +284,13 @@ export default function SimulationsPage() {
   }
 
   const handleCompareSelection = (id: string, checked: boolean | 'indeterminate') => {
-    if (checked) {
+    if (checked === true) {
         if (selectedForComparison.length < 2) {
             setSelectedForComparison(prev => [...prev, id]);
         } else {
             toast({ variant: 'destructive', title: 'Limite atingido', description: 'Pode comparar apenas duas simulações de cada vez.'});
         }
-    } else {
+    } else if (checked === false) {
         setSelectedForComparison(prev => prev.filter(item => item !== id));
     }
   };

@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield, FileText } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield, FileText, Languages, Check } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
@@ -38,7 +37,6 @@ import { CookieConsent } from "@/components/CookieConsent";
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
-// Extracted component to access useSidebar context
 function AppSidebarContent() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
@@ -66,10 +64,10 @@ function AppSidebarContent() {
   ];
 
   const finalNavItems = allNavItems.filter(item => {
-    if (item.public) return true; // Public items are always visible
-    if (!user) return false; // Private items require a user
-    if (item.adminOnly && !isAdmin) return false; // Admin items require admin role
-    return true; // Other private items are visible to logged-in users
+    if (item.public) return true;
+    if (!user) return false;
+    if (item.adminOnly && !isAdmin) return false;
+    return true;
   });
 
 
@@ -100,9 +98,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, firestore } = useUser();
   const auth = useAuth();
   const router = useRouter();
-  const { t, setLanguage } = useTranslation();
+  const { t, setLanguage, language } = useTranslation();
 
-  // Sync language with user profile
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'userProfiles', user.uid) : null),
     [user, firestore]
@@ -110,10 +107,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: profileData } = useDoc(userProfileRef);
 
   useEffect(() => {
-    if (profileData?.preferredLanguage) {
+    if (profileData?.preferredLanguage && profileData.preferredLanguage !== language) {
       setLanguage(profileData.preferredLanguage as Language);
     }
-  }, [profileData, setLanguage]);
+  }, [profileData, setLanguage, language]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -140,46 +137,68 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="flex-1" />
-            {user ? (
+            <div className="flex items-center gap-2">
               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                      <Button
-                          variant="ghost"
-                          className="relative h-10 w-10 rounded-full"
-                      >
-                          <Avatar className="h-10 w-10 border border-primary/20">
-                              <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "Avatar"} />
-                              <AvatarFallback>{initials}</AvatarFallback>
-                          </Avatar>
-                      </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>
-                        <p className="font-medium truncate">{user?.displayName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile">
-                          <User className="mr-2 h-4 w-4" />
-                          <span>{t('nav.profile')}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleSignOut}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>{t('nav.logout')}</span>
-                      </DropdownMenuItem>
-                  </DropdownMenuContent>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                    <Languages className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{t('common.language')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setLanguage('pt')} className="flex items-center justify-between">
+                    <span>{t('common.portuguese')}</span>
+                    {language === 'pt' && <Check className="h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage('en')} className="flex items-center justify-between">
+                    <span>{t('common.english')}</span>
+                    {language === 'en' && <Check className="h-4 w-4" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
-              <Button asChild>
-                <Link href="/login">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {t('nav.login')}
-                </Link>
-              </Button>
-            )}
+
+              {user ? (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="relative h-10 w-10 rounded-full"
+                        >
+                            <Avatar className="h-10 w-10 border border-primary/20">
+                                <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "Avatar"} />
+                                <AvatarFallback>{initials}</AvatarFallback>
+                            </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>
+                          <p className="font-medium truncate">{user?.displayName}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>{t('nav.profile')}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>{t('nav.logout')}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href="/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    {t('nav.login')}
+                  </Link>
+                </Button>
+              )}
+            </div>
         </header>
         <div className="flex-1 flex flex-col">
           <div className="flex-1 p-4 sm:p-6">
