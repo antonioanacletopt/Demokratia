@@ -65,6 +65,7 @@ export default function PrivacyPage() {
             <li><strong>Google AdSense:</strong> Utilizamos o AdSense para exibir anúncios que ajudam a manter a plataforma gratuita. A Google pode utilizar cookies para personalizar anúncios com base nos seus interesses. Pode gerir estas definições no seu navegador.</li>
           </ul>
         </CardContent>
+      </Card>
 
       <Card className="border-primary/20">
         <CardHeader>

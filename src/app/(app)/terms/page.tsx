@@ -50,6 +50,7 @@ export default function TermsPage() {
             <li>Reconhecer que as propostas submetidas publicamente são da sua inteira responsabilidade.</li>
           </ul>
         </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
