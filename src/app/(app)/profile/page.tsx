@@ -136,6 +136,7 @@ export default function ProfilePage() {
     try {
       const batch = writeBatch(firestore);
       
+      // List of user-owned collections to clean up
       const collectionsToCleanup = [
         `users/${user.uid}/simulationScenarios`,
         `users/${user.uid}/savedDataViews`,
@@ -149,8 +150,10 @@ export default function ProfilePage() {
         snapshot.forEach(d => batch.delete(d.ref));
       }
 
+      // Delete profile
       batch.delete(doc(firestore, 'userProfiles', user.uid));
 
+      // Cleanup public messages
       const contactMessagesQuery = query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid));
       const contactSnapshot = await getDocs(contactMessagesQuery);
       contactSnapshot.forEach(d => batch.delete(d.ref));

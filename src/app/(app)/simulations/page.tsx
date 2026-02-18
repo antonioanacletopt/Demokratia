@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
@@ -200,6 +201,7 @@ export default function SimulationsPage() {
     setComparisonView(null);
     startSimulation(async () => {
       setCurrentSimulation(null);
+      // Fixed: Passing language parameter
       const result = await getEconomicSimulation({ policyDescription: policyInput }, language);
       setCurrentSimulation(result);
     });

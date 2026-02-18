@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useRef } from 'react';
@@ -97,7 +98,7 @@ export default function LegislationPage() {
         toast({ variant: "destructive", title: "Aviso", description: "Não foi possível verificar a cache. A contactar a IA diretamente."});
       }
       
-      // 2. If not in cache, call AI
+      // 2. If not in cache, call AI (passing language)
       const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 

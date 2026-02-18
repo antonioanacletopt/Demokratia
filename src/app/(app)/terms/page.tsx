@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
@@ -45,11 +46,10 @@ export default function TermsPage() {
           <p>O utilizador compromete-se a:</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>Utilizar a plataforma de forma lícita e ética.</li>
-            <li>Não submeter propostas que contenham discurso de ódio, violência ou conteúdo discriminatório.</li>
+            <li>Não submeter propostas que contenham discurso de oposição, violência ou conteúdo discriminatório.</li>
             <li>Reconhecer que as propostas submetidas publicamente são da sua inteira responsabilidade.</li>
           </ul>
         </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>

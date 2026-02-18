@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -106,6 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const { data: profileData } = useDoc(userProfileRef);
 
+  // Synchronize language with user profile preference if authenticated
   useEffect(() => {
     if (profileData?.preferredLanguage && profileData.preferredLanguage !== language) {
       setLanguage(profileData.preferredLanguage as Language);

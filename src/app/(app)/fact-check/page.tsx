@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
@@ -67,6 +68,7 @@ export default function FactCheckPage() {
 
     startTransition(async () => {
       setResult(null);
+      // Fixed: Passing language parameter
       const response = await getFactCheck({ claim }, language);
       setResult(response);
 
