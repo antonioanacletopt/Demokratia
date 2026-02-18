@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompare, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
@@ -19,8 +19,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AdBanner } from '@/components/AdBanner';
-import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -28,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox as ShadCheckbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface UserSimulationRun {
@@ -201,7 +200,6 @@ export default function SimulationsPage() {
     setComparisonView(null);
     startSimulation(async () => {
       setCurrentSimulation(null);
-      // Fixed: Passing language parameter
       const result = await getEconomicSimulation({ policyDescription: policyInput }, language);
       setCurrentSimulation(result);
     });
@@ -502,7 +500,7 @@ export default function SimulationsPage() {
                     />
                 </div>
                 <Button onClick={handleStartComparison} disabled={selectedForComparison.length !== 2} size="sm">
-                    <GitCompareArrows className="mr-2 h-4 w-4" />
+                    <GitCompare className="mr-2 h-4 w-4" />
                     Comparar ({selectedForComparison.length}/2)
                 </Button>
             </div>
@@ -659,9 +657,6 @@ export default function SimulationsPage() {
           </Card>
         )}
       </div>
-      
-      <AdBanner />
-
     </div>
   );
 }

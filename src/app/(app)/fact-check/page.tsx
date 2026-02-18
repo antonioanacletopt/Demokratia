@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldCheck, History, User, FileText, Check, X, AlertTriangle, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -68,7 +67,6 @@ export default function FactCheckPage() {
 
     startTransition(async () => {
       setResult(null);
-      // Fixed: Passing language parameter
       const response = await getFactCheck({ claim }, language);
       setResult(response);
 
@@ -79,7 +77,6 @@ export default function FactCheckPage() {
           ...response,
           createdAt: serverTimestamp(),
         };
-        // Non-blocking write to history
         addDoc(factChecksCollection, historyData)
           .catch((serverError) => {
             const permissionError = new FirestorePermissionError({
@@ -231,14 +228,14 @@ export default function FactCheckPage() {
           {user && !isLoadingHistory && pastChecks && pastChecks.length > 0 ? (
             <div className="space-y-4">
               {pastChecks.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds).map(check => {
-                const VerdictIcon = verdictConfig[check.verdict as keyof typeof verdictConfig]?.icon || HelpCircle;
-                const verdictColor = verdictConfig[check.verdict as keyof typeof verdictConfig]?.color || verdictConfig['Sem Evidência'].color;
+                const CurrentVerdictIcon = verdictConfig[check.verdict as keyof typeof verdictConfig]?.icon || HelpCircle;
+                const currentVerdictColor = verdictConfig[check.verdict as keyof typeof verdictConfig]?.color || verdictConfig['Sem Evidência'].color;
                 return (
                   <div key={check.id} className="rounded-lg border p-4">
                     <p className="font-semibold text-muted-foreground italic">"{check.claim}"</p>
                     <div className="flex items-center justify-between mt-3">
-                      <Badge className={verdictColor}>
-                        <VerdictIcon className="mr-1.5 h-4 w-4" />
+                      <Badge className={currentVerdictColor}>
+                        <CurrentVerdictIcon className="mr-1.5 h-4 w-4" />
                         {check.verdict}
                       </Badge>
                       <p className="text-xs text-muted-foreground">

@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 export default function TermsPage() {
   return (
@@ -70,6 +70,9 @@ export default function TermsPage() {
         <CardContent className="space-y-4 text-muted-foreground">
           <p>
             Reservamo-nos o direito de modificar estes termos a qualquer momento. A utilização continuada da plataforma após tais alterações constitui aceitação dos novos termos.
+          </p>
+          <p>
+            Dúvidas? Entre em <Link href="/contact" className="text-primary hover:underline font-medium">contacto</Link> connosco.
           </p>
         </CardContent>
       </Card>

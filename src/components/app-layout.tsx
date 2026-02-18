@@ -3,8 +3,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield, FileText, Languages, Check } from "lucide-react";
-import { useAuth, useUser, useDoc, useMemoFirebase } from "@/firebase";
+import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Shield } from "lucide-react";
+import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
 import { useTranslation, type Language } from "@/lib/i18n";
@@ -96,7 +96,8 @@ function AppSidebarContent() {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, firestore } = useUser();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const auth = useAuth();
   const router = useRouter();
   const { t, setLanguage, language } = useTranslation();
@@ -107,7 +108,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const { data: profileData } = useDoc(userProfileRef);
 
-  // Synchronize language with user profile preference if authenticated
   useEffect(() => {
     if (profileData?.preferredLanguage && profileData.preferredLanguage !== language) {
       setLanguage(profileData.preferredLanguage as Language);

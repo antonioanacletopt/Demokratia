@@ -54,14 +54,12 @@ export default function LegislationPage() {
     }
   }, [result, isPending]);
 
-  // Private history for logged-in users
   const legislationQueriesCollection = useMemoFirebase(() => {
     if (!user) return null;
     return collection(firestore, 'users', user.uid, 'legislationQueries');
   }, [firestore, user]);
   const { data: pastQueries, isLoading: isLoadingHistory } = useCollection<LegislationQuery>(legislationQueriesCollection);
 
-  // Public queries for engagement
   const publicQueriesCollection = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(5));
@@ -76,7 +74,6 @@ export default function LegislationPage() {
     startTransition(async () => {
       setResult(null);
 
-      // 1. Check public cache first
       try {
         const q = query(collection(firestore, "publicLegislationQueries"), where("question", "==", trimmedQuestion), limit(1));
         const querySnapshot = await getDocs(q);
@@ -94,15 +91,12 @@ export default function LegislationPage() {
         }
       } catch (e) {
         console.error("Error checking public cache:", e);
-        // If cache check fails, proceed to AI, but notify user.
         toast({ variant: "destructive", title: "Aviso", description: "Não foi possível verificar a cache. A contactar a IA diretamente."});
       }
       
-      // 2. If not in cache, call AI (passing language)
       const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 
-      // 3. Save to public cache (non-blocking)
       const publicCollection = collection(firestore, 'publicLegislationQueries');
       const cacheData = {
         question: trimmedQuestion,
@@ -112,7 +106,6 @@ export default function LegislationPage() {
       };
       addDoc(publicCollection, cacheData).catch(err => console.warn("Failed to write to public cache", err));
 
-      // 4. Save to user's private history (if logged in)
       if (user && legislationQueriesCollection) {
         const historyData = {
           userId: user.uid,
