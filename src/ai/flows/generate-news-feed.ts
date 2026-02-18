@@ -1,9 +1,6 @@
 'use server';
 /**
- * @fileOverview A news feed generation AI agent.
- *
- * - generateNewsFeed - A function that handles the news feed generation process.
- * - GenerateNewsFeedOutput - The return type for the generateNewsFeed function.
+ * @fileOverview A news feed generation AI agent. Updated for 2026.
  */
 
 import { ai } from '@/ai/genkit';
@@ -17,18 +14,17 @@ const FeedItemSchema = z.object({
   date: z.string().describe('A data da notícia no formato AAAA-MM-DD.'),
   description: z.string().describe('Uma breve descrição da notícia.'),
   actionLink: z.object({
-    href: z.string().describe('O URL para a ação relacionada (ex: /fact-check?claim=...).'),
-    label: z.string().describe('O texto para o botão de ação (ex: "Verificar Facto").')
-  }).optional().describe('Um link opcional para uma ação relevante na aplicação.')
+    href: z.string().describe('O URL para a ação relacionada.'),
+    label: z.string().describe('O texto para o botão de ação.')
+  }).optional()
 });
 
 export type FeedItem = z.infer<typeof FeedItemSchema>;
 
 const GenerateNewsFeedOutputSchema = z.object({
-  feedItems: z.array(FeedItemSchema).min(4).max(5).describe('Uma lista de 4 a 5 notícias recentes e relevantes sobre o panorama político e económico português.')
+  feedItems: z.array(FeedItemSchema).min(4).max(5)
 });
 export type GenerateNewsFeedOutput = z.infer<typeof GenerateNewsFeedOutputSchema>;
-
 
 export async function generateNewsFeed(): Promise<GenerateNewsFeedOutput> {
   return generateNewsFeedFlow();
@@ -37,20 +33,17 @@ export async function generateNewsFeed(): Promise<GenerateNewsFeedOutput> {
 const prompt = ai.definePrompt({
   name: 'generateNewsFeedPrompt',
   output: { schema: GenerateNewsFeedOutputSchema },
-  prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa. A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes que seriam de interesse para o público geral, abrangendo alegações políticas, novas propostas de lei e análises económicas.
+  prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. 
+A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes sobre o panorama político e económico português, 
+considerando que estamos em Março de 2026.
 
-Processo:
-1.  Pesquise por notícias, debates e publicações oficiais dos últimos dias em Portugal.
-2.  Selecione os 4 ou 5 tópicos mais importantes.
-3.  Para cada tópico, crie um item de feed que siga o esquema definido.
-4.  Crie descrições concisas e informativas.
-5.  Quando apropriado, adicione um 'actionLink' que direcione o utilizador para uma página relevante dentro da aplicação Demokratia. Por exemplo:
-    - Para uma alegação, o link deve apontar para '/fact-check' com a alegação como parâmetro de URL (ex: /fact-check?claim=...).
-    - Para uma proposta de lei, o link deve apontar para '/simulator' com a descrição da política como parâmetro (ex: /simulator?policy=...).
-    - Para uma análise de dados, o link pode apontar para '/dashboard' ou '/explorer'.
-6.  A data deve ser recente (últimos 7 dias) e no formato AAAA-MM-DD.
-7.  Garanta que a saída é um JSON válido que corresponde ao esquema.
-`,
+As notícias devem focar-se em:
+1. Execução do Orçamento do Estado 2026.
+2. Debate sobre as próximas autárquicas ou presidenciais.
+3. Indicadores económicos recentes (PIB, Inflação estável em 2%).
+4. Novas leis de habitação ou tecnologia.
+
+Use datas entre 2026-02-25 e 2026-03-10.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(
