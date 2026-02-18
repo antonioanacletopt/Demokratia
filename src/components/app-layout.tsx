@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -30,6 +30,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/Logo";
+import { CookieConsent } from "@/components/CookieConsent";
 
 const allNavItems = [
   { href: "/home", icon: Home, label: "Início", public: true },
@@ -110,7 +111,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex h-10 w-10 items-center justify-center">
                 <Logo className="size-8" />
             </div>
-            <h1 className="text-xl font-semibold font-headline">Demokratia</h1>
+            <h1 className="text-xl font-semibold font-headline text-primary">Demokratia</h1>
           </div>
         </SidebarHeader>
         <AppSidebarContent />
@@ -127,7 +128,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           variant="ghost"
                           className="relative h-10 w-10 rounded-full"
                       >
-                          <Avatar className="h-10 w-10 border">
+                          <Avatar className="h-10 w-10 border border-primary/20">
                               <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "Avatar"} />
                               <AvatarFallback>{initials}</AvatarFallback>
                           </Avatar>
@@ -161,7 +162,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Button>
             )}
         </header>
-        <div className="flex-1 p-4 sm:p-6">{children}</div>
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 p-4 sm:p-6">
+            {children}
+          </div>
+          
+          <footer className="border-t py-6 px-4 sm:px-6 bg-muted/30">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Logo className="size-4 opacity-50 grayscale" />
+                <span>© {new Date().getFullYear()} Demokratia Portugal</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
+                  <Shield className="h-3 w-3" />
+                  Privacidade e Cookies
+                </Link>
+                <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
+                  Contacto
+                </Link>
+              </div>
+            </div>
+          </footer>
+        </div>
+        <CookieConsent />
       </SidebarInset>
     </SidebarProvider>
   );
