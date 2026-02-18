@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: 'Demokratia Portugal',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1200', // Imagem de Lisboa
+        url: 'https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1200',
         width: 1200,
         height: 630,
         alt: 'Vista sobre os telhados de Lisboa, Portugal',
@@ -48,7 +48,6 @@ export const metadata: Metadata = {
     },
   },
 };
-
 
 export default function RootLayout({
   children,

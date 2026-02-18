@@ -52,13 +52,14 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
   const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Auto-check client-side cache
   useEffect(() => {
     if (language === 'en') {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
         const fetchCached = async (text: string) => {
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
@@ -88,7 +89,6 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
 
-      // Save to global cache
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
@@ -396,7 +396,7 @@ export default function ProposalsPage() {
         {isLoadingProposals && (
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></div >
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
              </div>
         )}
 
