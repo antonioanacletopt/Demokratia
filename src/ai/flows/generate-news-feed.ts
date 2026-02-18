@@ -1,7 +1,7 @@
-
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
+ * Ensures every item has an action link.
  */
 
 import { ai } from '@/ai/genkit';
@@ -17,7 +17,7 @@ const FeedItemSchema = z.object({
   actionLink: z.object({
     href: z.string().describe('O URL para a ação relacionada.'),
     label: z.string().describe('O texto para o botão de ação.')
-  }).optional()
+  }).describe('Uma ação obrigatória: simulação para alegações, análise para leis, dados para análise.')
 });
 
 export type FeedItem = z.infer<typeof FeedItemSchema>;
@@ -38,11 +38,16 @@ const prompt = ai.definePrompt({
 A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes sobre o panorama político e económico português, 
 considerando que estamos em Março de 2026.
 
+REGRAS OBRIGATÓRIAS PARA OS LINKS DE AÇÃO (actionLink):
+1. Para cada 'Alegação', forneça SEMPRE um link para 'Simular Impacto' (/simulations?policy=URL_ENCODED_CLAIM) ou 'Verificar Facto' (/fact-check?claim=URL_ENCODED_CLAIM).
+2. Para cada 'Nova Lei', forneça um link para 'Consultar Detalhes' (/legislation?question=URL_ENCODED_TITLE).
+3. Para cada 'Análise', forneça um link para 'Explorar Dados' (/dashboard ou /explorer).
+
 As notícias devem focar-se em:
-1. Execução do Orçamento do Estado 2026.
-2. Debate sobre as próximas autárquicas ou presidenciais.
-3. Indicadores económicos recentes (PIB, Inflação estável em 2%).
-4. Novas leis de habitação ou tecnologia.
+- Execução do Orçamento do Estado 2026.
+- Debate sobre as próximas eleições.
+- Indicadores económicos recentes (PIB, Inflação).
+- Novas leis de habitação.
 
 Use datas entre 2026-02-25 e 2026-03-10.`,
 });
