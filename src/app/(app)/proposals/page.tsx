@@ -89,6 +89,7 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
 
+      // Save to global cache
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
