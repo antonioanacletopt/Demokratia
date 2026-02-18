@@ -17,6 +17,8 @@ import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
+import { useFirestore } from '@/firebase';
+import { collection, query, where, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const typeConfig = {
   Alegação: {
@@ -35,19 +37,29 @@ const typeConfig = {
 
 function FeedItemCard({ item }: { item: AIFeedItem }) {
   const { t, language } = useTranslation();
+  const firestore = useFirestore();
   const config = typeConfig[item.type];
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string, actionLabel?: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Auto-check cache on mount or language change
+  // Client-side cache check
   useEffect(() => {
-    if (language === 'en') {
+    if (language === 'en' && item) {
       const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
+        const fetchCached = async (text: string) => {
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
         const [tTitle, tDesc, tAction] = await Promise.all([
-          getTranslation(item.title, 'en', false),
-          getTranslation(item.description, 'en', false),
-          item.actionLink ? getTranslation(item.actionLink.label, 'en', false) : Promise.resolve(null)
+          fetchCached(item.title),
+          fetchCached(item.description),
+          item.actionLink ? fetchCached(item.actionLink.label) : Promise.resolve(null)
         ]);
 
         if (tTitle && tDesc) {
@@ -60,20 +72,37 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, item]);
+  }, [language, item, firestore]);
 
   if (!config) return null;
   const Icon = config.icon;
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const [tTitle, tDesc, tAction] = await Promise.all([
-        getTranslation(item.title, language),
-        getTranslation(item.description, language),
-        item.actionLink ? getTranslation(item.actionLink.label, language) : Promise.resolve(undefined)
-      ]);
-      setTranslated({ title: tTitle || item.title, desc: tDesc || item.description, actionLabel: tAction || undefined });
+      const resTitle = await getTranslation(item.title, language);
+      const resDesc = await getTranslation(item.description, language);
+      const resAction = item.actionLink ? await getTranslation(item.actionLink.label, language) : undefined;
+
+      const newTranslated = { title: resTitle, desc: resDesc, actionLabel: resAction };
+      setTranslated(newTranslated);
       setShowOriginal(false);
+
+      // Save to global cache (non-blocking)
+      const cacheRef = collection(firestore, 'translations_cache');
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      const saveToCache = (orig: string, trans: string) => {
+        addDoc(cacheRef, {
+          originalText: orig,
+          translatedText: trans,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      };
+
+      saveToCache(item.title, resTitle);
+      saveToCache(item.description, resDesc);
+      if (item.actionLink && resAction) saveToCache(item.actionLink.label, resAction);
     });
   };
 

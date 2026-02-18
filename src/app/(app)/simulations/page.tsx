@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getEconomicSimulation, getTranslation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit, where, getDocs } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useTranslation } from '@/lib/i18n';
@@ -50,18 +50,29 @@ interface PublicSimulationRun {
 
 function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
     const { t, language } = useTranslation();
+    const firestore = useFirestore();
     const [isTranslating, startTransition] = useTransition();
     const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
     const [showOriginal, setShowOriginal] = useState(true);
 
-    // Auto-check cache
+    // Client-side cache check
     useEffect(() => {
-      if (language === 'en') {
+      if (language === 'en' && simulation) {
         const checkCache = async () => {
+          const cacheRef = collection(firestore, 'translations_cache');
+          const targetLang = 'English';
+          
+          const fetchCached = async (text: string) => {
+            const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+            const snap = await getDocs(q);
+            return !snap.empty ? snap.docs[0].data().translatedText : null;
+          };
+
           const [tImpact, tReasoning] = await Promise.all([
-            getTranslation(simulation.simulatedImpact, 'en', false),
-            getTranslation(simulation.reasoning, 'en', false)
+            fetchCached(simulation.simulatedImpact),
+            fetchCached(simulation.reasoning)
           ]);
+
           if (tImpact && tReasoning) {
             setTranslated({ impact: tImpact, reasoning: tReasoning });
             setShowOriginal(false);
@@ -72,16 +83,32 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
         setTranslated(null);
         setShowOriginal(true);
       }
-    }, [language, simulation]);
+    }, [language, simulation, firestore]);
 
     const handleTranslate = () => {
         startTransition(async () => {
-            const [tImpact, tReasoning] = await Promise.all([
-                getTranslation(simulation.simulatedImpact, language),
-                getTranslation(simulation.reasoning, language)
-            ]);
-            setTranslated({ impact: tImpact || simulation.simulatedImpact, reasoning: tReasoning || simulation.reasoning });
+            const resImpact = await getTranslation(simulation.simulatedImpact, language);
+            const resReasoning = await getTranslation(simulation.reasoning, language);
+            
+            setTranslated({ impact: resImpact, reasoning: resReasoning });
             setShowOriginal(false);
+
+            // Save to global cache
+            const cacheRef = collection(firestore, 'translations_cache');
+            const targetLang = language === 'en' ? 'English' : 'Portuguese';
+            
+            addDoc(cacheRef, {
+              originalText: simulation.simulatedImpact,
+              translatedText: resImpact,
+              targetLanguage: targetLang,
+              createdAt: serverTimestamp()
+            });
+            addDoc(cacheRef, {
+              originalText: simulation.reasoning,
+              translatedText: resReasoning,
+              targetLanguage: targetLang,
+              createdAt: serverTimestamp()
+            });
         });
     };
 
@@ -185,6 +212,12 @@ export default function SimulationsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const policy = searchParams.get('policy');
+    if (policy) setPolicyInput(decodeURIComponent(policy));
+  }, [searchParams]);
 
   const savedSimsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;

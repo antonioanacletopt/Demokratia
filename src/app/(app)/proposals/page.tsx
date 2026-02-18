@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc, where, limit, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,18 +47,27 @@ type ProposalFormValues = z.infer<ReturnType<typeof proposalFormSchema>>;
 
 function TranslatedContent({ originalTitle, originalDescription }: { originalTitle: string, originalDescription: string }) {
   const { t, language } = useTranslation();
+  const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Auto-check cache
+  // Auto-check client-side cache
   useEffect(() => {
     if (language === 'en') {
       const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const fetchCached = async (text: string) => {
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
         const [tTitle, tDesc] = await Promise.all([
-          getTranslation(originalTitle, 'en', false),
-          getTranslation(originalDescription, 'en', false)
+          fetchCached(originalTitle),
+          fetchCached(originalDescription)
         ]);
+
         if (tTitle && tDesc) {
           setTranslated({ title: tTitle, desc: tDesc });
           setShowOriginal(false);
@@ -69,16 +78,32 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, originalTitle, originalDescription]);
+  }, [language, originalTitle, originalDescription, firestore]);
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const [tTitle, tDesc] = await Promise.all([
-        getTranslation(originalTitle, language),
-        getTranslation(originalDescription, language)
-      ]);
-      setTranslated({ title: tTitle || originalTitle, desc: tDesc || originalDescription });
+      const resTitle = await getTranslation(originalTitle, language);
+      const resDesc = await getTranslation(originalDescription, language);
+      
+      setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
+
+      // Save to global cache
+      const cacheRef = collection(firestore, 'translations_cache');
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      addDoc(cacheRef, {
+        originalText: originalTitle,
+        translatedText: resTitle,
+        targetLanguage: targetLang,
+        createdAt: serverTimestamp()
+      });
+      addDoc(cacheRef, {
+        originalText: originalDescription,
+        translatedText: resDesc,
+        targetLanguage: targetLang,
+        createdAt: serverTimestamp()
+      });
     });
   };
 
@@ -371,7 +396,7 @@ export default function ProposalsPage() {
         {isLoadingProposals && (
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></div >
              </div>
         )}
 

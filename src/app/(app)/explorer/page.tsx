@@ -76,19 +76,28 @@ function DataTable({ jsonData }: { jsonData: string }) {
 
 function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   const { t, language } = useTranslation();
+  const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Auto-check cache
+  // Client-side auto-check cache
   useEffect(() => {
     if (language === 'en') {
       const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const fetchCached = async (text: string) => {
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
         const [tTitle, tDesc, tCat] = await Promise.all([
-          getTranslation(dataset.title, 'en', false),
-          getTranslation(dataset.description, 'en', false),
-          getTranslation(dataset.category, 'en', false)
+          fetchCached(dataset.title),
+          fetchCached(dataset.description),
+          fetchCached(dataset.category)
         ]);
+
         if (tTitle && tDesc && tCat) {
           setTranslated({ title: tTitle, desc: tDesc, cat: tCat });
           setShowOriginal(false);
@@ -99,17 +108,33 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, dataset]);
+  }, [language, dataset, firestore]);
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const [tTitle, tDesc, tCat] = await Promise.all([
-        getTranslation(dataset.title, language),
-        getTranslation(dataset.description, language),
-        getTranslation(dataset.category, language)
-      ]);
-      setTranslated({ title: tTitle || dataset.title, desc: tDesc || dataset.description, cat: tCat || dataset.category });
+      const resTitle = await getTranslation(dataset.title, language);
+      const resDesc = await getTranslation(dataset.description, language);
+      const resCat = await getTranslation(dataset.category, language);
+      
+      setTranslated({ title: resTitle, desc: resDesc, cat: resCat });
       setShowOriginal(false);
+
+      // Save to global cache
+      const cacheRef = collection(firestore, 'translations_cache');
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      const saveToCache = (orig: string, trans: string) => {
+        addDoc(cacheRef, {
+          originalText: orig,
+          translatedText: trans,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      };
+
+      saveToCache(dataset.title, resTitle);
+      saveToCache(dataset.description, resDesc);
+      saveToCache(dataset.category, resCat);
     });
   };
 
@@ -154,6 +179,7 @@ export default function ExplorerPage() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
+  
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
 
@@ -161,6 +187,12 @@ export default function ExplorerPage() {
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const publicQueriesCollection = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'publicStatisticQueries'), orderBy('createdAt', 'desc'), limit(5));
+  }, [firestore]);
+  const { data: recentQueries } = useCollection<PublicStatisticQuery>(publicQueriesCollection);
 
   useEffect(() => {
     if ((aiResponse || isAiLoading) && resultRef.current) {

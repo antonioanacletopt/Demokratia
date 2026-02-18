@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Loader2, Bot, Frown, Save, User, NotebookText, Languages, RefreshCw } from 'lucide-react';
-import { doc, collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, orderBy, where, limit, getDocs } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { DataSetKey, PublicData } from '@/lib/data';
 import { getChartFromRequest, getTranslation } from '@/lib/actions';
@@ -49,14 +49,24 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
 
   const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
 
-  // Auto-check cache
+  // Client-side auto-check cache
   useEffect(() => {
     if (language === 'en' && dataSet) {
       const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
+        const fetchCached = async (text: string) => {
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
         const [tTitle, tDesc] = await Promise.all([
-          getTranslation(dataSet.label, 'en', false),
-          getTranslation(dataSet.description, 'en', false)
+          fetchCached(dataSet.label),
+          fetchCached(dataSet.description)
         ]);
+
         if (tTitle && tDesc) {
           setTranslated({ title: tTitle, desc: tDesc });
           setShowOriginal(false);
@@ -67,17 +77,33 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, dataSet]);
+  }, [language, dataSet, firestore]);
 
   const handleTranslate = () => {
     if (!dataSet) return;
     startTransition(async () => {
-      const [tTitle, tDesc] = await Promise.all([
-        getTranslation(dataSet.label, language),
-        getTranslation(dataSet.description, language)
-      ]);
-      setTranslated({ title: tTitle || dataSet.label, desc: tDesc || dataSet.description });
+      const resTitle = await getTranslation(dataSet.label, language);
+      const resDesc = await getTranslation(dataSet.description, language);
+      
+      setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
+
+      // Save to global cache
+      const cacheRef = collection(firestore, 'translations_cache');
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      addDoc(cacheRef, {
+        originalText: dataSet.label,
+        translatedText: resTitle,
+        targetLanguage: targetLang,
+        createdAt: serverTimestamp()
+      });
+      addDoc(cacheRef, {
+        originalText: dataSet.description,
+        translatedText: resDesc,
+        targetLanguage: targetLang,
+        createdAt: serverTimestamp()
+      });
     });
   };
 

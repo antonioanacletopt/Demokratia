@@ -33,8 +33,6 @@ import {
   FindPublicStatisticOutput,
 } from '@/ai/flows/find-public-statistic';
 
-import { initializeFirebase } from '@/firebase';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, limit } from 'firebase/firestore';
 import type { Language } from './i18n';
 
 export async function getEconomicSimulation(
@@ -77,52 +75,18 @@ export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
 }
 
 /**
- * AI-powered translation with Firestore caching.
- * allowAI: if false, only returns cached version or null.
+ * AI-powered translation. 
+ * Note: Cache checking and saving has been moved to the client side 
+ * to comply with Firebase environment constraints.
  */
 export async function getTranslation(
   text: string,
-  lang: Language,
-  allowAI: boolean = true
-): Promise<string | null> {
+  lang: Language
+): Promise<string> {
   if (!text || text.trim().length === 0) return '';
-  if (lang === 'pt') return text; // Default language is already Portuguese
+  if (lang === 'pt') return text;
   
   const targetLanguage = lang === 'en' ? 'English' : 'Portuguese';
-  const { firestore } = initializeFirebase();
-  const cacheRef = collection(firestore, 'translations_cache');
-  
-  try {
-    // 1. Check cache first
-    const q = query(
-      cacheRef, 
-      where('originalText', '==', text), 
-      where('targetLanguage', '==', targetLanguage),
-      limit(1)
-    );
-    const snapshot = await getDocs(q);
-    
-    if (!snapshot.empty) {
-      return snapshot.docs[0].data().translatedText;
-    }
-
-    if (!allowAI) return null;
-
-    // 2. If not in cache and AI allowed, call AI
-    const result = await translateContent({ text, targetLanguage });
-    const translatedText = result.translatedText;
-
-    // 3. Save to cache for others
-    await addDoc(cacheRef, {
-      originalText: text,
-      translatedText,
-      targetLanguage,
-      createdAt: serverTimestamp()
-    });
-
-    return translatedText;
-  } catch (error) {
-    console.error("Translation error:", error);
-    return allowAI ? text : null; // Fallback to original if AI allowed, else null
-  }
+  const result = await translateContent({ text, targetLanguage });
+  return result.translatedText;
 }
