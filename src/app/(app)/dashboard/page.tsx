@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { Loader2, Bot, Frown, Save, User, NotebookText } from 'lucide-react';
+import { Loader2, Bot, Frown, Save, User, NotebookText, Languages, RefreshCw } from 'lucide-react';
 import { doc, collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useDoc, useMemoFirebase, useUser, useCollection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { DataSetKey, PublicData } from '@/lib/data';
-import { getChartFromRequest } from '@/lib/actions';
+import { getChartFromRequest, getTranslation } from '@/lib/actions';
 import type { GenerateChartOutput } from '@/ai/flows/generate-chart-from-request';
 import { useTranslation } from '@/lib/i18n';
 
@@ -36,8 +37,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const firestore = useFirestore();
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
   
   const dataSetDocRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -45,6 +49,18 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   }, [firestore, dataSetKey]);
 
   const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
+
+  const handleTranslate = () => {
+    if (!dataSet) return;
+    startTransition(async () => {
+      const [tTitle, tDesc] = await Promise.all([
+        getTranslation(dataSet.label, language),
+        getTranslation(dataSet.description, language)
+      ]);
+      setTranslated({ title: tTitle, desc: tDesc });
+      setShowOriginal(false);
+    });
+  };
 
   const chartConfig: ChartConfig = {
     value: {
@@ -80,11 +96,28 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
     );
   }
 
+  const currentTitle = !showOriginal && translated ? translated.title : dataSet.label;
+  const currentDesc = !showOriginal && translated ? translated.desc : dataSet.description;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{dataSet.label}</CardTitle>
-        <CardDescription>{dataSet.description}</CardDescription>
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <CardTitle className="text-lg">{currentTitle}</CardTitle>
+            <CardDescription className="mt-1">{currentDesc}</CardDescription>
+          </div>
+          <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+              disabled={isTranslating}
+              className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
+          >
+              {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+              {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -121,7 +154,7 @@ interface SavedDataView {
 }
 
 export default function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [request, setRequest] = useState('');
   const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
   const [isPending, startTransition] = useTransition();

@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompare, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompare, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown, Languages, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { getEconomicSimulation } from '@/lib/actions';
+import { getEconomicSimulation, getTranslation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit } from 'firebase/firestore';
@@ -49,9 +50,40 @@ interface PublicSimulationRun {
 }
 
 function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const [isTranslating, startTransition] = useTransition();
+    const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
+    const [showOriginal, setShowOriginal] = useState(true);
+
+    const handleTranslate = () => {
+        startTransition(async () => {
+            const [tImpact, tReasoning] = await Promise.all([
+                getTranslation(simulation.simulatedImpact, language),
+                getTranslation(simulation.reasoning, language)
+            ]);
+            setTranslated({ impact: tImpact, reasoning: tReasoning });
+            setShowOriginal(false);
+        });
+    };
+
+    const currentImpact = !showOriginal && translated ? translated.impact : simulation.simulatedImpact;
+    const currentReasoning = !showOriginal && translated ? translated.reasoning : simulation.reasoning;
+
     return (
         <div className="space-y-6">
+             <div className="flex justify-end">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                    disabled={isTranslating}
+                    className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                >
+                    {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                    {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                </Button>
+             </div>
+
              {simulation.isRealPolicy && (
                   <Alert>
                     <Info className="h-4 w-4" />
@@ -74,7 +106,7 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">{simulation.simulatedImpact}</p>
+                    <p className="text-muted-foreground">{currentImpact}</p>
                 </CardContent>
             </Card>
 
@@ -109,7 +141,7 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
                     <CardTitle>{t('simulations.aiReasoning')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{simulation.reasoning}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{currentReasoning}</p>
                 </CardContent>
             </Card>
         </div>
@@ -127,9 +159,6 @@ export default function SimulationsPage() {
   const [simulationNotes, setSimulationNotes] = useState('');
   const [shareWithCommunity, setShareWithCommunity] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
-  const [comparisonView, setComparisonView] = useState<{ sim1: UserSimulationRun, sim2: UserSimulationRun } | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -150,7 +179,6 @@ export default function SimulationsPage() {
 
   const handleSimulate = () => {
     if (!policyInput.trim()) return;
-    setComparisonView(null);
     startSimulation(async () => {
       setCurrentSimulation(null);
       const result = await getEconomicSimulation({ policyDescription: policyInput }, language);

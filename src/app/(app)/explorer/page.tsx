@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
 import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { getPublicStatistic } from '@/lib/actions';
+import { getPublicStatistic, getTranslation } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n';
@@ -14,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, Frown, FileText, Sparkles } from 'lucide-react';
+import { Search, Bot, Loader2, Frown, FileText, Sparkles, Languages, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -75,17 +76,49 @@ function DataTable({ jsonData }: { jsonData: string }) {
 }
 
 function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
+  const handleTranslate = () => {
+    startTransition(async () => {
+      const [tTitle, tDesc, tCat] = await Promise.all([
+        getTranslation(dataset.title, language),
+        getTranslation(dataset.description, language),
+        getTranslation(dataset.category, language)
+      ]);
+      setTranslated({ title: tTitle, desc: tDesc, cat: tCat });
+      setShowOriginal(false);
+    });
+  };
+
+  const currentTitle = !showOriginal && translated ? translated.title : dataset.title;
+  const currentDesc = !showOriginal && translated ? translated.desc : dataset.description;
+  const currentCat = !showOriginal && translated ? translated.cat : dataset.category;
+
   return (
     <AccordionItem value={dataset.id}>
       <AccordionTrigger className="px-4">
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-left">
-          <span className="font-semibold">{dataset.title}</span>
-          <Badge variant="secondary">{dataset.category}</Badge>
+          <span className="font-semibold">{currentTitle}</span>
+          <Badge variant="secondary">{currentCat}</Badge>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="space-y-4 px-4">
-        <p className="text-sm text-muted-foreground">{dataset.description}</p>
+      <AccordionContent className="space-y-4 px-4 relative">
+        <div className="flex justify-end absolute right-4 top-0">
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating} 
+                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+            >
+                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+            </Button>
+        </div>
+        <p className="text-sm text-muted-foreground pt-2">{currentDesc}</p>
         <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
           <p><strong>{t('explorer.source')}:</strong> {dataset.source}</p>
