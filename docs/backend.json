@@ -1,611 +1,59 @@
+
 {
   "entities": {
     "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Stores core information and preferences for a registered user of the Demokratia Portugal application. Authentication is handled by an external system, so no sensitive credentials are stored here.",
+      "description": "Stores core information and preferences for a registered user.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "The primary email address of the user, used for communication and identification within the application.",
-          "format": "email"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "A user-friendly name chosen by the user for display purposes within the application."
-        },
-        "preferredLanguage": {
-          "type": "string",
-          "description": "The user's preferred language for the application interface (e.g., 'pt' for Portuguese, 'en' for English)."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was initially created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time the user profile's information was updated.",
-          "format": "date-time"
-        },
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "preferredLanguage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
         "notificationPreferences": {
           "type": "object",
-          "description": "Defines user's preferences for receiving notifications from the application.",
           "properties": {
-            "emailNotifications": {
-              "type": "boolean",
-              "description": "Receive emails about new features and major updates."
-            },
-            "weeklyNewsletter": {
-              "type": "boolean",
-              "description": "Receive a weekly summary newsletter of the main analyses and simulations."
-            }
+            "emailNotifications": { "type": "boolean" },
+            "weeklyNewsletter": { "type": "boolean" }
           },
-          "required": [
-            "emailNotifications",
-            "weeklyNewsletter"
-          ]
+          "required": ["emailNotifications", "weeklyNewsletter"]
         }
       },
-      "required": [
-        "id",
-        "email",
-        "createdAt",
-        "updatedAt"
-      ]
+      "required": ["id", "email", "createdAt", "updatedAt"]
     },
-    "SimulationModelDefinition": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SimulationModelDefinition",
+    "TranslationCache": {
+      "title": "TranslationCache",
       "type": "object",
-      "description": "Defines the types of economic simulation models available in the Demokratia Portugal application, including their structural requirements for inputs and expected outputs.",
+      "description": "Caches AI-generated translations to minimize API costs.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the SimulationModelDefinition entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "A descriptive name for the simulation model (e.g., 'Fiscal Policy Impact Simulator')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed explanation of what this simulation model analyzes, its scope, and underlying principles."
-        },
-        "availableInputParametersSchema": {
-          "type": "string",
-          "description": "A JSON string defining the schema or structure of input parameters required by this model, used to guide UI input forms."
-        },
-        "outputMetricsDescription": {
-          "type": "string",
-          "description": "A JSON string or descriptive text outlining the key economic metrics and data points typically generated as output by this model."
-        },
-        "version": {
-          "type": "string",
-          "description": "Version identifier for the simulation model, allowing for tracking of updates and changes over time."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when this simulation model definition was initially created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time this simulation model definition was updated.",
-          "format": "date-time"
-        }
+        "originalText": { "type": "string" },
+        "translatedText": { "type": "string" },
+        "targetLanguage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "availableInputParametersSchema",
-        "outputMetricsDescription",
-        "version",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "UserSimulationRun": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserSimulationRun",
-      "type": "object",
-      "description": "Represents a specific instance of a user executing an economic simulation, storing their chosen input parameters and the resulting outputs.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserSimulationRun entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who initiated this simulation run. (Relationship: UserProfile 1:N UserSimulationRun)"
-        },
-        "simulationModelDefinitionId": {
-          "type": "string",
-          "description": "Reference to the SimulationModelDefinition that was used for this particular simulation run. (Relationship: SimulationModelDefinition 1:N UserSimulationRun)"
-        },
-        "title": {
-          "type": "string",
-          "description": "An optional, user-provided title for this specific simulation run, for easy identification and organization."
-        },
-        "notes": {
-          "type": "string",
-          "description": "Optional notes or observations entered by the user regarding this simulation run, its context, or specific findings."
-        },
-        "inputVariables": {
-          "type": "string",
-          "description": "A JSON string storing the specific hypothetical political variables and their values provided by the user for this simulation run."
-        },
-        "simulationResults": {
-          "type": "string",
-          "description": "A JSON string storing the comprehensive output data and analysis generated by the economic simulation for the given inputs, including various metrics, charts data, and textual analysis."
-        },
-        "runTimestamp": {
-          "type": "string",
-          "description": "Timestamp indicating the exact date and time when this simulation run was executed.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "inputVariables",
-        "simulationResults",
-        "runTimestamp"
-      ]
-    },
-    "PublicSimulationRun": {
-      "title": "Public Simulation Run",
-      "type": "object",
-      "description": "Represents a user's simulation that has been explicitly shared with the community. It stores the inputs and results for public viewing and analysis.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PublicSimulationRun entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who shared this simulation."
-        },
-        "userName": {
-          "type": "string",
-          "description": "The display name of the user who shared the simulation."
-        },
-        "userPhotoURL": {
-          "type": "string",
-          "description": "The photo URL of the user who shared the simulation."
-        },
-        "title": {
-          "type": "string",
-          "description": "A user-provided title for this simulation."
-        },
-        "inputVariables": {
-          "type": "string",
-          "description": "A JSON string storing the specific hypothetical political variables and their values."
-        },
-        "simulationResults": {
-          "type": "string",
-          "description": "A JSON string storing the comprehensive output data and analysis generated by the economic simulation."
-        },
-        "runTimestamp": {
-          "type": "string",
-          "description": "Timestamp indicating when this simulation run was executed and shared.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "userName",
-        "title",
-        "inputVariables",
-        "simulationResults",
-        "runTimestamp"
-      ]
-    },
-    "SavedDataView": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SavedDataView",
-      "type": "object",
-      "description": "Stores user-defined configurations for exploring public economic and social data, allowing users to save and revisit specific data visualizations or filtered datasets.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the SavedDataView entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who created and saved this data view. (Relationship: UserProfile 1:N SavedDataView)"
-        },
-        "name": {
-          "type": "string",
-          "description": "A user-defined name for this saved data view or dashboard configuration, for easy recall."
-        },
-        "description": {
-          "type": "string",
-          "description": "An optional description provided by the user about the content or purpose of this saved view."
-        },
-        "viewConfiguration": {
-          "type": "string",
-          "description": "A JSON string defining the complete configuration of the data view, including selected data sources, filters, visualization types, and display options required to recreate it."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when this saved data view configuration was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time this saved data view configuration was updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "name",
-        "viewConfiguration",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "FactCheck": {
-      "title": "FactCheck",
-      "type": "object",
-      "description": "Represents a single fact-checking request made by a user, storing the original claim and the AI-generated analysis.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the FactCheck entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who initiated this fact-check."
-        },
-        "claim": {
-          "type": "string",
-          "description": "The original claim or statement submitted by the user for verification."
-        },
-        "verdict": {
-          "type": "string",
-          "description": "The final verdict of the fact-check analysis (e.g., 'Verdadeiro', 'Falso').",
-          "enum": [
-            "Verdadeiro",
-            "Falso",
-            "Enganador",
-            "Sem Evidência"
-          ]
-        },
-        "explanation": {
-          "type": "string",
-          "description": "A detailed explanation from the AI supporting the verdict, including context and data."
-        },
-        "sources": {
-          "type": "string",
-          "description": "A JSON string representing an array of URL strings for the primary sources used."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the fact-check was performed.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "claim",
-        "verdict",
-        "explanation",
-        "createdAt"
-      ]
-    },
-    "DataSource": {
-      "title": "DataSource",
-      "type": "object",
-      "description": "Represents an external data source, either an API or a website, that can be used by the AI for analysis and fact-checking.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the DataSource."
-        },
-        "name": {
-          "type": "string",
-          "description": "A user-friendly name for the data source (e.g., 'INE - Instituto Nacional de Estatística')."
-        },
-        "url": {
-          "type": "string",
-          "description": "The base URL for the API endpoint or the website address."
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of the data source.",
-          "enum": [
-            "API",
-            "Website"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the data source and the kind of data it provides."
-        },
-        "requiresAuth": {
-          "type": "boolean",
-          "description": "Whether this data source requires authentication."
-        },
-        "authMethod": {
-          "type": "string",
-          "description": "The authentication method used if required (e.g., 'API Key', 'Bearer Token').",
-          "enum": [
-            "None",
-            "API Key",
-            "Bearer Token"
-          ]
-        },
-        "credentials": {
-          "type": "string",
-          "description": "The credential string (API key or token). This will be stored as plain text and should only be used for non-critical, public data APIs."
-        },
-        "isSystemSource": {
-          "type": "boolean",
-          "description": "Indicates if this is a default system source. System sources cannot be deleted by admins."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "url",
-        "type",
-        "requiresAuth"
-      ]
-    },
-    "LegislationQuery": {
-      "title": "LegislationQuery",
-      "type": "object",
-      "description": "Represents a single legislation query made by a user, storing the original question and the AI-generated answer.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the LegislationQuery entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who initiated this query."
-        },
-        "question": {
-          "type": "string",
-          "description": "The original question submitted by the user."
-        },
-        "answer": {
-          "type": "string",
-          "description": "The AI-generated answer based on legislation."
-        },
-        "sources": {
-          "type": "string",
-          "description": "A JSON string representing an array of URL strings for the official sources used."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the query was performed.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "question",
-        "answer",
-        "createdAt"
-      ]
-    },
-    "PublicLegislationQuery": {
-      "title": "Public Legislation Query",
-      "type": "object",
-      "description": "Represents a legislation query made by any user (anonymous or authenticated) that is stored publicly for caching and analysis. Deduplication should be handled by application logic before creating new entries.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PublicLegislationQuery entity."
-        },
-        "question": {
-          "type": "string",
-          "description": "The original question submitted by the user, used as a cache key."
-        },
-        "answer": {
-          "type": "string",
-          "description": "The AI-generated answer based on legislation."
-        },
-        "sources": {
-          "type": "string",
-          "description": "A JSON string representing an array of URL strings for the official sources used."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the query was first performed and cached.",
-          "format": "date-time"
-        },
-        "lastAccessedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time this cached query was accessed.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "question",
-        "answer",
-        "createdAt"
-      ]
-    },
-    "PublicStatisticQuery": {
-      "title": "Public Statistic Query",
-      "type": "object",
-      "description": "Represents a statistic query made by any user (anonymous or authenticated) that is stored publicly for caching and analysis. Deduplication should be handled by application logic before creating new entries.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the PublicStatisticQuery entity."
-        },
-        "request": {
-          "type": "string",
-          "description": "The original question submitted by the user, used as a cache key."
-        },
-        "isFound": {
-          "type": "boolean",
-          "description": "Indicates whether the requested statistic could be found."
-        },
-        "explanation": {
-          "type": "string",
-          "description": "A summary of the findings or why the data could not be found."
-        },
-        "source": {
-          "type": "string",
-          "description": "The official source of the data if found."
-        },
-        "data": {
-          "type": "string",
-          "description": "The structured data, if found, as a JSON string."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the query was first performed and cached.",
-          "format": "date-time"
-        },
-        "lastAccessedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time this cached query was accessed.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "request",
-        "isFound",
-        "explanation",
-        "createdAt"
-      ]
+      "required": ["originalText", "translatedText", "targetLanguage", "createdAt"]
     },
     "CommunityProposal": {
       "title": "Community Proposal",
       "type": "object",
-      "description": "Represents a policy proposal submitted by a user for community discussion and voting.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the CommunityProposal entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who submitted this proposal."
-        },
-        "userName": {
-          "type": "string",
-          "description": "The display name of the user who submitted the proposal."
-        },
-        "userPhotoURL": {
-          "type": "string",
-          "description": "The photo URL of the user who submitted the proposal."
-        },
-        "title": {
-          "type": "string",
-          "description": "A concise title for the policy proposal."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the proposal, explaining its goals and mechanisms."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the proposal was submitted.",
-          "format": "date-time"
-        },
-        "voteCount": {
-          "type": "number",
-          "description": "The total number of votes (upvotes) this proposal has received."
-        },
-        "votedBy": {
-          "type": "array",
-          "description": "An array of user UIDs who have voted for this proposal, to prevent duplicate votes.",
-          "items": {
-            "type": "string"
-          }
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "voteCount": { "type": "number" },
+        "votedBy": { "type": "array", "items": { "type": "string" } }
       },
-      "required": [
-        "id",
-        "userId",
-        "userName",
-        "title",
-        "description",
-        "createdAt",
-        "voteCount",
-        "votedBy"
-      ]
-    },
-    "ContactMessage": {
-      "title": "Contact Message",
-      "type": "object",
-      "description": "Represents a message sent by a user through the contact form.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the message."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who sent the message."
-        },
-        "userName": {
-          "type": "string",
-          "description": "The name of the user who sent the message."
-        },
-        "userEmail": {
-          "type": "string",
-          "description": "The email of the user who sent the message."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The subject of the contact message."
-        },
-        "message": {
-          "type": "string",
-          "description": "The content of the contact message."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the message.",
-          "enum": [
-            "new",
-            "read",
-            "archived"
-          ]
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the message was sent.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "userName",
-        "userEmail",
-        "subject",
-        "message",
-        "status",
-        "createdAt"
-      ]
+      "required": ["id", "userId", "userName", "title", "description", "createdAt", "voteCount", "votedBy"]
     }
   },
   "auth": {
-    "providers": [
-      "google.com"
-    ]
+    "providers": ["google.com"]
   },
   "firestore": {
     "structure": [
@@ -613,227 +61,29 @@
         "path": "/userProfiles/{userId}",
         "definition": {
           "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores core information and preferences for a registered user. The document ID (`userId`) MUST match the Firebase Authentication UID of the user. Includes denormalized 'id' field matching the path wildcard for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/UserProfile" },
+          "description": "User profiles.",
+          "params": [{ "name": "userId", "description": "UID" }]
         }
       },
       {
-        "path": "/simulationModelDefinitions/{simulationModelDefinitionId}",
+        "path": "/translations_cache/{cacheId}",
         "definition": {
-          "entityName": "SimulationModelDefinition",
-          "schema": {
-            "$ref": "#/backend/entities/SimulationModelDefinition"
-          },
-          "description": "Contains definitions of economic simulation models. This is a global, publicly readable collection, with write access typically restricted to administrators for structural segregation and clarity of security posture.",
-          "params": [
-            {
-              "name": "simulationModelDefinitionId",
-              "description": "The unique identifier for a specific simulation model definition."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/simulationScenarios/{scenarioId}",
-        "definition": {
-          "entityName": "UserSimulationRun",
-          "schema": {
-            "$ref": "#/backend/entities/UserSimulationRun"
-          },
-          "description": "Stores individual simulation scenarios created by a specific user. The 'userId' field is denormalized into each document and also present in the path for robust authorization independence. Access is restricted to the owning user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user who owns this simulation scenario."
-            },
-            {
-              "name": "scenarioId",
-              "description": "The unique identifier for a specific user's simulation scenario."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/publicSimulations/{simulationId}",
-        "definition": {
-          "entityName": "PublicSimulationRun",
-          "schema": {
-            "$ref": "#/backend/entities/PublicSimulationRun"
-          },
-          "description": "A public collection of simulations shared by the community. Readable by everyone, creatable by authenticated users.",
-          "params": [
-            {
-              "name": "simulationId",
-              "description": "The unique identifier for the public simulation."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/savedDataViews/{savedDataViewId}",
-        "definition": {
-          "entityName": "SavedDataView",
-          "schema": {
-            "$ref": "#/backend/entities/SavedDataView"
-          },
-          "description": "Contains user-defined configurations for exploring public data. The 'userId' field is denormalized into each document and also present in the path for robust authorization independence. Access is restricted to the owning user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user who owns this saved data view."
-            },
-            {
-              "name": "savedDataViewId",
-              "description": "The unique identifier for a specific user's saved data view."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/factChecks/{factCheckId}",
-        "definition": {
-          "entityName": "FactCheck",
-          "schema": {
-            "$ref": "#/backend/entities/FactCheck"
-          },
-          "description": "Stores individual fact-check results for a specific user. Access is restricted to the owning user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user."
-            },
-            {
-              "name": "factCheckId",
-              "description": "The unique identifier for the fact-check."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/legislationQueries/{queryId}",
-        "definition": {
-          "entityName": "LegislationQuery",
-          "schema": {
-            "$ref": "#/backend/entities/LegislationQuery"
-          },
-          "description": "Stores individual legislation queries for a specific user. Access is restricted to the owning user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user."
-            },
-            {
-              "name": "queryId",
-              "description": "The unique identifier for the legislation query."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/publicLegislationQueries/{queryId}",
-        "definition": {
-          "entityName": "PublicLegislationQuery",
-          "schema": {
-            "$ref": "#/backend/entities/PublicLegislationQuery"
-          },
-          "description": "A public collection of legislation queries and their answers. Used for caching to reduce AI costs and for data analysis. Writable by anyone to allow caching of new questions, but readable by everyone.",
-          "params": [
-            {
-              "name": "queryId",
-              "description": "The unique identifier for the public query."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/publicStatisticQueries/{queryId}",
-        "definition": {
-          "entityName": "PublicStatisticQuery",
-          "schema": {
-            "$ref": "#/backend/entities/PublicStatisticQuery"
-          },
-          "description": "A public collection of statistical queries and their answers. Used for caching to reduce AI costs and for data analysis. Writable by anyone to allow caching of new questions, but readable by everyone.",
-          "params": [
-            {
-              "name": "queryId",
-              "description": "The unique identifier for the public query."
-            }
-          ]
+          "entityName": "TranslationCache",
+          "schema": { "$ref": "#/backend/entities/TranslationCache" },
+          "description": "Global cache for AI translations.",
+          "params": [{ "name": "cacheId", "description": "Unique ID for the translation pair." }]
         }
       },
       {
         "path": "/communityProposals/{proposalId}",
         "definition": {
           "entityName": "CommunityProposal",
-          "schema": {
-            "$ref": "#/backend/entities/CommunityProposal"
-          },
-          "description": "A public collection of policy proposals submitted by the community. Readable by everyone, creatable by authenticated users, and updatable for voting.",
-          "params": [
-            {
-              "name": "proposalId",
-              "description": "The unique identifier for the community proposal."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/contactMessages/{messageId}",
-        "definition": {
-          "entityName": "ContactMessage",
-          "schema": {
-            "$ref": "#/backend/entities/ContactMessage"
-          },
-          "description": "Stores messages sent via the contact form. Creatable by any authenticated user, but only manageable by administrators.",
-          "params": [
-            {
-              "name": "messageId",
-              "description": "The unique identifier for the contact message."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{uid}",
-        "definition": {
-          "entityName": "RoleAdmin",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "A collection used for database access control (DBAC) to designate administrative users. The existence of a document at this path for a given UID signifies that the user has admin privileges. This uses 'Existence over Content' for role assignment.",
-          "params": [
-            {
-              "name": "uid",
-              "description": "The Firebase Authentication UID of the user designated as an administrator."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/dataSources/{dataSourceId}",
-        "definition": {
-          "entityName": "DataSource",
-          "schema": {
-            "$ref": "#/backend/entities/DataSource"
-          },
-          "description": "Stores configurations for external data sources. Readable by all authenticated users, but only writable by administrators to ensure integrity. This allows AI flows to dynamically consult available data sources.",
-          "params": [
-            {
-              "name": "dataSourceId",
-              "description": "The unique identifier for a data source."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/CommunityProposal" },
+          "description": "Community shared proposals.",
+          "params": [{ "name": "proposalId", "description": "Proposal ID" }]
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed following the core principles of Authorization Independence, Clarity of Intent, and Structural Segregation to ensure secure, scalable, and debuggable security rules. \n\n1.  **Authorization Independence (Denormalization for Rules):**\n    *   For user-specific data like `UserSimulationRun` and `SavedDataView`, the `userId` is explicitly stored within each document and is also part of the document path (e.g., `/users/{userId}/simulationRuns/{simulationRunId}`). This denormalization is critical. It allows security rules to check ownership using `request.auth.uid == resource.data.userId` AND `request.auth.uid == {userId}` (from the path wildcard) without needing to perform `get()` operations on parent documents. This prevents hierarchical authorization dependencies, enabling atomic operations and simplifying rule debugging.\n    *   For `UserProfile`, the document ID itself is the `userId` (i.e., `/userProfiles/$(request.auth.uid)`), which intrinsically links the document to its owner, providing atomic ownership checks.\n\n2.  **Structural Segregation (Homogeneous Security Posture):**\n    *   `UserProfile` documents are individual, private resources, exclusively owned by the authenticated user. Their access rules are simple: `request.auth.uid == userId`.\n    *   `SimulationModelDefinition` documents are global and publicly readable. This collection is designed for homogeneous public read access, with write access restricted to administrators (managed via a separate `/roles_admin/{uid}` collection for DBAC). This clear segregation simplifies rules, as all documents within this collection share the same access requirements.\n    *   `UserSimulationRun` and `SavedDataView` are segregated under `/users/{userId}/...` subcollections. All documents within a specific user's subcollection share the same ownership-based security posture, making rules straightforward: `allow read, write: if request.auth.uid == {userId};`.\n\n3.  **QAPs (Query-as-Permission):**\n    *   For user-owned collections (`/users/{userId}/simulationRuns` and `/users/{userId}/savedDataViews`), the path structure itself enforces permissions for `list` operations. Users can only `list` documents within their own `/users/{userId}/` segment, inherently preventing them from querying other users' data. This eliminates the need for complex filter logic in rules, fulfilling the QAP principle robustly.\n    *   For `SimulationModelDefinition`, since it's globally readable, `list` operations are open, as intended.\n\n4.  **DBAC (Database Access Control):** Global roles (e.g., for managing `SimulationModelDefinition`s) would be implemented using an existence check on a dedicated collection like `/roles_admin/{uid}`, allowing for a simple, data-based access control.\n\nRegarding the reported `FirebaseError: Firebase: Error (auth/operation-not-allowed)`, this indicates that the authentication providers specified in the `auth.providers` section ('google.com') may not be enabled in your Firebase project's Authentication settings in the Firebase Console. This is an environment configuration issue and not a data structure problem; you will need to enable these providers there to resolve the error."
-}
+    ]
+  }
 }

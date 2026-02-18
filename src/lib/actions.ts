@@ -7,21 +7,6 @@ import {
   EconomicPolicySimulationOutput,
 } from '@/ai/flows/simulate-economic-policy';
 import {
-  explainPublicDataInsights,
-  ExplainPublicDataInsightsInput,
-  ExplainPublicDataInsightsOutput,
-} from '@/ai/flows/explain-public-data-insights';
-import {
-  findPublicStatistic,
-  FindPublicStatisticInput,
-  FindPublicStatisticOutput,
-} from '@/ai/flows/find-public-statistic';
-import {
-  generateChartFromRequest,
-  GenerateChartInput,
-  GenerateChartOutput,
-} from '@/ai/flows/generate-chart-from-request';
-import {
   factCheckClaim,
   FactCheckInput,
   FactCheckOutput,
@@ -37,12 +22,20 @@ import {
 } from '@/ai/flows/generate-news-feed';
 import {
   translateContent,
-  TranslateContentInput,
-  TranslateContentOutput,
 } from '@/ai/flows/translate-content';
+import {
+  generateChartFromRequest,
+  GenerateChartInput,
+  GenerateChartOutput,
+} from '@/ai/flows/generate-chart-from-request';
+import {
+  findPublicStatistic,
+  FindPublicStatisticInput,
+  FindPublicStatisticOutput,
+} from '@/ai/flows/find-public-statistic';
 
 import { initializeFirebase } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, limit } from 'firebase/firestore';
 import type { Language } from './i18n';
 
 export async function getEconomicSimulation(
@@ -68,12 +61,6 @@ export async function getLegislationInfo(
   return await consultLegislation({ ...input } as any);
 }
 
-export async function getDataExplanation(
-  input: ExplainPublicDataInsightsInput
-): Promise<ExplainPublicDataInsightsOutput> {
-  return await explainPublicDataInsights(input);
-}
-
 export async function getPublicStatistic(
   input: FindPublicStatisticInput
 ): Promise<FindPublicStatisticOutput> {
@@ -90,11 +77,48 @@ export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
   return await generateNewsFeed();
 }
 
+/**
+ * AI-powered translation with Firestore caching to keep costs low.
+ */
 export async function getTranslation(
   text: string,
   lang: Language
 ): Promise<string> {
+  if (!text || text.trim().length === 0) return '';
+  
   const targetLanguage = lang === 'en' ? 'English' : 'Portuguese';
-  const result = await translateContent({ text, targetLanguage });
-  return result.translatedText;
+  const { firestore } = initializeFirebase();
+  const cacheRef = collection(firestore, 'translations_cache');
+  
+  try {
+    // 1. Check cache first
+    const q = query(
+      cacheRef, 
+      where('originalText', '==', text), 
+      where('targetLanguage', '==', targetLanguage),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
+    
+    if (!snapshot.empty) {
+      return snapshot.docs[0].data().translatedText;
+    }
+
+    // 2. If not in cache, call AI
+    const result = await translateContent({ text, targetLanguage });
+    const translatedText = result.translatedText;
+
+    // 3. Save to cache for others
+    await addDoc(cacheRef, {
+      originalText: text,
+      translatedText,
+      targetLanguage,
+      createdAt: serverTimestamp()
+    });
+
+    return translatedText;
+  } catch (error) {
+    console.error("Translation error:", error);
+    return text; // Fallback to original
+  }
 }

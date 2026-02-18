@@ -34,7 +34,7 @@ interface CommunityProposal {
   userPhotoURL?: string;
   title: string;
   description: string;
-  createdAt: any; // Firestore Timestamp
+  createdAt: any;
   voteCount: number;
   votedBy: string[];
 }
@@ -405,12 +405,12 @@ export default function ProposalsPage() {
                         <Button variant="secondary" size="sm" asChild>
                             <Link href={`/simulations?policy=${encodeURIComponent(proposal.description)}`}>
                                 <GitCommit className="mr-2 h-4 w-4" />
-                                {t('proposals.simulateBtn')}
+                                {t('common.simulate')}
                             </Link>
                         </Button>
                         <Button size="sm" onClick={() => handleVote(proposal.id)} disabled={!user || hasVoted || isOwner}>
                             <ThumbsUp className="mr-2 h-4 w-4" />
-                            {hasVoted ? t('proposals.votedBtn') : t('proposals.voteBtn')}
+                            {hasVoted ? t('common.supported') : t('common.support')}
                         </Button>
                     </div>
                 </CardFooter>

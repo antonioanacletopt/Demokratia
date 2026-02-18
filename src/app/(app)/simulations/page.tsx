@@ -271,6 +271,9 @@ export default function SimulationsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="ghost">{t('common.cancel')}</Button>
+                                </DialogClose>
                                 <Button onClick={handleSaveSimulation} disabled={isSaving}>{t('common.save')}</Button>
                             </DialogFooter>
                         </DialogContent>
@@ -283,7 +286,7 @@ export default function SimulationsPage() {
 
       <Separator />
       <h2 className="text-2xl font-bold">{t('simulations.mySimsTitle')}</h2>
-      {!user ? <p>{t('nav.login')}</p> : isLoadingSimulations ? <Skeleton className="h-20 w-full" /> : (
+      {!user ? <p className="text-muted-foreground">{t('nav.login')}</p> : isLoadingSimulations ? <Skeleton className="h-20 w-full" /> : (
           <div className="space-y-4">
               {savedSimulations?.map(sim => (
                   <Card key={sim.id} className="p-4 flex justify-between items-center">

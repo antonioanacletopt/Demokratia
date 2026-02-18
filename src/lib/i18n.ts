@@ -47,7 +47,10 @@ export const translations = {
       accept: 'Aceitar',
       translate: 'Traduzir com IA',
       showOriginal: 'Ver Original',
-      translating: 'A traduzir...'
+      translating: 'A traduzir...',
+      support: 'Apoiar',
+      supported: 'Apoiado',
+      simulate: 'Simular'
     },
     home: {
       title: 'Feed de Atualizações',
@@ -275,7 +278,10 @@ export const translations = {
       accept: 'Accept',
       translate: 'Translate with AI',
       showOriginal: 'Show Original',
-      translating: 'Translating...'
+      translating: 'Translating...',
+      support: 'Support',
+      supported: 'Supported',
+      simulate: 'Simulate'
     },
     home: {
       title: 'Updates Feed',

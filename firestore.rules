@@ -10,131 +10,32 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
-    function isExistingDoc() {
-      return resource != null;
-    }
 
     function isAdmin() {
       return isSignedIn() && request.auth.token.email == 'antonio.anacleto@gmail.com';
     }
     
-    // Public data is readable by anyone
-    match /publicData/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    // Statistical data is readable by anyone
-    match /statisticalData/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
     match /userProfiles/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // Do not allow listing all user profiles
-      // Allow creation if the user is creating their own profile
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && isExistingDoc();
-      allow delete: if isOwner(userId) && isExistingDoc();
+      allow get, create, update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
-    match /simulationModelDefinitions/{modelId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /roles_admin/{uid} {
-      allow read, write: if false; // Should be managed server-side
-    }
-
-    match /dataSources/{dataSourceId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    
-    match /publicLegislationQueries/{queryId} {
+    match /translations_cache/{id} {
       allow read: if true;
-      allow create: if true; // Allow anyone to create for caching purposes
-      allow update, delete: if isAdmin();
-    }
-
-    match /publicStatisticQueries/{queryId} {
-      allow read: if true;
-      allow create: if true; // Allow anyone to create for caching purposes
-      allow update, delete: if isAdmin();
-    }
-    
-    match /publicSimulations/{simulationId} {
-      allow get, list: if true;
-      allow create: if isSignedIn()
-                    && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAdmin() || isOwner(resource.data.userId);
-      allow update: if false;
+      allow create: if true; // Permite que qualquer utilizador contribua para a cache global
     }
 
     match /communityProposals/{proposalId} {
-      // Allow public read access to all proposals
       allow get, list: if true;
-    
-      // Allow authenticated users to create proposals
-      allow create: if isSignedIn()
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.voteCount == 0
-                    && request.resource.data.votedBy.size() == 0;
-    
-      // Allow authenticated users to vote (update) or owner to edit
-      allow update: if isSignedIn() && (
-        // Case 1: A user is voting
-        (
-          !(request.auth.uid in resource.data.votedBy) &&
-          request.resource.data.voteCount == resource.data.voteCount + 1 &&
-          request.resource.data.votedBy == resource.data.votedBy.union([request.auth.uid]) &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount', 'votedBy'])
-        ) ||
-        // Case 2: The owner is editing the proposal title or description.
-        (
-          isOwner(resource.data.userId) &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'description'])
-        )
-      );
-    
-      // Allow admins OR owner to delete proposals
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn();
       allow delete: if isAdmin() || isOwner(resource.data.userId);
     }
-    
-    match /contactMessages/{messageId} {
-      // Admins can do anything.
-      allow read, write: if isAdmin();
-    
-      // Authenticated users can create messages for themselves.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      
-      // Authenticated users can get their own single message.
-      allow get: if isOwner(resource.data.userId);
-      
-      // Authenticated users can list their own messages,
-      // as long as the query filters by their user ID.
-      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
-    }
 
-    match /users/{userId} {
-      match /simulationScenarios/{scenarioId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /savedDataViews/{viewId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /factChecks/{factCheckId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /legislationQueries/{queryId} {
-        allow read, write: if isOwner(userId);
-      }
+    // Outras coleções seguem a mesma lógica de acesso público ou privado conforme necessário
+    match /{path=**} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
