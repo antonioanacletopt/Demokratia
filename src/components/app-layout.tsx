@@ -8,7 +8,7 @@ import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/fireb
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
 import { useTranslation, type Language } from "@/lib/i18n";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   SidebarProvider,
@@ -101,6 +101,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   const router = useRouter();
   const { t, setLanguage, language } = useTranslation();
+  
+  // Track if we've already initialized the language from the profile this session
+  const [hasSyncedProfile, setHasSyncedProfile] = useState(false);
 
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'userProfiles', user.uid) : null),
@@ -108,11 +111,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const { data: profileData } = useDoc(userProfileRef);
 
+  // Sync initial language from profile ONLY once when it loads
   useEffect(() => {
-    if (profileData?.preferredLanguage && profileData.preferredLanguage !== language) {
+    if (profileData?.preferredLanguage && !hasSyncedProfile) {
       setLanguage(profileData.preferredLanguage as Language);
+      setHasSyncedProfile(true);
     }
-  }, [profileData, setLanguage, language]);
+  }, [profileData, setLanguage, hasSyncedProfile]);
+
+  // Reset sync flag if user changes or logs out
+  useEffect(() => {
+    if (!user) {
+      setHasSyncedProfile(false);
+    }
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut(auth);
