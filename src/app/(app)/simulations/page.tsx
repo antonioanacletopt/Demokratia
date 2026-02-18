@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -23,11 +22,10 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox as ShadCheckbox } from '@/components/ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-
 
 interface UserSimulationRun {
   id: string;
@@ -50,22 +48,20 @@ interface PublicSimulationRun {
   runTimestamp: any;
 }
 
-
 function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
+    const { t } = useTranslation();
     return (
         <div className="space-y-6">
              {simulation.isRealPolicy && (
                   <Alert>
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Política Real Identificada</AlertTitle>
+                    <AlertTitle>{t('simulations.realPolicy')}</AlertTitle>
                     <AlertDescription>
-                      {simulation.source ? (
+                      {simulation.source && (
                         <Link href={simulation.source} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 mt-2 text-sm font-semibold text-primary hover:underline">
                           <LinkIcon className="h-4 w-4" />
-                          Ver Fonte Oficial
+                          {t('simulations.viewOfficial')}
                         </Link>
-                      ) : (
-                        <p className="text-sm mt-2">A IA identificou esta como uma política real, mas não encontrou uma fonte oficial primária.</p>
                       )}
                     </AlertDescription>
                   </Alert>
@@ -74,7 +70,7 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Zap className="text-primary" />
-                        <span>Sumário do Impacto</span>
+                        <span>{t('simulations.impactSummary')}</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -84,15 +80,15 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Projeção de Indicadores Chave</CardTitle>
+                    <CardTitle>{t('simulations.indicatorsTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Indicador</TableHead>
-                                <TableHead className="text-right">Valor Atual</TableHead>
-                                <TableHead className="text-right">Valor Projetado</TableHead>
+                                <TableHead>{t('simulations.indicator')}</TableHead>
+                                <TableHead className="text-right">{t('simulations.currentValue')}</TableHead>
+                                <TableHead className="text-right">{t('simulations.projectedValue')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -110,7 +106,7 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
 
              <Card>
                 <CardHeader>
-                    <CardTitle>Raciocínio da IA</CardTitle>
+                    <CardTitle>{t('simulations.aiReasoning')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                 <p className="text-muted-foreground whitespace-pre-wrap">{simulation.reasoning}</p>
@@ -121,6 +117,7 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
 }
 
 export default function SimulationsPage() {
+  const { t, language } = useTranslation();
   const [policyInput, setPolicyInput] = useState('');
   const [currentSimulation, setCurrentSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
   const [isSimulating, startSimulation] = useTransition();
@@ -134,66 +131,22 @@ export default function SimulationsPage() {
   const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
   const [comparisonView, setComparisonView] = useState<{ sim1: UserSimulationRun, sim2: UserSimulationRun } | null>(null);
 
-  const [mySimsSearch, setMySimsSearch] = useState('');
-  const [publicSimsSearch, setPublicSimsSearch] = useState('');
-
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { language } = useTranslation();
-  const searchParams = useSearchParams();
   const resultRef = useRef<HTMLDivElement>(null);
 
-  const savedSimulationsCollectionRef = useMemoFirebase(() => {
+  const savedSimsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'simulationScenarios'), orderBy('runTimestamp', 'desc'));
   }, [firestore, user]);
-
-  const { data: savedSimulations, isLoading: isLoadingSimulations } = useCollection<UserSimulationRun>(savedSimulationsCollectionRef);
+  const { data: savedSimulations, isLoading: isLoadingSimulations } = useCollection<UserSimulationRun>(savedSimsQuery);
   
-  const publicSimulationsCollectionRef = useMemoFirebase(() => {
+  const publicSimsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'publicSimulations'), orderBy('runTimestamp', 'desc'), limit(10));
   }, [firestore]);
-
-  const { data: publicSimulations, isLoading: isLoadingPublicSimulations } = useCollection<PublicSimulationRun>(publicSimulationsCollectionRef);
-
-  const filteredSavedSimulations = useMemo(() => {
-    if (!savedSimulations) return [];
-    if (!mySimsSearch.trim()) return savedSimulations;
-    const lowercased = mySimsSearch.toLowerCase();
-    return savedSimulations.filter(sim => 
-      sim.title.toLowerCase().includes(lowercased) || 
-      sim.inputVariables.toLowerCase().includes(lowercased)
-    );
-  }, [savedSimulations, mySimsSearch]);
-
-  const filteredPublicSimulations = useMemo(() => {
-    if (!publicSimulations) return [];
-    if (!publicSimsSearch.trim()) return publicSimulations;
-    const lowercased = publicSimsSearch.toLowerCase();
-    return publicSimulations.filter(sim =>
-      sim.title.toLowerCase().includes(lowercased) ||
-      sim.inputVariables.toLowerCase().includes(lowercased) ||
-      sim.userName.toLowerCase().includes(lowercased)
-    );
-  }, [publicSimulations, publicSimsSearch]);
-
-
-  useEffect(() => {
-    const policyFromQuery = searchParams.get('policy');
-    if (policyFromQuery) {
-      setPolicyInput(decodeURIComponent(policyFromQuery.replace(/\+/g, ' ')));
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if ((currentSimulation || isSimulating || comparisonView) && resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [currentSimulation, isSimulating, comparisonView]);
-
-  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const { data: publicSimulations, isLoading: isLoadingPublic } = useCollection<PublicSimulationRun>(publicSimsQuery);
 
   const handleSimulate = () => {
     if (!policyInput.trim()) return;
@@ -206,13 +159,9 @@ export default function SimulationsPage() {
   };
 
   const handleSaveSimulation = async () => {
-    if (!user || !firestore || !currentSimulation || !simulationTitle.trim()) {
-        toast({ variant: 'destructive', title: 'Faltam dados', description: 'Por favor, dê um título à sua simulação.' });
-        return;
-    }
+    if (!user || !firestore || !currentSimulation || !simulationTitle.trim()) return;
     setIsSaving(true);
-    const privateCollectionRef = collection(firestore, 'users', user.uid, 'simulationScenarios');
-    const simulationData = {
+    const simData = {
         userId: user.uid,
         title: simulationTitle,
         notes: simulationNotes,
@@ -221,111 +170,38 @@ export default function SimulationsPage() {
         runTimestamp: serverTimestamp(),
     };
     try {
-        await addDoc(privateCollectionRef, simulationData);
-        toast({ title: 'Simulação guardada!' });
-
+        await addDoc(collection(firestore, 'users', user.uid, 'simulationScenarios'), simData);
         if (shareWithCommunity) {
-            const publicCollectionRef = collection(firestore, 'publicSimulations');
-            const publicSimulationData = {
-                userId: user.uid,
-                userName: user.displayName || 'Utilizador Anónimo',
+            addDoc(collection(firestore, 'publicSimulations'), {
+                ...simData,
+                userName: user.displayName || 'Anonymous',
                 userPhotoURL: user.photoURL || '',
-                title: simulationTitle,
-                inputVariables: policyInput,
-                simulationResults: JSON.stringify(currentSimulation),
-                runTimestamp: serverTimestamp(),
-            };
-            addDoc(publicCollectionRef, publicSimulationData).catch(serverError => {
-                console.warn('Could not share simulation', serverError);
-                 const permissionError = new FirestorePermissionError({
-                    path: publicCollectionRef.path,
-                    operation: 'create',
-                    requestResourceData: publicSimulationData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
             });
         }
-
+        toast({ title: t('common.success') });
         setSaveDialogOpen(false);
-        setSimulationTitle('');
-        setSimulationNotes('');
-        setShareWithCommunity(true);
-    } catch (error) {
-        const permissionError = new FirestorePermissionError({ path: privateCollectionRef.path, operation: 'create', requestResourceData: simulationData });
-        errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erro ao guardar', description: 'Não foi possível guardar a sua simulação.' });
+    } catch (e) {
+        toast({ variant: 'destructive', title: t('common.error') });
     } finally {
         setIsSaving(false);
     }
   };
 
-  const handleDeleteSimulation = async (id: string) => {
-    if (!user || !firestore) return;
-    const docRef = doc(firestore, 'users', user.uid, 'simulationScenarios', id);
-    try {
-        await deleteDoc(docRef);
-        toast({ title: 'Simulação apagada.' });
-    } catch(e) {
-        const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-        errorEmitter.emit('permission-error', permissionError);
-    }
-  };
-
-  const handleDeletePublicSimulation = async (id: string) => {
-    if (!user || !firestore) return;
-    const docRef = doc(firestore, 'publicSimulations', id);
-    try {
-        await deleteDoc(docRef);
-        toast({ title: 'Simulação pública apagada.' });
-    } catch(e) {
-        const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'delete' });
-        errorEmitter.emit('permission-error', permissionError);
-    }
-  }
-
-  const handleCompareSelection = (id: string, checked: boolean | 'indeterminate') => {
-    if (checked === true) {
-        if (selectedForComparison.length < 2) {
-            setSelectedForComparison(prev => [...prev, id]);
-        } else {
-            toast({ variant: 'destructive', title: 'Limite atingido', description: 'Pode comparar apenas duas simulações de cada vez.'});
-        }
-    } else if (checked === false) {
-        setSelectedForComparison(prev => prev.filter(item => item !== id));
-    }
-  };
-
-  const handleStartComparison = () => {
-    if (selectedForComparison.length !== 2 || !savedSimulations) return;
-    const sim1 = savedSimulations.find(s => s.id === selectedForComparison[0]);
-    const sim2 = savedSimulations.find(s => s.id === selectedForComparison[1]);
-    if (sim1 && sim2) {
-        setCurrentSimulation(null);
-        setComparisonView({ sim1, sim2 });
-    }
-  };
-
-  const sim1ToCompare = comparisonView ? JSON.parse(comparisonView.sim1.simulationResults) as EconomicPolicySimulationOutput : null;
-  const sim2ToCompare = comparisonView ? JSON.parse(comparisonView.sim2.simulationResults) as EconomicPolicySimulationOutput : null;
-
-
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Simulações de Políticas</h1>
-        <p className="text-muted-foreground">Simule o impacto de políticas, guarde os resultados e compare diferentes cenários.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('simulations.title')}</h1>
+        <p className="text-muted-foreground">{t('simulations.description')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Nova Simulação</CardTitle>
-          <CardDescription>
-            Introduza a proposta que pretende simular. A IA tentará identificar se é uma proposta real e simulará o seu impacto.
-          </CardDescription>
+          <CardTitle>{t('simulations.newSimTitle')}</CardTitle>
+          <CardDescription>{t('simulations.newSimDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
-            placeholder="Ex: 'Reduzir o IVA na restauração de 13% para 6%'"
+            placeholder={t('simulations.textareaPlaceholder')}
             value={policyInput}
             onChange={(e) => setPolicyInput(e.target.value)}
             rows={4}
@@ -335,36 +211,13 @@ export default function SimulationsPage() {
         <CardFooter>
           <Button onClick={handleSimulate} disabled={isSimulating || !policyInput.trim()}>
             {isSimulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
-            {isSimulating ? 'A simular...' : 'Simular Impacto'}
+            {isSimulating ? t('simulations.simulating') : t('simulations.simulateBtn')}
           </Button>
         </CardFooter>
       </Card>
       
       <div ref={resultRef}>
-        {isSimulating && (
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-4 w-full mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 pt-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-40 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {(currentSimulation || comparisonView) && (
-            <div className="space-y-6">
-                <Separator />
-                <div>
-                    <h2 className="text-2xl font-bold font-headline tracking-tight">Resultados da Análise</h2>
-                </div>
-            </div>
-        )}
-
+        {isSimulating && <Skeleton className="h-40 w-full" />}
         {currentSimulation && (
             <div className="pt-6 space-y-6">
                 <div className="flex justify-end">
@@ -372,34 +225,25 @@ export default function SimulationsPage() {
                         <DialogTrigger asChild>
                             <Button variant="outline" disabled={!user}>
                                 <Save className="mr-2 h-4 w-4" />
-                                Guardar Simulação
+                                {t('simulations.saveBtn')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                            <DialogTitle>Guardar Simulação</DialogTitle>
-                            <DialogDescription>Dê um nome e notas a esta simulação para a encontrar mais tarde.</DialogDescription>
+                            <DialogTitle>{t('simulations.saveBtn')}</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="sim-title">Título</Label>
-                                    <Input id="sim-title" value={simulationTitle} onChange={(e) => setSimulationTitle(e.target.value)} placeholder="Ex: Redução do IVA na restauração" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="sim-notes">Notas (Opcional)</Label>
-                                    <Textarea id="sim-notes" value={simulationNotes} onChange={(e) => setSimulationNotes(e.target.value)} placeholder="Uma breve nota sobre esta simulação. (Não será partilhada)" />
-                                </div>
-                                <div className="flex items-center space-x-2 pt-2">
-                                  <ShadCheckbox id="share-community" checked={shareWithCommunity} onCheckedChange={(checked) => setShareWithCommunity(checked === 'indeterminate' ? false : checked)} />
-                                  <Label htmlFor="share-community" className="cursor-pointer">Partilhar com a comunidade</Label>
+                                <Label>{t('dashboard.viewName')}</Label>
+                                <Input value={simulationTitle} onChange={(e) => setSimulationTitle(e.target.value)} />
+                                <Label>{t('dashboard.viewDescription')}</Label>
+                                <Textarea value={simulationNotes} onChange={(e) => setSimulationNotes(e.target.value)} />
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox id="share" checked={shareWithCommunity} onCheckedChange={v => setShareWithCommunity(!!v)} />
+                                  <Label htmlFor="share">{t('common.share')}</Label>
                                 </div>
                             </div>
                             <DialogFooter>
-                                <DialogClose asChild><Button variant="ghost">Cancelar</Button></DialogClose>
-                                <Button onClick={handleSaveSimulation} disabled={isSaving}>
-                                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Guardar
-                                </Button>
+                                <Button onClick={handleSaveSimulation} disabled={isSaving}>{t('common.save')}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -407,256 +251,48 @@ export default function SimulationsPage() {
                 <SimulationResultDisplay simulation={currentSimulation} />
             </div>
         )}
-
-        {comparisonView && sim1ToCompare && sim2ToCompare && (
-             <div className="space-y-6 pt-6">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Card><CardHeader><CardTitle>{comparisonView.sim1.title}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground line-clamp-2">{comparisonView.sim1.inputVariables}</p></CardContent></Card>
-                <Card><CardHeader><CardTitle>{comparisonView.sim2.title}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground line-clamp-2">{comparisonView.sim2.inputVariables}</p></CardContent></Card>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                   <Card>
-                      <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                              <Zap className="text-primary" />
-                              <span>Sumário (1)</span>
-                          </CardTitle>
-                      </CardHeader>
-                      <CardContent><p className="text-muted-foreground">{sim1ToCompare.simulatedImpact}</p></CardContent>
-                  </Card>
-                  <Card>
-                      <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                              <Zap className="text-primary" />
-                              <span>Sumário (2)</span>
-                          </CardTitle>
-                      </CardHeader>
-                      <CardContent><p className="text-muted-foreground">{sim2ToCompare.simulatedImpact}</p></CardContent>
-                  </Card>
-              </div>
-
-              <Card>
-                  <CardHeader><CardTitle>Comparação de Indicadores Chave</CardTitle></CardHeader>
-                  <CardContent>
-                      <Table>
-                          <TableHeader>
-                              <TableRow>
-                                  <TableHead>Indicador</TableHead>
-                                  <TableHead className="text-right">Simulação 1</TableHead>
-                                  <TableHead className="text-right">Simulação 2</TableHead>
-                                  <TableHead className="text-right">Diferença (2 vs 1)</TableHead>
-                              </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                              {sim1ToCompare.keyIndicators.map((indicator1, index) => {
-                                  const indicator2 = sim2ToCompare.keyIndicators[index];
-                                  if (!indicator2 || indicator1.name !== indicator2.name) return null;
-                                  const diff = indicator2.projectedValue - indicator1.projectedValue;
-                                  return (
-                                      <TableRow key={indicator1.name}>
-                                          <TableCell className="font-medium">{indicator1.name}</TableCell>
-                                          <TableCell className="text-right font-semibold">{indicator1.projectedValue.toFixed(2)}{indicator1.unit}</TableCell>
-                                          <TableCell className="text-right font-semibold text-primary">{indicator2.projectedValue.toFixed(2)}{indicator2.unit}</TableCell>
-                                          <TableCell className="text-right">
-                                              <span className={`flex items-center justify-end gap-1 ${diff === 0 ? 'text-muted-foreground' : diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                  {diff !== 0 && (diff > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-                                                  {diff === 0 ? '-' : `${Math.abs(diff).toFixed(2)}${indicator1.unit}`}
-                                              </span>
-                                          </TableCell>
-                                      </TableRow>
-                                  );
-                              })}
-                          </TableBody>
-                      </Table>
-                  </CardContent>
-              </Card>
-
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <Card><CardHeader><CardTitle>Raciocínio (1)</CardTitle></CardHeader><CardContent><p className="text-muted-foreground whitespace-pre-wrap">{sim1ToCompare.reasoning}</p></CardContent></Card>
-                  <Card><CardHeader><CardTitle>Raciocínio (2)</CardTitle></CardHeader><CardContent><p className="text-muted-foreground whitespace-pre-wrap">{sim2ToCompare.reasoning}</p></CardContent></Card>
-              </div>
-          </div>
-        )}
       </div>
 
       <Separator />
-
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                 <h2 className="text-2xl font-bold font-headline tracking-tight">Minhas Simulações Guardadas</h2>
-                 <p className="text-muted-foreground">Reveja, apague ou compare as suas simulações anteriores.</p>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                    type="search"
-                    placeholder="Pesquisar..."
-                    className="w-full sm:w-48 pl-10 h-9"
-                    value={mySimsSearch}
-                    onChange={(e) => setMySimsSearch(e.target.value)}
-                    />
-                </div>
-                <Button onClick={handleStartComparison} disabled={selectedForComparison.length !== 2} size="sm">
-                    <GitCompare className="mr-2 h-4 w-4" />
-                    Comparar ({selectedForComparison.length}/2)
-                </Button>
-            </div>
-        </div>
-
-        { !user && (
-          <Card className="flex flex-col items-center justify-center text-center py-12">
-            <CardHeader>
-                <User className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <CardTitle className="mt-4">Inicie sessão para ver as suas simulações</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Guarde análises para criar a sua biblioteca pessoal.</p>
-              <Button asChild className="mt-4"><Link href="/login">Iniciar Sessão</Link></Button>
-            </CardContent>
-          </Card>
-        )}
-        { user && isLoadingSimulations && (
-            <div className="space-y-4">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-        )}
-        { user && !isLoadingSimulations && filteredSavedSimulations && filteredSavedSimulations.length > 0 ? (
-            <div className="space-y-4">
-            {filteredSavedSimulations.map((sim) => (
-              <Card key={sim.id}>
-                <CardContent className="flex items-center gap-4 p-4">
-                  <ShadCheckbox 
-                    id={`compare-${sim.id}`} 
-                    onCheckedChange={(checked) => handleCompareSelection(sim.id, checked)}
-                    checked={selectedForComparison.includes(sim.id)}
-                    disabled={selectedForComparison.length >= 2 && !selectedForComparison.includes(sim.id)}
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{sim.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{sim.inputVariables}</p>
-                     <p className="text-xs text-muted-foreground">
-                        Guardado em: {new Date(sim.runTimestamp?.seconds * 1000).toLocaleDateString()}
-                    </p>
-                  </div>
-                   <div className="flex items-center">
-                        <Button variant="outline" size="sm" onClick={() => { setCurrentSimulation(JSON.parse(sim.simulationResults)); setComparisonView(null); }}>Ver</Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteSimulation(sim.id)}>Apagar</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                   </div>
-                </CardContent>
-              </Card>
-            ))}
+      <h2 className="text-2xl font-bold">{t('simulations.mySimsTitle')}</h2>
+      {!user ? <p>{t('nav.login')}</p> : isLoadingSimulations ? <Skeleton className="h-20 w-full" /> : (
+          <div className="space-y-4">
+              {savedSimulations?.map(sim => (
+                  <Card key={sim.id} className="p-4 flex justify-between items-center">
+                      <div>
+                          <h3 className="font-semibold">{sim.title}</h3>
+                          <p className="text-sm text-muted-foreground">{sim.inputVariables}</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setCurrentSimulation(JSON.parse(sim.simulationResults))}>
+                          {t('common.view')}
+                      </Button>
+                  </Card>
+              ))}
           </div>
-        ) : user && !isLoadingSimulations && (
-           <Card className="flex flex-col items-center justify-center text-center py-12">
-            <CardHeader>
-                {mySimsSearch ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <NotebookText className="mx-auto h-12 w-12 text-muted-foreground/50" />}
-                <CardTitle className="mt-4">{mySimsSearch ? 'Nenhuma simulação encontrada' : 'Nenhuma simulação guardada'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {mySimsSearch ? 'Tente uma pesquisa diferente.' : 'Use o formulário acima para criar e guardar a sua primeira simulação.'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      )}
 
       <Separator />
-
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 className="text-2xl font-bold font-headline tracking-tight">Simulações da Comunidade</h2>
-           <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                type="search"
-                placeholder="Pesquisar públicas..."
-                className="w-full sm:w-72 pl-10 h-9"
-                value={publicSimsSearch}
-                onChange={(e) => setPublicSimsSearch(e.target.value)}
-                />
-            </div>
-        </div>
-
-        {isLoadingPublicSimulations && (
-            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>
-            </div>
-        )}
-        {!isLoadingPublicSimulations && filteredPublicSimulations && filteredPublicSimulations.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {filteredPublicSimulations.map((sim) => {
-              const timeAgo = sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
-              const isOwner = user && user.uid === sim.userId;
-
-              return (
-              <Card key={sim.id} className="flex flex-col">
-                <CardHeader>
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border">
-                                <AvatarImage src={sim.userPhotoURL} alt={sim.userName} />
-                                <AvatarFallback>{getInitials(sim.userName)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-semibold">{sim.userName}</p>
-                                <p className="text-xs text-muted-foreground">Partilhado {timeAgo}</p>
-                            </div>
-                        </div>
-                         {(user?.email === 'antonio.anacleto@gmail.com' || isOwner) && (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação é irreversível e irá apagar a simulação pública.</AlertDialogDescription></AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeletePublicSimulation(sim.id)}>Apagar</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                         )}
-                    </div>
-                  <CardTitle className="pt-4">{sim.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
-                </CardContent>
-                 <CardFooter className="flex justify-end items-center bg-muted/50 py-3 px-6">
-                    <Button size="sm" onClick={() => { setCurrentSimulation(JSON.parse(sim.simulationResults)); setComparisonView(null); }}>
-                        Ver Simulação
-                    </Button>
-                </CardFooter>
-              </Card>
-            )})}
+      <h2 className="text-2xl font-bold">{t('simulations.publicSimsTitle')}</h2>
+      {isLoadingPublic ? <Skeleton className="h-20 w-full" /> : (
+          <div className="grid gap-6 md:grid-cols-2">
+              {publicSimulations?.map(sim => (
+                  <Card key={sim.id} className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-6 w-6">
+                              <AvatarImage src={sim.userPhotoURL} />
+                              <AvatarFallback>{sim.userName[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs font-medium">{sim.userName}</span>
+                      </div>
+                      <h3 className="font-semibold">{sim.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
+                      <Button variant="link" className="mt-2 p-0" onClick={() => setCurrentSimulation(JSON.parse(sim.simulationResults))}>
+                          {t('common.view')}
+                      </Button>
+                  </Card>
+              ))}
           </div>
-        ) : !isLoadingPublicSimulations && (
-           <Card className="flex flex-col items-center justify-center text-center py-16">
-            <CardHeader>
-                {publicSimsSearch ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />}
-                <CardTitle className="mt-4">{publicSimsSearch ? 'Nenhuma simulação encontrada' : 'Nenhuma simulação pública'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {publicSimsSearch ? 'Tente uma pesquisa diferente.' : 'Seja o primeiro a partilhar uma simulação com a comunidade!'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      )}
     </div>
   );
 }

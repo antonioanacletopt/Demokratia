@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Card,
@@ -9,13 +11,12 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Check, Scale, TrendingUp } from 'lucide-react';
+import { ArrowRight, Check, Scale, TrendingUp, Loader2 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
-
-// Revalida esta página no máximo a cada hora (3600 segundos) para obter notícias frescas.
-export const revalidate = 3600;
+import { useTranslation } from '@/lib/i18n';
+import { useState, useEffect } from 'react';
 
 const typeConfig = {
   Alegação: {
@@ -33,11 +34,9 @@ const typeConfig = {
 };
 
 function FeedItemCard({ item }: { item: AIFeedItem }) {
+  const { t } = useTranslation();
   const config = typeConfig[item.type];
-  if (!config) {
-    // Fallback for unexpected types
-    return null;
-  }
+  if (!config) return null;
   const Icon = config.icon;
 
   return (
@@ -47,7 +46,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
           <div>
             <CardTitle className="text-lg">{item.title}</CardTitle>
             <CardDescription className="mt-1">
-              Fonte: {item.source} &middot; Data: {item.date}
+              {t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}
             </CardDescription>
           </div>
           <Badge variant="outline" className={config.color}>
@@ -73,47 +72,53 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
   );
 }
 
-export default async function HomePage() {
-  // We use a try-catch block to handle potential errors from the AI flow.
-  // If the AI fails, we can show a message instead of crashing the page.
-  let feedItems: AIFeedItem[] = [];
-  try {
-    const newsFeed = await getNewsFeed();
-    feedItems = newsFeed.feedItems;
-  } catch (error) {
-    console.error('Failed to fetch news feed:', error);
-    // You could render a specific error component here
-  }
+export default function HomePage() {
+  const { t } = useTranslation();
+  const [feedItems, setFeedItems] = useState<AIFeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    async function loadFeed() {
+      try {
+        const newsFeed = await getNewsFeed();
+        setFeedItems(newsFeed.feedItems);
+      } catch (err) {
+        console.error('Failed to fetch news feed:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadFeed();
+  }, []);
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold font-headline tracking-tight">
-          Feed de Atualizações
+          {t('home.title')}
         </h1>
         <p className="text-muted-foreground">
-          Acompanhe as últimas alegações, propostas e análises no panorama
-          político português.
+          {t('home.description')}
         </p>
       </div>
 
       <AdBanner />
 
       <div className="space-y-6">
-        {feedItems.length > 0 ? (
-          feedItems.map((item) => <FeedItemCard key={item.id} item={item} />)
-        ) : (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
           <Card>
             <CardHeader>
-              <CardTitle>Não foi possível carregar as notícias</CardTitle>
+              <CardTitle>{t('home.error')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Ocorreu um erro ao tentar obter as últimas atualizações. Por
-                favor, tente novamente mais tarde.
-              </p>
-            </CardContent>
           </Card>
+        ) : (
+          feedItems.map((item) => <FeedItemCard key={item.id} item={item} />)
         )}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,8 +5,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Cookie, X } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 export function CookieConsent() {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -33,19 +34,19 @@ export function CookieConsent() {
               <Cookie className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1 space-y-2">
-              <h3 className="font-semibold leading-none pt-1">Respeitamos a sua privacidade</h3>
+              <h3 className="font-semibold leading-none pt-1">{t('cookies.title')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Utilizamos cookies para melhorar a sua experiência, autenticação e publicidade. Ao continuar, aceita a nossa{' '}
+                {t('cookies.desc')}{' '}
                 <Link href="/privacy" className="text-primary font-medium hover:underline">
-                  Política de Privacidade e Cookies
+                  {t('nav.privacy')}
                 </Link>.
               </p>
               <div className="flex items-center gap-3 pt-2">
                 <Button onClick={handleAccept} size="sm" className="w-full sm:w-auto px-8">
-                  Aceitar
+                  {t('common.accept')}
                 </Button>
                 <Button onClick={() => setIsVisible(false)} variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  Fechar
+                  {t('common.close')}
                 </Button>
               </div>
             </div>

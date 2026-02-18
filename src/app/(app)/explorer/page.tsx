@@ -6,6 +6,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/lib/i18n';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -26,7 +27,7 @@ interface StatisticalData {
   category: string;
   source: string;
   dataType: string;
-  data: string; // JSON string
+  data: string;
 }
 
 interface PublicStatisticQuery extends FindPublicStatisticOutput {
@@ -36,6 +37,7 @@ interface PublicStatisticQuery extends FindPublicStatisticOutput {
 }
 
 function DataTable({ jsonData }: { jsonData: string }) {
+  const { t } = useTranslation();
   const data = useMemo(() => {
     try {
       const parsedData = JSON.parse(jsonData);
@@ -47,7 +49,7 @@ function DataTable({ jsonData }: { jsonData: string }) {
   }, [jsonData]);
 
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">Não há dados tabulares para apresentar ou o formato é inválido.</p>;
+    return <p className="text-sm text-muted-foreground">{t('common.noResults')}</p>;
   }
 
   const headers = Object.keys(data[0]);
@@ -73,6 +75,7 @@ function DataTable({ jsonData }: { jsonData: string }) {
 }
 
 function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
+  const { t } = useTranslation();
   return (
     <AccordionItem value={dataset.id}>
       <AccordionTrigger className="px-4">
@@ -83,32 +86,17 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       </AccordionTrigger>
       <AccordionContent className="space-y-4 px-4">
         <p className="text-sm text-muted-foreground">{dataset.description}</p>
-        
-        {dataset.dataType === 'table' ? (
-          <DataTable jsonData={dataset.data} />
-        ) : (
-          <p>Tipo de dados '{dataset.dataType}' não suportado.</p>
-        )}
-        
+        <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
-          <p><strong>Fonte:</strong> {dataset.source}</p>
+          <p><strong>{t('explorer.source')}:</strong> {dataset.source}</p>
         </div>
       </AccordionContent>
     </AccordionItem>
   );
 }
 
-function StatAccordionSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-12 w-full" />
-    </div>
-  )
-}
-
 export default function ExplorerPage() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
@@ -138,111 +126,69 @@ export default function ExplorerPage() {
 
     startAiTransition(async () => {
       setAiResponse(null);
-      
-      // 1. Check public cache first
-      try {
-        const q = query(collection(firestore, "publicStatisticQueries"), where("request", "==", trimmedRequest), limit(1));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          const cachedDoc = querySnapshot.docs[0];
-          const cachedResult = cachedDoc.data() as FindPublicStatisticOutput;
-          setAiResponse(cachedResult);
-          toast({ title: "Estatística encontrada na cache!", description: "Esta pergunta já foi respondida anteriormente." });
-          
-          const docRef = doc(firestore, "publicStatisticQueries", cachedDoc.id);
-          updateDoc(docRef, { lastAccessedAt: serverTimestamp() }).catch(e => console.warn("Failed to update cache timestamp", e));
-          
-          return;
-        }
-      } catch (e) {
-        console.error("Error checking public cache:", e);
-        toast({ variant: "destructive", title: "Aviso", description: "Não foi possível verificar a cache. A contactar a IA diretamente."});
-      }
-
-      // 2. If not in cache, call AI
       const result = await getPublicStatistic({ request: trimmedRequest });
       setAiResponse(result);
 
-      // 3. If AI found data, save to public cache (non-blocking)
       if (result.isFound) {
           const publicCollection = collection(firestore, 'publicStatisticQueries');
-          const cacheData = {
+          addDoc(publicCollection, {
             request: trimmedRequest,
             ...result,
             createdAt: serverTimestamp(),
             lastAccessedAt: serverTimestamp(),
-          };
-          addDoc(publicCollection, cacheData).catch(err => {
-              console.warn("Failed to write to public cache", err);
-          });
+          }).catch(err => console.warn("Failed cache", err));
       }
     });
   };
 
   const groupedAndFilteredDatasets = useMemo(() => {
     if (!datasets) return {};
-
     const filtered = searchTerm
-      ? datasets.filter(dataset =>
-          dataset.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dataset.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dataset.category.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      ? datasets.filter(d => d.title.toLowerCase().includes(searchTerm.toLowerCase()) || d.category.toLowerCase().includes(searchTerm.toLowerCase()))
       : datasets;
 
-    return filtered.reduce((acc, dataset) => {
-      const category = dataset.category || 'Outros';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(dataset);
+    return filtered.reduce((acc, d) => {
+      const cat = d.category || 'Outros';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(d);
       return acc;
     }, {} as Record<string, StatisticalData[]>);
   }, [datasets, searchTerm]);
 
-  const totalDatasets = datasets?.length || 0;
-
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Explorador de Dados Sociais e Económicos</h1>
-        <p className="text-muted-foreground">Explore conjuntos de dados sobre demografia, economia e sociedade em Portugal.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('explorer.title')}</h1>
+        <p className="text-muted-foreground">{t('explorer.description')}</p>
       </div>
       
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="text-accent" />
-            <span>Pergunte à IA por uma Estatística</span>
+            <span>{t('explorer.aiCardTitle')}</span>
           </CardTitle>
-          <CardDescription>Não encontra o que procura? Descreva a estatística que deseja e a IA tentará encontrá-la em fontes públicas.</CardDescription>
+          <CardDescription>{t('explorer.aiCardDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
-            placeholder="Ex: Qual a evolução da dívida pública em percentagem do PIB nos últimos 5 anos?"
+            placeholder={t('explorer.textareaPlaceholder')}
             value={statRequest}
             onChange={(e) => setStatRequest(e.target.value)}
             disabled={isAiLoading}
           />
           <div ref={resultRef}>
-            {isAiLoading && (
-              <div className="space-y-2 pt-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-              </div>
-            )}
+            {isAiLoading && <Skeleton className="h-20 w-full" />}
             {aiResponse && !isAiLoading && (
               <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
                 <Bot className="h-4 w-4" />
-                <AlertTitle>Resposta da IA</AlertTitle>
+                <AlertTitle>{t('common.aiResponse')}</AlertTitle>
                 <AlertDescription>
                   <p className="mb-2">{aiResponse.explanation}</p>
                   {aiResponse.isFound && aiResponse.data && (
                     <div className="mt-4 space-y-2">
                       <DataTable jsonData={aiResponse.data} />
-                      {aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>Fonte:</strong> {aiResponse.source}</p>}
+                      {aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>{t('explorer.source')}:</strong> {aiResponse.source}</p>}
                     </div>
                   )}
                 </AlertDescription>
@@ -253,7 +199,7 @@ export default function ExplorerPage() {
         <CardFooter>
           <Button onClick={handleStatRequest} disabled={isAiLoading || !statRequest.trim()}>
             {isAiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Procurar Estatística
+            {t('explorer.searchBtn')}
           </Button>
         </CardFooter>
       </Card>
@@ -264,96 +210,47 @@ export default function ExplorerPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-accent" />
-            Estatísticas Recentes da Comunidade
+            {t('explorer.recentQueries')}
           </CardTitle>
-          <CardDescription>Veja o que outros utilizadores andaram a procurar.</CardDescription>
+          <CardDescription>{t('explorer.recentQueriesDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoadingRecent ? (
+          {isLoadingRecent ? <Skeleton className="h-20 w-full" /> : recentQueries && recentQueries.length > 0 ? (
             <div className="space-y-4">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          ) : recentQueries && recentQueries.length > 0 ? (
-            <div className="space-y-4">
-              {recentQueries.map(query => (
-                <button 
-                  key={query.id} 
-                  className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors"
-                  onClick={() => setStatRequest(query.request)}
-                >
-                  <p className="font-semibold text-muted-foreground italic">"{query.request}"</p>
+              {recentQueries.map(q => (
+                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50" onClick={() => setStatRequest(q.request)}>
+                  <p className="font-semibold text-muted-foreground italic">"{q.request}"</p>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium text-muted-foreground">
-                Nenhuma pesquisa pública encontrada
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Seja o primeiro a procurar uma estatística!
-              </p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">{t('explorer.noRecentTitle')}</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       <div>
-        <h2 className="text-2xl font-bold font-headline tracking-tight">Explorar Dados Existentes</h2>
+        <h2 className="text-2xl font-bold font-headline tracking-tight">{t('explorer.existingDataTitle')}</h2>
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Pesquisar por título, descrição ou categoria..."
-            className="w-full pl-10"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+          <Input type="search" placeholder={t('explorer.searchPlaceholder')} className="w-full pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
       </div>
 
-      {isLoading ? (
-        <StatAccordionSkeleton />
-      ) : totalDatasets > 0 ? (
-        Object.keys(groupedAndFilteredDatasets).length > 0 ? (
-          <div className="space-y-6">
-            {Object.entries(groupedAndFilteredDatasets)
-              .sort(([catA], [catB]) => catA.localeCompare(catB))
-              .map(([category, categoryDatasets]) => (
-              <div key={category}>
-                <h3 className="text-lg font-semibold mb-2 tracking-tight">{category}</h3>
-                <Accordion type="single" collapsible className="w-full border rounded-lg">
-                  {categoryDatasets.map(dataset => (
-                    <StatAccordionItem key={dataset.id} dataset={dataset} />
-                  ))}
-                </Accordion>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <Card className="flex flex-col items-center justify-center text-center py-12">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Frown className="h-6 w-6"/> Nenhum resultado</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>A sua pesquisa não encontrou nenhum conjunto de dados existente.</p>
-            </CardContent>
-          </Card>
-        )
-      ) : (
-        <Card className="flex flex-col items-center justify-center text-center py-12">
-          <CardHeader>
-            <CardTitle>Nenhuns dados encontrados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Não foi possível carregar os dados estatísticos. Tente carregar os dados na página 'Seed Data'.</p>
-          </CardContent>
-        </Card>
+      {isLoading ? <Skeleton className="h-40 w-full" /> : (
+        <div className="space-y-6">
+          {Object.entries(groupedAndFilteredDatasets).map(([cat, ds]) => (
+            <div key={cat}>
+              <h3 className="text-lg font-semibold mb-2">{cat}</h3>
+              <Accordion type="single" collapsible className="w-full border rounded-lg">
+                {ds.map(d => <StatAccordionItem key={d.id} dataset={d} />)}
+              </Accordion>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 }
-
-    
