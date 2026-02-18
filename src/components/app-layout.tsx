@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield, FileText } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 
@@ -167,21 +167,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </div>
           
-          <footer className="border-t py-6 px-4 sm:px-6 bg-muted/30">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Logo className="size-4 opacity-50 grayscale" />
-                <span>© {new Date().getFullYear()} Demokratia Portugal</span>
+          <footer className="border-t py-8 px-4 sm:px-6 bg-muted/30">
+            <div className="flex flex-col gap-6 max-w-7xl mx-auto">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Logo className="size-4 opacity-50 grayscale" />
+                  <span className="font-medium">© {new Date().getFullYear()} Demokratia Portugal</span>
+                </div>
+                <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+                  <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
+                    <FileText className="h-3 w-3" />
+                    Termos de Utilização
+                  </Link>
+                  <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
+                    <Shield className="h-3 w-3" />
+                    Privacidade e Cookies
+                  </Link>
+                  <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
+                    Contacto
+                  </Link>
+                </div>
               </div>
-              <div className="flex items-center gap-6">
-                <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
-                  <Shield className="h-3 w-3" />
-                  Privacidade e Cookies
-                </Link>
-                <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
-                  Contacto
-                </Link>
-              </div>
+              <p className="text-[10px] text-muted-foreground/60 text-center sm:text-left leading-relaxed">
+                Aviso: A informação gerada por Inteligência Artificial nesta plataforma é meramente indicativa e deve ser validada junto de fontes oficiais. 
+                O Demokratia não se responsabiliza por decisões tomadas com base em conteúdo gerado automaticamente.
+              </p>
             </div>
           </footer>
         </div>
