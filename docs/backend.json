@@ -36,6 +36,16 @@
       },
       "required": ["originalText", "translatedText", "targetLanguage", "createdAt"]
     },
+    "NewsFeedCache": {
+      "title": "NewsFeedCache",
+      "type": "object",
+      "description": "Caches the daily AI-generated news feed.",
+      "properties": {
+        "feedItems": { "type": "array" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["feedItems", "lastUpdated"]
+    },
     "CommunityProposal": {
       "title": "Community Proposal",
       "type": "object",
@@ -73,6 +83,15 @@
           "schema": { "$ref": "#/backend/entities/TranslationCache" },
           "description": "Global cache for AI translations.",
           "params": [{ "name": "cacheId", "description": "Unique ID for the translation pair." }]
+        }
+      },
+      {
+        "path": "/news_feed_cache/{cacheId}",
+        "definition": {
+          "entityName": "NewsFeedCache",
+          "schema": { "$ref": "#/backend/entities/NewsFeedCache" },
+          "description": "Cache for the generated news feed.",
+          "params": [{ "name": "cacheId", "description": "Cache ID" }]
         }
       },
       {

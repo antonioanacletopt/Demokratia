@@ -135,7 +135,6 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       </div>
       <div className="p-0">
         <p className="text-muted-foreground whitespace-pre-wrap">{currentDesc}</p>
-        {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
       </div>
     </div>
   );

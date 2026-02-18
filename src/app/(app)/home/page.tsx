@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -18,7 +19,7 @@ import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 
 const typeConfig = {
   Alegação: {
@@ -35,15 +36,16 @@ const typeConfig = {
   },
 };
 
+const CACHE_EXPIRATION_HOURS = 6;
+
 function FeedItemCard({ item }: { item: AIFeedItem }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
-  const config = typeConfig[item.type];
+  const config = typeConfig[item.type as keyof typeof typeConfig];
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string, actionLabel?: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Client-side cache check
   useEffect(() => {
     if (language === 'en' && item) {
       const checkCache = async () => {
@@ -87,7 +89,6 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       setTranslated(newTranslated);
       setShowOriginal(false);
 
-      // Save to global cache (non-blocking)
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
@@ -142,13 +143,12 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
           </div>
           <Badge variant="outline" className={config.color}>
             <Icon className="mr-1.5 h-3 w-3" />
-            {t(`home.newsTypes.${item.type}`)}
+            {t(`home.newsTypes.${item.type as any}`)}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground">{currentDesc}</p>
-        {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
       </CardContent>
       {item.actionLink && (
         <CardFooter>
@@ -166,6 +166,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 
 export default function HomePage() {
   const { t } = useTranslation();
+  const firestore = useFirestore();
   const [feedItems, setFeedItems] = useState<AIFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -173,8 +174,32 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
+        // 1. Verificar cache no Firestore
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest');
+        const cacheSnap = await getDoc(cacheRef);
+        
+        if (cacheSnap.exists()) {
+          const cacheData = cacheSnap.data();
+          const lastUpdated = cacheData.lastUpdated?.toDate() || new Date(0);
+          const diffHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+          
+          if (diffHours < CACHE_EXPIRATION_HOURS) {
+            setFeedItems(cacheData.feedItems);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Se não houver cache ou expirou, chamar IA
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
+        
+        // 3. Atualizar cache (non-blocking)
+        setDoc(cacheRef, {
+          feedItems: newsFeed.feedItems,
+          lastUpdated: serverTimestamp()
+        }).catch(e => console.warn("Failed to update news cache", e));
+
       } catch (err) {
         console.error('Failed to fetch news feed:', err);
         setError(true);
@@ -183,7 +208,7 @@ export default function HomePage() {
       }
     }
     loadFeed();
-  }, []);
+  }, [firestore]);
 
   return (
     <div className="space-y-8">
@@ -200,8 +225,9 @@ export default function HomePage() {
 
       <div className="space-y-6">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center justify-center py-12 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">A analisar a atualidade política de 2026...</p>
           </div>
         ) : error ? (
           <Card>
