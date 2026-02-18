@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -78,13 +77,16 @@ export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
 }
 
 /**
- * AI-powered translation with Firestore caching to keep costs low.
+ * AI-powered translation with Firestore caching.
+ * allowAI: if false, only returns cached version or null.
  */
 export async function getTranslation(
   text: string,
-  lang: Language
-): Promise<string> {
+  lang: Language,
+  allowAI: boolean = true
+): Promise<string | null> {
   if (!text || text.trim().length === 0) return '';
+  if (lang === 'pt') return text; // Default language is already Portuguese
   
   const targetLanguage = lang === 'en' ? 'English' : 'Portuguese';
   const { firestore } = initializeFirebase();
@@ -104,7 +106,9 @@ export async function getTranslation(
       return snapshot.docs[0].data().translatedText;
     }
 
-    // 2. If not in cache, call AI
+    if (!allowAI) return null;
+
+    // 2. If not in cache and AI allowed, call AI
     const result = await translateContent({ text, targetLanguage });
     const translatedText = result.translatedText;
 
@@ -119,6 +123,6 @@ export async function getTranslation(
     return translatedText;
   } catch (error) {
     console.error("Translation error:", error);
-    return text; // Fallback to original
+    return allowAI ? text : null; // Fallback to original if AI allowed, else null
   }
 }

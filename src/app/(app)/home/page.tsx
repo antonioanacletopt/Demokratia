@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -41,6 +40,28 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
   const [translated, setTranslated] = useState<{ title: string, desc: string, actionLabel?: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
+  // Auto-check cache on mount or language change
+  useEffect(() => {
+    if (language === 'en') {
+      const checkCache = async () => {
+        const [tTitle, tDesc, tAction] = await Promise.all([
+          getTranslation(item.title, 'en', false),
+          getTranslation(item.description, 'en', false),
+          item.actionLink ? getTranslation(item.actionLink.label, 'en', false) : Promise.resolve(null)
+        ]);
+
+        if (tTitle && tDesc) {
+          setTranslated({ title: tTitle, desc: tDesc, actionLabel: tAction || undefined });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, item]);
+
   if (!config) return null;
   const Icon = config.icon;
 
@@ -51,7 +72,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
         getTranslation(item.description, language),
         item.actionLink ? getTranslation(item.actionLink.label, language) : Promise.resolve(undefined)
       ]);
-      setTranslated({ title: tTitle, desc: tDesc, actionLabel: tAction });
+      setTranslated({ title: tTitle || item.title, desc: tDesc || item.description, actionLabel: tAction || undefined });
       setShowOriginal(false);
     });
   };
@@ -67,22 +88,24 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-1">
                 <CardTitle className="text-lg">{currentTitle}</CardTitle>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                    disabled={isTranslating}
-                    className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-                >
-                    {isTranslating ? (
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    ) : translated ? (
-                        <RefreshCw className="mr-1 h-3 w-3" />
-                    ) : (
-                        <Languages className="mr-1 h-3 w-3" />
-                    )}
-                    {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-                </Button>
+                {language !== 'pt' && (
+                  <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                      disabled={isTranslating}
+                      className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
+                  >
+                      {isTranslating ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : translated ? (
+                          <RefreshCw className="mr-1 h-3 w-3" />
+                      ) : (
+                          <Languages className="mr-1 h-3 w-3" />
+                      )}
+                      {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                  </Button>
+                )}
             </div>
             <CardDescription>
               {t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}
@@ -113,7 +136,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 }
 
 export default function HomePage() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [feedItems, setFeedItems] = useState<AIFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);

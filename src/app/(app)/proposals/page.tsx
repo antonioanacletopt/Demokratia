@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -52,13 +51,33 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
   const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
+  // Auto-check cache
+  useEffect(() => {
+    if (language === 'en') {
+      const checkCache = async () => {
+        const [tTitle, tDesc] = await Promise.all([
+          getTranslation(originalTitle, 'en', false),
+          getTranslation(originalDescription, 'en', false)
+        ]);
+        if (tTitle && tDesc) {
+          setTranslated({ title: tTitle, desc: tDesc });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, originalTitle, originalDescription]);
+
   const handleTranslate = () => {
     startTransition(async () => {
       const [tTitle, tDesc] = await Promise.all([
         getTranslation(originalTitle, language),
         getTranslation(originalDescription, language)
       ]);
-      setTranslated({ title: tTitle, desc: tDesc });
+      setTranslated({ title: tTitle || originalTitle, desc: tDesc || originalDescription });
       setShowOriginal(false);
     });
   };
@@ -70,22 +89,24 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
     <div className="space-y-4">
       <div className="flex justify-between items-start gap-4">
         <CardTitle className="pt-0 text-xl">{currentTitle}</CardTitle>
-        <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-            disabled={isTranslating} 
-            className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
-        >
-          {isTranslating ? (
-              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-          ) : translated ? (
-              <RefreshCw className="mr-1 h-3 w-3" />
-          ) : (
-              <Languages className="mr-1 h-3 w-3" />
-          )}
-          {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-        </Button>
+        {language !== 'pt' && (
+          <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+              disabled={isTranslating} 
+              className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
+          >
+            {isTranslating ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+            ) : translated ? (
+                <RefreshCw className="mr-1 h-3 w-3" />
+            ) : (
+                <Languages className="mr-1 h-3 w-3" />
+            )}
+            {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+          </Button>
+        )}
       </div>
       <CardContent className="p-0">
         <p className="text-muted-foreground whitespace-pre-wrap">{currentDesc}</p>

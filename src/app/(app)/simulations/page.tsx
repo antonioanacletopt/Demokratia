@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
@@ -55,13 +54,33 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
     const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
     const [showOriginal, setShowOriginal] = useState(true);
 
+    // Auto-check cache
+    useEffect(() => {
+      if (language === 'en') {
+        const checkCache = async () => {
+          const [tImpact, tReasoning] = await Promise.all([
+            getTranslation(simulation.simulatedImpact, 'en', false),
+            getTranslation(simulation.reasoning, 'en', false)
+          ]);
+          if (tImpact && tReasoning) {
+            setTranslated({ impact: tImpact, reasoning: tReasoning });
+            setShowOriginal(false);
+          }
+        };
+        checkCache();
+      } else {
+        setTranslated(null);
+        setShowOriginal(true);
+      }
+    }, [language, simulation]);
+
     const handleTranslate = () => {
         startTransition(async () => {
             const [tImpact, tReasoning] = await Promise.all([
                 getTranslation(simulation.simulatedImpact, language),
                 getTranslation(simulation.reasoning, language)
             ]);
-            setTranslated({ impact: tImpact, reasoning: tReasoning });
+            setTranslated({ impact: tImpact || simulation.simulatedImpact, reasoning: tReasoning || simulation.reasoning });
             setShowOriginal(false);
         });
     };
@@ -71,18 +90,20 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
 
     return (
         <div className="space-y-6">
-             <div className="flex justify-end">
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                    disabled={isTranslating}
-                    className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-                >
-                    {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-                    {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-                </Button>
-             </div>
+             {language !== 'pt' && (
+               <div className="flex justify-end">
+                  <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                      disabled={isTranslating}
+                      className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                  >
+                      {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                      {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                  </Button>
+               </div>
+             )}
 
              {simulation.isRealPolicy && (
                   <Alert>
@@ -294,7 +315,10 @@ export default function SimulationsPage() {
                           <h3 className="font-semibold">{sim.title}</h3>
                           <p className="text-sm text-muted-foreground">{sim.inputVariables}</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => setCurrentSimulation(JSON.parse(sim.simulationResults))}>
+                      <Button variant="outline" size="sm" onClick={() => {
+                        const parsed = JSON.parse(sim.simulationResults);
+                        setCurrentSimulation(parsed);
+                      }}>
                           {t('common.view')}
                       </Button>
                   </Card>
@@ -317,7 +341,10 @@ export default function SimulationsPage() {
                       </div>
                       <h3 className="font-semibold">{sim.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
-                      <Button variant="link" className="mt-2 p-0" onClick={() => setCurrentSimulation(JSON.parse(sim.simulationResults))}>
+                      <Button variant="link" className="mt-2 p-0" onClick={() => {
+                        const parsed = JSON.parse(sim.simulationResults);
+                        setCurrentSimulation(parsed);
+                      }}>
                           {t('common.view')}
                       </Button>
                   </Card>

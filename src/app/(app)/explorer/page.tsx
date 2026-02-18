@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
@@ -81,6 +80,27 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
+  // Auto-check cache
+  useEffect(() => {
+    if (language === 'en') {
+      const checkCache = async () => {
+        const [tTitle, tDesc, tCat] = await Promise.all([
+          getTranslation(dataset.title, 'en', false),
+          getTranslation(dataset.description, 'en', false),
+          getTranslation(dataset.category, 'en', false)
+        ]);
+        if (tTitle && tDesc && tCat) {
+          setTranslated({ title: tTitle, desc: tDesc, cat: tCat });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, dataset]);
+
   const handleTranslate = () => {
     startTransition(async () => {
       const [tTitle, tDesc, tCat] = await Promise.all([
@@ -88,7 +108,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
         getTranslation(dataset.description, language),
         getTranslation(dataset.category, language)
       ]);
-      setTranslated({ title: tTitle, desc: tDesc, cat: tCat });
+      setTranslated({ title: tTitle || dataset.title, desc: tDesc || dataset.description, cat: tCat || dataset.category });
       setShowOriginal(false);
     });
   };
@@ -106,18 +126,20 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="space-y-4 px-4 relative">
-        <div className="flex justify-end absolute right-4 top-0">
-            <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                disabled={isTranslating} 
-                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-            >
-                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-                {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-            </Button>
-        </div>
+        {language !== 'pt' && (
+          <div className="flex justify-end absolute right-4 top-0">
+              <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                  disabled={isTranslating} 
+                  className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+              >
+                  {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                  {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+              </Button>
+          </div>
+        )}
         <p className="text-sm text-muted-foreground pt-2">{currentDesc}</p>
         <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
@@ -139,13 +161,6 @@ export default function ExplorerPage() {
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
   const resultRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  const publicQueriesCollection = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'publicStatisticQueries'), orderBy('createdAt', 'desc'), limit(5));
-  }, [firestore]);
-  const { data: recentQueries, isLoading: isLoadingRecent } = useCollection<PublicStatisticQuery>(publicQueriesCollection);
 
   useEffect(() => {
     if ((aiResponse || isAiLoading) && resultRef.current) {
@@ -248,7 +263,7 @@ export default function ExplorerPage() {
           <CardDescription>{t('explorer.recentQueriesDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoadingRecent ? <Skeleton className="h-20 w-full" /> : recentQueries && recentQueries.length > 0 ? (
+          {recentQueries && recentQueries.length > 0 ? (
             <div className="space-y-4">
               {recentQueries.map(q => (
                 <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50" onClick={() => setStatRequest(q.request)}>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
@@ -50,6 +49,26 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
 
   const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
 
+  // Auto-check cache
+  useEffect(() => {
+    if (language === 'en' && dataSet) {
+      const checkCache = async () => {
+        const [tTitle, tDesc] = await Promise.all([
+          getTranslation(dataSet.label, 'en', false),
+          getTranslation(dataSet.description, 'en', false)
+        ]);
+        if (tTitle && tDesc) {
+          setTranslated({ title: tTitle, desc: tDesc });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, dataSet]);
+
   const handleTranslate = () => {
     if (!dataSet) return;
     startTransition(async () => {
@@ -57,7 +76,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
         getTranslation(dataSet.label, language),
         getTranslation(dataSet.description, language)
       ]);
-      setTranslated({ title: tTitle, desc: tDesc });
+      setTranslated({ title: tTitle || dataSet.label, desc: tDesc || dataSet.description });
       setShowOriginal(false);
     });
   };
@@ -107,16 +126,18 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
             <CardTitle className="text-lg">{currentTitle}</CardTitle>
             <CardDescription className="mt-1">{currentDesc}</CardDescription>
           </div>
-          <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-              disabled={isTranslating}
-              className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
-          >
-              {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-              {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-          </Button>
+          {language !== 'pt' && (
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating}
+                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
+            >
+                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -154,7 +175,7 @@ interface SavedDataView {
 }
 
 export default function DashboardPage() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [request, setRequest] = useState('');
   const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
   const [isPending, startTransition] = useTransition();
