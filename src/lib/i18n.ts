@@ -54,7 +54,12 @@ export const translations = {
       description: 'Acompanhe as últimas alegações, propostas e análises no panorama político português.',
       error: 'Não foi possível carregar as notícias. Por favor, tente novamente mais tarde.',
       source: 'Fonte',
-      date: 'Data'
+      date: 'Data',
+      newsTypes: {
+        'Alegação': 'Alegação',
+        'Nova Lei': 'Nova Lei',
+        'Análise': 'Análise'
+      }
     },
     dashboard: {
       title: 'Dashboard Interativo',
@@ -166,7 +171,11 @@ export const translations = {
       votedBtn: 'Apoiado',
       simulateBtn: 'Simular',
       editTitle: 'Editar Proposta',
-      editDesc: 'Refine os detalhes da sua proposta.'
+      editDesc: 'Refine os detalhes da sua proposta.',
+      loginToSubmit: 'para submeter uma proposta.',
+      successMsg: 'Proposta submetida com sucesso!',
+      titleMinError: 'O título deve ter pelo menos 10 caracteres.',
+      descMinError: 'A descrição deve ter pelo menos 30 caracteres.'
     },
     contact: {
       title: 'Contacto',
@@ -273,7 +282,12 @@ export const translations = {
       description: 'Follow the latest claims, proposals, and analyses in the Portuguese political landscape.',
       error: 'Could not load news. Please try again later.',
       source: 'Source',
-      date: 'Date'
+      date: 'Date',
+      newsTypes: {
+        'Alegação': 'Claim',
+        'Nova Lei': 'New Law',
+        'Análise': 'Analysis'
+      }
     },
     dashboard: {
       title: 'Interactive Dashboard',
@@ -385,7 +399,11 @@ export const translations = {
       votedBtn: 'Supported',
       simulateBtn: 'Simulate',
       editTitle: 'Edit Proposal',
-      editDesc: 'Refine the details of your proposal.'
+      editDesc: 'Refine the details of your proposal.',
+      loginToSubmit: 'to submit a proposal.',
+      successMsg: 'Proposal submitted successfully!',
+      titleMinError: 'Title must be at least 10 characters long.',
+      descMinError: 'Description must be at least 30 characters long.'
     },
     contact: {
       title: 'Contact',

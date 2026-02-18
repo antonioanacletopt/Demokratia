@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import {
   Card,
@@ -11,12 +13,11 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Check, Scale, TrendingUp, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, Scale, TrendingUp, Loader2, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
-import { getNewsFeed } from '@/lib/actions';
+import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
-import { useState, useEffect } from 'react';
 
 const typeConfig = {
   Alegação: {
@@ -34,29 +35,66 @@ const typeConfig = {
 };
 
 function FeedItemCard({ item }: { item: AIFeedItem }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const config = typeConfig[item.type];
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
   if (!config) return null;
   const Icon = config.icon;
+
+  const handleTranslate = () => {
+    startTransition(async () => {
+      const [tTitle, tDesc] = await Promise.all([
+        getTranslation(item.title, language),
+        getTranslation(item.description, language)
+      ]);
+      setTranslated({ title: tTitle, desc: tDesc });
+      setShowOriginal(false);
+    });
+  };
+
+  const currentTitle = !showOriginal && translated ? translated.title : item.title;
+  const currentDesc = !showOriginal && translated ? translated.desc : item.description;
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg">{item.title}</CardTitle>
-            <CardDescription className="mt-1">
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-2 mb-1">
+                <CardTitle className="text-lg">{currentTitle}</CardTitle>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                    disabled={isTranslating}
+                    className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                >
+                    {isTranslating ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    ) : translated ? (
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                    ) : (
+                        <Languages className="mr-1 h-3 w-3" />
+                    )}
+                    {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                </Button>
+            </div>
+            <CardDescription>
               {t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}
             </CardDescription>
           </div>
           <Badge variant="outline" className={config.color}>
             <Icon className="mr-1.5 h-3 w-3" />
-            {item.type}
+            {t(`home.newsTypes.${item.type}`)}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground">{item.description}</p>
+        <p className="text-muted-foreground">{currentDesc}</p>
+        {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
       </CardContent>
       {item.actionLink && (
         <CardFooter>

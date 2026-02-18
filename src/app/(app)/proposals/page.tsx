@@ -40,8 +40,8 @@ interface CommunityProposal {
 }
 
 const proposalFormSchema = (t: any) => z.object({
-  title: z.string().min(10, t('proposals.titleMinError') || 'O título deve ter pelo menos 10 caracteres.'),
-  description: z.string().min(30, t('proposals.descMinError') || 'A descrição deve ter pelo menos 30 caracteres.'),
+  title: z.string().min(10, t('proposals.titleMinError')),
+  description: z.string().min(30, t('proposals.descMinError')),
 });
 
 type ProposalFormValues = z.infer<ReturnType<typeof proposalFormSchema>>;
@@ -63,34 +63,32 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
     });
   };
 
-  if (!translated) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-start gap-4">
-          <CardTitle className="pt-0">{originalTitle}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={handleTranslate} disabled={isTranslating} className="h-8 text-xs">
-            {isTranslating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Languages className="mr-2 h-3 w-3" />}
-            {t('common.translate')}
-          </Button>
-        </div>
-        <CardContent className="p-0">
-          <p className="text-muted-foreground whitespace-pre-wrap">{originalDescription}</p>
-        </CardContent>
-      </div>
-    );
-  }
+  const currentTitle = !showOriginal && translated ? translated.title : originalTitle;
+  const currentDesc = !showOriginal && translated ? translated.desc : originalDescription;
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-start gap-4">
-        <CardTitle className="pt-0">{showOriginal ? originalTitle : translated.title}</CardTitle>
-        <Button variant="ghost" size="sm" onClick={() => setShowOriginal(!showOriginal)} className="h-8 text-xs">
-          <RefreshCw className="mr-2 h-3 w-3" />
-          {showOriginal ? t('common.translate') : t('common.showOriginal')}
+        <CardTitle className="pt-0 text-xl">{currentTitle}</CardTitle>
+        <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+            disabled={isTranslating} 
+            className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
+        >
+          {isTranslating ? (
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+          ) : translated ? (
+              <RefreshCw className="mr-1 h-3 w-3" />
+          ) : (
+              <Languages className="mr-1 h-3 w-3" />
+          )}
+          {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
         </Button>
       </div>
       <CardContent className="p-0">
-        <p className="text-muted-foreground whitespace-pre-wrap">{showOriginal ? originalDescription : translated.desc}</p>
+        <p className="text-muted-foreground whitespace-pre-wrap">{currentDesc}</p>
         {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
       </CardContent>
     </div>
@@ -395,7 +393,7 @@ export default function ProposalsPage() {
                         )}
                     </div>
                 </CardHeader>
-                <CardContent className="flex-grow">
+                <CardContent className="flex-grow p-6">
                   <TranslatedContent originalTitle={proposal.title} originalDescription={proposal.description} />
                 </CardContent>
                  <CardFooter className="flex justify-between items-center bg-muted/50 py-3 px-6 rounded-b-lg">
