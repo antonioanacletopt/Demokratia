@@ -1,12 +1,15 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from '@/lib/i18n';
+import { getTranslation } from '@/lib/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -14,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown } from 'lucide-react';
+import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown, Languages, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -22,7 +25,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { pt, enGB } from 'date-fns/locale';
 
 interface CommunityProposal {
   id: string;
@@ -36,15 +39,66 @@ interface CommunityProposal {
   votedBy: string[];
 }
 
-const proposalFormSchema = z.object({
-  title: z.string().min(10, 'O título deve ter pelo menos 10 caracteres.'),
-  description: z.string().min(30, 'A descrição deve ter pelo menos 30 caracteres.'),
+const proposalFormSchema = (t: any) => z.object({
+  title: z.string().min(10, t('proposals.titleMinError') || 'O título deve ter pelo menos 10 caracteres.'),
+  description: z.string().min(30, t('proposals.descMinError') || 'A descrição deve ter pelo menos 30 caracteres.'),
 });
 
-type ProposalFormValues = z.infer<typeof proposalFormSchema>;
+type ProposalFormValues = z.infer<ReturnType<typeof proposalFormSchema>>;
 
+function TranslatedContent({ originalTitle, originalDescription }: { originalTitle: string, originalDescription: string }) {
+  const { t, language } = useTranslation();
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
+  const handleTranslate = () => {
+    startTransition(async () => {
+      const [tTitle, tDesc] = await Promise.all([
+        getTranslation(originalTitle, language),
+        getTranslation(originalDescription, language)
+      ]);
+      setTranslated({ title: tTitle, desc: tDesc });
+      setShowOriginal(false);
+    });
+  };
+
+  if (!translated) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-start gap-4">
+          <CardTitle className="pt-0">{originalTitle}</CardTitle>
+          <Button variant="ghost" size="sm" onClick={handleTranslate} disabled={isTranslating} className="h-8 text-xs">
+            {isTranslating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Languages className="mr-2 h-3 w-3" />}
+            {t('common.translate')}
+          </Button>
+        </div>
+        <CardContent className="p-0">
+          <p className="text-muted-foreground whitespace-pre-wrap">{originalDescription}</p>
+        </CardContent>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-start gap-4">
+        <CardTitle className="pt-0">{showOriginal ? originalTitle : translated.title}</CardTitle>
+        <Button variant="ghost" size="sm" onClick={() => setShowOriginal(!showOriginal)} className="h-8 text-xs">
+          <RefreshCw className="mr-2 h-3 w-3" />
+          {showOriginal ? t('common.translate') : t('common.showOriginal')}
+        </Button>
+      </div>
+      <CardContent className="p-0">
+        <p className="text-muted-foreground whitespace-pre-wrap">{showOriginal ? originalDescription : translated.desc}</p>
+        {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
+      </CardContent>
+    </div>
+  );
+}
 
 export default function ProposalsPage() {
+  const { t, language } = useTranslation();
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -75,7 +129,7 @@ export default function ProposalsPage() {
   }, [proposals, searchTerm]);
   
   const form = useForm<ProposalFormValues>({
-    resolver: zodResolver(proposalFormSchema),
+    resolver: zodResolver(proposalFormSchema(t)),
     defaultValues: { title: '', description: '' },
   });
 
@@ -94,7 +148,7 @@ export default function ProposalsPage() {
   
   const handleNewProposalSubmit = async (values: ProposalFormValues) => {
     if (!user || !firestore) {
-      toast({ variant: 'destructive', title: 'Ação Requer Autenticação' });
+      toast({ variant: 'destructive', title: t('common.warning'), description: t('nav.login') });
       return;
     }
 
@@ -114,7 +168,7 @@ export default function ProposalsPage() {
 
     try {
         await addDoc(proposalsCollection, proposalData);
-        toast({ title: 'Proposta submetida!', description: 'A sua proposta está visível para toda a comunidade.' });
+        toast({ title: t('common.success'), description: t('proposals.successMsg') });
         form.reset();
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
@@ -123,7 +177,7 @@ export default function ProposalsPage() {
           requestResourceData: proposalData,
         });
         errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erro ao submeter', description: 'Não foi possível guardar a sua proposta.' });
+        toast({ variant: 'destructive', title: t('common.error') });
     } finally {
         setIsSubmitting(false);
     }
@@ -140,7 +194,7 @@ export default function ProposalsPage() {
             title: values.title,
             description: values.description,
         });
-        toast({ title: 'Proposta atualizada!' });
+        toast({ title: t('common.success') });
         handleCloseEditDialog();
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
@@ -149,7 +203,7 @@ export default function ProposalsPage() {
           requestResourceData: values,
         });
         errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erro ao atualizar', description: 'Não foi possível guardar as alterações.' });
+        toast({ variant: 'destructive', title: t('common.error') });
     } finally {
         setIsEditing(false);
     }
@@ -160,20 +214,20 @@ export default function ProposalsPage() {
     const proposalRef = doc(firestore, 'communityProposals', proposalId);
     try {
         await deleteDoc(proposalRef);
-        toast({ title: 'Proposta apagada.' });
+        toast({ title: t('common.success') });
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
           path: proposalRef.path,
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
-        toast({ variant: 'destructive', title: 'Erro ao apagar', description: 'Não foi possível apagar a proposta.' });
+        toast({ variant: 'destructive', title: t('common.error') });
     }
   }
 
   const handleVote = async (proposalId: string) => {
     if (!user || !firestore) {
-      toast({ variant: 'destructive', title: 'Ação Requer Autenticação', description: 'Inicie sessão para poder apoiar propostas.' });
+      toast({ variant: 'destructive', title: t('common.warning'), description: t('nav.login') });
       return;
     }
 
@@ -184,7 +238,7 @@ export default function ProposalsPage() {
             voteCount: increment(1),
             votedBy: arrayUnion(user.uid)
         });
-        toast({ title: 'Obrigado pelo seu apoio!' });
+        toast({ title: t('proposals.votedBtn') });
     } catch (serverError: any) {
          const permissionError = new FirestorePermissionError({
           path: proposalRef.path,
@@ -192,8 +246,7 @@ export default function ProposalsPage() {
           requestResourceData: { voteCount: 'increment(1)', votedBy: `arrayUnion(${user.uid})` },
         });
         errorEmitter.emit('permission-error', permissionError);
-        
-        toast({ variant: 'destructive', title: 'Erro ao votar', description: 'Poderá já ter votado nesta proposta ou ocorreu um erro de permissões.' });
+        toast({ variant: 'destructive', title: t('common.error') });
     }
   }
   
@@ -202,37 +255,37 @@ export default function ProposalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">O Povo Propõe</h1>
-        <p className="text-muted-foreground">Submeta as suas próprias propostas de políticas e apoie as ideias da comunidade.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('proposals.title')}</h1>
+        <p className="text-muted-foreground">{t('proposals.description')}</p>
       </div>
 
       <Dialog open={!!editingProposal} onOpenChange={(open) => !open && handleCloseEditDialog()}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Editar Proposta</DialogTitle>
-                <DialogDescription>Refine os detalhes da sua proposta. O corretor ortográfico do seu navegador está ativo.</DialogDescription>
+                <DialogTitle>{t('proposals.editTitle')}</DialogTitle>
+                <DialogDescription>{t('proposals.editDesc')}</DialogDescription>
             </DialogHeader>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleEditProposalSubmit)} className="space-y-4 pt-4">
                     <FormField control={form.control} name="title" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Título</FormLabel>
+                            <FormLabel>{t('proposals.titleLabel')}</FormLabel>
                             <FormControl><Input {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={form.control} name="description" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Descrição</FormLabel>
+                            <FormLabel>{t('proposals.descLabel')}</FormLabel>
                             <FormControl><Textarea rows={6} {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
                     <DialogFooter>
-                        <DialogClose asChild><Button type="button" variant="ghost">Cancelar</Button></DialogClose>
+                        <DialogClose asChild><Button type="button" variant="ghost">{t('common.cancel')}</Button></DialogClose>
                         <Button type="submit" disabled={isEditing}>
                             {isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Guardar Alterações
+                            {t('common.save')}
                         </Button>
                     </DialogFooter>
                 </form>
@@ -242,12 +295,12 @@ export default function ProposalsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><PlusCircle className="h-5 w-5" />Submeter Nova Proposta</CardTitle>
+          <CardTitle className="flex items-center gap-2"><PlusCircle className="h-5 w-5" />{t('proposals.newTitle')}</CardTitle>
           { user ? (
-            <CardDescription>Descreva a sua ideia. O corretor ortográfico do seu navegador está ativo para ajudar.</CardDescription>
+            <CardDescription>{t('proposals.newDesc')}</CardDescription>
           ) : (
              <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
-                <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">Inicie sessão</Link> para submeter uma proposta.</span>
+                <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">{t('nav.login')}</Link> {t('proposals.loginToSubmit')}</span>
             </CardDescription>
           )}
         </CardHeader>
@@ -257,15 +310,15 @@ export default function ProposalsPage() {
                     <CardContent className="space-y-4">
                         <FormField control={form.control} name="title" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Título da Proposta</FormLabel>
-                                <FormControl><Input placeholder="Ex: Passe cultural gratuito para jovens até aos 25 anos" {...field} disabled={isSubmitting} /></FormControl>
+                                <FormLabel>{t('proposals.titleLabel')}</FormLabel>
+                                <FormControl><Input placeholder={t('proposals.titlePlaceholder')} {...field} disabled={isSubmitting} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="description" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Descrição Detalhada</FormLabel>
-                                <FormControl><Textarea placeholder="Descreva a sua proposta, os seus objetivos e como poderia ser implementada." rows={5} {...field} disabled={isSubmitting} /></FormControl>
+                                <FormLabel>{t('proposals.descLabel')}</FormLabel>
+                                <FormControl><Textarea placeholder={t('proposals.descPlaceholder')} rows={5} {...field} disabled={isSubmitting} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
@@ -273,7 +326,7 @@ export default function ProposalsPage() {
                     <CardFooter>
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Submeter Proposta
+                            {t('proposals.submitBtn')}
                         </Button>
                     </CardFooter>
                 </form>
@@ -283,12 +336,12 @@ export default function ProposalsPage() {
 
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 className="text-2xl font-bold font-headline tracking-tight">Propostas da Comunidade</h2>
+          <h2 className="text-2xl font-bold font-headline tracking-tight">{t('proposals.communityTitle')}</h2>
            <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Pesquisar propostas..."
+              placeholder={t('proposals.searchPlaceholder')}
               className="w-full sm:w-72 pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -307,7 +360,8 @@ export default function ProposalsPage() {
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             {filteredProposals.map((proposal) => {
                const hasVoted = !!(user && proposal.votedBy?.includes(user.uid));
-               const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'há algum tempo';
+               const locale = language === 'pt' ? pt : enGB;
+               const timeAgo = proposal.createdAt ? formatDistanceToNow(proposal.createdAt.toDate(), { addSuffix: true, locale }) : '...';
                const isOwner = !!(user && user.uid === proposal.userId);
 
               return (
@@ -321,7 +375,7 @@ export default function ProposalsPage() {
                             </Avatar>
                             <div>
                                 <p className="font-semibold">{proposal.userName}</p>
-                                <p className="text-xs text-muted-foreground">Submetido {timeAgo}</p>
+                                <p className="text-xs text-muted-foreground">{timeAgo}</p>
                             </div>
                         </div>
                         {isOwner && (
@@ -330,36 +384,35 @@ export default function ProposalsPage() {
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
                                     <AlertDialogContent>
-                                        <AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação é irreversível e irá apagar a proposta e todos os seus votos.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>{t('profile.deleteWarning')}</AlertDialogDescription></AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteProposal(proposal.id)}>Apagar</AlertDialogAction>
+                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteProposal(proposal.id)}>{t('common.delete')}</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </div>
                         )}
                     </div>
-                  <CardTitle className="pt-4">{proposal.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <p className="text-muted-foreground whitespace-pre-wrap">{proposal.description}</p>
+                  <TranslatedContent originalTitle={proposal.title} originalDescription={proposal.description} />
                 </CardContent>
-                 <CardFooter className="flex justify-between items-center bg-muted/50 py-3 px-6">
+                 <CardFooter className="flex justify-between items-center bg-muted/50 py-3 px-6 rounded-b-lg">
                     <div className="flex items-center gap-2 font-bold text-lg text-primary">
                         <ThumbsUp className="h-5 w-5" />
                         <span>{proposal.voteCount}</span>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="secondary" size="sm" asChild>
-                            <Link href={`/simulator?policy=${encodeURIComponent(proposal.description)}`}>
+                            <Link href={`/simulations?policy=${encodeURIComponent(proposal.description)}`}>
                                 <GitCommit className="mr-2 h-4 w-4" />
-                                Simular
+                                {t('proposals.simulateBtn')}
                             </Link>
                         </Button>
                         <Button size="sm" onClick={() => handleVote(proposal.id)} disabled={!user || hasVoted || isOwner}>
                             <ThumbsUp className="mr-2 h-4 w-4" />
-                            {hasVoted ? 'Apoiado' : 'Apoiar'}
+                            {hasVoted ? t('proposals.votedBtn') : t('proposals.voteBtn')}
                         </Button>
                     </div>
                 </CardFooter>
@@ -370,11 +423,11 @@ export default function ProposalsPage() {
            <Card className="flex flex-col items-center justify-center text-center py-16">
             <CardHeader>
                 {searchTerm ? <Frown className="mx-auto h-12 w-12 text-muted-foreground/50" /> : <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50" />}
-                <CardTitle className="mt-4">{searchTerm ? 'Nenhuma proposta encontrada' : 'Nenhuma proposta submetida'}</CardTitle>
+                <CardTitle className="mt-4">{searchTerm ? t('proposals.noProposalsTitle') : t('proposals.noProposalsDesc')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                {searchTerm ? 'Tente uma pesquisa diferente ou limpe o campo de pesquisa.' : 'Seja o primeiro a submeter uma proposta à comunidade!'}
+                {searchTerm ? t('common.noResults') : t('proposals.noProposalsDesc')}
               </p>
             </CardContent>
           </Card>

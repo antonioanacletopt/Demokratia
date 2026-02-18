@@ -1,3 +1,4 @@
+
 'use server';
 import { config } from 'dotenv';
 config();
@@ -9,3 +10,4 @@ import '@/ai/flows/generate-chart-from-request.ts';
 import '@/ai/flows/fact-check-claim.ts';
 import '@/ai/flows/consult-legislation.ts';
 import '@/ai/flows/generate-news-feed.ts';
+import '@/ai/flows/translate-content.ts';

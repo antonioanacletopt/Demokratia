@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -34,6 +35,11 @@ import {
   generateNewsFeed,
   GenerateNewsFeedOutput,
 } from '@/ai/flows/generate-news-feed';
+import {
+  translateContent,
+  TranslateContentInput,
+  TranslateContentOutput,
+} from '@/ai/flows/translate-content';
 
 import { initializeFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -59,7 +65,6 @@ export async function getLegislationInfo(
   input: Omit<ConsultLegislationInput, 'language'>,
   lang: Language
 ): Promise<ConsultLegislationOutput> {
-  // Update legislation flow if needed to accept language, currently it simulates PT law
   return await consultLegislation({ ...input } as any);
 }
 
@@ -83,4 +88,13 @@ export async function getChartFromRequest(
 
 export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
   return await generateNewsFeed();
+}
+
+export async function getTranslation(
+  text: string,
+  lang: Language
+): Promise<string> {
+  const targetLanguage = lang === 'en' ? 'English' : 'Portuguese';
+  const result = await translateContent({ text, targetLanguage });
+  return result.translatedText;
 }

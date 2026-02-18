@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -43,7 +44,10 @@ export const translations = {
       language: 'Idioma',
       warning: 'Aviso',
       close: 'Fechar',
-      accept: 'Aceitar'
+      accept: 'Aceitar',
+      translate: 'Traduzir com IA',
+      showOriginal: 'Ver Original',
+      translating: 'A traduzir...'
     },
     home: {
       title: 'Feed de Atualizações',
@@ -146,7 +150,7 @@ export const translations = {
     },
     proposals: {
       title: 'O Povo Propõe',
-      description: 'Submeta as suas próprias propostas de políticas e apoie a comunidade.',
+      description: 'Submeta as suas próprias propostas de políticas e apoie as ideias da comunidade.',
       newTitle: 'Submeter Nova Proposta',
       newDesc: 'Descreva a sua ideia de forma clara.',
       titleLabel: 'Título da Proposta',
@@ -160,7 +164,9 @@ export const translations = {
       noProposalsDesc: 'Seja o primeiro a submeter uma proposta!',
       voteBtn: 'Apoiar',
       votedBtn: 'Apoiado',
-      simulateBtn: 'Simular'
+      simulateBtn: 'Simular',
+      editTitle: 'Editar Proposta',
+      editDesc: 'Refine os detalhes da sua proposta.'
     },
     contact: {
       title: 'Contacto',
@@ -257,7 +263,10 @@ export const translations = {
       language: 'Language',
       warning: 'Warning',
       close: 'Close',
-      accept: 'Accept'
+      accept: 'Accept',
+      translate: 'Translate with AI',
+      showOriginal: 'Show Original',
+      translating: 'Translating...'
     },
     home: {
       title: 'Updates Feed',
@@ -374,7 +383,9 @@ export const translations = {
       noProposalsDesc: 'Be the first to submit a proposal!',
       voteBtn: 'Support',
       votedBtn: 'Supported',
-      simulateBtn: 'Simulate'
+      simulateBtn: 'Simulate',
+      editTitle: 'Edit Proposal',
+      editDesc: 'Refine the details of your proposal.'
     },
     contact: {
       title: 'Contact',
