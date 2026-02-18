@@ -1,11 +1,11 @@
+
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
-import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic, getTranslation } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
-import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, Frown, FileText, Sparkles, Languages, RefreshCw } from 'lucide-react';
+import { Search, Bot, Loader2, Sparkles, Languages, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -81,13 +81,14 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Client-side auto-check cache
   useEffect(() => {
-    if (language === 'en') {
+    if (language === 'en' && dataset) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
         const fetchCached = async (text: string) => {
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
@@ -119,7 +120,6 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       setTranslated({ title: resTitle, desc: resDesc, cat: resCat });
       setShowOriginal(false);
 
-      // Save to global cache
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
@@ -152,7 +152,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       </AccordionTrigger>
       <AccordionContent className="space-y-4 px-4 relative">
         {language !== 'pt' && (
-          <div className="flex justify-end absolute right-4 top-0">
+          <div className="flex justify-end pt-2">
               <Button 
                   variant="ghost" 
                   size="sm" 
@@ -165,7 +165,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
               </Button>
           </div>
         )}
-        <p className="text-sm text-muted-foreground pt-2">{currentDesc}</p>
+        <p className="text-sm text-muted-foreground">{currentDesc}</p>
         <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
           <p><strong>{t('explorer.source')}:</strong> {dataset.source}</p>
@@ -215,7 +215,6 @@ export default function ExplorerPage() {
             request: trimmedRequest,
             ...result,
             createdAt: serverTimestamp(),
-            lastAccessedAt: serverTimestamp(),
           }).catch(err => console.warn("Failed cache", err));
       }
     });
@@ -298,7 +297,7 @@ export default function ExplorerPage() {
           {recentQueries && recentQueries.length > 0 ? (
             <div className="space-y-4">
               {recentQueries.map(q => (
-                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50" onClick={() => setStatRequest(q.request)}>
+                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors" onClick={() => setStatRequest(q.request)}>
                   <p className="font-semibold text-muted-foreground italic">"{q.request}"</p>
                 </button>
               ))}
@@ -324,7 +323,7 @@ export default function ExplorerPage() {
           {Object.entries(groupedAndFilteredDatasets).map(([cat, ds]) => (
             <div key={cat}>
               <h3 className="text-lg font-semibold mb-2">{cat}</h3>
-              <Accordion type="single" collapsible className="w-full border rounded-lg">
+              <Accordion type="single" collapsible className="w-full border rounded-lg bg-card">
                 {ds.map(d => <StatAccordionItem key={d.id} dataset={d} />)}
               </Accordion>
             </div>

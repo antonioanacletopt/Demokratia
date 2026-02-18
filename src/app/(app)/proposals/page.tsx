@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc, where, limit, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,15 +16,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, MessageSquare, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, ThumbsUp, Edit, Trash2, Languages, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-
-import { formatDistanceToNow } from 'date-fns';
-import { pt, enGB } from 'date-fns/locale';
 
 interface CommunityProposal {
   id: string;
@@ -55,8 +52,10 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
     if (language === 'en') {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
         const fetchCached = async (text: string) => {
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
@@ -87,18 +86,19 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       setShowOriginal(false);
 
       const cacheRef = collection(firestore, 'translations_cache');
-      addDoc(cacheRef, {
-        originalText: originalTitle,
-        translatedText: resTitle,
-        targetLanguage: language === 'en' ? 'English' : 'Portuguese',
-        createdAt: serverTimestamp()
-      });
-      addDoc(cacheRef, {
-        originalText: originalDescription,
-        translatedText: resDesc,
-        targetLanguage: language === 'en' ? 'English' : 'Portuguese',
-        createdAt: serverTimestamp()
-      });
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      const saveToCache = (orig: string, trans: string) => {
+        addDoc(cacheRef, {
+          originalText: orig,
+          translatedText: trans,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      };
+
+      saveToCache(originalTitle, resTitle);
+      saveToCache(originalDescription, resDesc);
     });
   };
 
@@ -128,7 +128,7 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
 }
 
 export default function ProposalsPage() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -254,21 +254,22 @@ export default function ProposalsPage() {
                     <CardFooter><Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('proposals.submitBtn')}</Button></CardFooter>
                 </form>
             </Form>
-        ) : <CardContent><p>{t('nav.login')}</p></CardContent> }
+        ) : <CardContent><p className="text-muted-foreground">{t('nav.login')}</p></CardContent> }
       </Card>
 
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-2xl font-bold">{t('proposals.communityTitle')}</h2>
           <Input className="w-full sm:w-72" placeholder={t('proposals.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         
         {isLoadingProposals ? (
-             <div className="grid gap-6 md:grid-cols-2">
-                <Skeleton className="h-40 w-full" /><Skeleton className="h-40 w-full" />
+             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
+                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
              </div>
         ) : filteredProposals && filteredProposals.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             {filteredProposals.map((p) => {
                const hasVoted = !!(user && p.votedBy?.includes(user.uid));
                const isOwner = !!(user && user.uid === p.userId);
@@ -284,7 +285,7 @@ export default function ProposalsPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="flex-grow"><TranslatedContent originalTitle={p.title} originalDescription={p.description} /></CardContent>
-                <CardFooter className="flex justify-between bg-muted/50 p-4">
+                <CardFooter className="flex justify-between bg-muted/50 p-4 rounded-b-lg">
                     <div className="flex items-center gap-2 font-bold"><ThumbsUp className="h-4 w-4" />{p.voteCount}</div>
                     <div className="flex gap-2">
                         <Button variant="secondary" size="sm" asChild><Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('common.simulate')}</Link></Button>
