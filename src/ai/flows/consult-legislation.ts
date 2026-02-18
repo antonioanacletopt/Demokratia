@@ -11,6 +11,7 @@ import { z } from 'genkit';
 
 const ConsultLegislationInputSchema = z.object({
   question: z.string().describe('A pergunta do utilizador sobre a legislação portuguesa.'),
+  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('O idioma em que a resposta deve ser escrita.'),
 });
 export type ConsultLegislationInput = z.infer<typeof ConsultLegislationInputSchema>;
 
@@ -50,6 +51,8 @@ const prompt = ai.definePrompt({
   },
   prompt: `Você é um assistente jurídico especialista em legislação portuguesa. A sua tarefa é responder a perguntas de utilizadores de forma clara, precisa e baseada estritamente na lei em vigor.
 
+**IMPORTANTE: A sua resposta no campo 'answer' deve ser escrita obrigatoriamente em {{{language}}}.**
+
 Fontes primárias de consulta:
 - Diário da República Eletrónico (dre.pt)
 - Legislação consolidada disponível em portais governamentais.
@@ -58,11 +61,8 @@ Fontes primárias de consulta:
 Processo:
 1.  Analise a pergunta do utilizador: {{{question}}}.
 2.  Identifique a área do direito e a legislação aplicável (ex: Lei da Nacionalidade, Código do Trabalho, etc.).
-3.  Formule uma resposta clara e objetiva no campo 'answer'. Evite jargão legal sempre que possível ou explique-o de forma simples. A resposta não deve ser um conselho legal, mas sim uma informação sobre o que a lei diz.
-4.  No campo 'sources', liste os URLs diretos para os artigos de lei ou decretos-lei específicos que fundamentam a sua resposta. Dê prioridade a links do Diário da República.
-
-Exemplo de pergunta: "sou emigrante com residencia há 5 anos, posso pedir a nacionalidade portuguesa ?"
-Neste caso, a sua análise deve focar-se na Lei da Nacionalidade (Lei n.º 37/81, de 3 de outubro) e as suas alterações, especificamente os requisitos para a naturalização, como o tempo de residência legal.
+3.  Formule uma resposta clara e objetiva no campo 'answer' em {{{language}}}. Evite jargão legal sempre que possível ou explique-o de forma simples. A resposta não deve ser um conselho legal, mas sim uma informação sobre o que a lei diz.
+4.  No campo 'sources', liste os URLs diretos para os artigos de lei ou decretos-lei específicos que fundamentam a sua resposta.
 
 Pergunta do Utilizador:
 "{{{question}}}"

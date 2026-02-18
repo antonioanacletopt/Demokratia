@@ -55,7 +55,8 @@ export async function getLegislationInfo(
   input: Omit<ConsultLegislationInput, 'language'>,
   lang: Language
 ): Promise<ConsultLegislationOutput> {
-  return await consultLegislation({ ...input } as any);
+  const language = lang === 'en' ? 'English' : 'Portuguese';
+  return await consultLegislation({ ...input, language });
 }
 
 export async function getPublicStatistic(

@@ -45,9 +45,7 @@ function AppSidebarContent() {
   const isAdmin = user && user.email === ADMIN_EMAIL;
 
   const handleLinkClick = () => {
-    if (isMobile) {
-      setOpenMobile(false);
-    }
+    if (isMobile) setOpenMobile(false);
   };
 
   const allNavItems = [
@@ -69,7 +67,6 @@ function AppSidebarContent() {
     if (item.adminOnly && !isAdmin) return false;
     return true;
   });
-
 
   return (
     <SidebarContent className="p-2">
@@ -101,7 +98,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { t, setLanguage, language } = useTranslation();
   
-  // Track if we've already initialized the language from the profile this session
   const [hasSyncedProfile, setHasSyncedProfile] = useState(false);
 
   const userProfileRef = useMemoFirebase(
@@ -110,7 +106,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const { data: profileData } = useDoc(userProfileRef);
 
-  // Sync initial language from profile ONLY once when it loads
   useEffect(() => {
     if (profileData?.preferredLanguage && !hasSyncedProfile) {
       setLanguage(profileData.preferredLanguage as Language);
@@ -118,11 +113,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [profileData, setLanguage, hasSyncedProfile]);
 
-  // Reset sync flag if user changes or logs out
   useEffect(() => {
-    if (!user) {
-      setHasSyncedProfile(false);
-    }
+    if (!user) setHasSyncedProfile(false);
   }, [user]);
 
   const handleSignOut = async () => {
@@ -137,9 +129,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center">
-                <Logo className="size-8" />
-            </div>
+            <div className="flex h-10 w-10 items-center justify-center"><Logo className="size-8" /></div>
             <h1 className="text-xl font-semibold font-headline text-primary">Demokratia</h1>
           </div>
         </SidebarHeader>
@@ -153,9 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-                    <Languages className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Languages className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t('common.language')}</DropdownMenuLabel>
@@ -174,12 +162,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {user ? (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="relative h-10 w-10 rounded-full"
-                        >
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                             <Avatar className="h-10 w-10 border border-primary/20">
-                                <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "Avatar"} />
+                                <AvatarImage src={user?.photoURL ?? undefined} />
                                 <AvatarFallback>{initials}</AvatarFallback>
                             </Avatar>
                         </Button>
@@ -190,58 +175,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile">
-                            <User className="mr-2 h-4 w-4" />
-                            <span>{t('nav.profile')}</span>
-                          </Link>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4" /><span>{t('nav.profile')}</span></Link></DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut}>
-                          <LogOut className="mr-2 h-4 w-4" />
-                          <span>{t('nav.logout')}</span>
-                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleSignOut}><LogOut className="mr-2 h-4 w-4" /><span>{t('nav.logout')}</span></DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
-                <Button asChild variant="outline">
-                  <Link href="/login">
-                    {t('nav.login')}
-                  </Link>
-                </Button>
-              )}
+              ) : <Button asChild variant="outline"><Link href="/login">{t('nav.login')}</Link></Button>}
             </div>
         </header>
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 p-4 sm:p-6">
-            {children}
-          </div>
-          
+          <div className="flex-1 p-4 sm:p-6">{children}</div>
           <footer className="border-t py-8 px-4 sm:px-6 bg-muted/30">
             <div className="flex flex-col gap-6 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Logo className="size-4 opacity-50 grayscale" />
-                  <span className="font-medium">© {new Date().getFullYear()} Demokratia Portugal</span>
-                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Logo className="size-4 opacity-50 grayscale" /><span>© {new Date().getFullYear()} Demokratia Portugal</span></div>
                 <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-                  <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
-                    <FileText className="h-3 w-3" />
-                    {t('nav.terms')}
-                  </Link>
-                  <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
-                    <ShieldCheck className="h-3 w-3" />
-                    {t('nav.privacy')}
-                  </Link>
-                  <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
-                    {t('nav.contact')}
-                  </Link>
+                  <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1.5 font-medium"><FileText className="h-3 w-3" />{t('nav.terms')}</Link>
+                  <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1.5 font-medium"><ShieldCheck className="h-3 w-3" />{t('nav.privacy')}</Link>
+                  <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary font-medium">{t('nav.contact')}</Link>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground/60 text-center sm:text-left leading-relaxed">
-                Aviso: A informação gerada por Inteligência Artificial nesta plataforma é meramente indicativa e deve ser validada junto de fontes oficiais. 
-                O Demokratia não se responsabiliza por decisões tomadas com base em conteúdo gerado automaticamente.
-              </p>
+              <p className="text-[10px] text-muted-foreground/60 text-center sm:text-left leading-relaxed">Aviso: A informação gerada por IA é meramente indicativa e deve ser validada junto de fontes oficiais.</p>
             </div>
           </footer>
         </div>
