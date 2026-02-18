@@ -13,10 +13,9 @@ import { getTranslation } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, MessageSquare, User, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, PlusCircle, MessageSquare, ThumbsUp, GitCommit, Edit, Trash2, Search, Frown, Languages, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
@@ -89,7 +88,6 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
 
-      // Save to global cache
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
@@ -134,10 +132,10 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
           </Button>
         )}
       </div>
-      <CardContent className="p-0">
+      <div className="p-0">
         <p className="text-muted-foreground whitespace-pre-wrap">{currentDesc}</p>
         {!showOriginal && <p className="text-[10px] text-muted-foreground mt-2 italic">Translated by IA</p>}
-      </CardContent>
+      </div>
     </div>
   );
 }
@@ -344,9 +342,9 @@ export default function ProposalsPage() {
           { user ? (
             <CardDescription>{t('proposals.newDesc')}</CardDescription>
           ) : (
-             <CardDescription className="!mt-2 flex items-center gap-2 text-amber-600">
-                <User className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">{t('nav.login')}</Link> {t('proposals.loginToSubmit')}</span>
-            </CardDescription>
+             <div className="!mt-2 flex items-center gap-2 text-amber-600 text-sm">
+                <ThumbsUp className="h-4 w-4" /> <span><Link href="/login" className="font-semibold text-primary hover:underline">{t('nav.login')}</Link> {t('proposals.loginToSubmit')}</span>
+            </div>
           )}
         </CardHeader>
         { user && (
