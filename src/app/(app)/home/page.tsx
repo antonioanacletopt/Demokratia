@@ -38,7 +38,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
   const { t, language } = useTranslation();
   const config = typeConfig[item.type];
   const [isTranslating, startTransition] = useTransition();
-  const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
+  const [translated, setTranslated] = useState<{ title: string, desc: string, actionLabel?: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
   if (!config) return null;
@@ -46,17 +46,19 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const [tTitle, tDesc] = await Promise.all([
+      const [tTitle, tDesc, tAction] = await Promise.all([
         getTranslation(item.title, language),
-        getTranslation(item.description, language)
+        getTranslation(item.description, language),
+        item.actionLink ? getTranslation(item.actionLink.label, language) : Promise.resolve(undefined)
       ]);
-      setTranslated({ title: tTitle, desc: tDesc });
+      setTranslated({ title: tTitle, desc: tDesc, actionLabel: tAction });
       setShowOriginal(false);
     });
   };
 
   const currentTitle = !showOriginal && translated ? translated.title : item.title;
   const currentDesc = !showOriginal && translated ? translated.desc : item.description;
+  const currentActionLabel = !showOriginal && translated?.actionLabel ? translated.actionLabel : item.actionLink?.label;
 
   return (
     <Card>
@@ -100,7 +102,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
         <CardFooter>
           <Button asChild variant="secondary" size="sm">
             <Link href={item.actionLink.href}>
-              {item.actionLink.label}
+              {currentActionLabel}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -111,7 +113,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [feedItems, setFeedItems] = useState<AIFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
