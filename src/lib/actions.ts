@@ -77,8 +77,8 @@ export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
 
 /**
  * AI-powered translation. 
- * Note: Cache checking and saving has been moved to the client side 
- * to comply with Firebase environment constraints.
+ * Note: Cache logic is now handled on the client side components
+ * to avoid initializing Firebase on the server.
  */
 export async function getTranslation(
   text: string,
