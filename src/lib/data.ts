@@ -1,3 +1,4 @@
+
 // Data is now fetched from Firestore. This file provides the types
 // and the initial data for seeding the database. Updated for 2026.
 

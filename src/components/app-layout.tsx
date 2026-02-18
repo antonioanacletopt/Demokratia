@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Shield } from "lucide-react";
+import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
@@ -195,7 +195,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               ) : (
                 <Button asChild variant="outline">
                   <Link href="/login">
-                    <LogIn className="mr-2 h-4 w-4" />
                     {t('nav.login')}
                   </Link>
                 </Button>
@@ -220,7 +219,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     {t('nav.terms')}
                   </Link>
                   <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
-                    <Shield className="h-3 w-3" />
+                    <ShieldCheck className="h-3 w-3" />
                     {t('nav.privacy')}
                   </Link>
                   <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">

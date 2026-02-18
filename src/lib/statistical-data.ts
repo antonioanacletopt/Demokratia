@@ -1,3 +1,4 @@
+
 export type StatisticalData = {
   id: string;
   title: string;
