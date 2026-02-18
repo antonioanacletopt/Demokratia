@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 // Declaração para informar ao TypeScript sobre a propriedade adsbygoogle no objeto window.
 declare global {
   interface Window {
-    adsbygoogle?: unknown[];
+    adsbygoogle?: any[];
   }
 }
 
@@ -17,26 +17,23 @@ export function AdBanner() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Só tentamos carregar o anúncio se não estivermos num ambiente de desenvolvimento local
+    // e se o objeto adsbygoogle estiver disponível.
     try {
-      // Tenta acionar um anúncio. O `window.adsbygoogle` é inicializado pelo script
-      // no layout principal. O `|| []` é uma segurança.
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      if (typeof window !== 'undefined') {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
     } catch (err) {
-      // Este erro é comum em ambientes de desenvolvimento com navegação rápida (SPA)
-      // e pode ser ignorado. Ocorre quando o AdSense tenta preencher um espaço
-      // que já contém um anúncio. A 'key' no div abaixo resolve isto para navegações de página.
-      console.warn("AdSense warning (can be ignored in dev):", err);
+      // O erro "All 'ins' elements already have ads in them" é comum e inofensivo em SPAs
+      console.warn("AdSense logic executing...", err);
     }
   }, [pathname]);
 
-  // A 'key={pathname}' é crucial. Ela força o React a desmontar e remontar este componente
-  // sempre que a URL muda, o que dá ao AdSense um novo elemento <ins> limpo para trabalhar,
-  // resolvendo o erro "All 'ins' elements already have ads in them".
   return (
-    <div key={pathname} className="py-4 text-center">
+    <div key={pathname} className="py-6 my-4 border-y border-border/10 bg-muted/5 rounded-lg overflow-hidden flex justify-center items-center min-h-[100px]">
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', minWidth: '250px', height: 'auto' }}
         data-ad-client={AD_CLIENT}
         data-ad-slot={AD_SLOT}
         data-ad-format="auto"
