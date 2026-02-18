@@ -1,19 +1,17 @@
+
 /**
  * @fileOverview This file defines a Genkit flow for simulating the economic impact
  * of hypothetical policies on Portugal's economy.
- *
- * - simulateEconomicPolicy - A function that handles the economic policy simulation process.
- * - EconomicPolicySimulationInput - The input type for the simulateEconomicPolicy function.
- * - EconomicPolicySimulationOutput - The return type for the simulateEconomicPolicy function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {z} from 'genkit';
 
 const EconomicPolicySimulationInputSchema = z.object({
   policyDescription: z
     .string()
     .describe('Uma descrição em linguagem natural de uma política económica hipotética ou real para Portugal.'),
+  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('O idioma em que a resposta deve ser gerada.'),
 });
 export type EconomicPolicySimulationInput = z.infer<
   typeof EconomicPolicySimulationInputSchema
@@ -37,7 +35,7 @@ const EconomicPolicySimulationOutputSchema = z.object({
     .string()
     .describe('Uma explicação detalhada do raciocínio por trás dos resultados projetados e seus mecanismos potenciais.'),
   isRealPolicy: z.boolean().describe('Indica se a política descrita é uma proposta real ou uma medida já implementada pelo governo.'),
-  source: z.string().optional().describe('O link para a fonte oficial (ex: site do parlamento, decreto-lei) se a política for real e a fonte for encontrada.'),
+  source: z.string().optional().describe('O link para a fonte oficial se a política for real.'),
 });
 export type EconomicPolicySimulationOutput = z.infer<
   typeof EconomicPolicySimulationOutputSchema
@@ -53,18 +51,19 @@ const economicPolicySimulationPrompt = ai.definePrompt({
   name: 'economicPolicySimulationPrompt',
   input: {schema: EconomicPolicySimulationInputSchema},
   output: {schema: EconomicPolicySimulationOutputSchema},
-  prompt: `Você é um economista especialista com profundo conhecimento da economia portuguesa e acesso a uma vasta base de dados, modelos económicos e notícias atuais. A sua tarefa é simular os potenciais impactos económicos de uma política descrita pelo utilizador, baseando-se em teorias económicas reconhecidas. A sua resposta deve ser inteiramente em português.
+  prompt: `Você é um economista especialista com profundo conhecimento da economia portuguesa. A sua tarefa é simular os potenciais impactos económicos de uma política descrita pelo utilizador.
 
-Analise a descrição da política fornecida. Primeiro, determine se corresponde a uma política real proposta ou implementada em Portugal (como propostas de Orçamento de Estado, alterações à lei laboral, etc.). Se for uma política real e conseguir encontrar uma fonte oficial fidedigna (como o Diário da República, um site do governo ou do parlamento), inclua o link no campo 'source'. Defina o campo 'isRealPolicy' como 'true' se for uma política real, caso contrário, defina como 'false'.
+**IMPORTANTE: A sua resposta completa (textos, nomes de indicadores, explicações) deve ser escrita em {{{language}}}.**
 
-De seguida, gere uma simulação informada por dados dos seus efeitos nos principais indicadores económicos de Portugal. Para a sua análise, utilize um ou mais modelos económicos estabelecidos (ex: Keynesiano, Clássico, Monetarista, etc.).
-
-É crucial que a sua análise não seja monolítica. Considere e discuta os impactos diferenciais da política em diferentes segmentos da sociedade e da economia. Por exemplo, para um aumento do salário mínimo, analise o impacto provável em micro vs. grandes empresas, ou para uma alteração de impostos, considere o efeito em diferentes escalões de rendimento. No campo 'reasoning', detalhe estas nuances, pois esta análise diferenciada é uma parte essencial da sua resposta.
-
-Descrição da Política:
+Analise a descrição da política:
 {{{policyDescription}}}
 
-Com base na política acima, simule o seu impacto na economia portuguesa. Garanta que o resultado adere estritamente ao esquema JSON. No campo 'reasoning', explique detalhadamente o seu raciocínio, os mecanismos de impacto, e **mencione explicitamente qual o modelo ou teoria económica principal que usou para chegar a essa conclusão e porquê**. Forneça um resumo geral, e uma lista de indicadores económicos chave com valores atuais e projetados (use valores atuais plausíveis para Portugal). Toda a saída deve ser em português.`,
+1. Determine se é uma política real em Portugal. Se sim, inclua a fonte.
+2. Simule o impacto nos indicadores económicos (PIB, Desemprego, Inflação, etc.) usando modelos estabelecidos.
+3. Forneça um raciocínio detalhado, mencionando a teoria económica utilizada.
+4. Considere impactos em diferentes segmentos da sociedade.
+
+Todos os campos de texto no JSON de saída devem estar em {{{language}}}.`,
 });
 
 const economicPolicySimulationFlow = ai.defineFlow(

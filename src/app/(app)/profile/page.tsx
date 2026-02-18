@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,11 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs, deleteDoc, writeBatch } from 'firebase/firestore';
-import { deleteUser, signOut } from 'firebase/auth';
+import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { deleteUser } from 'firebase/auth';
 
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError, useAuth } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation, type Language } from '@/lib/i18n';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -21,10 +23,12 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Trash2, AlertTriangle, Languages } from 'lucide-react';
 
 const profileFormSchema = z.object({
   displayName: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
+  preferredLanguage: z.enum(['pt', 'en']),
   notificationPreferences: z.object({
     emailNotifications: z.boolean().default(true),
     weeklyNewsletter: z.boolean().default(true),
@@ -37,6 +41,7 @@ interface UserProfileData {
   id: string;
   displayName: string;
   email: string;
+  preferredLanguage: string;
   notificationPreferences?: {
     emailNotifications: boolean;
     weeklyNewsletter: boolean;
@@ -45,7 +50,7 @@ interface UserProfileData {
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
+  const { t, setLanguage } = useTranslation();
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -70,6 +75,7 @@ export default function ProfilePage() {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       displayName: '',
+      preferredLanguage: 'pt',
       notificationPreferences: {
         emailNotifications: true,
         weeklyNewsletter: true,
@@ -82,6 +88,7 @@ export default function ProfilePage() {
     if (profileData) {
       form.reset({
         displayName: profileData.displayName || '',
+        preferredLanguage: (profileData.preferredLanguage as any) || 'pt',
         notificationPreferences: {
           emailNotifications: profileData.notificationPreferences?.emailNotifications ?? true,
           weeklyNewsletter: profileData.notificationPreferences?.weeklyNewsletter ?? true,
@@ -95,14 +102,16 @@ export default function ProfilePage() {
     setIsSaving(true);
     const dataToUpdate = {
       displayName: data.displayName,
+      preferredLanguage: data.preferredLanguage,
       notificationPreferences: data.notificationPreferences,
       updatedAt: serverTimestamp(),
     };
     try {
       await updateDoc(userProfileRef, dataToUpdate);
+      setLanguage(data.preferredLanguage);
       toast({
-        title: 'Perfil atualizado!',
-        description: 'As suas informações foram guardadas com sucesso.',
+        title: t('common.success'),
+        description: 'Perfil atualizado!',
       });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -110,8 +119,8 @@ export default function ProfilePage() {
       errorEmitter.emit('permission-error', permissionError);
       toast({
         variant: 'destructive',
-        title: 'Erro ao atualizar',
-        description: 'Não foi possível guardar as suas alterações. Tente novamente.',
+        title: t('common.error'),
+        description: 'Não foi possível guardar as suas alterações.',
       });
     } finally {
       setIsSaving(false);
@@ -127,7 +136,6 @@ export default function ProfilePage() {
     try {
       const batch = writeBatch(firestore);
       
-      // 1. Clean up Firestore collections
       const collectionsToCleanup = [
         `users/${user.uid}/simulationScenarios`,
         `users/${user.uid}/savedDataViews`,
@@ -141,36 +149,20 @@ export default function ProfilePage() {
         snapshot.forEach(d => batch.delete(d.ref));
       }
 
-      // 2. Clean up user profile
       batch.delete(doc(firestore, 'userProfiles', user.uid));
 
-      // 3. Clean up contact messages sent by the user
       const contactMessagesQuery = query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid));
       const contactSnapshot = await getDocs(contactMessagesQuery);
       contactSnapshot.forEach(d => batch.delete(d.ref));
 
       await batch.commit();
-
-      // 4. Delete the Auth User
       await deleteUser(user);
       
       toast({ title: 'Conta apagada', description: 'Os seus dados foram removidos com sucesso.' });
       router.replace('/login');
     } catch (error: any) {
       console.error('Error deleting account:', error);
-      if (error.code === 'auth/requires-recent-login') {
-        toast({ 
-          variant: 'destructive', 
-          title: 'Sessão expirada', 
-          description: 'Para apagar a sua conta, por motivos de segurança, deve terminar sessão e voltar a entrar antes de tentar novamente.' 
-        });
-      } else {
-        toast({ 
-          variant: 'destructive', 
-          title: 'Erro ao apagar conta', 
-          description: 'Ocorreu um erro inesperado. Tente novamente mais tarde.' 
-        });
-      }
+      toast({ variant: 'destructive', title: 'Erro ao apagar conta' });
     } finally {
       setIsDeleting(false);
     }
@@ -213,8 +205,8 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Perfil e Definições</h1>
-        <p className="text-muted-foreground">Gira as informações da sua conta e preferências de privacidade.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('profile.title')}</h1>
+        <p className="text-muted-foreground">{t('profile.description')}</p>
       </div>
       <Separator />
       
@@ -232,7 +224,7 @@ export default function ProfilePage() {
                     <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
                   </Avatar>
                   <Button disabled variant="outline">Alterar Foto</Button>
-                  <p className="text-xs text-muted-foreground text-center">A sua foto é gerida automaticamente pela sua conta Google.</p>
+                  <p className="text-xs text-muted-foreground text-center">Gerida pela sua conta Google.</p>
                 </CardContent>
               </Card>
             </div>
@@ -240,7 +232,7 @@ export default function ProfilePage() {
             <div className="md:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Informações Pessoais</CardTitle>
+                  <CardTitle>{t('profile.displayName')}</CardTitle>
                   <CardDescription>Pode alterar o seu nome de apresentação na plataforma.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -249,7 +241,7 @@ export default function ProfilePage() {
                     name="displayName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nome de Apresentação</FormLabel>
+                        <FormLabel>{t('profile.displayName')}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -257,10 +249,36 @@ export default function ProfilePage() {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="preferredLanguage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Languages className="h-4 w-4" />
+                          {t('profile.language')}
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Escolha um idioma" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pt">Português (Portugal)</SelectItem>
+                            <SelectItem value="en">English (UK/Global)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">Isso afetará também o idioma das respostas da IA.</p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={user.email ?? ''} readOnly disabled />
-                    <p className="text-xs text-muted-foreground">O seu email é a sua identidade principal e não pode ser alterado.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -269,7 +287,7 @@ export default function ProfilePage() {
             <div className="md:col-span-3">
               <Card>
                 <CardHeader>
-                  <CardTitle>Definições de Notificação</CardTitle>
+                  <CardTitle>{t('profile.notifications')}</CardTitle>
                   <CardDescription>Escolha como pretende ser notificado sobre atualizações e novos dados.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -312,34 +330,29 @@ export default function ProfilePage() {
                 <CardHeader>
                   <CardTitle className="text-destructive flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5" />
-                    Zona de Perigo
+                    {t('profile.dangerZone')}
                   </CardTitle>
                   <CardDescription>
-                    Gerir a eliminação permanente da sua conta e de todos os dados associados (RGPD).
+                    {t('profile.deleteWarning')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Ao apagar a sua conta, removeremos permanentemente o seu perfil, todas as suas simulações guardadas, 
-                    histórico de consultas e fact-checks. Esta ação é **irreversível**.
-                  </p>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Apagar a minha conta e dados
+                        {t('profile.deleteAccount')}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Tem a certeza absoluta?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Esta ação irá apagar permanentemente a sua conta e todos os seus dados da plataforma Demokratia. 
-                          Não será possível recuperar as suas simulações ou histórico.
+                          Esta ação irá apagar permanentemente a sua conta e todos os seus dados da plataforma Demokratia.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                           {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                           Sim, apagar tudo
@@ -355,7 +368,7 @@ export default function ProfilePage() {
           <div className="flex justify-end gap-4">
             <Button type="submit" disabled={isSaving}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Guardar Alterações
+              {t('common.save')}
             </Button>
           </div>
         </form>

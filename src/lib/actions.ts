@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -35,10 +36,42 @@ import {
   GenerateNewsFeedOutput,
 } from '@/ai/flows/generate-news-feed';
 
+import { initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+async function getUserLanguage(userId?: string): Promise<'Portuguese' | 'English'> {
+  if (!userId) return 'Portuguese';
+  const { firestore } = initializeFirebase();
+  const userRef = doc(firestore, 'userProfiles', userId);
+  const snap = await getDoc(userRef);
+  if (snap.exists() && snap.data().preferredLanguage === 'en') {
+    return 'English';
+  }
+  return 'Portuguese';
+}
+
 export async function getEconomicSimulation(
-  input: EconomicPolicySimulationInput
+  input: Omit<EconomicPolicySimulationInput, 'language'>,
+  userId?: string
 ): Promise<EconomicPolicySimulationOutput> {
-  return await simulateEconomicPolicy(input);
+  const language = await getUserLanguage(userId);
+  return await simulateEconomicPolicy({ ...input, language });
+}
+
+export async function getFactCheck(
+  input: Omit<FactCheckInput, 'language'>,
+  userId?: string
+): Promise<FactCheckOutput> {
+  const language = await getUserLanguage(userId);
+  return await factCheckClaim({ ...input, language });
+}
+
+export async function getLegislationInfo(
+  input: Omit<ConsultLegislationInput, 'language'>,
+  userId?: string
+): Promise<ConsultLegislationOutput> {
+  // Similarly update other flows as needed...
+  return await consultLegislation({ ...input } as any);
 }
 
 export async function getDataExplanation(
@@ -57,18 +90,6 @@ export async function getChartFromRequest(
   input: GenerateChartInput
 ): Promise<GenerateChartOutput> {
   return await generateChartFromRequest(input);
-}
-
-export async function getFactCheck(
-  input: FactCheckInput
-): Promise<FactCheckOutput> {
-  return await factCheckClaim(input);
-}
-
-export async function getLegislationInfo(
-  input: ConsultLegislationInput
-): Promise<ConsultLegislationOutput> {
-  return await consultLegislation(input);
 }
 
 export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {

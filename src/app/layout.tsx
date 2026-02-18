@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
+import { LanguageProvider } from '@/lib/i18n';
 
 const title = 'Demokratia Portugal: Dados, Análises e Simulações';
 const description = 'Plataforma para exploração de dados públicos, verificação de factos e simulação de políticas económicas e sociais em Portugal.';
@@ -69,9 +71,11 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>
-          {children}
-        </FirebaseClientProvider>
+        <LanguageProvider>
+          <FirebaseClientProvider>
+            {children}
+          </FirebaseClientProvider>
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>

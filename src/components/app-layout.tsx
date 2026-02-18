@@ -1,10 +1,14 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Lightbulb, LayoutDashboard, User, Database, BarChartHorizontalBig, NotebookText, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, Shield, FileText } from "lucide-react";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { doc } from "firebase/firestore";
+import { useTranslation, type Language } from "@/lib/i18n";
+import { useEffect } from "react";
 
 import {
   SidebarProvider,
@@ -32,19 +36,6 @@ import {
 import { Logo } from "@/components/Logo";
 import { CookieConsent } from "@/components/CookieConsent";
 
-const allNavItems = [
-  { href: "/home", icon: Home, label: "Início", public: true },
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", public: true },
-  { href: "/explorer", icon: BarChartHorizontalBig, label: "Explorador", public: true },
-  { href: "/simulations", icon: Lightbulb, label: "Simulações", public: true },
-  { href: "/fact-check", icon: ShieldCheck, label: "Fact Check", public: true },
-  { href: "/legislation", icon: Scale, label: "Legislação", public: true },
-  { href: "/proposals", icon: MessageSquare, label: "Propostas", public: true },
-  { href: "/contact", icon: Mail, label: "Contacto", public: true },
-  { href: "/profile", icon: User, label: "Perfil", public: false },
-  { href: "/admin", icon: Wrench, label: "Admin", public: false, adminOnly: true },
-];
-
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
 // Extracted component to access useSidebar context
@@ -52,6 +43,7 @@ function AppSidebarContent() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
   const { user } = useUser();
+  const { t } = useTranslation();
   const isAdmin = user && user.email === ADMIN_EMAIL;
 
   const handleLinkClick = () => {
@@ -59,6 +51,19 @@ function AppSidebarContent() {
       setOpenMobile(false);
     }
   };
+
+  const allNavItems = [
+    { href: "/home", icon: Home, label: t('nav.home'), public: true },
+    { href: "/dashboard", icon: LayoutDashboard, label: t('nav.dashboard'), public: true },
+    { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
+    { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
+    { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
+    { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
+    { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },
+    { href: "/contact", icon: Mail, label: t('nav.contact'), public: true },
+    { href: "/profile", icon: User, label: t('nav.profile'), public: false },
+    { href: "/admin", icon: Wrench, label: t('nav.admin'), public: false, adminOnly: true },
+  ];
 
   const finalNavItems = allNavItems.filter(item => {
     if (item.public) return true; // Public items are always visible
@@ -92,9 +97,23 @@ function AppSidebarContent() {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
+  const { user, firestore } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const { t, setLanguage } = useTranslation();
+
+  // Sync language with user profile
+  const userProfileRef = useMemoFirebase(
+    () => (user && firestore ? doc(firestore, 'userProfiles', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: profileData } = useDoc(userProfileRef);
+
+  useEffect(() => {
+    if (profileData?.preferredLanguage) {
+      setLanguage(profileData.preferredLanguage as Language);
+    }
+  }, [profileData, setLanguage]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -143,13 +162,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <DropdownMenuItem asChild>
                         <Link href="/profile">
                           <User className="mr-2 h-4 w-4" />
-                          <span>Perfil</span>
+                          <span>{t('nav.profile')}</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Sair</span>
+                        <span>{t('nav.logout')}</span>
                       </DropdownMenuItem>
                   </DropdownMenuContent>
               </DropdownMenu>
@@ -157,7 +176,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Button asChild>
                 <Link href="/login">
                   <LogIn className="mr-2 h-4 w-4" />
-                  Iniciar Sessão
+                  {t('nav.login')}
                 </Link>
               </Button>
             )}
@@ -177,14 +196,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
                   <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
                     <FileText className="h-3 w-3" />
-                    Termos de Utilização
+                    {t('nav.terms')}
                   </Link>
                   <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 font-medium">
                     <Shield className="h-3 w-3" />
-                    Privacidade e Cookies
+                    {t('nav.privacy')}
                   </Link>
                   <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
-                    Contacto
+                    {t('nav.contact')}
                   </Link>
                 </div>
               </div>
