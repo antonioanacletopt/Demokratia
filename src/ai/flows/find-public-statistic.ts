@@ -18,7 +18,7 @@ export type FindPublicStatisticInput = z.infer<typeof FindPublicStatisticInputSc
 const FindPublicStatisticOutputSchema = z.object({
   isFound: z.boolean().describe('Indicates whether the requested statistic could be found from a reliable source.'),
   explanation: z.string().describe('A summary of the findings, or an explanation of why the data could not be found. If found, this should describe the data.'),
-  source: z.string().optional().describe('The official source of the data if found (e.g., "INE, Censos 2021").'),
+  source: z.string().optional().describe('The official source of the data if found (e.g., "INE, Censos 2021" or "DGO, OE 2024").'),
   data: z.string().optional().describe('The structured data, if found, as a JSON string. Should be formatted to be easily parseable into a table.'),
 });
 export type FindPublicStatisticOutput = z.infer<typeof FindPublicStatisticOutputSchema>;
@@ -31,22 +31,29 @@ const prompt = ai.definePrompt({
   name: 'findPublicStatisticPrompt',
   input: { schema: FindPublicStatisticInputSchema },
   output: { schema: FindPublicStatisticOutputSchema },
-  prompt: `You are an expert data analyst specializing in Portuguese public data. Your task is to find a specific statistic based on the user's request and present it clearly. Your entire response must be in Portuguese.
+  prompt: `Você é um analista de dados especialista em dados públicos portugueses. A sua tarefa é encontrar uma estatística específica baseada no pedido do utilizador e apresentá-la de forma clara. Toda a sua resposta deve ser em Português.
 
-Search for the requested statistic from reliable public sources only, such as INE, Pordata, Banco de Portugal, Eurostat, and official government reports.
+Pesquise a estatística solicitada exclusivamente em fontes públicas fidedignas:
+- INE (Instituto Nacional de Estatística)
+- Pordata
+- Banco de Portugal
+- Eurostat
+- DGO (Direção-Geral do Orçamento) - Use esta fonte para questões sobre o Orçamento do Estado (OE), gastos públicos e investimentos.
+- Portal da Transparência (transparencia.gov.pt)
 
-- If you find the data:
-  - Set 'isFound' to true.
-  - In 'explanation', provide a brief, clear summary of what the data represents.
-  - In 'source', cite the specific source (e.g., 'INE, Contas Nacionais Trimestrais').
-  - In 'data', provide the raw data formatted as a JSON string representing an array of objects, suitable for displaying in a table.
+Diretrizes:
+- Se encontrar os dados:
+  - Defina 'isFound' como true.
+  - Em 'explanation', forneça um resumo breve e claro do que os dados representam.
+  - Em 'source', cite a fonte específica (ex: 'DGO, Orçamento do Estado 2024').
+  - Em 'data', forneça os dados brutos formatados como uma string JSON representando um array de objetos, adequados para exibição numa tabela.
 
-- If you cannot find the data:
-  - Set 'isFound' to false.
-  - In 'explanation', clearly explain why the data could not be found (e.g., it's not publicly available, it's too specific, or not collected by official bodies) and suggest that the user could propose a reliable source if they know one.
-  - Leave 'source' and 'data' empty.
+- Se não encontrar os dados:
+  - Defina 'isFound' como false.
+  - Em 'explanation', explique claramente por que os dados não foram encontrados e sugira fontes alternativas se possível.
+  - Deixe 'source' e 'data' vazios.
 
-User's Request:
+Pedido do Utilizador:
 "{{{request}}}"
 `,
 });

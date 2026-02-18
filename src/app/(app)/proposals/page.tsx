@@ -146,10 +146,10 @@ export default function ProposalsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingProposal, setEditingProposal] = useState<CommunityProposal | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   
   const proposalsCollectionRef = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -266,7 +266,7 @@ export default function ProposalsPage() {
         errorEmitter.emit('permission-error', permissionError);
         toast({ variant: 'destructive', title: t('common.error') });
     }
-  }
+  };
 
   const handleVote = async (proposalId: string) => {
     if (!user || !firestore) {
@@ -291,7 +291,7 @@ export default function ProposalsPage() {
         errorEmitter.emit('permission-error', permissionError);
         toast({ variant: 'destructive', title: t('common.error') });
     }
-  }
+  };
   
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
