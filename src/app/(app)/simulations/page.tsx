@@ -28,6 +28,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
 
+const MAX_CACHE_LENGTH = 1000;
+
 interface UserSimulationRun {
   id: string;
   userId: string;
@@ -56,7 +58,6 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
     const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
     const [showOriginal, setShowOriginal] = useState(true);
 
-    // Client-side cache check
     useEffect(() => {
       if (language === 'en' && simulation) {
         const checkCache = async () => {
@@ -64,6 +65,7 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
           const targetLang = 'English';
           
           const fetchCached = async (text: string) => {
+            if (!text || text.length > MAX_CACHE_LENGTH) return null;
             const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
             const snap = await getDocs(q);
             return !snap.empty ? snap.docs[0].data().translatedText : null;
@@ -94,22 +96,25 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
             setTranslated({ impact: resImpact, reasoning: resReasoning });
             setShowOriginal(false);
 
-            // Save to global cache
             const cacheRef = collection(firestore, 'translations_cache');
             const targetLang = language === 'en' ? 'English' : 'Portuguese';
             
-            addDoc(cacheRef, {
-              originalText: simulation.simulatedImpact,
-              translatedText: resImpact,
-              targetLanguage: targetLang,
-              createdAt: serverTimestamp()
-            });
-            addDoc(cacheRef, {
-              originalText: simulation.reasoning,
-              translatedText: resReasoning,
-              targetLanguage: targetLang,
-              createdAt: serverTimestamp()
-            });
+            if (simulation.simulatedImpact.length <= MAX_CACHE_LENGTH) {
+              addDoc(cacheRef, {
+                originalText: simulation.simulatedImpact,
+                translatedText: resImpact,
+                targetLanguage: targetLang,
+                createdAt: serverTimestamp()
+              });
+            }
+            if (simulation.reasoning.length <= MAX_CACHE_LENGTH) {
+              addDoc(cacheRef, {
+                originalText: simulation.reasoning,
+                translatedText: resReasoning,
+                targetLanguage: targetLang,
+                createdAt: serverTimestamp()
+              });
+            }
         });
     };
 

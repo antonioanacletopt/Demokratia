@@ -17,6 +17,8 @@ import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 
+const MAX_CACHE_LENGTH = 1000;
+
 const verdictConfig = {
   Verdadeiro: { icon: Check, color: 'bg-green-100 text-green-800 border-green-200' },
   Falso: { icon: X, color: 'bg-red-100 text-red-800 border-red-200' },
@@ -31,7 +33,6 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   const [translated, setTranslated] = useState<{ verdict: string, explanation: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Efeito para verificar cache automático se o idioma for Inglês
   useEffect(() => {
     if (language === 'en' && result) {
       const checkCache = async () => {
@@ -39,6 +40,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
         const targetLang = 'English';
         
         const fetchCached = async (text: string) => {
+          if (!text || text.length > MAX_CACHE_LENGTH) return null;
           const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
@@ -73,6 +75,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
       const saveToCache = (orig: string, trans: string) => {
+        if (orig.length > MAX_CACHE_LENGTH) return;
         addDoc(cacheRef, {
           originalText: orig,
           translatedText: trans,

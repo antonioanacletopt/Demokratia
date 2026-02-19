@@ -17,6 +17,8 @@ import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 
+const MAX_CACHE_LENGTH = 1000;
+
 interface LegislationQuery extends ConsultLegislationOutput {
   id: string;
   question: string;
@@ -34,10 +36,17 @@ function LegislationResultDisplay({ result, questionId }: { result: ConsultLegis
     if (language === 'en' && result) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
-        const q = query(cacheRef, where('originalText', '==', result.answer), where('targetLanguage', '==', 'English'), limit(1));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          setTranslated(snap.docs[0].data().translatedText);
+        
+        const fetchCached = async (text: string) => {
+          if (!text || text.length > MAX_CACHE_LENGTH) return null;
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
+        const tAnswer = await fetchCached(result.answer);
+        if (tAnswer) {
+          setTranslated(tAnswer);
           setShowOriginal(false);
         }
       };
@@ -54,13 +63,15 @@ function LegislationResultDisplay({ result, questionId }: { result: ConsultLegis
       setTranslated(res);
       setShowOriginal(false);
 
-      const cacheRef = collection(firestore, 'translations_cache');
-      addDoc(cacheRef, {
-        originalText: result.answer,
-        translatedText: res,
-        targetLanguage: language === 'en' ? 'English' : 'Portuguese',
-        createdAt: serverTimestamp()
-      });
+      if (result.answer.length <= MAX_CACHE_LENGTH) {
+        const cacheRef = collection(firestore, 'translations_cache');
+        addDoc(cacheRef, {
+          originalText: result.answer,
+          translatedText: res,
+          targetLanguage: language === 'en' ? 'English' : 'Portuguese',
+          createdAt: serverTimestamp()
+        });
+      }
     });
   };
 
@@ -162,7 +173,6 @@ export default function LegislationPage() {
       const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 
-      // Save to public cache and user history
       const publicRef = collection(firestore, 'publicLegislationQueries');
       addDoc(publicRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() });
 

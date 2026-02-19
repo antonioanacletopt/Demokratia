@@ -36,6 +36,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
 
+const MAX_CACHE_LENGTH = 1000;
+
 function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
@@ -50,7 +52,6 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
 
   const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
 
-  // Client-side auto-check cache
   useEffect(() => {
     if (language === 'en' && dataSet) {
       const checkCache = async () => {
@@ -58,6 +59,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
         const targetLang = 'English';
         
         const fetchCached = async (text: string) => {
+          if (!text || text.length > MAX_CACHE_LENGTH) return null;
           const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
@@ -89,22 +91,25 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
 
-      // Save to global cache
       const cacheRef = collection(firestore, 'translations_cache');
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
-      addDoc(cacheRef, {
-        originalText: dataSet.label,
-        translatedText: resTitle,
-        targetLanguage: targetLang,
-        createdAt: serverTimestamp()
-      });
-      addDoc(cacheRef, {
-        originalText: dataSet.description,
-        translatedText: resDesc,
-        targetLanguage: targetLang,
-        createdAt: serverTimestamp()
-      });
+      if (dataSet.label.length <= MAX_CACHE_LENGTH) {
+        addDoc(cacheRef, {
+          originalText: dataSet.label,
+          translatedText: resTitle,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      }
+      if (dataSet.description.length <= MAX_CACHE_LENGTH) {
+        addDoc(cacheRef, {
+          originalText: dataSet.description,
+          translatedText: resDesc,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      }
     });
   };
 

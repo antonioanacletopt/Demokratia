@@ -20,6 +20,8 @@ import { useTranslation } from '@/lib/i18n';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 
+const MAX_CACHE_LENGTH = 1000;
+
 const typeConfig = {
   Alegação: {
     icon: Check,
@@ -52,6 +54,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
         const targetLang = 'English';
         
         const fetchCached = async (text: string) => {
+          if (!text || text.length > MAX_CACHE_LENGTH) return null;
           const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
@@ -92,6 +95,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
       const saveToCache = (orig: string, trans: string) => {
+        if (orig.length > MAX_CACHE_LENGTH) return;
         addDoc(cacheRef, {
           originalText: orig,
           translatedText: trans,

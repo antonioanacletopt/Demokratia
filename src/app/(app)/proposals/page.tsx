@@ -21,6 +21,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
+const MAX_CACHE_LENGTH = 1000;
+
 interface CommunityProposal {
   id: string;
   userId: string;
@@ -50,6 +52,8 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
   useEffect(() => {
     if (language === 'en') {
       const checkCache = async () => {
+        if (originalTitle.length > MAX_CACHE_LENGTH || originalDescription.length > MAX_CACHE_LENGTH) return;
+        
         const cacheRef = collection(firestore, 'translations_cache');
         const q = query(cacheRef, where('originalText', '==', originalTitle), where('targetLanguage', '==', 'English'), limit(1));
         const snap = await getDocs(q);
@@ -75,9 +79,14 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       const resDesc = await getTranslation(originalDescription, language);
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
+      
       const cacheRef = collection(firestore, 'translations_cache');
-      addDoc(cacheRef, { originalText: originalTitle, translatedText: resTitle, targetLanguage: 'English', createdAt: serverTimestamp() });
-      addDoc(cacheRef, { originalText: originalDescription, translatedText: resDesc, targetLanguage: 'English', createdAt: serverTimestamp() });
+      if (originalTitle.length <= MAX_CACHE_LENGTH) {
+        addDoc(cacheRef, { originalText: originalTitle, translatedText: resTitle, targetLanguage: 'English', createdAt: serverTimestamp() });
+      }
+      if (originalDescription.length <= MAX_CACHE_LENGTH) {
+        addDoc(cacheRef, { originalText: originalDescription, translatedText: resDesc, targetLanguage: 'English', createdAt: serverTimestamp() });
+      }
     });
   };
 
