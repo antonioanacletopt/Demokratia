@@ -64,10 +64,22 @@ export const translations = {
       voteBtn: 'Apoiar', votedBtn: 'Apoiado', simulateBtn: 'Simular', editTitle: 'Editar', titleMinError: 'Mínimo 10 carateres.',
       descMinError: 'Mínimo 30 carateres.'
     },
+    contact: {
+      title: 'Contacto e Apoio', description: 'Estamos aqui para ajudar e ouvir as suas sugestões.',
+      newTitle: 'Nova Mensagem', newDesc: 'Envie-nos as suas dúvidas ou feedback.',
+      subject: 'Assunto', message: 'Mensagem', sendBtn: 'Enviar Mensagem',
+      historyTitle: 'Histórico de Contactos', noMessagesTitle: 'Ainda não enviou mensagens.',
+      status: { new: 'Nova', read: 'Lida', archived: 'Arquivada' }
+    },
     refutation: {
       title: 'Refutar Informação', description: 'Acredita que a IA errou? Submeta provas para correção.', label: 'Explicação',
       evidence: 'Links/Provas', submitBtn: 'Submeter Refutação', refuteBtn: 'Refutar Informação', success: 'Refutação enviada para análise.',
       status: { pending: 'Pendente', approved: 'Aprovada', rejected: 'Rejeitada' }, noRefutations: 'Sem refutações.', adminTitle: 'Gestão de Refutações'
+    },
+    profile: {
+      title: 'O Meu Perfil', description: 'Gira as suas preferências e dados pessoais.', displayName: 'Nome de Apresentação',
+      language: 'Idioma Preferido', notifications: 'Preferências de Notificação', dangerZone: 'Zona de Perigo',
+      deleteAccount: 'Apagar Conta Permanentemente', deleteWarning: 'Esta ação não pode ser desfeita e removerá todos os seus dados.'
     },
     privacy: {
       title: 'Privacidade e Cookies', intro: 'Respeitamos os seus dados.', dataTitle: 'Dados Recolhidos', dataDesc: 'Recolhemos dados via login Google.',
@@ -139,10 +151,22 @@ export const translations = {
       voteBtn: 'Support', votedBtn: 'Supported', simulateBtn: 'Simulate', editTitle: 'Edit', titleMinError: 'Min 10 chars.',
       descMinError: 'Min 30 chars.'
     },
+    contact: {
+      title: 'Contact & Support', description: 'We are here to help and listen to your suggestions.',
+      newTitle: 'New Message', newDesc: 'Send us your questions or feedback.',
+      subject: 'Subject', message: 'Message', sendBtn: 'Send Message',
+      historyTitle: 'Contact History', noMessagesTitle: 'You haven\'t sent any messages yet.',
+      status: { new: 'New', read: 'Read', archived: 'Archived' }
+    },
     refutation: {
       title: 'Refute Information', description: 'Believe the AI is wrong? Submit evidence for correction.', label: 'Explanation',
       evidence: 'Links/Proof', submitBtn: 'Submit Refutation', refuteBtn: 'Refute Info', success: 'Refutation sent for review.',
       status: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }, noRefutations: 'No refutations.', adminTitle: 'Manage Refutations'
+    },
+    profile: {
+      title: 'My Profile', description: 'Manage your preferences and personal data.', displayName: 'Display Name',
+      language: 'Preferred Language', notifications: 'Notification Preferences', dangerZone: 'Danger Zone',
+      deleteAccount: 'Delete Account Permanently', deleteWarning: 'This action cannot be undone and will remove all your data.'
     },
     privacy: {
       title: 'Privacy & Cookies', intro: 'We respect your data.', dataTitle: 'Data Collected', dataDesc: 'We collect data via Google login.',
@@ -187,7 +211,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const keys = path.split('.');
     let result: any = translations[language];
     for (const key of keys) {
-      if (result && result[key]) result = result[key];
+      if (result && result[key] !== undefined) result = result[key];
       else return path;
     }
     return result;
