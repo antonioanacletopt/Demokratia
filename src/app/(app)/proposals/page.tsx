@@ -262,12 +262,14 @@ export default function ProposalsPage() {
           <Input className="w-full sm:w-72" placeholder={t('proposals.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         
-        {isLoadingProposals ? (
+        {isLoadingProposals && (
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
                 <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
              </div>
-        ) : filteredProposals && filteredProposals.length > 0 ? (
+        )}
+
+        {!isLoadingProposals && filteredProposals && filteredProposals.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             {filteredProposals.map((p) => {
                const hasVoted = !!(user && p.votedBy?.includes(user.uid));
@@ -294,7 +296,7 @@ export default function ProposalsPage() {
               </Card>
             )})}
           </div>
-        ) : <p className="text-center py-12 text-muted-foreground">{t('common.noResults')}</p>}
+        ) : !isLoadingProposals && <p className="text-center py-12 text-muted-foreground">{t('common.noResults')}</p>}
       </div>
     </div>
   );

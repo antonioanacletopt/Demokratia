@@ -173,7 +173,6 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        // 1. Verificar cache no Firestore
         const cacheRef = doc(firestore, 'news_feed_cache', 'latest');
         const cacheSnap = await getDoc(cacheRef);
         
@@ -189,11 +188,9 @@ export default function HomePage() {
           }
         }
 
-        // 2. Se não houver cache ou expirou, chamar IA
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
         
-        // 3. Atualizar cache (non-blocking)
         setDoc(cacheRef, {
           feedItems: newsFeed.feedItems,
           lastUpdated: serverTimestamp()

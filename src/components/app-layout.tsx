@@ -107,7 +107,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: profileData } = useDoc(userProfileRef);
 
   useEffect(() => {
-    // Sincroniza o idioma do perfil apenas UMA vez no carregamento inicial
     if (profileData?.preferredLanguage && !hasSyncedProfile) {
       setLanguage(profileData.preferredLanguage as Language);
       setHasSyncedProfile(true);
