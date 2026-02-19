@@ -4,207 +4,84 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Stores basic information and settings for a user within the Demokratia Portugal application, enabling personalized experiences and interaction with features like refutation submissions.",
+      "description": "Stores basic information and settings for a user within the Demokratia Portugal application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
+        "id": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "preferredLanguage": { "type": "string" },
+        "notificationPreferences": {
+          "type": "object",
+          "properties": {
+            "emailNotifications": { "type": "boolean" },
+            "weeklyNewsletter": { "type": "boolean" }
+          }
         },
-        "username": {
-          "type": "string",
-          "description": "The user's chosen unique username for identification and display."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address, used for communication and account recovery.",
-          "format": "email"
-        },
-        "languagePreference": {
-          "type": "string",
-          "description": "The user's preferred language for the application's user interface, e.g., 'pt' for Portuguese."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was initially created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating the last time the user profile information was updated.",
-          "format": "date-time"
-        }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "username",
-        "email",
-        "languagePreference",
-        "createdAt",
-        "updatedAt"
-      ]
+      "required": ["id", "displayName", "email", "createdAt", "updatedAt"]
     },
     "Refutation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Refutation",
       "type": "object",
-      "description": "Represents a user-submitted claim to refute specific AI-generated information or data insights within the application. These refutations are subject to administrative review for validation and eventual display.",
+      "description": "Represents a user-submitted claim to refute specific AI-generated information.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Refutation entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the UserProfile who submitted this refutation. (Relationship: UserProfile 1:N Refutation)"
-        },
-        "aiContentIdentifier": {
-          "type": "string",
-          "description": "A unique string identifier or reference that points to the specific AI-generated content (e.g., a report ID, a URL to a simulation result, or a data insight key) being refuted."
-        },
-        "refutationText": {
-          "type": "string",
-          "description": "The detailed textual explanation provided by the user, outlining why they believe the AI content is incorrect or misleading."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current review status of the refutation (e.g., 'pending', 'approved', 'rejected')."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Timestamp indicating when the user submitted the refutation.",
-          "format": "date-time"
-        },
-        "adminReviewDate": {
-          "type": "string",
-          "description": "Timestamp indicating when an administrator last reviewed this refutation. This field may be null if the refutation has not yet been reviewed.",
-          "format": "date-time"
-        },
-        "adminNotes": {
-          "type": "string",
-          "description": "Internal notes added by administrators during the review process, detailing their findings or decision."
-        }
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "aiContentIdentifier": { "type": "string" },
+        "refutationText": { "type": "string" },
+        "evidenceLinks": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submissionDate": { "type": "string", "format": "date-time" },
+        "adminReviewDate": { "type": "string", "format": "date-time" },
+        "adminNotes": { "type": "string" }
       },
-      "required": [
-        "id",
-        "userId",
-        "aiContentIdentifier",
-        "refutationText",
-        "status",
-        "submissionDate"
-      ]
-    },
-    "RefutationAttachment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RefutationAttachment",
-      "type": "object",
-      "description": "Stores metadata for files uploaded by users to provide supporting evidence or data for their refutations.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the RefutationAttachment entity."
-        },
-        "refutationId": {
-          "type": "string",
-          "description": "Reference to the Refutation this attachment is associated with. (Relationship: Refutation 1:N RefutationAttachment)"
-        },
-        "filename": {
-          "type": "string",
-          "description": "The original name of the file as it was uploaded by the user."
-        },
-        "fileType": {
-          "type": "string",
-          "description": "The MIME type of the uploaded file (e.g., 'application/pdf', 'image/jpeg', 'text/csv')."
-        },
-        "fileSize": {
-          "type": "number",
-          "description": "The size of the uploaded file in bytes."
-        },
-        "storagePath": {
-          "type": "string",
-          "description": "The logical path or identifier specifying the location where the file is stored within the application's storage system."
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "Timestamp indicating when the file was uploaded.",
-          "format": "date-time"
-        },
-        "description": {
-          "type": "string",
-          "description": "An optional description of the attachment provided by the user, explaining its content or relevance."
-        }
-      },
-      "required": [
-        "id",
-        "refutationId",
-        "filename",
-        "fileType",
-        "fileSize",
-        "storagePath",
-        "uploadDate"
-      ]
+      "required": ["id", "userId", "aiContentIdentifier", "refutationText", "status", "submissionDate"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "anonymous", "google"]
   },
   "firestore": {
     "structure": [
       {
         "path": "/users/{userId}",
         "definition": {
-          "entityName": "userProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores individual user profiles. Access is restricted to the owner (`userId == request.auth.uid`). This collection provides a secure, path-based ownership model, ensuring Authorization Independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique ID of the user, corresponding to Firebase Authentication UID."
-            }
-          ]
+          "entityName": "UserProfile",
+          "description": "Individual user profiles and settings."
         }
       },
       {
         "path": "/refutations/{refutationId}",
         "definition": {
-          "entityName": "refutation",
-          "schema": {
-            "$ref": "#/backend/entities/Refutation"
-          },
-          "description": "Stores user-submitted refutations against AI content. Each document includes denormalized `userId` for Authorization Independence, enabling simple ownership checks (`resource.data.userId == request.auth.uid`). The `status` field facilitates Structural Segregation for different access rules (e.g., pending for admin review, approved for public display). Supports QAPs for users to view their own refutations and for administrators to list pending refutations.",
-          "params": [
-            {
-              "name": "refutationId",
-              "description": "The unique ID of the refutation."
-            }
-          ]
+          "entityName": "Refutation",
+          "description": "User-submitted corrections to AI content."
         }
       },
       {
-        "path": "/refutations/{refutationId}/attachments/{attachmentId}",
+        "path": "/contactMessages/{messageId}",
         "definition": {
-          "entityName": "refutationAttachment",
-          "schema": {
-            "$ref": "#/backend/entities/RefutationAttachment"
-          },
-          "description": "Stores metadata for files attached to specific refutations. Each document *MUST* include denormalized `userId` (copied from the parent refutation) and `refutationId` for Authorization Independence, allowing security rules to verify ownership without a 'get()' call to the parent. Only the submitting user and administrators can manage these attachments.",
-          "params": [
-            {
-              "name": "refutationId",
-              "description": "The unique ID of the parent refutation."
-            },
-            {
-              "name": "attachmentId",
-              "description": "The unique ID of the refutation attachment."
-            }
-          ]
+          "entityName": "ContactMessage",
+          "description": "Support and contact messages from users."
+        }
+      },
+      {
+        "path": "/communityProposals/{proposalId}",
+        "definition": {
+          "entityName": "CommunityProposal",
+          "description": "User-submitted policy ideas."
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "description": "Registry of administrative users."
         }
       }
-    ],
-    "reasoning": "The proposed Firestore structure for Demokratia Portugal prioritizes Authorization Independence, Structural Segregation, and QAPs (Queryable by Authorized Parties) to ensure robust security rules and efficient data access, particularly for the new refutation feature. 1.  User Profiles (Path: /users/{userId}): User profiles are stored in a top-level collection. Each document 'userId' is self-contained and solely owned by the authenticated user ('request.auth.uid == userId'). This ensures Authorization Independence, as no 'get()' calls to other documents are needed for authorization. The collection enforces Structural Segregation by containing only user profile data, maintaining a private security posture. QAPs are supported as users can directly query and access their own profile. 2.  Refutations (Path: /refutations/{refutationId}): Refutations are stored in a flat, top-level collection. Each Refutation document explicitly contains the 'userId' of its creator. This denormalization is crucial for Authorization Independence, eliminating the need for 'get()' operations to a parent user document when verifying ownership. This enables atomic writes and simplified rules ('resource.data.userId == request.auth.uid'). Structural Segregation is achieved as this collection is dedicated to refutation submissions, with the 'status' field ('pending', 'approved', 'rejected') allowing rules to differentiate access based on state. QAPs are fully supported: Users can list their own refutations by querying 'where(\"userId\", \"==\", request.auth.uid)', and administrators can efficiently list all 'pending' refutations for review by querying 'where(\"status\", \"==\", \"pending\")', allowing targeted, secure list operations without complex joins. 3.  Refutation Attachments (Path: /refutations/{refutationId}/attachments/{attachmentId}): This entity is designed as a subcollection to its parent refutation. Crucially, each RefutationAttachment document *MUST* include denormalized 'userId' (copied from its parent refutation) in addition to 'refutationId'. This critical denormalization ensures Authorization Independence, allowing security rules to directly verify ownership ('resource.data.userId == request.auth.uid') without performing a 'get()' call to the parent Refutation document. This design supports atomic creation and updates and avoids authorization dependencies. Structural Segregation ensures this subcollection exclusively holds attachment metadata for its parent refutation, maintaining a clear security context tied to the refutation's owner and administrators. QAPs are supported as users can list attachments for *their specific refutations*, and administrators can list attachments for *any specific refutation* by its 'refutationId', with the denormalized 'userId' enabling comprehensive access control. This structure ensures security rules are straightforward, relying on 'request.auth.uid' matching specific document fields and eliminating the need for complex and brittle 'get()' calls. While not explicitly part of the 'firestorePaths' due to schema constraints, administrative roles would be managed via a dedicated collection (e.g., '/roles_admin/{uid}') using a Database Access Control (DBAC) pattern, where the mere existence of a document grants privileges, further simplifying rules using 'exists()' checks."
+    ]
   }
 }

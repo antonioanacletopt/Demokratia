@@ -11,7 +11,7 @@ import { systemDataSources } from '@/lib/system-data-sources';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2, ShieldCheck, Database, Server, Sparkles } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -44,6 +44,7 @@ export default function SeedPage() {
       const docRef = doc(firestore, 'roles_admin', user.uid);
       await setDoc(docRef, { 
         email: user.email, 
+        displayName: user.displayName,
         assignedAt: serverTimestamp(),
         grantedBy: 'system-bootstrap'
       });
@@ -58,11 +59,7 @@ export default function SeedPage() {
 
   const handleSeedPublicData = async () => {
     setIsSeedingPublic(true);
-    toast({
-      title: 'A semear os dados de indicadores...',
-      description: 'A carregar os dados públicos (PIB, etc.) para o Firestore.',
-    });
-
+    toast({ title: 'A carregar indicadores...' });
     try {
       const dataKeys = Object.keys(publicDataToSeed) as DataSetKey[];
       for (const key of dataKeys) {
@@ -70,179 +67,117 @@ export default function SeedPage() {
         const docRef = doc(firestore, 'publicData', key);
         await setDoc(docRef, dataSet);
       }
-      
-      toast({
-        title: 'Indicadores carregados!',
-        description: 'Os dados foram carregados. Pode navegar para o Dashboard para os ver.',
-      });
+      toast({ title: 'Indicadores carregados!' });
     } catch (error: any) {
-      console.error("Error seeding public data: ", error);
-      const permissionError = new FirestorePermissionError({
-        path: 'publicData',
-        operation: 'create',
-        requestResourceData: { detail: 'Batch write for publicData failed.' },
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar dados',
-      });
-    } finally {
-      setIsSeedingPublic(false);
-    }
+      toast({ variant: 'destructive', title: 'Erro ao carregar indicadores' });
+    } finally { setIsSeedingPublic(false); }
   };
 
   const handleSeedStatisticalData = async () => {
     setIsSeedingStats(true);
-    toast({
-      title: 'A semear os dados estatísticos...',
-      description: 'A carregar os dados para o Explorador para o Firestore.',
-    });
-
+    toast({ title: 'A carregar estatísticas...' });
     try {
       for (const dataSet of statisticalDataToSeed) {
-        const docData = {
-          ...dataSet,
-          data: JSON.stringify(dataSet.data),
-        };
+        const docData = { ...dataSet, data: JSON.stringify(dataSet.data) };
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
         await setDoc(docRef, docData);
       }
-      
-      toast({
-        title: 'Dados estatísticos carregados!',
-        description: 'Os dados foram carregados.',
-      });
+      toast({ title: 'Dados estatísticos carregados!' });
     } catch (error: any) {
-      console.error("Error seeding stats: ", error);
-      const permissionError = new FirestorePermissionError({
-        path: 'statisticalData',
-        operation: 'create',
-        requestResourceData: { detail: 'Batch write for statisticalData failed.' },
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar dados',
-      });
-    } finally {
-      setIsSeedingStats(false);
-    }
+      toast({ variant: 'destructive', title: 'Erro ao carregar estatísticas' });
+    } finally { setIsSeedingStats(false); }
   };
 
   const handleSeedDataSources = async () => {
     setIsSeedingSources(true);
-    toast({
-      title: 'A semear as fontes de dados...',
-      description: 'A carregar as fontes de dados do sistema.',
-    });
-
+    toast({ title: 'A carregar fontes...' });
     try {
       for (const source of systemDataSources) {
         const id = source.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
         const docRef = doc(firestore, 'dataSources', id);
         await setDoc(docRef, { ...source, id }, { merge: true });
       }
-
-      toast({
-        title: 'Fontes de dados carregadas!',
-      });
+      toast({ title: 'Fontes carregadas!' });
     } catch (error: any) {
-      console.error("Error seeding sources: ", error);
-      const permissionError = new FirestorePermissionError({
-        path: 'dataSources',
-        operation: 'create',
-        requestResourceData: { detail: 'Batch write failed.' },
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar fontes de dados',
-      });
-    } finally {
-      setIsSeedingSources(false);
-    }
+      toast({ variant: 'destructive', title: 'Erro ao carregar fontes' });
+    } finally { setIsSeedingSources(false); }
   };
 
   if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
     return (
-      <div className="flex h-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 py-12 text-center">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <h3 className="mt-4 text-lg font-medium text-muted-foreground">A verificar permissões...</h3>
+      <div className="flex h-screen items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold font-headline tracking-tight">Configuração Inicial (Seed)</h1>
-      <p className="text-muted-foreground">
-        Use este ecrã para carregar os conjuntos de dados iniciais e configurar o seu acesso administrativo.
-      </p>
+    <div className="max-w-4xl mx-auto space-y-8 py-10">
+      <div>
+        <h1 className="text-4xl font-bold font-headline tracking-tight">Painel de Configuração (Seed)</h1>
+        <p className="text-muted-foreground text-lg mt-2">
+          Configure o acesso administrativo e carregue os dados de 2026 para o sistema.
+        </p>
+      </div>
 
-      <Card className="border-primary/50 bg-primary/5">
+      <Card className="border-primary bg-primary/5 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            Configuração de Administrador
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            <ShieldCheck className="h-8 w-8 text-primary" />
+            1. Ativação Administrativa
           </CardTitle>
-          <CardDescription>
-            Ative o seu perfil como administrador oficial na base de dados para desbloquear o Painel de Administração e gestão de dados.
+          <CardDescription className="text-base">
+            Clique neste botão para registar permanentemente o seu acesso como administrador nas regras de segurança do Firestore.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleMakeAdmin} disabled={isSettingAdmin}>
-            {isSettingAdmin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Ativar Perfil de Administrador
+          <Button size="lg" onClick={handleMakeAdmin} disabled={isSettingAdmin} className="w-full sm:w-auto px-10">
+            {isSettingAdmin && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+            Ativar Perfil de Administrador Oficial
           </Button>
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados de Indicadores (Dashboard)</CardTitle>
-          <CardDescription>
-            Popula a coleção 'publicData' com os dados de PIB, Desemprego e Inflação de 2026.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} variant="outline">
-            {isSeedingPublic && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Carregar Indicadores
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Indicadores</CardTitle>
+            <CardDescription>PIB, Inflação e Desemprego 2026.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} variant="outline" className="w-full">
+              {isSeedingPublic ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Carregar
+            </Button>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados Estatísticos (Explorador)</CardTitle>
-          <CardDescription>
-            Popula a coleção 'statisticalData' com dados para a página do Explorador.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} variant="outline">
-            {isSeedingStats && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Carregar Dados do Explorador
-          </Button>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" />Explorador</CardTitle>
+            <CardDescription>Dados estatísticos detalhados.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} variant="outline" className="w-full">
+              {isSeedingStats ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Carregar
+            </Button>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Fontes de Dados (Admin)</CardTitle>
-          <CardDescription>
-            Popula a coleção 'dataSources' com as fontes de dados oficiais do sistema.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleSeedDataSources} disabled={isSeedingSources} variant="outline">
-            {isSeedingSources && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Carregar Fontes de Dados
-          </Button>
-        </CardContent>
-      </Card>
-
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Server className="h-5 w-5" />Fontes</CardTitle>
+            <CardDescription>Entidades oficiais do sistema.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSeedDataSources} disabled={isSeedingSources} variant="outline" className="w-full">
+              {isSeedingSources ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Carregar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
