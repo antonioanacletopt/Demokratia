@@ -223,7 +223,7 @@ export default function HomePage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">A analisar a atualidade política de 2026...</p>
+            <p className="text-sm text-muted-foreground">{t('home.loadingText')}</p>
           </div>
         ) : error ? (
           <Card>

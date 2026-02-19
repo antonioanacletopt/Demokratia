@@ -17,11 +17,13 @@ export const translations = {
       sources: 'Fontes Oficiais', share: 'Partilhar com a comunidade', error: 'Ocorreu um erro.', success: 'Sucesso!',
       portuguese: 'Português', english: 'Inglês', language: 'Idioma', warning: 'Aviso', close: 'Fechar', accept: 'Aceitar',
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
-      supported: 'Apoiado', simulate: 'Simular'
+      supported: 'Apoiado', simulate: 'Simular', actions: 'Ações'
     },
     home: {
       title: 'Feed de Atualizações', description: 'Acompanhe as últimas alegações, propostas e análises em 2026.',
-      error: 'Erro ao carregar notícias.', source: 'Fonte', date: 'Data', newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
+      error: 'Erro ao carregar notícias.', source: 'Fonte', date: 'Data', 
+      loadingText: 'A analisar a atualidade política de 2026...',
+      newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
     },
     dashboard: {
       title: 'Dashboard Interativo', description: 'Gere gráficos dinâmicos sobre Portugal.', aiCardTitle: 'Gráfico com IA',
@@ -73,13 +75,43 @@ export const translations = {
     },
     refutation: {
       title: 'Refutar Informação', description: 'Acredita que a IA errou? Submeta provas para correção.', label: 'Explicação',
-      evidence: 'Links/Provas', submitBtn: 'Submeter Refutação', refuteBtn: 'Refutar Informação', success: 'Refutação enviada para análise.',
-      status: { pending: 'Pendente', approved: 'Aprovada', rejected: 'Rejeitada' }, noRefutations: 'Sem refutações.', adminTitle: 'Gestão de Refutações'
+      placeholder: 'Explique porque a informação está errada...', evidence: 'Links/Provas', 
+      evidencePlaceholder: 'Links para fontes oficiais, documentos, etc.',
+      submitBtn: 'Submeter Refutação', refuteBtn: 'Refutar Informação', success: 'Refutação enviada para análise.',
+      status: { pending: 'Pendente', approved: 'Aprovada', rejected: 'Rejeitada' }, noRefutations: 'Sem refutações.', 
+      adminTitle: 'Gestão de Refutações', user: 'Utilizador', targetContent: 'Conteúdo Alvo', submission: 'Submissão'
+    },
+    admin: {
+      title: 'Painel de Administração', description: 'Bem-vindo, António. Gestão centralizada da plataforma.',
+      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)' },
+      refutationsDesc: 'Analise as correções e evidências submetidas pela comunidade.',
+      reviewTitle: 'Revisão de Refutação', reviewBy: 'Enviada por', userExplanation: 'Explicação do Utilizador:',
+      evidenceLinks: 'Links e Provas:', reject: 'Rejeitar', approve: 'Aprovar e Publicar',
+      sourcesTitle: 'Fontes de Dados', sourcesDesc: 'Gira as entidades oficiais e APIs ligadas à plataforma.',
+      addSource: 'Adicionar Fonte', editSource: 'Editar Fonte', sourceName: 'Nome da Fonte', sourceType: 'Tipo',
+      isSystem: 'Sistema', deleteSourceConfirm: 'Apagar Fonte?', deleteSourceDesc: 'Esta ação é permanente.',
+      messagesTitle: 'Caixa de Entrada', messagesDesc: 'Mensagens de apoio e contacto dos utilizadores.',
+      from: 'De', subject: 'Assunto', status: 'Estado', archive: 'Arquivar',
+      seedTitle: 'Carregamento de Dados (Seed)', seedDesc: 'Popula o sistema com os dados de 2026.',
+      indicators: 'Indicadores', indicatorsDesc: 'PIB, Inflação e Desemprego.', loadIndicators: 'Carregar Indicadores',
+      stats: 'Estatísticas', statsDesc: 'Tabelas para o Explorador.', loadStats: 'Carregar Estatísticas',
+      sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Fontes'
     },
     profile: {
       title: 'O Meu Perfil', description: 'Gira as suas preferências e dados pessoais.', displayName: 'Nome de Apresentação',
       language: 'Idioma Preferido', notifications: 'Preferências de Notificação', dangerZone: 'Zona de Perigo',
-      deleteAccount: 'Apagar Conta Permanentemente', deleteWarning: 'Esta ação não pode ser desfeita e removerá todos os seus dados.'
+      deleteAccount: 'Apagar Conta Permanentemente', deleteWarning: 'Esta ação não pode ser desfeita e removerá todos os seus dados.',
+      photoTitle: 'Foto de Perfil', photoDesc: 'Gerida pela sua conta Google.', personalInfo: 'Informações Pessoais',
+      displayNameDesc: 'Pode alterar o seu nome de apresentação na plataforma.', langDesc: 'Isso afetará também o idioma das respostas da IA.',
+      notifDesc: 'Escolha como pretende ser notificado sobre atualizações.', emailNotif: 'Notificações por Email',
+      emailNotifDesc: 'Receba avisos sobre novas funcionalidades.', newsletter: 'Newsletter Semanal',
+      newsletterDesc: 'Receba um resumo das simulações da semana.', deleting: 'A processar eliminação...',
+      deletingDesc: 'A apagar todos os seus dados da plataforma.'
+    },
+    login: {
+      welcome: 'Bem-vindo ao Demokratia', subtitle: 'Para continuar, inicie sessão com a sua conta Google.',
+      googleBtn: 'Iniciar sessão com o Google', errorTitle: 'Erro de Autenticação',
+      unauthorized: 'Domínio não autorizado na consola Firebase.'
     },
     privacy: {
       title: 'Privacidade e Cookies', intro: 'Respeitamos os seus dados.', dataTitle: 'Dados Recolhidos', dataDesc: 'Recolhemos dados via login Google.',
@@ -104,11 +136,12 @@ export const translations = {
       sources: 'Official Sources', share: 'Share with community', error: 'An error occurred.', success: 'Success!',
       portuguese: 'Portuguese', english: 'English', language: 'Language', warning: 'Warning', close: 'Close', accept: 'Accept',
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
-      supported: 'Supported', simulate: 'Simulate'
+      supported: 'Supported', simulate: 'Simulate', actions: 'Actions'
     },
     home: {
       title: 'Updates Feed', description: 'Follow claims and analyses in 2026.', error: 'Error loading news.',
-      source: 'Source', date: 'Date', newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
+      source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
+      newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
     },
     dashboard: {
       title: 'Interactive Dashboard', description: 'Generate charts about Portugal with AI.', aiCardTitle: 'AI Chart',
@@ -160,13 +193,43 @@ export const translations = {
     },
     refutation: {
       title: 'Refute Information', description: 'Believe the AI is wrong? Submit evidence for correction.', label: 'Explanation',
-      evidence: 'Links/Proof', submitBtn: 'Submit Refutation', refuteBtn: 'Refute Info', success: 'Refutation sent for review.',
-      status: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }, noRefutations: 'No refutations.', adminTitle: 'Manage Refutations'
+      placeholder: 'Explain why the information is wrong...', evidence: 'Links/Proof', 
+      evidencePlaceholder: 'Links to official sources, documents, etc.',
+      submitBtn: 'Submit Refutation', refuteBtn: 'Refute Info', success: 'Refutation sent for review.',
+      status: { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' }, noRefutations: 'No refutations.', 
+      adminTitle: 'Manage Refutations', user: 'User', targetContent: 'Target Content', submission: 'Submission'
+    },
+    admin: {
+      title: 'Admin Dashboard', description: 'Welcome, António. Centralized platform management.',
+      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)' },
+      refutationsDesc: 'Review corrections and evidence submitted by the community.',
+      reviewTitle: 'Refutation Review', reviewBy: 'Submitted by', userExplanation: 'User Explanation:',
+      evidenceLinks: 'Links & Evidence:', reject: 'Reject', approve: 'Approve & Publish',
+      sourcesTitle: 'Data Sources', sourcesDesc: 'Manage official entities and APIs connected to the platform.',
+      addSource: 'Add Source', editSource: 'Edit Source', sourceName: 'Source Name', sourceType: 'Type',
+      isSystem: 'System', deleteSourceConfirm: 'Delete Source?', deleteSourceDesc: 'This action is permanent.',
+      messagesTitle: 'Inbox', messagesDesc: 'Support and contact messages from users.',
+      from: 'From', subject: 'Subject', status: 'Status', archive: 'Archive',
+      seedTitle: 'Data Loading (Seed)', seedDesc: 'Populate the system with 2026 data.',
+      indicators: 'Indicators', indicatorsDesc: 'GDP, Inflation and Unemployment.', loadIndicators: 'Load Indicators',
+      stats: 'Statistics', statsDesc: 'Tables for the Data Explorer.', loadStats: 'Load Statistics',
+      sourcesSeed: 'Sources', sourcesSeedDesc: 'Official entities (INE, etc).', loadSources: 'Load Sources'
     },
     profile: {
       title: 'My Profile', description: 'Manage your preferences and personal data.', displayName: 'Display Name',
       language: 'Preferred Language', notifications: 'Notification Preferences', dangerZone: 'Danger Zone',
-      deleteAccount: 'Delete Account Permanently', deleteWarning: 'This action cannot be undone and will remove all your data.'
+      deleteAccount: 'Delete Account Permanently', deleteWarning: 'This action cannot be undone and will remove all your data.',
+      photoTitle: 'Profile Picture', photoDesc: 'Managed by your Google account.', personalInfo: 'Personal Information',
+      displayNameDesc: 'You can change your display name on the platform.', langDesc: 'This will also affect the AI response language.',
+      notifDesc: 'Choose how you want to be notified about updates.', emailNotif: 'Email Notifications',
+      emailNotifDesc: 'Receive alerts about new features.', newsletter: 'Weekly Newsletter',
+      newsletterDesc: 'Receive a summary of the week simulations.', deleting: 'Processing deletion...',
+      deletingDesc: 'Deleting all your data from the platform.'
+    },
+    login: {
+      welcome: 'Welcome to Demokratia', subtitle: 'To continue, please sign in with your Google account.',
+      googleBtn: 'Sign in with Google', errorTitle: 'Authentication Error',
+      unauthorized: 'Unauthorized domain in Firebase console.'
     },
     privacy: {
       title: 'Privacy & Cookies', intro: 'We respect your data.', dataTitle: 'Data Collected', dataDesc: 'We collect data via Google login.',

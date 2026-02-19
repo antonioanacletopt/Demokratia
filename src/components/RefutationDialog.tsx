@@ -62,9 +62,6 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
         setIsOpen(false);
         form.reset();
       })
-      .catch((err) => {
-        console.error("Refutation submission error", err);
-      })
       .finally(() => setIsSubmitting(false));
   };
 
@@ -102,7 +99,7 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
                     <FormLabel>{t('refutation.label')}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explique porque a informação está errada..." 
+                        placeholder={t('refutation.placeholder')} 
                         rows={5} 
                         {...field} 
                       />
@@ -119,7 +116,7 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
                     <FormLabel>{t('refutation.evidence')}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Links para fontes oficiais, documentos, etc." 
+                        placeholder={t('refutation.evidencePlaceholder')} 
                         rows={2} 
                         {...field} 
                       />
