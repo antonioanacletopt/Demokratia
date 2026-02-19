@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, serverTimestamp, query, where, orderBy, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
@@ -30,7 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -184,7 +184,8 @@ export default function AdminPage() {
     setIsSaving(true);
     const id = data.id || data.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const docRef = doc(firestore, 'dataSources', id);
-    updateDocumentNonBlocking(docRef, { ...data, id });
+    // CRITICAL: use set with merge to avoid permission errors if doc doesn't exist
+    setDocumentNonBlocking(docRef, { ...data, id }, { merge: true });
     setTimeout(() => {
       toast({ title: 'Fonte guardada!' });
       setIsSaving(false);
@@ -199,10 +200,10 @@ export default function AdminPage() {
       for (const key in publicDataToSeed) {
         const dataSet = publicDataToSeed[key as DataSetKey];
         const docRef = doc(firestore, 'publicData', key);
-        updateDocumentNonBlocking(docRef, dataSet);
+        setDocumentNonBlocking(docRef, dataSet, { merge: true });
       }
       toast({ title: 'Indicadores carregados!' });
-    } catch (e) { toast({ variant: 'destructive', title: 'Erro' }); }
+    } catch (e) { toast({ variant: 'destructive', title: 'Erro ao carregar indicadores' }); }
     finally { setIsSeedingPublic(false); }
   };
 
@@ -211,10 +212,10 @@ export default function AdminPage() {
     try {
       for (const dataSet of statisticalDataToSeed) {
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
-        updateDocumentNonBlocking(docRef, { ...dataSet, data: JSON.stringify(dataSet.data) });
+        setDocumentNonBlocking(docRef, { ...dataSet, data: JSON.stringify(dataSet.data) }, { merge: true });
       }
       toast({ title: 'Estatísticas carregadas!' });
-    } catch (e) { toast({ variant: 'destructive', title: 'Erro' }); }
+    } catch (e) { toast({ variant: 'destructive', title: 'Erro ao carregar estatísticas' }); }
     finally { setIsSeedingStats(false); }
   };
 
@@ -224,10 +225,10 @@ export default function AdminPage() {
       for (const source of systemDataSources) {
         const id = source.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
         const docRef = doc(firestore, 'dataSources', id);
-        updateDocumentNonBlocking(docRef, { ...source, id });
+        setDocumentNonBlocking(docRef, { ...source, id }, { merge: true });
       }
       toast({ title: 'Fontes carregadas!' });
-    } catch (e) { toast({ variant: 'destructive', title: 'Erro' }); }
+    } catch (e) { toast({ variant: 'destructive', title: 'Erro ao carregar fontes' }); }
     finally { setIsSeedingSources(false); }
   };
 
@@ -252,43 +253,82 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Painel de Administração</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold font-headline">Painel de Administração</h1>
+          <p className="text-muted-foreground">Bem-vindo, António. Gestão centralizada da plataforma.</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="refutations" className="space-y-6">
-        <TabsList>
+        <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />Refutações</TabsTrigger>
-          <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />Dados e Fontes</TabsTrigger>
+          <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />Fontes de Dados</TabsTrigger>
           <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />Mensagens</TabsTrigger>
+          <TabsTrigger value="seed" className="gap-2"><Sparkles className="h-4 w-4" />Configuração (Seed)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="refutations" className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>{t('refutation.adminTitle')}</CardTitle><CardDescription>Analise as correções da comunidade.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>{t('refutation.adminTitle')}</CardTitle><CardDescription>Analise as correções e evidências submetidas pela comunidade.</CardDescription></CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-hidden">
                 <Table>
-                  <TableHeader><TableRow><TableHead>Utilizador</TableHead><TableHead>Alvo</TableHead><TableHead>Estado</TableHead><TableHead>Data</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/30"><TableRow><TableHead>Utilizador</TableHead><TableHead>Conteúdo Alvo</TableHead><TableHead>Estado</TableHead><TableHead>Submissão</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {!isLoadingRefutations && sortedRefutations.map((ref) => (
+                    {!isLoadingRefutations && sortedRefutations.length > 0 ? sortedRefutations.map((ref) => (
                       <TableRow key={ref.id}>
                         <TableCell className="font-medium">{ref.userName}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{ref.aiContentIdentifier}</TableCell>
+                        <TableCell className="max-w-[200px] truncate italic text-muted-foreground">"{ref.aiContentIdentifier}"</TableCell>
                         <TableCell><Badge variant={ref.status === 'approved' ? 'default' : ref.status === 'rejected' ? 'destructive' : 'secondary'}>{t(`refutation.status.${ref.status}`)}</Badge></TableCell>
                         <TableCell className="text-xs">{ref.submissionDate ? formatDistanceToNow(ref.submissionDate.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}</TableCell>
                         <TableCell className="text-right">
                           <Dialog open={viewingRefutation?.id === ref.id} onOpenChange={(o) => !o && setViewingRefutation(null)}>
                             <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => setViewingRefutation(ref)}>Rever</Button></DialogTrigger>
                             <DialogContent className="max-w-2xl">
-                              <DialogHeader><DialogTitle>Revisão de Refutação</DialogTitle></DialogHeader>
+                              <DialogHeader><DialogTitle>Revisão de Refutação</DialogTitle><DialogDescription>Enviada por {ref.userName}</DialogDescription></DialogHeader>
                               <div className="space-y-4 my-4">
-                                <div className="rounded-md border bg-muted p-4 text-sm"><h4 className="font-semibold mb-2">Explicação:</h4><p className="whitespace-pre-wrap">{ref.refutationText}</p></div>
-                                {ref.evidenceLinks && <div className="rounded-md border p-4 text-sm"><h4 className="font-semibold mb-2">Provas:</h4><p className="whitespace-pre-wrap">{ref.evidenceLinks}</p></div>}
+                                <div className="rounded-md border bg-muted/30 p-4 text-sm"><h4 className="font-semibold mb-2">Explicação do Utilizador:</h4><p className="whitespace-pre-wrap leading-relaxed">{ref.refutationText}</p></div>
+                                {ref.evidenceLinks && <div className="rounded-md border border-accent/20 bg-accent/5 p-4 text-sm"><h4 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-accent" />Links e Provas:</h4><p className="whitespace-pre-wrap">{ref.evidenceLinks}</p></div>}
                               </div>
                               <DialogFooter className="gap-2">
-                                <Button variant="outline" className="text-destructive" onClick={() => { handleUpdateRefutationStatus(ref.id, 'rejected'); setViewingRefutation(null); }}><XCircle className="mr-2 h-4 w-4" /> Rejeitar</Button>
-                                <Button variant="default" onClick={() => { handleUpdateRefutationStatus(ref.id, 'approved'); setViewingRefutation(null); }}><CheckCircle2 className="mr-2 h-4 w-4" /> Aprovar</Button>
+                                <Button variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10" onClick={() => { handleUpdateRefutationStatus(ref.id, 'rejected'); setViewingRefutation(null); }}><XCircle className="mr-2 h-4 w-4" /> Rejeitar</Button>
+                                <Button variant="default" onClick={() => { handleUpdateRefutationStatus(ref.id, 'approved'); setViewingRefutation(null); }}><CheckCircle2 className="mr-2 h-4 w-4" /> Aprovar e Publicar</Button>
                               </DialogFooter>
                             </DialogContent>
                           </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    )) : !isLoadingRefutations && <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground italic">Nenhuma refutação pendente.</TableCell></TableRow>}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sources" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div><CardTitle>Fontes de Dados</CardTitle><CardDescription>Gira as entidades oficiais e APIs ligadas à plataforma.</CardDescription></div>
+              <Button size="sm" onClick={() => { setEditingSource(undefined); setIsFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Fonte</Button>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30"><TableRow><TableHead>Nome da Fonte</TableHead><TableHead>Tipo</TableHead><TableHead>Sistema</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {isLoadingDataSources ? <TableRow><TableCell colSpan={4} className="text-center py-8">A carregar fontes...</TableCell></TableRow> : dataSources?.map(s => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell><Badge variant="outline" className="gap-1.5">{s.type === 'API' ? <Server className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}{s.type}</Badge></TableCell>
+                        <TableCell>{s.isSystemSource ? <Badge variant="secondary">Sim</Badge> : <span className="text-muted-foreground text-xs">Utilizador</span>}</TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon" disabled={s.isSystemSource}><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Apagar Fonte?</AlertDialogTitle><AlertDialogDescription>Esta ação é permanente e removerá a ligação oficial a {s.name}.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteDataSource(s.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Apagar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -299,72 +339,62 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="sources" className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            <Card>
-              <CardHeader><CardTitle>Carregamento Inicial (Seed)</CardTitle><CardDescription>Popula a base de dados com indicadores de 2026 e fontes oficiais.</CardDescription></CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-3">
-                <Button onClick={handleSeedPublicData} disabled={isSeedingPublic}>Carregar Indicadores</Button>
-                <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats}>Carregar Estatísticas</Button>
-                <Button onClick={handleSeedDataSources} disabled={isSeedingSources}>Carregar Fontes</Button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div><CardTitle>Fontes de Dados</CardTitle><CardDescription>Gira as fontes oficiais ligadas à plataforma.</CardDescription></div>
-                <Button size="sm" onClick={() => { setEditingSource(undefined); setIsFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Fonte</Button>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Tipo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {isLoadingDataSources ? <TableRow><TableCell colSpan={3} className="text-center py-4">A carregar...</TableCell></TableRow> : dataSources?.map(s => (
-                        <TableRow key={s.id}>
-                          <TableCell className="font-medium">{s.name}</TableCell>
-                          <TableCell><Badge variant="outline">{s.type}</Badge></TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                              <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Apagar Fonte?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteDataSource(s.id)}>Apagar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-                            </AlertDialog>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
         <TabsContent value="messages" className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Caixa de Entrada</CardTitle><CardDescription>Mensagens de contacto enviadas pelos utilizadores.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Caixa de Entrada</CardTitle><CardDescription>Mensagens de apoio e contacto dos utilizadores.</CardDescription></CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-hidden">
                 <Table>
-                  <TableHeader><TableRow><TableHead>De</TableHead><TableHead>Assunto</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/30"><TableRow><TableHead>De</TableHead><TableHead>Assunto</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {isLoadingMessages ? <TableRow><TableCell colSpan={4} className="text-center py-4">A carregar...</TableCell></TableRow> : sortedMessages.map(m => (
+                    {isLoadingMessages ? <TableRow><TableCell colSpan={4} className="text-center py-8">A carregar mensagens...</TableCell></TableRow> : sortedMessages.length > 0 ? sortedMessages.map(m => (
                       <TableRow key={m.id} className={m.status === 'new' ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}>
-                        <TableCell>{m.userName}</TableCell>
-                        <TableCell>{m.subject}</TableCell>
+                        <TableCell className="font-medium">{m.userName}</TableCell>
+                        <TableCell className="max-w-[300px] truncate">{m.subject}</TableCell>
                         <TableCell><Badge variant={m.status === 'new' ? 'default' : 'secondary'}>{statusConfig[m.status].label}</Badge></TableCell>
                         <TableCell className="text-right space-x-2">
                           <Dialog>
                             <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => m.status === 'new' && handleUpdateMessageStatus(m.id, 'read')}>Ver</Button></DialogTrigger>
-                            <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{m.subject}</DialogTitle><DialogDescription>De: {m.userName} ({m.userEmail})</DialogDescription></DialogHeader><div className="bg-muted p-4 rounded-md whitespace-pre-wrap mt-4">{m.message}</div></DialogContent>
+                            <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{m.subject}</DialogTitle><DialogDescription>De: {m.userName} ({m.userEmail})</DialogDescription></DialogHeader><div className="bg-muted/30 p-6 rounded-md border whitespace-pre-wrap mt-4 leading-relaxed">{m.message}</div></DialogContent>
                           </Dialog>
-                          {m.status !== 'archived' && <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(m.id, 'archived')}><Archive className="h-4 w-4" /></Button>}
+                          {m.status !== 'archived' && <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(m.id, 'archived')} title="Arquivar"><Archive className="h-4 w-4" /></Button>}
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )) : <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Sem novas mensagens.</TableCell></TableRow>}
                   </TableBody>
                 </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="seed" className="space-y-6">
+          <Card className="border-accent/20 bg-accent/5">
+            <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-accent" />Carregamento de Dados (Seed)</CardTitle><CardDescription>Popula o sistema com os dados de 2026. Use isto se encontrar "Dados não encontrados" no Dashboard ou Explorador.</CardDescription></CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-3">
+              <div className="flex flex-col gap-3 p-4 rounded-lg border bg-background/50">
+                <h3 className="font-bold flex items-center gap-2"><TrendingUp className="h-4 w-4" />Indicadores</h3>
+                <p className="text-xs text-muted-foreground">PIB, Inflação e Desemprego 2021-2026.</p>
+                <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} size="sm" className="mt-auto">
+                  {isSeedingPublic ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                  Carregar Indicadores
+                </Button>
+              </div>
+              <div className="flex flex-col gap-3 p-4 rounded-lg border bg-background/50">
+                <h3 className="font-bold flex items-center gap-2"><BarChartBig className="h-4 w-4" />Estatísticas</h3>
+                <p className="text-xs text-muted-foreground">Tabelas detalhadas para o Explorador.</p>
+                <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} size="sm" className="mt-auto">
+                  {isSeedingStats ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Carregar Estatísticas
+                </Button>
+              </div>
+              <div className="flex flex-col gap-3 p-4 rounded-lg border bg-background/50">
+                <h3 className="font-bold flex items-center gap-2"><Server className="h-4 w-4" />Fontes</h3>
+                <p className="text-xs text-muted-foreground">Entidades oficiais (INE, DGO, etc).</p>
+                <Button onClick={handleSeedDataSources} disabled={isSeedingSources} size="sm" className="mt-auto">
+                  {isSeedingSources ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Globe className="mr-2 h-4 w-4" />}
+                  Carregar Fontes
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -379,3 +409,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+import { BarChartBig, TrendingUp } from 'lucide-react';

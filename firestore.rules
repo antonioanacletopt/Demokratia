@@ -3,7 +3,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules Summary
+     * Demokratia Portugal: Security Rules
+     * Forced update to ensure UID permissions are applied.
      */
 
     // --- Global Helper Functions ---
@@ -18,9 +19,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) ||
+        request.auth.uid == 'id5hDeMIVZeR9i9HG5vvqnjEto32' ||
         request.auth.token.email == 'antonio.anacleto@gmail.com' ||
-        request.auth.uid == 'id5hDeMIVZeR9i9HG5vvqnjEto32'
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))
       );
     }
 
@@ -30,10 +31,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow get, list: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
       
-      // Subcoleções do utilizador (Dashboards, Fact-checks, etc.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
@@ -41,29 +41,27 @@ service cloud.firestore {
 
     // Refutações da IA
     match /refutations/{refutationId} {
-      allow list: if isAdmin() || isSignedIn();
-      allow get: if (resource.data.status == 'approved') || isOwner(resource.data.userId) || isAdmin();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin() || isOwner(resource.data.userId);
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
 
     // Mensagens de Contacto
     match /contactMessages/{messageId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow get: if isOwner(resource.data.userId) || isAdmin();
-      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow update, delete: if isAdmin();
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin();
     }
 
     // Propostas da Comunidade
     match /communityProposals/{proposalId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn(); 
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
-    // Cache de Traduções e Notícias
+    // Cache e Dados Públicos (Apenas Admin pode escrever)
     match /translations_cache/{id} {
       allow read: if true;
       allow create: if isSignedIn();
@@ -72,8 +70,6 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
-
-    // Dados Públicos e Estatísticos
     match /publicData/{id} {
       allow read: if true;
       allow write: if isAdmin();
@@ -87,7 +83,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Consultas Públicas (Cache de IA)
+    // Consultas Públicas
     match /publicStatisticQueries/{id} {
       allow read: if true;
       allow create: if isSignedIn();
@@ -104,7 +100,7 @@ service cloud.firestore {
     // Funções Administrativas
     match /roles_admin/{userId} {
       allow get: if isOwner(userId) || isAdmin();
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == 'id5hDeMIVZeR9i9HG5vvqnjEto32');
+      allow write: if isAdmin();
     }
   }
 }
