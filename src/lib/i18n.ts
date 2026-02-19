@@ -34,7 +34,7 @@ export const translations = {
       mainIndicators: 'Indicadores Principais', dataNotFound: 'Dados não encontrados', seedNotice: 'Clique em Seed na página Admin.'
     },
     explorer: {
-      title: 'Explorador de Dados', description: 'Consulte estatísticas oficiais detalhadas.', aiCardTitle: 'Perguntar à IA',
+      title: 'Data Explorer', description: 'Consulte estatísticas oficiais detalhadas.', aiCardTitle: 'Perguntar à IA',
       aiCardDesc: 'Diga que estatística procura.', textareaPlaceholder: "Ex: 'Qual a evolução da dívida pública?'",
       searchBtn: 'Procurar', recentQueries: 'Pesquisas Recentes', recentQueriesDesc: 'O que outros users procuram.',
       noRecentTitle: 'Sem pesquisas', noRecentDesc: 'Seja o primeiro!', existingDataTitle: 'Dados Disponíveis',
