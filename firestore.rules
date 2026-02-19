@@ -4,7 +4,7 @@ service cloud.firestore {
 
     /**
      * Demokratia Portugal: Security Rules
-     * Forced update to ensure UID permissions are applied.
+     * Consolidada para acesso master do António e gestão de todas as coleções.
      */
 
     // --- Global Helper Functions ---
@@ -61,7 +61,7 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
-    // Cache e Dados Públicos (Apenas Admin pode escrever)
+    // Cache e Dados Públicos (Apenas Admin pode escrever cache global)
     match /translations_cache/{id} {
       allow read: if true;
       allow create: if isSignedIn();

@@ -17,7 +17,7 @@ export const translations = {
       sources: 'Fontes Oficiais', share: 'Partilhar com a comunidade', error: 'Ocorreu um erro.', success: 'Sucesso!',
       portuguese: 'Português', english: 'Inglês', language: 'Idioma', warning: 'Aviso', close: 'Fechar', accept: 'Aceitar',
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
-      supported: 'Apoiado', simulate: 'Simular', actions: 'Ações'
+      supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...'
     },
     home: {
       title: 'Feed de Atualizações', description: 'Acompanhe as últimas alegações, propostas e análises em 2026.',
@@ -71,7 +71,7 @@ export const translations = {
       newTitle: 'Nova Mensagem', newDesc: 'Envie-nos as suas dúvidas ou feedback.',
       subject: 'Assunto', message: 'Mensagem', sendBtn: 'Enviar Mensagem',
       historyTitle: 'Histórico de Contactos', noMessagesTitle: 'Ainda não enviou mensagens.',
-      status: { new: 'Nova', read: 'Lida', archived: 'Arquivada' }
+      status: { title: 'Estado', new: 'Nova', read: 'Lida', archived: 'Arquivada' }
     },
     refutation: {
       title: 'Refutar Informação', description: 'Acredita que a IA errou? Submeta provas para correção.', label: 'Explicação',
@@ -136,7 +136,7 @@ export const translations = {
       sources: 'Official Sources', share: 'Share with community', error: 'An error occurred.', success: 'Success!',
       portuguese: 'Portuguese', english: 'English', language: 'Language', warning: 'Warning', close: 'Close', accept: 'Accept',
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
-      supported: 'Supported', simulate: 'Simulate', actions: 'Actions'
+      supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...'
     },
     home: {
       title: 'Updates Feed', description: 'Follow claims and analyses in 2026.', error: 'Error loading news.',
@@ -189,7 +189,7 @@ export const translations = {
       newTitle: 'New Message', newDesc: 'Send us your questions or feedback.',
       subject: 'Subject', message: 'Message', sendBtn: 'Send Message',
       historyTitle: 'Contact History', noMessagesTitle: 'You haven\'t sent any messages yet.',
-      status: { new: 'New', read: 'Read', archived: 'Archived' }
+      status: { title: 'Status', new: 'New', read: 'Read', archived: 'Archived' }
     },
     refutation: {
       title: 'Refute Information', description: 'Believe the AI is wrong? Submit evidence for correction.', label: 'Explanation',
