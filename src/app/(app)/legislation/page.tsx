@@ -15,6 +15,7 @@ import { Loader2, Scale, History, User, FileText, Bot, Sparkles, Languages, Refr
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
+import { RefutationDialog } from '@/components/RefutationDialog';
 
 interface LegislationQuery extends ConsultLegislationOutput {
   id: string;
@@ -22,7 +23,7 @@ interface LegislationQuery extends ConsultLegislationOutput {
   createdAt: any;
 }
 
-function LegislationResultDisplay({ result }: { result: ConsultLegislationOutput }) {
+function LegislationResultDisplay({ result, questionId }: { result: ConsultLegislationOutput, questionId: string }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
@@ -73,18 +74,21 @@ function LegislationResultDisplay({ result }: { result: ConsultLegislationOutput
             <Bot className="h-6 w-6" />
             {t('legislation.resultTitle')}
           </CardTitle>
-          {language !== 'pt' && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-              disabled={isTranslating}
-              className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-            >
-              {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-              {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            <RefutationDialog contentId={`legislation-${questionId}`} />
+            {language !== 'pt' && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating}
+                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+              >
+                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -205,7 +209,7 @@ export default function LegislationPage() {
 
       <div ref={resultRef}>
         {isPending && <Skeleton className="h-40 w-full" />}
-        {result && <LegislationResultDisplay result={result} />}
+        {result && <LegislationResultDisplay result={result} questionId={question} />}
       </div>
 
       <Card>
@@ -243,8 +247,9 @@ export default function LegislationPage() {
           {!user ? <p className="text-muted-foreground">{t('nav.login')}</p> : pastQueries && pastQueries.length > 0 ? (
             <div className="space-y-4">
               {pastQueries.map(q => (
-                <div key={q.id} className="rounded-lg border p-4">
+                <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center">
                   <p className="font-semibold text-muted-foreground italic">"{q.question}"</p>
+                  <RefutationDialog contentId={`legislation-${q.question}`} />
                 </div>
               ))}
             </div>

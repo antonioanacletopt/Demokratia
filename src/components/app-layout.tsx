@@ -101,7 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [hasSyncedProfile, setHasSyncedProfile] = useState(false);
 
   const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'userProfiles', user.uid) : null),
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
   const { data: profileData } = useDoc(userProfileRef);

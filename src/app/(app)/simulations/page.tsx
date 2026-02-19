@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { RefutationDialog } from '@/components/RefutationDialog';
 
 interface UserSimulationRun {
   id: string;
@@ -48,7 +49,7 @@ interface PublicSimulationRun {
   runTimestamp: any;
 }
 
-function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
+function SimulationResultDisplay({ simulation, policyId }: { simulation: EconomicPolicySimulationOutput, policyId: string }) {
     const { t, language } = useTranslation();
     const firestore = useFirestore();
     const [isTranslating, startTransition] = useTransition();
@@ -117,20 +118,21 @@ function SimulationResultDisplay({ simulation }: { simulation: EconomicPolicySim
 
     return (
         <div className="space-y-6">
-             {language !== 'pt' && (
-               <div className="flex justify-end">
-                  <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                      disabled={isTranslating}
-                      className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-                  >
-                      {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-                      {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-                  </Button>
-               </div>
-             )}
+             <div className="flex justify-end gap-2">
+                  <RefutationDialog contentId={`simulation-${policyId}`} />
+                  {language !== 'pt' && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                        disabled={isTranslating}
+                        className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                    >
+                        {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                        {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                    </Button>
+                  )}
+             </div>
 
              {simulation.isRealPolicy && (
                   <Alert>
@@ -333,7 +335,7 @@ export default function SimulationsPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
-                <SimulationResultDisplay simulation={currentSimulation} />
+                <SimulationResultDisplay simulation={currentSimulation} policyId={policyInput} />
             </div>
         )}
       </div>
@@ -348,12 +350,16 @@ export default function SimulationsPage() {
                           <h3 className="font-semibold">{sim.title}</h3>
                           <p className="text-sm text-muted-foreground">{sim.inputVariables}</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => {
-                        const parsed = JSON.parse(sim.simulationResults);
-                        setCurrentSimulation(parsed);
-                      }}>
-                          {t('common.view')}
-                      </Button>
+                      <div className="flex gap-2">
+                        <RefutationDialog contentId={`saved-sim-${sim.id}`} />
+                        <Button variant="outline" size="sm" onClick={() => {
+                          const parsed = JSON.parse(sim.simulationResults);
+                          setCurrentSimulation(parsed);
+                          setPolicyInput(sim.inputVariables);
+                        }}>
+                            {t('common.view')}
+                        </Button>
+                      </div>
                   </Card>
               ))}
           </div>
@@ -365,18 +371,22 @@ export default function SimulationsPage() {
           <div className="grid gap-6 md:grid-cols-2">
               {publicSimulations?.map(sim => (
                   <Card key={sim.id} className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="h-6 w-6">
-                              <AvatarImage src={sim.userPhotoURL} />
-                              <AvatarFallback>{sim.userName[0]}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs font-medium">{sim.userName}</span>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={sim.userPhotoURL} />
+                                <AvatarFallback>{sim.userName[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-medium">{sim.userName}</span>
+                          </div>
+                          <RefutationDialog contentId={`public-sim-${sim.id}`} />
                       </div>
                       <h3 className="font-semibold">{sim.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
                       <Button variant="link" className="mt-2 p-0" onClick={() => {
                         const parsed = JSON.parse(sim.simulationResults);
                         setCurrentSimulation(parsed);
+                        setPolicyInput(sim.inputVariables);
                       }}>
                           {t('common.view')}
                       </Button>

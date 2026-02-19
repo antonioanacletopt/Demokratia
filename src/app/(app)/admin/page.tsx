@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, setDoc, query } from 'firebase/firestore';
+import { collection, doc, setDoc, query, where, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
@@ -13,6 +13,7 @@ import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +28,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, ArchiveRestore, Search, Frown } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Wrench, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, ArchiveRestore, Search, Frown, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -59,6 +61,7 @@ type DataSourceFormValues = z.infer<typeof dataSourceSchema>;
 
 interface ContactMessage {
   id: string;
+  userId: string;
   userName: string;
   userEmail: string;
   subject: string;
@@ -67,12 +70,23 @@ interface ContactMessage {
   createdAt: any;
 }
 
+interface Refutation {
+  id: string;
+  userId: string;
+  userName: string;
+  aiContentIdentifier: string;
+  refutationText: string;
+  evidenceLinks?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submissionDate: any;
+  adminNotes?: string;
+}
+
 const statusConfig = {
   new: { label: 'Nova', icon: MailWarning, color: 'text-blue-500' },
   read: { label: 'Lida', icon: MailCheck, color: 'text-green-500' },
   archived: { label: 'Arquivada', icon: Archive, color: 'text-muted-foreground' },
 };
-
 
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
   const form = useForm<DataSourceFormValues>({
@@ -230,6 +244,7 @@ export default function AdminPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -238,6 +253,7 @@ export default function AdminPage() {
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
   const [viewingMessage, setViewingMessage] = useState<ContactMessage | null>(null);
+  const [viewingRefutation, setViewingRefutation] = useState<Refutation | null>(null);
 
   const [dataSourceSearch, setDataSourceSearch] = useState('');
   const [messageSearch, setMessageSearch] = useState('');
@@ -249,6 +265,9 @@ export default function AdminPage() {
   
   const contactMessagesCollection = useMemoFirebase(() => collection(firestore, 'contactMessages'), [firestore]);
   const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>(contactMessagesCollection);
+
+  const refutationsCollection = useMemoFirebase(() => collection(firestore, 'refutations'), [firestore]);
+  const { data: refutations, isLoading: isLoadingRefutations } = useCollection<Refutation>(refutationsCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -261,6 +280,16 @@ export default function AdminPage() {
       return 0;
     });
   }, [contactMessages]);
+
+  const sortedRefutations = useMemo(() => {
+    if (!refutations) return [];
+    return [...refutations].sort((a, b) => {
+      if (a.submissionDate && b.submissionDate) {
+        return b.submissionDate.seconds - a.submissionDate.seconds;
+      }
+      return 0;
+    });
+  }, [refutations]);
 
   const filteredDataSources = useMemo(() => {
     if (!dataSources) return [];
@@ -401,6 +430,12 @@ export default function AdminPage() {
     toast({ title: 'Mensagem apagada.' });
   };
 
+  const handleUpdateRefutationStatus = (refutationId: string, status: 'approved' | 'rejected') => {
+    const docRef = doc(firestore, 'refutations', refutationId);
+    updateDocumentNonBlocking(docRef, { status, adminReviewDate: serverTimestamp() });
+    toast({ title: 'Refutação atualizada!' });
+  };
+
 
   if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
     return (
@@ -420,15 +455,20 @@ export default function AdminPage() {
         </div>
       </div>
 
-       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-         <div className="space-y-6">
+      <Tabs defaultValue="sources" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />Fontes e Dados</TabsTrigger>
+          <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />Caixa de Entrada</TabsTrigger>
+          <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />Refutações</TabsTrigger>
+        </TabsList>
 
+        <TabsContent value="sources" className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Card>
                 <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Carregar Dados Iniciais (Seed)</CardTitle>
                 <CardDescription>
                   Estes botões populam a base de dados com os conjuntos de dados iniciais. 
-                  **Ação necessária:** Se forem adicionados novos dados ao código, é preciso clicar nestes botões para que apareçam na aplicação.
                 </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-3">
@@ -463,8 +503,8 @@ export default function AdminPage() {
                 <CardHeader>
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <CardTitle>Fontes de Dados Atuais</CardTitle>
-                            <CardDescription className="mt-1.5">Lista de todas as fontes de dados configuradas no sistema.</CardDescription>
+                            <CardTitle>Fontes de Dados</CardTitle>
+                            <CardDescription className="mt-1.5">Configuração de APIs e Webhooks.</CardDescription>
                         </div>
                         <Dialog open={isFormOpen} onOpenChange={(open) => {
                             if (!open) handleDialogClose();
@@ -473,7 +513,7 @@ export default function AdminPage() {
                             <DialogTrigger asChild>
                                 <Button size="sm">
                                 <PlusCircle className="mr-2" />
-                                Adicionar Fonte
+                                Adicionar
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px]">
@@ -488,16 +528,6 @@ export default function AdminPage() {
                                 />
                             </DialogContent>
                         </Dialog>
-                    </div>
-                     <div className="relative pt-4">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                        type="search"
-                        placeholder="Pesquisar fontes..."
-                        className="w-full pl-10"
-                        value={dataSourceSearch}
-                        onChange={(e) => setDataSourceSearch(e.target.value)}
-                        />
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -518,13 +548,6 @@ export default function AdminPage() {
                             <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                         </TableRow>
                         ))}
-                        {!isLoadingDataSources && filteredDataSources?.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={3} className="h-24 text-center">
-                            {dataSourceSearch ? 'Nenhum resultado encontrado.' : 'Nenhuma fonte de dados encontrada.'}
-                            </TableCell>
-                        </TableRow>
-                        )}
                         {!isLoadingDataSources && filteredDataSources?.map((source) => (
                         <TableRow key={source.id}>
                             <TableCell className="font-medium">
@@ -568,9 +591,10 @@ export default function AdminPage() {
                 </div>
                 </CardContent>
             </Card>
-        </div>
+          </div>
+        </TabsContent>
 
-        <div className="space-y-6">
+        <TabsContent value="messages" className="space-y-6">
             <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Inbox />Caixa de Entrada</CardTitle>
@@ -580,7 +604,7 @@ export default function AdminPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
-                            placeholder="Pesquisar por assunto, nome ou email..."
+                            placeholder="Pesquisar..."
                             className="w-full pl-10"
                             value={messageSearch}
                             onChange={(e) => setMessageSearch(e.target.value)}
@@ -588,10 +612,10 @@ export default function AdminPage() {
                     </div>
                     <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
                         <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filtrar por estado" />
+                            <SelectValue placeholder="Filtrar" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todos os Estados</SelectItem>
+                            <SelectItem value="all">Todos</SelectItem>
                             <SelectItem value="new">Novas</SelectItem>
                             <SelectItem value="read">Lidas</SelectItem>
                             <SelectItem value="archived">Arquivadas</SelectItem>
@@ -608,17 +632,7 @@ export default function AdminPage() {
                         <TableRow key={i}><TableCell><Skeleton className="h-5 w-28" /></TableCell><TableCell><Skeleton className="h-5 w-36" /></TableCell><TableCell><Skeleton className="h-5 w-20" /></TableCell><TableCell><Skeleton className="h-5 w-24" /></TableCell><TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell></TableRow>
                     ))}
                     {!isLoadingMessages && filteredMessages.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">
-                                {messageSearch || statusFilter !== 'all' ? (
-                                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                        <Frown className="h-8 w-8" />
-                                        <p className="font-medium">Nenhum resultado encontrado</p>
-                                        <p className="text-sm">Tente ajustar a sua pesquisa ou filtros.</p>
-                                    </div>
-                                ) : 'Nenhuma mensagem recebida.'}
-                            </TableCell>
-                        </TableRow>
+                        <TableRow><TableCell colSpan={5} className="h-24 text-center">Nenhuma mensagem.</TableCell></TableRow>
                     )}
                     {!isLoadingMessages && filteredMessages.map((msg) => {
                         const StatusIcon = statusConfig[msg.status].icon;
@@ -639,15 +653,8 @@ export default function AdminPage() {
                                     <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => { setViewingMessage(msg); if(msg.status === 'new') handleUpdateMessageStatus(msg, 'read')}}>Ver</Button></DialogTrigger>
                                     <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{msg.subject}</DialogTitle><DialogDescription>De: {msg.userName} ({msg.userEmail})</DialogDescription></DialogHeader><div className="my-4 whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">{msg.message}</div></DialogContent>
                                 </Dialog>
-                                {msg.status !== 'archived' ? (
-                                    <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(msg, 'archived')}><Archive className="h-4 w-4" /></Button>
-                                ) : (
-                                    <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(msg, 'read')}><ArchiveRestore className="h-4 w-4" /></Button>
-                                )}
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Tem a certeza?</AlertDialogTitle><AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteMessage(msg)}>Apagar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-                                </AlertDialog>
+                                <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(msg, msg.status === 'archived' ? 'read' : 'archived')}><Archive className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteMessage(msg)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             </TableCell>
                         </TableRow>
                     )})}
@@ -656,8 +663,88 @@ export default function AdminPage() {
                 </div>
             </CardContent>
             </Card>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="refutations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-destructive" />{t('refutation.adminTitle')}</CardTitle>
+              <CardDescription>Reveja as refutações enviadas pelos utilizadores sobre os dados da IA.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Utilizador</TableHead>
+                      <TableHead>Alvo</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoadingRefutations && Array.from({ length: 3 }).map((_, i) => (
+                      <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                    ))}
+                    {!isLoadingRefutations && sortedRefutations.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="h-24 text-center">{t('refutation.noRefutations')}</TableCell></TableRow>
+                    )}
+                    {!isLoadingRefutations && sortedRefutations.map((ref) => {
+                      const timeAgo = ref.submissionDate ? formatDistanceToNow(ref.submissionDate.toDate(), { addSuffix: true, locale: pt }) : 'N/A';
+                      return (
+                        <TableRow key={ref.id}>
+                          <TableCell className="font-medium">{ref.userName}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{ref.aiContentIdentifier}</TableCell>
+                          <TableCell>
+                            <Badge variant={ref.status === 'approved' ? 'default' : ref.status === 'rejected' ? 'destructive' : 'secondary'}>
+                              {t(`refutation.status.${ref.status}`)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{timeAgo}</TableCell>
+                          <TableCell className="text-right">
+                            <Dialog open={viewingRefutation?.id === ref.id} onOpenChange={(open) => !open && setViewingRefutation(null)}>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="sm" onClick={() => setViewingRefutation(ref)}>Rever</Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Revisão de Refutação</DialogTitle>
+                                  <DialogDescription>De: {ref.userName} | Alvo: {ref.aiContentIdentifier}</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 my-4">
+                                  <div className="rounded-md border bg-muted p-4 text-sm">
+                                    <h4 className="font-semibold mb-2">Explicação:</h4>
+                                    <p className="whitespace-pre-wrap">{ref.refutationText}</p>
+                                  </div>
+                                  {ref.evidenceLinks && (
+                                    <div className="rounded-md border p-4 text-sm">
+                                      <h4 className="font-semibold mb-2">Provas/Links:</h4>
+                                      <p className="whitespace-pre-wrap">{ref.evidenceLinks}</p>
+                                    </div>
+                                  )}
+                                </div>
+                                <DialogFooter className="gap-2">
+                                  <Button variant="outline" className="text-destructive" onClick={() => { handleUpdateRefutationStatus(ref.id, 'rejected'); setViewingRefutation(null); }}>
+                                    <XCircle className="mr-2 h-4 w-4" /> Rejeitar
+                                  </Button>
+                                  <Button variant="default" onClick={() => { handleUpdateRefutationStatus(ref.id, 'approved'); setViewingRefutation(null); }}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4" /> Aprovar
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -34,6 +34,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { RefutationDialog } from '@/components/RefutationDialog';
 
 function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   const { t, language } = useTranslation();
@@ -312,39 +313,42 @@ export default function DashboardPage() {
             {t('dashboard.generateBtn')}
           </Button>
           {chartResponse?.isChartable && user && (
-            <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Save className="mr-2 h-4 w-4" />
-                  {t('dashboard.saveToDash')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('dashboard.saveDialogTitle')}</DialogTitle>
-                  <DialogDescription>{t('dashboard.saveDialogDesc')}</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="view-name">{t('dashboard.viewName')}</Label>
-                    <Input id="view-name" value={newViewName} onChange={(e) => setNewViewName(e.target.value)} />
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="view-description">{t('dashboard.viewDescription')}</Label>
-                    <Textarea id="view-description" value={newViewDescription} onChange={(e) => setNewViewDescription(e.target.value)} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="ghost">{t('common.cancel')}</Button>
-                  </DialogClose>
-                  <Button onClick={handleSaveView} disabled={isSaving}>
-                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('common.save')}
+            <div className="flex gap-2">
+              <RefutationDialog contentId={`chart-${chartResponse.chartTitle}`} />
+              <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Save className="mr-2 h-4 w-4" />
+                    {t('dashboard.saveToDash')}
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t('dashboard.saveDialogTitle')}</DialogTitle>
+                    <DialogDescription>{t('dashboard.saveDialogDesc')}</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="view-name">{t('dashboard.viewName')}</Label>
+                      <Input id="view-name" value={newViewName} onChange={(e) => setNewViewName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="view-description">{t('dashboard.viewDescription')}</Label>
+                      <Textarea id="view-description" value={newViewDescription} onChange={(e) => setNewViewDescription(e.target.value)} />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="ghost">{t('common.cancel')}</Button>
+                    </DialogClose>
+                    <Button onClick={handleSaveView} disabled={isSaving}>
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t('common.save')}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </CardFooter>
       </Card>
@@ -366,8 +370,13 @@ export default function DashboardPage() {
           chartResponse.isChartable && chartResponse.chartData ? (
             <Card>
               <CardHeader>
-                <CardTitle>{chartResponse.chartTitle}</CardTitle>
-                <CardDescription>{chartResponse.explanation}</CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>{chartResponse.chartTitle}</CardTitle>
+                    <CardDescription>{chartResponse.explanation}</CardDescription>
+                  </div>
+                  <RefutationDialog contentId={`chart-${chartResponse.chartTitle}`} />
+                </div>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={dynamicChartConfig} className="h-[350px] w-full">
@@ -437,8 +446,13 @@ export default function DashboardPage() {
               return (
                 <Card key={view.id}>
                   <CardHeader>
-                    <CardTitle>{view.name}</CardTitle>
-                    <CardDescription>{view.description || savedChartResponse.explanation}</CardDescription>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>{view.name}</CardTitle>
+                        <CardDescription>{view.description || savedChartResponse.explanation}</CardDescription>
+                      </div>
+                      <RefutationDialog contentId={`saved-view-${view.id}`} />
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <ChartContainer config={savedChartConfig} className="h-[350px] w-full">

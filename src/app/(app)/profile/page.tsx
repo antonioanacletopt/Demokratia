@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -65,7 +64,7 @@ export default function ProfilePage() {
   }, [user, isUserLoading, router]);
 
   const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'userProfiles', user.uid) : null),
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
   
@@ -151,7 +150,7 @@ export default function ProfilePage() {
       }
 
       // Delete profile
-      batch.delete(doc(firestore, 'userProfiles', user.uid));
+      batch.delete(doc(firestore, 'users', user.uid));
 
       // Cleanup public messages
       const contactMessagesQuery = query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid));

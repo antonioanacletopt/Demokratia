@@ -16,6 +16,7 @@ import { Loader2, ShieldCheck, History, User, FileText, Check, X, AlertTriangle,
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
+import { RefutationDialog } from '@/components/RefutationDialog';
 
 const verdictConfig = {
   Verdadeiro: { icon: Check, color: 'bg-green-100 text-green-800' },
@@ -99,7 +100,12 @@ export default function FactCheckPage() {
         {isPending && <Skeleton className="h-40 w-full" />}
         {result && (
           <Card>
-            <CardHeader><CardTitle>{t('factCheck.resultTitle')}</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <CardTitle>{t('factCheck.resultTitle')}</CardTitle>
+                <RefutationDialog contentId={`factcheck-${claim}`} />
+              </div>
+            </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-2">{t('factCheck.verdict')}</h3>
@@ -132,9 +138,12 @@ export default function FactCheckPage() {
           {!user ? <p>{t('nav.login')}</p> : history && history.length > 0 ? (
             <div className="space-y-4">
               {history.map((h: any) => (
-                <div key={h.id} className="p-4 border rounded-lg">
-                  <p className="font-medium italic mb-2">"{h.claim}"</p>
-                  <Badge>{h.verdict}</Badge>
+                <div key={h.id} className="p-4 border rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-medium italic mb-2">"{h.claim}"</p>
+                    <Badge>{h.verdict}</Badge>
+                  </div>
+                  <RefutationDialog contentId={`factcheck-${h.claim}`} />
                 </div>
               ))}
             </div>

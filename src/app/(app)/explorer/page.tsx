@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
+import { RefutationDialog } from '@/components/RefutationDialog';
 
 interface StatisticalData {
   id: string;
@@ -150,8 +151,9 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="space-y-4 px-4 relative">
-        {language !== 'pt' && (
-          <div className="flex justify-end pt-2">
+        <div className="flex justify-end gap-2 pt-2">
+            <RefutationDialog contentId={`dataset-${dataset.id}`} />
+            {language !== 'pt' && (
               <Button 
                   variant="ghost" 
                   size="sm" 
@@ -162,8 +164,8 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
                   {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
                   {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
               </Button>
-          </div>
-        )}
+            )}
+        </div>
         <p className="text-sm text-muted-foreground">{currentDesc}</p>
         <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
@@ -260,8 +262,11 @@ export default function ExplorerPage() {
             {aiResponse && !isAiLoading && (
               <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
                 <Bot className="h-4 w-4" />
-                <AlertTitle>{t('common.aiResponse')}</AlertTitle>
-                <AlertDescription>
+                <div className="flex justify-between items-start w-full">
+                  <AlertTitle>{t('common.aiResponse')}</AlertTitle>
+                  <RefutationDialog contentId={`ai-stat-${statRequest}`} />
+                </div>
+                <AlertDescription className="mt-2">
                   <p className="mb-2">{aiResponse.explanation}</p>
                   {aiResponse.isFound && aiResponse.data && (
                     <div className="mt-4 space-y-2">

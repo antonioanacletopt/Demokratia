@@ -209,6 +209,21 @@ export const translations = {
       deleteConfirm: 'Tem a certeza absoluta?',
       deleteConfirmBtn: 'Sim, apagar tudo'
     },
+    refutation: {
+      title: 'Refutar Informação',
+      description: 'Acredita que esta informação da IA está incorreta ou incompleta? Submeta a sua correção.',
+      label: 'A sua explicação detalhada',
+      evidence: 'Provas / Links / Dados de suporte',
+      submitBtn: 'Submeter Refutação',
+      refuteBtn: 'Refutar esta informação',
+      status: {
+        pending: 'Pendente',
+        approved: 'Aprovada',
+        rejected: 'Rejeitada'
+      },
+      noRefutations: 'Nenhuma refutação para analisar.',
+      adminTitle: 'Gestão de Refutações'
+    },
     privacy: {
       title: 'Política de Privacidade e Cookies',
       intro: 'O Demokratia Portugal valoriza a sua privacidade. Esta política descreve como tratamos os seus dados.',
@@ -439,6 +454,21 @@ export const translations = {
       deleteWarning: 'This action is irreversible and will delete all your data.',
       deleteConfirm: 'Are you absolutely sure?',
       deleteConfirmBtn: 'Yes, delete everything'
+    },
+    refutation: {
+      title: 'Refute Information',
+      description: 'Do you believe this AI information is incorrect or incomplete? Submit your correction.',
+      label: 'Your detailed explanation',
+      evidence: 'Evidence / Links / Supporting data',
+      submitBtn: 'Submit Refutation',
+      refuteBtn: 'Refute this info',
+      status: {
+        pending: 'Pending',
+        approved: 'Approved',
+        rejected: 'Rejected'
+      },
+      noRefutations: 'No refutations to review.',
+      adminTitle: 'Refutations Management'
     },
     privacy: {
       title: 'Privacy & Cookie Policy',
