@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, serverTimestamp, addDoc, query, where } from 'firebase/firestore';
+import { collection, serverTimestamp, query, where } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, History, User, FileText, Mail } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2, Send, History, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
 
 const contactFormSchema = z.object({
   subject: z.string().min(5),
@@ -45,26 +43,32 @@ export default function ContactPage() {
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = (data: z.infer<typeof contactFormSchema>) => {
     if (!user || !firestore) return;
     setIsSaving(true);
-    try {
-      await addDoc(collection(firestore, 'contactMessages'), {
-        userId: user.uid,
-        userName: user.displayName,
-        userEmail: user.email,
-        subject: data.subject,
-        message: data.message,
-        status: 'new',
-        createdAt: serverTimestamp(),
+
+    const contactMessagesCollection = collection(firestore, 'contactMessages');
+    const messageData = {
+      userId: user.uid,
+      userName: user.displayName || 'Anon',
+      userEmail: user.email,
+      subject: data.subject,
+      message: data.message,
+      status: 'new',
+      createdAt: serverTimestamp(),
+    };
+
+    addDocumentNonBlocking(contactMessagesCollection, messageData)
+      .then(() => {
+        toast({ title: t('common.success') });
+        form.reset();
+      })
+      .catch((error) => {
+        // O erro já é emitido pelo non-blocking-updates, mas podemos tratar feedback local se necessário
+      })
+      .finally(() => {
+        setIsSaving(false);
       });
-      toast({ title: t('common.success') });
-      form.reset();
-    } catch (e) {
-      toast({ variant: 'destructive', title: t('common.error') });
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return (
