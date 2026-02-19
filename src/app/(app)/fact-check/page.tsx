@@ -3,17 +3,16 @@
 import { useState, useTransition, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { getFactCheck } from '@/lib/actions';
+import { collection, serverTimestamp, addDoc, query, where, limit, getDocs } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { getFactCheck, getTranslation } from '@/lib/actions';
 import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, User, FileText, Check, X, AlertTriangle, HelpCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -24,6 +23,124 @@ const verdictConfig = {
   Enganador: { icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-800' },
   'Sem Evidência': { icon: HelpCircle, color: 'bg-gray-100 text-gray-800' },
 };
+
+function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, claim: string }) {
+  const { t, language } = useTranslation();
+  const firestore = useFirestore();
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ verdict: string, explanation: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
+  useEffect(() => {
+    if (language === 'en' && result) {
+      const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const targetLang = 'English';
+        
+        const fetchCached = async (text: string) => {
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+
+        const [tVerdict, tExpl] = await Promise.all([
+          fetchCached(result.verdict),
+          fetchCached(result.explanation)
+        ]);
+
+        if (tVerdict && tExpl) {
+          setTranslated({ verdict: tVerdict, explanation: tExpl });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, result, firestore]);
+
+  const handleTranslate = () => {
+    startTransition(async () => {
+      const resVerdict = await getTranslation(result.verdict, language);
+      const resExpl = await getTranslation(result.explanation, language);
+      
+      setTranslated({ verdict: resVerdict, explanation: resExpl });
+      setShowOriginal(false);
+
+      const cacheRef = collection(firestore, 'translations_cache');
+      const targetLang = language === 'en' ? 'English' : 'Portuguese';
+      
+      const saveToCache = (orig: string, trans: string) => {
+        addDoc(cacheRef, {
+          originalText: orig,
+          translatedText: trans,
+          targetLanguage: targetLang,
+          createdAt: serverTimestamp()
+        });
+      };
+
+      saveToCache(result.verdict, resVerdict);
+      saveToCache(result.explanation, resExpl);
+    });
+  };
+
+  const currentVerdict = !showOriginal && translated ? translated.verdict : result.verdict;
+  const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
+
+  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || { icon: HelpCircle, color: 'bg-gray-100 text-gray-800' };
+  const VerdictIcon = config.icon;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <CardTitle>{t('factCheck.resultTitle')}</CardTitle>
+          <div className="flex gap-2">
+            <RefutationDialog contentId={`factcheck-${claim}`} />
+            {language !== 'pt' && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating}
+                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+              >
+                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div>
+          <h3 className="font-semibold mb-2">{t('factCheck.verdict')}</h3>
+          <div className={`flex items-center gap-2 p-3 rounded-md border ${config.color}`}>
+            <VerdictIcon className="h-6 w-6" />
+            <span className="font-bold">{currentVerdict}</span>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-2">{t('factCheck.explanation')}</h3>
+          <p className="text-muted-foreground whitespace-pre-wrap">{currentExplanation}</p>
+        </div>
+        <div>
+          <h3 className="font-semibold mb-2">{t('factCheck.sources')}</h3>
+          <ul className="space-y-1">
+            {result.sources.map((s, i) => (
+              <li key={i}>
+                <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all">
+                  {s}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function FactCheckPage() {
   const { t, language } = useTranslation();
@@ -59,8 +176,6 @@ export default function FactCheckPage() {
       }
     });
   };
-
-  const VerdictIcon = result?.verdict ? (verdictConfig[result.verdict as keyof typeof verdictConfig]?.icon || HelpCircle) : null;
 
   return (
     <div className="space-y-8">
@@ -98,35 +213,7 @@ export default function FactCheckPage() {
 
       <div ref={resultRef}>
         {isPending && <Skeleton className="h-40 w-full" />}
-        {result && (
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle>{t('factCheck.resultTitle')}</CardTitle>
-                <RefutationDialog contentId={`factcheck-${claim}`} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">{t('factCheck.verdict')}</h3>
-                <div className={`flex items-center gap-2 p-3 rounded-md border ${result.verdict ? (verdictConfig[result.verdict as keyof typeof verdictConfig]?.color || '') : ''}`}>
-                  {VerdictIcon && <VerdictIcon className="h-6 w-6" />}
-                  <span className="font-bold">{result.verdict}</span>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">{t('factCheck.explanation')}</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">{result.explanation}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">{t('factCheck.sources')}</h3>
-                <ul className="space-y-1">
-                  {result.sources.map((s, i) => <li key={i}><Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all">{s}</Link></li>)}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {result && <FactCheckResultDisplay result={result} claim={claim} />}
       </div>
 
       <Card>

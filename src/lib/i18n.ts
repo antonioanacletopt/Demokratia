@@ -83,7 +83,7 @@ export const translations = {
     },
     admin: {
       title: 'Painel de Administração', description: 'Bem-vindo, António. Gestão centralizada da plataforma.',
-      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)' },
+      tabs: { refutations: 'Refutations', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)' },
       refutationsDesc: 'Analise as correções e evidências submetidas pela comunidade.',
       reviewTitle: 'Revisão de Refutação', reviewBy: 'Enviada por', userExplanation: 'Explicação do Utilizador:',
       evidenceLinks: 'Links e Provas:', reject: 'Rejeitar', approve: 'Aprovar e Publicar',
