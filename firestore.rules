@@ -44,7 +44,7 @@ service cloud.firestore {
       allow list: if isAdmin() || isSignedIn();
       allow get: if (resource.data.status == 'approved') || isOwner(resource.data.userId) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+      allow update, delete: if isAdmin() || isOwner(resource.data.userId);
     }
 
     // Mensagens de Contacto
@@ -52,18 +52,18 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow get: if isOwner(resource.data.userId) || isAdmin();
       allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     // Propostas da Comunidade
     match /communityProposals/{proposalId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn(); // Para votar ou editar
+      allow update: if isSignedIn(); 
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
-    // Cache de Traduções e Notícias (Público/Autenticado)
+    // Cache de Traduções e Notícias
     match /translations_cache/{id} {
       allow read: if true;
       allow create: if isSignedIn();
@@ -104,7 +104,7 @@ service cloud.firestore {
     // Funções Administrativas
     match /roles_admin/{userId} {
       allow get: if isOwner(userId) || isAdmin();
-      allow write: if isAdmin() || (isSignedIn() && request.auth.token.email == 'antonio.anacleto@gmail.com');
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == 'id5hDeMIVZeR9i9HG5vvqnjEto32');
     }
   }
 }

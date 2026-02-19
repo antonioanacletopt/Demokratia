@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { systemDataSources } from '@/lib/system-data-sources';
@@ -27,7 +27,7 @@ export default function SeedPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
+    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
       toast({
         variant: 'destructive',
         title: 'Acesso Negado',
@@ -93,7 +93,7 @@ export default function SeedPage() {
     toast({ title: 'A carregar fontes...' });
     try {
       for (const source of systemDataSources) {
-        const id = source.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
+        const id = source.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
         const docRef = doc(firestore, 'dataSources', id);
         await setDoc(docRef, { ...source, id }, { merge: true });
       }
@@ -103,7 +103,7 @@ export default function SeedPage() {
     } finally { setIsSeedingSources(false); }
   };
 
-  if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
+  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
     return (
       <div className="flex h-screen items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />

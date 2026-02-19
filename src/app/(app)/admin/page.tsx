@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, serverTimestamp, query, where, orderBy } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc, serverTimestamp, query, where, orderBy, getDocs, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
@@ -30,7 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Globe, Server, Database, Inbox, MailWarning, MailCheck, Archive, Search, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -152,12 +152,7 @@ export default function AdminPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
-  const [viewingMessage, setViewingMessage] = useState<ContactMessage | null>(null);
   const [viewingRefutation, setViewingRefutation] = useState<Refutation | null>(null);
-
-  const [dataSourceSearch, setDataSourceSearch] = useState('');
-  const [messageSearch, setMessageSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'read' | 'archived'>('all');
 
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
   const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<DataSource>(dataSourcesCollection);
@@ -178,26 +173,8 @@ export default function AdminPage() {
     return [...refutations].sort((a, b) => (b.submissionDate?.seconds || 0) - (a.submissionDate?.seconds || 0));
   }, [refutations]);
 
-  const filteredDataSources = useMemo(() => {
-    if (!dataSources) return [];
-    if (!dataSourceSearch.trim()) return dataSources;
-    const lowercased = dataSourceSearch.toLowerCase();
-    return dataSources.filter(source => source.name.toLowerCase().includes(lowercased));
-  }, [dataSources, dataSourceSearch]);
-
-  const filteredMessages = useMemo(() => {
-    if (!sortedMessages) return [];
-    return sortedMessages.filter(msg => {
-      const matchesFilter = statusFilter === 'all' || msg.status === statusFilter;
-      if (!matchesFilter) return false;
-      if (!messageSearch.trim()) return true;
-      const lowercased = messageSearch.toLowerCase();
-      return msg.subject.toLowerCase().includes(lowercased) || msg.userName.toLowerCase().includes(lowercased);
-    });
-  }, [sortedMessages, messageSearch, statusFilter]);
-
   useEffect(() => {
-    if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
+    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
       toast({ variant: 'destructive', title: 'Acesso Negado' });
       router.replace('/home');
     }
@@ -259,7 +236,17 @@ export default function AdminPage() {
     toast({ title: 'Refutação atualizada!' });
   };
 
-  if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
+  const handleDeleteDataSource = (id: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'dataSources', id));
+    toast({ title: 'Fonte apagada.' });
+  };
+
+  const handleUpdateMessageStatus = (id: string, status: 'read' | 'archived') => {
+    updateDocumentNonBlocking(doc(firestore, 'contactMessages', id), { status });
+    toast({ title: 'Mensagem atualizada!' });
+  };
+
+  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
     return <div className="flex h-full items-center justify-center py-12"><Loader2 className="animate-spin" /></div>;
   }
 
@@ -269,7 +256,7 @@ export default function AdminPage() {
       <Tabs defaultValue="refutations" className="space-y-6">
         <TabsList>
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />Refutações</TabsTrigger>
-          <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />Dados</TabsTrigger>
+          <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />Dados e Fontes</TabsTrigger>
           <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />Mensagens</TabsTrigger>
         </TabsList>
 
@@ -313,29 +300,42 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="sources" className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6">
             <Card>
-              <CardHeader><CardTitle>Carregamento de Dados</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Carregamento Inicial (Seed)</CardTitle><CardDescription>Popula a base de dados com indicadores de 2026 e fontes oficiais.</CardDescription></CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-3">
-                <Button onClick={handleSeedPublicData} disabled={isSeedingPublic}>Indicadores</Button>
-                <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats}>Estatísticas</Button>
-                <Button onClick={handleSeedDataSources} disabled={isSeedingSources}>Fontes</Button>
+                <Button onClick={handleSeedPublicData} disabled={isSeedingPublic}>Carregar Indicadores</Button>
+                <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats}>Carregar Estatísticas</Button>
+                <Button onClick={handleSeedDataSources} disabled={isSeedingSources}>Carregar Fontes</Button>
               </CardContent>
             </Card>
+            
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Fontes de Dados</CardTitle>
-                <Button size="sm" onClick={() => setIsFormOpen(true)}><PlusCircle className="mr-2 h-4 w-4" />Adicionar</Button>
+                <div><CardTitle>Fontes de Dados</CardTitle><CardDescription>Gira as fontes oficiais ligadas à plataforma.</CardDescription></div>
+                <Button size="sm" onClick={() => { setEditingSource(undefined); setIsFormOpen(true); }}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Fonte</Button>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table>
-                  <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                  <TableBody>{filteredDataSources.map(s => (
-                    <TableRow key={s.id}><TableCell>{s.name}</TableCell><TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                    </TableCell></TableRow>
-                  ))}</TableBody>
-                </Table></div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Tipo</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {isLoadingDataSources ? <TableRow><TableCell colSpan={3} className="text-center py-4">A carregar...</TableCell></TableRow> : dataSources?.map(s => (
+                        <TableRow key={s.id}>
+                          <TableCell className="font-medium">{s.name}</TableCell>
+                          <TableCell><Badge variant="outline">{s.type}</Badge></TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                              <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Apagar Fonte?</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteDataSource(s.id)}>Apagar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -343,18 +343,29 @@ export default function AdminPage() {
 
         <TabsContent value="messages" className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Mensagens</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Caixa de Entrada</CardTitle><CardDescription>Mensagens de contacto enviadas pelos utilizadores.</CardDescription></CardHeader>
             <CardContent>
-              <div className="rounded-md border"><Table>
-                <TableHeader><TableRow><TableHead>De</TableHead><TableHead>Assunto</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-                <TableBody>{filteredMessages.map(m => (
-                  <TableRow key={m.id}><TableCell>{m.userName}</TableCell><TableCell>{m.subject}</TableCell>
-                    <TableCell className="text-right">
-                      <Dialog><DialogTrigger asChild><Button variant="ghost">Ver</Button></DialogTrigger>
-                      <DialogContent><DialogHeader><DialogTitle>{m.subject}</DialogTitle></DialogHeader><div className="bg-muted p-4 rounded">{m.message}</div></DialogContent></Dialog>
-                    </TableCell></TableRow>
-                ))}</TableBody>
-              </Table></div>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader><TableRow><TableHead>De</TableHead><TableHead>Assunto</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {isLoadingMessages ? <TableRow><TableCell colSpan={4} className="text-center py-4">A carregar...</TableCell></TableRow> : sortedMessages.map(m => (
+                      <TableRow key={m.id} className={m.status === 'new' ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}>
+                        <TableCell>{m.userName}</TableCell>
+                        <TableCell>{m.subject}</TableCell>
+                        <TableCell><Badge variant={m.status === 'new' ? 'default' : 'secondary'}>{statusConfig[m.status].label}</Badge></TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Dialog>
+                            <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => m.status === 'new' && handleUpdateMessageStatus(m.id, 'read')}>Ver</Button></DialogTrigger>
+                            <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{m.subject}</DialogTitle><DialogDescription>De: {m.userName} ({m.userEmail})</DialogDescription></DialogHeader><div className="bg-muted p-4 rounded-md whitespace-pre-wrap mt-4">{m.message}</div></DialogContent>
+                          </Dialog>
+                          {m.status !== 'archived' && <Button variant="ghost" size="icon" onClick={() => handleUpdateMessageStatus(m.id, 'archived')}><Archive className="h-4 w-4" /></Button>}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
