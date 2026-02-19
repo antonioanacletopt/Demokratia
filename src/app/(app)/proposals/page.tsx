@@ -51,22 +51,15 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
     if (language === 'en') {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
-        const targetLang = 'English';
-        
-        const fetchCached = async (text: string) => {
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
-          const snap = await getDocs(q);
-          return !snap.empty ? snap.docs[0].data().translatedText : null;
-        };
-
-        const [tTitle, tDesc] = await Promise.all([
-          fetchCached(originalTitle),
-          fetchCached(originalDescription)
-        ]);
-
-        if (tTitle && tDesc) {
-          setTranslated({ title: tTitle, desc: tDesc });
-          setShowOriginal(false);
+        const q = query(cacheRef, where('originalText', '==', originalTitle), where('targetLanguage', '==', 'English'), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const qDesc = query(cacheRef, where('originalText', '==', originalDescription), where('targetLanguage', '==', 'English'), limit(1));
+          const snapDesc = await getDocs(qDesc);
+          if (!snapDesc.empty) {
+            setTranslated({ title: snap.docs[0].data().translatedText, desc: snapDesc.docs[0].data().translatedText });
+            setShowOriginal(false);
+          }
         }
       };
       checkCache();
@@ -80,24 +73,11 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
     startTransition(async () => {
       const resTitle = await getTranslation(originalTitle, language);
       const resDesc = await getTranslation(originalDescription, language);
-      
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
-
       const cacheRef = collection(firestore, 'translations_cache');
-      const targetLang = language === 'en' ? 'English' : 'Portuguese';
-      
-      const saveToCache = (orig: string, trans: string) => {
-        addDoc(cacheRef, {
-          originalText: orig,
-          translatedText: trans,
-          targetLanguage: targetLang,
-          createdAt: serverTimestamp()
-        });
-      };
-
-      saveToCache(originalTitle, resTitle);
-      saveToCache(originalDescription, resDesc);
+      addDoc(cacheRef, { originalText: originalTitle, translatedText: resTitle, targetLanguage: 'English', createdAt: serverTimestamp() });
+      addDoc(cacheRef, { originalText: originalDescription, translatedText: resDesc, targetLanguage: 'English', createdAt: serverTimestamp() });
     });
   };
 
@@ -107,16 +87,10 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-start gap-4">
-        <CardTitle className="pt-0 text-xl">{currentTitle}</CardTitle>
+        <CardTitle className="text-xl">{currentTitle}</CardTitle>
         {language !== 'pt' && (
-          <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-              disabled={isTranslating} 
-              className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
-          >
-            {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+          <Button variant="ghost" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0">
+            {isTranslating ? <Loader2 className="animate-spin h-3 w-3" /> : (translated ? <RefreshCw className="h-3 w-3" /> : <Languages className="h-3 w-3" />)}
             {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
           </Button>
         )}
@@ -148,7 +122,7 @@ export default function ProposalsPage() {
     if (!proposals) return [];
     if (!searchTerm.trim()) return proposals;
     const low = searchTerm.toLowerCase();
-    return proposals.filter(p => p.title.toLowerCase().includes(low) || p.description.toLowerCase().includes(low) || p.userName.toLowerCase().includes(low));
+    return proposals.filter(p => p.title.toLowerCase().includes(low) || p.description.toLowerCase().includes(low));
   }, [proposals, searchTerm]);
   
   const form = useForm<ProposalFormValues>({
@@ -156,31 +130,14 @@ export default function ProposalsPage() {
     defaultValues: { title: '', description: '' },
   });
 
-  const handleOpenEditDialog = (proposal: CommunityProposal) => {
-    setEditingProposal(proposal);
-    form.reset({ title: proposal.title, description: proposal.description });
-  };
-
-  const handleCloseEditDialog = () => {
-    setEditingProposal(null);
-    form.reset({ title: '', description: '' });
-  };
-  
   const handleNewProposalSubmit = async (values: ProposalFormValues) => {
     if (!user || !firestore) return;
     setIsSubmitting(true);
-    const data = {
-      userId: user.uid,
-      userName: user.displayName || 'Anon',
-      userPhotoURL: user.photoURL || '',
-      title: values.title,
-      description: values.description,
-      createdAt: serverTimestamp(),
-      voteCount: 0,
-      votedBy: [],
-    };
     try {
-        await addDoc(collection(firestore, 'communityProposals'), data);
+        await addDoc(collection(firestore, 'communityProposals'), {
+          userId: user.uid, userName: user.displayName || 'Anon', userPhotoURL: user.photoURL || '',
+          title: values.title, description: values.description, createdAt: serverTimestamp(), voteCount: 0, votedBy: [],
+        });
         toast({ title: t('common.success') });
         form.reset();
     } finally { setIsSubmitting(false); }
@@ -192,22 +149,13 @@ export default function ProposalsPage() {
     try {
         await updateDoc(doc(firestore, 'communityProposals', editingProposal.id), values);
         toast({ title: t('common.success') });
-        handleCloseEditDialog();
+        setEditingProposal(null);
     } finally { setIsEditing(false); }
-  };
-
-  const handleDeleteProposal = async (id: string) => {
-    if (!user || !firestore) return;
-    await deleteDoc(doc(firestore, 'communityProposals', id));
-    toast({ title: t('common.success') });
   };
 
   const handleVote = async (id: string) => {
     if (!user || !firestore) return;
-    await updateDoc(doc(firestore, 'communityProposals', id), {
-        voteCount: increment(1),
-        votedBy: arrayUnion(user.uid)
-    });
+    await updateDoc(doc(firestore, 'communityProposals', id), { voteCount: increment(1), votedBy: arrayUnion(user.uid) });
     toast({ title: t('proposals.votedBtn') });
   };
   
@@ -218,81 +166,57 @@ export default function ProposalsPage() {
         <p className="text-muted-foreground">{t('proposals.description')}</p>
       </div>
 
-      <Dialog open={!!editingProposal} onOpenChange={(open) => !open && handleCloseEditDialog()}>
+      <Dialog open={!!editingProposal} onOpenChange={(o) => !o && setEditingProposal(null)}>
         <DialogContent>
             <DialogHeader><DialogTitle>{t('proposals.editTitle')}</DialogTitle></DialogHeader>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleEditProposalSubmit)} className="space-y-4 pt-4">
-                    <FormField control={form.control} name="title" render={({ field }) => (
-                        <FormItem><FormLabel>{t('proposals.titleLabel')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="description" render={({ field }) => (
-                        <FormItem><FormLabel>{t('proposals.descLabel')}</FormLabel><FormControl><Textarea rows={6} {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <DialogFooter>
-                        <Button type="submit" disabled={isEditing}>{isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('common.save')}</Button>
-                    </DialogFooter>
-                </form>
-            </Form>
+            <Form {...form}><form onSubmit={form.handleSubmit(handleEditProposalSubmit)} className="space-y-4 pt-4">
+                <FormField control={form.control} name="title" render={({ field }) => (
+                    <FormItem><FormLabel>{t('proposals.titleLabel')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem><FormLabel>{t('proposals.descLabel')}</FormLabel><FormControl><Textarea rows={6} {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <DialogFooter><Button type="submit" disabled={isEditing}>{isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('common.save')}</Button></DialogFooter>
+            </form></Form>
         </DialogContent>
       </Dialog>
 
       <Card>
         <CardHeader><CardTitle>{t('proposals.newTitle')}</CardTitle></CardHeader>
         { user ? (
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleNewProposalSubmit)}>
-                    <CardContent className="space-y-4">
-                        <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem><FormLabel>{t('proposals.titleLabel')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={form.control} name="description" render={({ field }) => (
-                            <FormItem><FormLabel>{t('proposals.descLabel')}</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                    </CardContent>
-                    <CardFooter><Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('proposals.submitBtn')}</Button></CardFooter>
-                </form>
-            </Form>
+            <Form {...form}><form onSubmit={form.handleSubmit(handleNewProposalSubmit)}>
+                <CardContent className="space-y-4">
+                    <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>{t('proposals.titleLabel')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('proposals.descLabel')}</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                </CardContent>
+                <CardFooter><Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('proposals.submitBtn')}</Button></CardFooter>
+            </form></Form>
         ) : <CardContent><p className="text-muted-foreground">{t('nav.login')}</p></CardContent> }
       </Card>
 
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className="text-2xl font-bold">{t('proposals.communityTitle')}</h2>
-          <Input className="w-full sm:w-72" placeholder={t('proposals.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-        </div>
+        <div className="flex justify-between items-center"><h2 className="text-2xl font-bold">{t('proposals.communityTitle')}</h2>
+        <Input className="w-72" placeholder={t('proposals.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
         
-        {isLoadingProposals && (
-             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
-                <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
-             </div>
-        )}
+        {isLoadingProposals && <div className="grid gap-6 md:grid-cols-2">
+          <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader></Card>
+          <Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader></Card>
+        </div>}
 
-        {!isLoadingProposals && filteredProposals && filteredProposals.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {!isLoadingProposals && filteredProposals.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2">
             {filteredProposals.map((p) => {
                const hasVoted = !!(user && p.votedBy?.includes(user.uid));
                const isOwner = !!(user && user.uid === p.userId);
                return (
               <Card key={p.id} className="flex flex-col">
-                <CardHeader>
-                    <div className="flex justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar><AvatarImage src={p.userPhotoURL} /><AvatarFallback>{p.userName[0]}</AvatarFallback></Avatar>
-                            <div><p className="font-semibold">{p.userName}</p></div>
-                        </div>
-                        {isOwner && <div className="flex"><Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(p)}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDeleteProposal(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>}
-                    </div>
-                </CardHeader>
+                <CardHeader><div className="flex justify-between items-center"><div className="flex items-center gap-3"><Avatar><AvatarImage src={p.userPhotoURL} /><AvatarFallback>{p.userName[0]}</AvatarFallback></Avatar><div><p className="font-semibold">{p.userName}</p></div></div>
+                {isOwner && <div className="flex"><Button variant="ghost" size="icon" onClick={() => { setEditingProposal(p); form.reset({ title: p.title, description: p.description }); }}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteDoc(doc(firestore, 'communityProposals', p.id))}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>}
+                </div></CardHeader>
                 <CardContent className="flex-grow"><TranslatedContent originalTitle={p.title} originalDescription={p.description} /></CardContent>
-                <CardFooter className="flex justify-between bg-muted/50 p-4 rounded-b-lg">
-                    <div className="flex items-center gap-2 font-bold"><ThumbsUp className="h-4 w-4" />{p.voteCount}</div>
-                    <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" asChild><Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('common.simulate')}</Link></Button>
-                        <Button size="sm" onClick={() => handleVote(p.id)} disabled={!user || hasVoted || isOwner}>{hasVoted ? t('common.supported') : t('common.support')}</Button>
-                    </div>
-                </CardFooter>
+                <CardFooter className="flex justify-between bg-muted/50 p-4"><div className="flex items-center gap-2 font-bold"><ThumbsUp className="h-4 w-4" />{p.voteCount}</div>
+                <div className="flex gap-2"><Button variant="secondary" size="sm" asChild><Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('common.simulate')}</Link></Button>
+                <Button size="sm" onClick={() => handleVote(p.id)} disabled={!user || hasVoted || isOwner}>{hasVoted ? t('common.supported') : t('common.support')}</Button></div></CardFooter>
               </Card>
             )})}
           </div>

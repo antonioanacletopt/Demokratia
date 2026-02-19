@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>1. {t('common.language')}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>1. Introdução</CardTitle></CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>{t('privacy.intro')}</p>
         </CardContent>
@@ -44,9 +44,7 @@ export default function PrivacyPage() {
         <CardHeader><CardTitle>5. {t('privacy.rightsTitle')}</CardTitle></CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>{t('privacy.rightsDesc')}</p>
-          <p>
-            <Link href="/profile" className="text-primary hover:underline font-medium">{t('nav.profile')}</Link>
-          </p>
+          <p>Para exercer estes direitos, visite a página de <Link href="/profile" className="text-primary hover:underline font-medium">{t('nav.profile')}</Link>.</p>
         </CardContent>
       </Card>
     </div>

@@ -12,7 +12,7 @@ export default function TermsPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>1. {t('common.accept')}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>1. Aceitação</CardTitle></CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p>{t('terms.intro')}</p>
         </CardContent>

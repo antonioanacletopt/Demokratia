@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, serverTimestamp, doc } from 'firebase/firestore';
-import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useTranslation } from '@/lib/i18n';
 
