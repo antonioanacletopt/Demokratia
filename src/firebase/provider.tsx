@@ -2,11 +2,9 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { Firestore } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -81,42 +79,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => { // Auth state determined
-        if (firebaseUser) {
-          // This logic now checks if a profile exists before writing.
-          // This prevents a write loop that was causing high requests and errors.
-          const userProfileRef = doc(firestore, "userProfiles", firebaseUser.uid);
-          
-          getDoc(userProfileRef).then(docSnap => {
-            if (!docSnap.exists()) {
-              // The profile doesn't exist, create it once.
-              const profileData = { 
-                id: firebaseUser.uid,
-                email: firebaseUser.email || "",
-                displayName: firebaseUser.displayName || "Novo Utilizador",
-                preferredLanguage: 'pt',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                notificationPreferences: {
-                    emailNotifications: true,
-                    weeklyNewsletter: true,
-                },
-              };
-              setDoc(userProfileRef, profileData)
-                .catch(serverError => {
-                    const permissionError = new FirestorePermissionError({
-                    path: userProfileRef.path,
-                    operation: 'create',
-                    requestResourceData: profileData,
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-            }
-          }).catch(error => {
-            // This catch is for getDoc() failing, which might also be a permission issue.
-            // Although less common for reads on a user's own profile check, it's good practice.
-            console.error("Error checking user profile existence:", error);
-          });
-        }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => { // Auth listener error
@@ -125,7 +87,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [auth, firestore]); // Depends on the auth and firestore instances
+  }, [auth]); // Depends on the auth instance
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
@@ -212,5 +174,3 @@ export const useUser = (): UserHookResult => { // Renamed from useAuthUser
   const { user, isUserLoading, userError } = useFirebase(); // Leverages the main hook
   return { user, isUserLoading, userError };
 };
-
-    
