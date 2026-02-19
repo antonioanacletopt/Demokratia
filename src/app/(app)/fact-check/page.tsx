@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from 'react';
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -51,8 +52,11 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
           fetchCached(result.explanation)
         ]);
 
-        if (tVerdict && tExpl) {
-          setTranslated({ verdict: tVerdict, explanation: tExpl });
+        if (tVerdict || tExpl) {
+          setTranslated({ 
+            verdict: tVerdict || result.verdict, 
+            explanation: tExpl || result.explanation 
+          });
           setShowOriginal(false);
         }
       };
@@ -75,7 +79,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
       const saveToCache = (orig: string, trans: string) => {
-        if (orig.length > MAX_CACHE_LENGTH) return;
+        if (!orig || orig.length > MAX_CACHE_LENGTH) return;
         addDoc(cacheRef, {
           originalText: orig,
           translatedText: trans,
@@ -96,30 +100,35 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   const VerdictIcon = config.icon;
 
   return (
-    <Card className="border-primary/10 shadow-lg">
+    <Card className="border-primary/10 shadow-lg overflow-hidden">
       <CardHeader className="border-b bg-muted/30">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl">{t('factCheck.resultTitle')}</CardTitle>
-            <CardDescription className="italic mt-1">"{claim}"</CardDescription>
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <CardTitle className="text-xl flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                {t('factCheck.resultTitle')}
+            </CardTitle>
+            <CardDescription className="italic mt-1 line-clamp-2">"{claim}"</CardDescription>
           </div>
-          <div className="flex gap-2">
-            <RefutationDialog contentId={`factcheck-${claim}`} />
+          <div className="flex gap-2 shrink-0">
+            <RefutationDialog 
+                contentId={`factcheck-${claim.substring(0, 50)}`} 
+                trigger={
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive">
+                        <MessageSquareWarning className="h-3.5 w-3.5" />
+                        {t('refutation.refuteBtn')}
+                    </Button>
+                }
+            />
             {language !== 'pt' && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
                 disabled={isTranslating}
-                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                className="h-8 gap-1.5 text-xs"
               >
-                {isTranslating ? (
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                ) : translated ? (
-                  <RefreshCw className="mr-1 h-3 w-3" />
-                ) : (
-                  <Languages className="mr-1 h-3 w-3" />
-                )}
+                {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
                 {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
               </Button>
             )}
@@ -128,28 +137,32 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       </CardHeader>
       <CardContent className="space-y-8 pt-6">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('factCheck.verdict')}</h3>
-          <div className={`flex items-center gap-3 p-4 rounded-xl border-2 ${config.color}`}>
-            <VerdictIcon className="h-8 w-8" />
-            <span className="text-2xl font-bold font-headline">{currentVerdict}</span>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.verdict')}</h3>
+          <div className={`flex items-center gap-4 p-5 rounded-2xl border-2 shadow-sm ${config.color}`}>
+            <div className="bg-white/20 p-2 rounded-full">
+                <VerdictIcon className="h-8 w-8" />
+            </div>
+            <span className="text-3xl font-bold font-headline tracking-tight">{currentVerdict}</span>
           </div>
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('factCheck.explanation')}</h3>
-          <div className="bg-muted/50 p-6 rounded-xl border leading-relaxed">
-            <p className="text-foreground whitespace-pre-wrap">{currentExplanation}</p>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.explanation')}</h3>
+          <div className="bg-muted/40 p-6 rounded-2xl border leading-relaxed shadow-inner">
+            <p className="text-foreground whitespace-pre-wrap text-base">{currentExplanation}</p>
           </div>
         </div>
 
         {result.sources && result.sources.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('factCheck.sources')}</h3>
-            <ul className="space-y-2">
+          <div className="pt-4 border-t border-dashed">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t('factCheck.sources')}</h3>
+            <ul className="grid gap-3 sm:grid-cols-1">
               {result.sources.map((s, i) => (
-                <li key={i} className="flex items-center gap-2 group">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
-                  <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium">
+                <li key={i} className="flex items-start gap-3 group">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+                  </div>
+                  <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium leading-tight">
                     {s}
                   </Link>
                 </li>
@@ -158,6 +171,9 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
           </div>
         )}
       </CardContent>
+      <CardFooter className="bg-muted/10 border-t py-3 flex justify-center">
+         <p className="text-[10px] text-muted-foreground italic">Informação gerada por IA com base em fontes públicas disponíveis em tempo real.</p>
+      </CardFooter>
     </Card>
   );
 }
@@ -179,7 +195,7 @@ export default function FactCheckPage() {
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return collection(firestore, 'users', user.uid, 'factChecks');
+    return query(collection(firestore, 'users', user.uid, 'factChecks'), where('userId', '==', user.uid));
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
 
@@ -191,7 +207,10 @@ export default function FactCheckPage() {
       setResult(res);
       if (user && firestore) {
         addDoc(collection(firestore, 'users', user.uid, 'factChecks'), {
-          claim, ...res, createdAt: serverTimestamp()
+          userId: user.uid,
+          claim, 
+          ...res, 
+          createdAt: serverTimestamp()
         }).catch(e => console.warn("Failed to save history", e));
       }
     });
@@ -229,7 +248,7 @@ export default function FactCheckPage() {
           />
         </CardContent>
         <CardFooter className="bg-muted/30 py-4 flex justify-between items-center">
-          <p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais portuguesas para validar a alegação.</p>
+          <p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais portuguesas e analisa o histórico de correções para validar a alegação.</p>
           <Button onClick={handleFactCheck} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">
             {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
             {t('factCheck.checkBtn')}
@@ -241,15 +260,15 @@ export default function FactCheckPage() {
 
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && (
-          <Card>
-            <CardHeader>
+          <Card className="border-primary/10 shadow-lg">
+            <CardHeader className="bg-muted/30">
               <Skeleton className="h-8 w-1/3" />
               <Skeleton className="h-4 w-full mt-2" />
             </CardHeader>
-            <CardContent className="space-y-6">
-              <Skeleton className="h-16 w-full rounded-xl" />
-              <Skeleton className="h-40 w-full rounded-xl" />
-              <div className="space-y-2">
+            <CardContent className="space-y-6 pt-6">
+              <Skeleton className="h-20 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+              <div className="space-y-3">
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
               </div>
@@ -259,39 +278,41 @@ export default function FactCheckPage() {
         {result && <FactCheckResultDisplay result={result} claim={claim} />}
       </div>
 
-      <Card className="border-dashed">
+      <Card className="border-dashed bg-muted/5">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5" />{t('factCheck.historyTitle')}</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5 text-muted-foreground" />{t('factCheck.historyTitle')}</CardTitle>
           <CardDescription>{t('factCheck.historyDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           {!user ? (
-            <div className="text-center py-8 bg-muted/20 rounded-lg border">
-              <p className="text-muted-foreground mb-4">{t('nav.login')}</p>
-              <Button asChild variant="outline" size="sm">
+            <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
+              <p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p>
+              <Button asChild variant="default" size="sm" className="shadow-sm">
                 <Link href="/login">{t('nav.login')}</Link>
               </Button>
             </div>
           ) : history && history.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {history.map((h: any) => (
-                <div key={h.id} className="p-4 border rounded-xl hover:bg-muted/30 transition-colors flex justify-between items-center group">
-                  <div className="max-w-[80%]">
-                    <p className="font-medium italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">"{h.claim}"</p>
-                    <Badge variant={h.verdict === 'Verdadeiro' ? 'default' : 'secondary'} className="text-[10px] uppercase">{h.verdict}</Badge>
+                <div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card">
+                  <div className="max-w-[75%]">
+                    <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">"{h.claim}"</p>
+                    <Badge variant={h.verdict === 'Verdadeiro' ? 'default' : 'secondary'} className="text-[9px] uppercase tracking-wider">{h.verdict}</Badge>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setClaim(h.claim); setResult(h); }}>
-                      <RefreshCw className="h-4 w-4" />
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}>
+                      <RefreshCw className="h-4 w-4 text-primary" />
                     </Button>
-                    <RefutationDialog contentId={`factcheck-${h.claim}`} />
+                    <RefutationDialog contentId={`factcheck-history-${h.id}`} />
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
-              <p>{t('factCheck.noHistoryTitle')}</p>
+            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/10">
+              <HelpCircle className="mx-auto h-10 w-10 opacity-20 mb-3" />
+              <p className="font-medium">{t('factCheck.noHistoryTitle')}</p>
+              <p className="text-xs mt-1">{t('factCheck.noHistoryDesc')}</p>
             </div>
           )}
         </CardContent>

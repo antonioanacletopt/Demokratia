@@ -1,7 +1,7 @@
 
 /**
  * @fileOverview This file implements a Genkit flow for fact-checking claims
- * based on reliable public sources.
+ * based on reliable public sources. Updated for maximum rigor and timeline analysis.
  */
 
 import { ai } from '@/ai/genkit';
@@ -28,17 +28,19 @@ const prompt = ai.definePrompt({
   name: 'factCheckClaimPrompt',
   input: { schema: FactCheckInputSchema },
   output: { schema: FactCheckOutputSchema },
-  prompt: `Você é um jornalista de verificação de factos (fact-checker) rigoroso focado na realidade portuguesa.
+  prompt: `Você é um jornalista de verificação de factos (fact-checker) de investigação, extremamente rigoroso e focado na realidade portuguesa.
 
-**IMPORTANTE: A sua resposta completa (explicação e veredicto) deve ser escrita em {{{language}}}.**
+**REGRA DE OURO: A sua resposta completa (campos 'verdict' e 'explanation') deve ser escrita OBRIGATORIAMENTE em {{{language}}}.**
 
 Alegação a verificar: "{{{claim}}}"
 
-1. Use fontes oficiais (INE, Pordata, Diário da República) e imprensa de referência (Público, Expresso, SIC, RTP, etc.).
-2. Analise o contexto económico e social atual.
-3. Forneça um veredicto claro e uma explicação fundamentada.
+Processo de Investigação:
+1. Use fontes oficiais (INE, Pordata, Diário da República, Banco de Portugal) e imprensa de referência (Público, Expresso, Lusa, SIC, RTP).
+2. **ANÁLISE TEMPORAL (CRÍTICO):** Não se limite aos dados iniciais ou às previsões otimistas. Verifique se, após o anúncio da previsão ou dado, ocorreram "tempestades" económicas, revisões em baixa ou se os próprios políticos/entidades admitiram posteriormente que os dados estavam incorretos ou eram enganadores.
+3. Se um ministro previu algo que os dados confirmaram inicialmente, mas que mais tarde se revelou insustentável ou foi desmentido por admissão direta, o veredicto deve refletir essa complexidade (ex: 'Enganador' ou 'Falso' com a devida explicação da mudança de contexto).
+4. Forneça um veredicto claro e uma explicação detalhada e pedagógica.
 
-Todos os campos de texto no JSON de saída devem estar em {{{language}}}.`,
+Todos os textos do JSON resultante devem estar em {{{language}}}.`,
 });
 
 const factCheckClaimFlow = ai.defineFlow(

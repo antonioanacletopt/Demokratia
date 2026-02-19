@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -30,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -285,10 +286,20 @@ export default function AdminPage() {
                           <Dialog open={viewingRefutation?.id === ref.id} onOpenChange={(o) => !o && setViewingRefutation(null)}>
                             <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => setViewingRefutation(ref)}>{t('common.view')}</Button></DialogTrigger>
                             <DialogContent className="max-w-2xl">
-                              <DialogHeader><DialogTitle>{t('admin.reviewTitle')}</DialogTitle><DialogDescription>{t('admin.reviewBy')} {ref.userName}</DialogDescription></DialogHeader>
+                              <DialogHeader><DialogTitle>{t('admin.reviewTitle')}</DialogTitle><DialogDescription>{t('admin.reviewBy')} {ref.userName} para "{ref.aiContentIdentifier}"</DialogDescription></DialogHeader>
                               <div className="space-y-4 my-4">
                                 <div className="rounded-md border bg-muted/30 p-4 text-sm"><h4 className="font-semibold mb-2">{t('admin.userExplanation')}</h4><p className="whitespace-pre-wrap leading-relaxed">{ref.refutationText}</p></div>
-                                {ref.evidenceLinks && <div className="rounded-md border border-accent/20 bg-accent/5 p-4 text-sm"><h4 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-accent" />{t('admin.evidenceLinks')}</h4><p className="whitespace-pre-wrap">{ref.evidenceLinks}</p></div>}
+                                {ref.evidenceLinks && <div className="rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
+                                    <h4 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-accent" />{t('admin.evidenceLinks')}</h4>
+                                    <div className="space-y-2">
+                                        {ref.evidenceLinks.split('\n').map((link, idx) => (
+                                            <div key={idx} className="flex items-center gap-2">
+                                                <ExternalLink className="h-3 w-3 opacity-50" />
+                                                <span className="break-all">{link}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>}
                               </div>
                               <DialogFooter className="gap-2">
                                 <Button variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10" onClick={() => { handleUpdateRefutationStatus(ref.id, 'rejected'); setViewingRefutation(null); }}><XCircle className="mr-2 h-4 w-4" /> {t('admin.reject')}</Button>
