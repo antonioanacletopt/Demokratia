@@ -62,6 +62,9 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
         setIsOpen(false);
         form.reset();
       })
+      .catch((err) => {
+        console.error("Refutation submission error", err);
+      })
       .finally(() => setIsSubmitting(false));
   };
 

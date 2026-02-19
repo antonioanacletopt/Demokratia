@@ -4,121 +4,98 @@ service cloud.firestore {
 
     /**
      * Demokratia Portugal: Security Rules Summary
-     *
-     * CORE PHILOSOPHY:
-     * This ruleset implements a strict user-ownership model combined with administrative oversight. 
-     * It prioritizes Authorization Independence by using denormalized fields (like 'userId') 
-     * to avoid performance-heavy 'get()' calls during security checks.
-     *
-     * DATA STRUCTURE:
-     * - /users/{userId}: Private user profiles, accessible only by the owner.
-     * - /refutations/{refutationId}: User-submitted claims against AI content. Accessible by the 
-     *   author and administrators. Approved refutations become publicly readable.
-     * - /refutations/{refutationId}/attachments/{attachmentId}: Supporting files for refutations. 
-     *   Metadata includes denormalized 'userId' for direct ownership verification.
-     *
-     * KEY SECURITY DECISIONS:
-     * - Denormalization: 'userId' is required on all user-generated content to allow 
-     *   instant ownership verification (resource.data.userId == request.auth.uid).
-     * - Structural Segregation: Administrative roles are managed via a dedicated 
-     *   '/roles_admin' collection.
-     * - State-Based Access: The 'status' field on refutations controls public visibility.
-     *
-     * PROTOTYPING MODE:
-     * Rules enforce strict authorization (who can access) but allow flexible data shapes 
-     * (the content of the data) to support rapid development.
      */
 
     // --- Global Helper Functions ---
 
-    /** Checks if the request is from an authenticated user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** Checks if the provided UID matches the authenticated user's UID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** 
-     * Checks if the user exists in the admin roles collection. 
-     * Uses the Database Access Control (DBAC) pattern.
-     */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    /** Combines ownership and existence checks for updates and deletes. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
     // --- Collection Rules ---
 
-    /**
-     * @description Rules for UserProfile documents. Restricted to the specific user.
-     * @path /users/{userId}
-     * @allow (create) if the authenticated user matches the document ID.
-     * @deny (get) if the user is requesting a profile that is not their own.
-     * @principle Restricts access to a user's own data tree and enforces self-creation.
-     */
+    // Perfis de utilizador
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for Refutations. Authors manage their own; Admins review all. 
-     * Approved status grants public read access.
-     * @path /refutations/{refutationId}
-     * @allow (get) if the status is 'approved' OR user is the owner OR user is admin.
-     * @deny (update) if a non-owner tries to modify text or a non-admin tries to change status.
-     * @principle Ownership-based writes with public visibility based on document state.
-     */
-    match /refutations/{refutationId} {
-      // List requires signing in; results must be filtered by the client (userId or status).
-      allow list: if isSignedIn();
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId) || isAdmin();
       
-      // Get allows public viewing of approved content, otherwise restricted to owner/admin.
-      allow get: if (resource.data.status == 'approved') || isOwner(resource.data.userId) || isAdmin();
-      
-      // Create requires binding the refutation to the sender's UID.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      
-      // Update requires ownership or admin status. 
-      // Prototyping note: We enforce that userId cannot be changed.
-      allow update: if (isExistingOwner(resource.data.userId) || isAdmin()) && request.resource.data.userId == resource.data.userId;
-      
-      // Delete restricted to owner or admin.
-      allow delete: if isExistingOwner(resource.data.userId) || isAdmin();
-      
-      /**
-       * @description Rules for Refutation Attachments.
-       * @path /refutations/{refutationId}/attachments/{attachmentId}
-       * @allow (create) if user owns the parent refutation (verified via denormalized userId).
-       * @deny (list) if the user is not signed in.
-       * @principle Authorization Independence via denormalized ownership fields.
-       */
-      match /attachments/{attachmentId} {
-        allow get: if isOwner(resource.data.userId) || isAdmin();
-        allow list: if isSignedIn();
-        
-        // Relational Integrity: Must include the parent userId to enable flat rules.
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        
-        allow update: if (isExistingOwner(resource.data.userId) || isAdmin()) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(resource.data.userId) || isAdmin();
+      // Subcoleções do utilizador (Dashboards, Fact-checks, etc.)
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
 
-    /**
-     * @description Placeholder match for administrative roles.
-     * @path /roles_admin/{userId}
-     * @principle Read-only for admins to verify their own status; writes via backend/console.
-     */
+    // Refutações da IA
+    match /refutations/{refutationId} {
+      allow list: if isSignedIn();
+      allow get: if (resource.data.status == 'approved') || isOwner(resource.data.userId) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // Mensagens de Contacto
+    match /contactMessages/{messageId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if (resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // Propostas da Comunidade
+    match /communityProposals/{proposalId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn(); // Para votar ou editar
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // Cache de Traduções e Notícias (Público/Autenticado)
+    match /translations_cache/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+    match /news_feed_cache/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Dados Públicos e Estatísticos
+    match /publicData/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /statisticalData/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /dataSources/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Consultas Públicas (Cache de IA)
+    match /publicStatisticQueries/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+    match /publicLegislationQueries/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+    match /publicSimulations/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+
+    // Funções Administrativas
     match /roles_admin/{userId} {
       allow get: if isOwner(userId);
       allow list, create, update, delete: if false;
