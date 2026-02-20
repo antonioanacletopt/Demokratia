@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -12,13 +12,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Check, Scale, TrendingUp, Loader2, Languages, RefreshCw } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
+import { AIResultButton } from '@/components/AIResultButton';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -52,20 +53,17 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
         const targetLang = 'English';
-        
         const fetchCached = async (text: string) => {
           if (!text || text.length > MAX_CACHE_LENGTH) return null;
           const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
-
         const [tTitle, tDesc, tAction] = await Promise.all([
           fetchCached(item.title),
           fetchCached(item.description),
           item.actionLink ? fetchCached(item.actionLink.label) : Promise.resolve(null)
         ]);
-
         if (tTitle && tDesc) {
           setTranslated({ title: tTitle, desc: tDesc, actionLabel: tAction || undefined });
           setShowOriginal(false);
@@ -86,24 +84,13 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       const resTitle = await getTranslation(item.title, language);
       const resDesc = await getTranslation(item.description, language);
       const resAction = item.actionLink ? await getTranslation(item.actionLink.label, language) : undefined;
-
-      const newTranslated = { title: resTitle, desc: resDesc, actionLabel: resAction };
-      setTranslated(newTranslated);
+      setTranslated({ title: resTitle, desc: resDesc, actionLabel: resAction });
       setShowOriginal(false);
-
       const cacheRef = collection(firestore, 'translations_cache');
-      const targetLang = language === 'en' ? 'English' : 'Portuguese';
-      
       const saveToCache = (orig: string, trans: string) => {
         if (orig.length > MAX_CACHE_LENGTH) return;
-        addDoc(cacheRef, {
-          originalText: orig,
-          translatedText: trans,
-          targetLanguage: targetLang,
-          createdAt: serverTimestamp()
-        });
+        addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
       };
-
       saveToCache(item.title, resTitle);
       saveToCache(item.description, resDesc);
       if (item.actionLink && resAction) saveToCache(item.actionLink.label, resAction);
@@ -122,45 +109,21 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
             <div className="flex items-center justify-between gap-2 mb-1">
                 <CardTitle className="text-lg">{currentTitle}</CardTitle>
                 {language !== 'pt' && (
-                  <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                      disabled={isTranslating}
-                      className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0"
-                  >
-                      {isTranslating ? (
-                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                      ) : translated ? (
-                          <RefreshCw className="mr-1 h-3 w-3" />
-                      ) : (
-                          <Languages className="mr-1 h-3 w-3" />
-                      )}
+                  <Button variant="ghost" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0">
+                      {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
                       {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
                   </Button>
                 )}
             </div>
-            <CardDescription>
-              {t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}
-            </CardDescription>
+            <CardDescription>{t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}</CardDescription>
           </div>
-          <Badge variant="outline" className={config.color}>
-            <Icon className="mr-1.5 h-3 w-3" />
-            {t(`home.newsTypes.${item.type as any}`)}
-          </Badge>
+          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3 w-3" />{t(`home.newsTypes.${item.type as any}`)}</Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">{currentDesc}</p>
-      </CardContent>
+      <CardContent><p className="text-muted-foreground">{currentDesc}</p></CardContent>
       {item.actionLink && (
         <CardFooter>
-          <Button asChild variant="secondary" size="sm">
-            <Link href={item.actionLink.href}>
-              {currentActionLabel}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <AIResultButton href={item.actionLink.href} label={currentActionLabel!} />
         </CardFooter>
       )}
     </Card>
@@ -179,66 +142,25 @@ export default function HomePage() {
       try {
         const cacheRef = doc(firestore, 'news_feed_cache', 'latest');
         const cacheSnap = await getDoc(cacheRef);
-        
         if (cacheSnap.exists()) {
           const cacheData = cacheSnap.data();
           const lastUpdated = cacheData.lastUpdated?.toDate() || new Date(0);
           const diffHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-          
-          if (diffHours < CACHE_EXPIRATION_HOURS) {
-            setFeedItems(cacheData.feedItems);
-            setLoading(false);
-            return;
-          }
+          if (diffHours < CACHE_EXPIRATION_HOURS) { setFeedItems(cacheData.feedItems); setLoading(false); return; }
         }
-
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
-        
-        setDoc(cacheRef, {
-          feedItems: newsFeed.feedItems,
-          lastUpdated: serverTimestamp()
-        }).catch(e => console.warn("Failed to update news cache", e));
-
-      } catch (err) {
-        console.error('Failed to fetch news feed:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+        setDoc(cacheRef, { feedItems: newsFeed.feedItems, lastUpdated: serverTimestamp() }).catch(e => console.warn("Failed news cache", e));
+      } catch (err) { console.error('Failed news:', err); setError(true); } finally { setLoading(false); }
     }
     loadFeed();
   }, [firestore]);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">
-          {t('home.title')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('home.description')}
-        </p>
-      </div>
-
+      <div><h1 className="text-3xl font-bold font-headline tracking-tight">{t('home.title')}</h1><p className="text-muted-foreground">{t('home.description')}</p></div>
       <AdBanner />
-
-      <div className="space-y-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">{t('home.loadingText')}</p>
-          </div>
-        ) : error ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('home.error')}</CardTitle>
-            </CardHeader>
-          </Card>
-        ) : (
-          feedItems.map((item) => <FeedItemCard key={item.id} item={item} />)
-        )}
-      </div>
+      <div className="space-y-6">{loading ? (<div className="flex flex-col items-center justify-center py-12 gap-4"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-sm text-muted-foreground">{t('home.loadingText')}</p></div>) : error ? (<Card><CardHeader><CardTitle>{t('home.error')}</CardTitle></CardHeader></Card>) : (feedItems.map((item) => <FeedItemCard key={item.id} item={item} />))}</div>
     </div>
   );
 }
