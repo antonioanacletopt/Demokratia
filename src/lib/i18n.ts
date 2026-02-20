@@ -45,7 +45,7 @@ export const translations = {
       title: 'Simulações Políticas', description: 'Simule impactos de novas medidas económicas.', newSimTitle: 'Nova Simulação',
       newSimDesc: 'Descreva a política a simular.', textareaPlaceholder: "Ex: 'Aumentar SMN para 1000€'", simulateBtn: 'Simular Impacto',
       simulating: 'A simular...', resultsTitle: 'Análise de Impacto', saveBtn: 'Guardar Simulação', impactSummary: 'Resumo',
-      indicatorsTitle: 'Indicadores Projetados', indicator: 'Indicador', currentValue: 'Atual', projectedValue: 'Projetado',
+      indicatorsTitle: 'Indicadores Projetados', indicator: 'Indicator', currentValue: 'Atual', projectedValue: 'Projetado',
       aiReasoning: 'Raciocínio', mySimsTitle: 'As Minhas Simulações', publicSimsTitle: 'Simulações Públicas', realPolicy: 'Política Real', viewOfficial: 'Ver Fonte'
     },
     factCheck: {
@@ -84,7 +84,9 @@ export const translations = {
     },
     admin: {
       title: 'Painel de Administração', description: 'Bem-vindo, António. Gestão centralizada da plataforma.',
-      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)', data: 'Base de Dados' },
+      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)', data: 'Base de Dados', users: 'Utilizadores' },
+      usersTitle: 'Comunidade Demokratia', usersDesc: 'Lista de cidadãos registados na plataforma.', totalUsers: 'Total de Utilizadores',
+      registrationDate: 'Data de Registo',
       refutationsDesc: 'Analise as correções e evidências submetidas pela comunidade.',
       reviewTitle: 'Revisão de Refutação', reviewBy: 'Enviada por', userExplanation: 'Explicação do Utilizador:',
       evidenceLinks: 'Links e Provas:', reject: 'Rejeitar', approve: 'Aprovar e Publicar',
@@ -202,7 +204,9 @@ export const translations = {
     },
     admin: {
       title: 'Admin Dashboard', description: 'Welcome, António. Centralized platform management.',
-      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)', data: 'Database' },
+      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)', data: 'Database', users: 'Users' },
+      usersTitle: 'Demokratia Community', usersDesc: 'List of citizens registered on the platform.', totalUsers: 'Total Users',
+      registrationDate: 'Registration Date',
       refutationsDesc: 'Review corrections and evidence submitted by the community.',
       reviewTitle: 'Refutation Review', reviewBy: 'Submitted by', userExplanation: 'User Explanation:',
       evidenceLinks: 'Links & Evidence:', reject: 'Reject', approve: 'Approve & Publish',
@@ -214,7 +218,7 @@ export const translations = {
       seedTitle: 'Data Loading (Seed)', seedDesc: 'Populate the system with 2026 data.',
       indicators: 'Indicators', indicatorsDesc: 'GDP, Inflation and Unemployment.', loadIndicators: 'Load Indicators',
       stats: 'Statistics', statsDesc: 'Tables for the Data Explorer.', loadStats: 'Load Statistics',
-      sourcesSeed: 'Sources', sourcesSeedDesc: 'Official entities (INE, etc).', loadSources: 'Load Sources'
+      sourcesSeed: 'Sources', sourcesSeedDesc: 'Official entities (INE, etc).', loadSources: 'Load Statistics'
     },
     profile: {
       title: 'My Profile', description: 'Manage your preferences and personal data.', displayName: 'Display Name',

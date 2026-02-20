@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -78,6 +78,13 @@ interface StatisticalData {
   category: string;
   source: string;
   description: string;
+}
+
+interface UserProfile {
+  id: string;
+  displayName: string;
+  email: string;
+  createdAt: any;
 }
 
 const statusConfig = {
@@ -177,6 +184,9 @@ export default function AdminPage() {
 
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: statsData, isLoading: isLoadingStats } = useCollection<StatisticalData>(statisticalDataCollection);
+
+  const usersCollection = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+  const { data: appUsers, isLoading: isLoadingUsers } = useCollection<UserProfile>(usersCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -192,6 +202,11 @@ export default function AdminPage() {
     if (!statsData) return [];
     return [...statsData].sort((a, b) => a.title.localeCompare(b.title));
   }, [statsData]);
+
+  const sortedUsers = useMemo(() => {
+    if (!appUsers) return [];
+    return [...appUsers].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [appUsers]);
 
   useEffect(() => {
     if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
@@ -300,14 +315,55 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="refutations" className="space-y-6">
-        <TabsList className="bg-muted/50 p-1">
+      <Tabs defaultValue="users" className="space-y-6">
+        <TabsList className="bg-muted/50 p-1 flex flex-wrap h-auto">
+          <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />{t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.refutations')}</TabsTrigger>
           <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />{t('admin.tabs.sources')}</TabsTrigger>
           <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
           <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />{t('admin.tabs.messages')}</TabsTrigger>
           <TabsTrigger value="seed" className="gap-2"><Sparkles className="h-4 w-4" />{t('admin.tabs.seed')}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2"><UserCheck className="h-5 w-5" />{t('admin.usersTitle')}</CardTitle>
+                <CardDescription>{t('admin.usersDesc')}</CardDescription>
+              </div>
+              <Badge variant="outline" className="px-4 py-1 text-sm bg-primary/5">
+                {t('admin.totalUsers')}: {isLoadingUsers ? '...' : sortedUsers.length}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30"><TableRow>
+                    <TableHead>{t('profile.displayName')}</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>{t('admin.registrationDate')}</TableHead>
+                  </TableRow></TableHeader>
+                  <TableBody>
+                    {isLoadingUsers ? (
+                      <TableRow><TableCell colSpan={3} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                    ) : sortedUsers.length > 0 ? sortedUsers.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium">{u.displayName || 'Anon'}</TableCell>
+                        <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                        <TableCell className="text-xs">
+                          {u.createdAt ? formatDistanceToNow(new Date(u.createdAt), { addSuffix: true, locale: pt }) : 'N/A'}
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">Nenhum utilizador registado ainda.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="refutations" className="space-y-6">
           <Card>
