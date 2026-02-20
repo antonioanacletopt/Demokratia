@@ -75,6 +75,15 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    name: 'AIMA - Agência para a Integração, Migrações e Asilo',
+    url: 'https://aima.gov.pt',
+    type: 'Website',
+    description: 'Entidade responsável pelas políticas públicas de migração, asilo e integração de imigrantes em Portugal.',
+    requiresAuth: false,
+    authMethod: 'None',
+    isSystemSource: true,
+  },
+  {
     name: 'Agência Lusa',
     url: 'https://www.lusa.pt',
     type: 'Website',

@@ -55,12 +55,13 @@ const prompt = ai.definePrompt({
 
 Fontes primárias de consulta:
 - Diário da República Eletrónico (dre.pt)
+- AIMA - Agência para a Integração, Migrações e Asilo (para questões de imigração e asilo)
 - Legislação consolidada disponível em portais governamentais.
 - Sites oficiais de entidades reguladoras.
 
 Processo:
 1.  Analise a pergunta do utilizador: {{{question}}}.
-2.  Identifique a área do direito e a legislação aplicável (ex: Lei da Nacionalidade, Código do Trabalho, etc.).
+2.  Identifique a área do direito e a legislação aplicável (ex: Lei da Nacionalidade, Código do Trabalho, Lei de Estrangeiros, etc.).
 3.  Formule uma resposta clara e objetiva no campo 'answer' em {{{language}}}. Evite jargão legal sempre que possível ou explique-o de forma simples. A resposta não deve ser um conselho legal, mas sim uma informação sobre o que a lei diz.
 4.  No campo 'sources', liste os URLs diretos para os artigos de lei ou decretos-lei específicos que fundamentam a sua resposta.
 

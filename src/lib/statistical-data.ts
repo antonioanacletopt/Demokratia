@@ -1,4 +1,3 @@
-
 export type StatisticalData = {
   id: string;
   title: string;
@@ -55,6 +54,20 @@ export const statisticalDataToSeed: StatisticalData[] = [
       { "Ano": 2024, "Dívida (% PIB)": "95.4%" },
       { "Ano": 2025, "Dívida (% PIB)": "91.2%" },
       { "Ano": 2026, "Dívida (% PIB)": "88.5%" }
+    ]
+  },
+  {
+    id: 'residence-permits-2026',
+    title: 'Títulos de Residência Emitidos e Renovados',
+    description: 'Estatísticas sobre a emissão e renovação de títulos de residência em Portugal. Dados de 2026 refletem a agilização dos processos de integração e o reforço da capacidade de resposta da agência.',
+    category: 'Migrações',
+    source: 'AIMA - Agência para a Integração, Migrações e Asilo 2026',
+    lastUpdated: '2026-03-10',
+    dataType: 'table',
+    data: [
+      { "Tipo": "Novos Títulos", "Quantidade": 145000, "Estado": "Processado" },
+      { "Tipo": "Renovações", "Quantidade": 280000, "Estado": "Concluído" },
+      { "Tipo": "CPLP (Regime Especial)", "Quantidade": 95000, "Estado": "Simplificado" }
     ]
   },
   {
