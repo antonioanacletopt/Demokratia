@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -77,6 +77,7 @@ interface StatisticalData {
   title: string;
   category: string;
   source: string;
+  description: string;
 }
 
 const statusConfig = {
@@ -186,6 +187,11 @@ export default function AdminPage() {
     if (!refutations) return [];
     return [...refutations].sort((a, b) => (b.submissionDate?.seconds || 0) - (a.submissionDate?.seconds || 0));
   }, [refutations]);
+
+  const sortedStats = useMemo(() => {
+    if (!statsData) return [];
+    return [...statsData].sort((a, b) => a.title.localeCompare(b.title));
+  }, [statsData]);
 
   useEffect(() => {
     if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
@@ -398,27 +404,37 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('admin.tabs.data')}</CardTitle>
-              <CardDescription>Gira os itens individuais de dados estatísticos. Útil para remover duplicados.</CardDescription>
+              <CardDescription>Gira os itens individuais de dados estatísticos. Identifica duplicados pelo ID técnico.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader className="bg-muted/30"><TableRow>
                     <TableHead>Título</TableHead>
+                    <TableHead className="flex items-center gap-1"><Fingerprint className="h-3 w-3" /> ID Técnico</TableHead>
                     <TableHead>Categoria</TableHead>
-                    <TableHead>Fonte</TableHead>
                     <TableHead className="text-right">{t('common.actions')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {isLoadingStats ? <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow> : statsData?.map(d => (
+                    {isLoadingStats ? <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow> : sortedStats?.map(d => (
                       <TableRow key={d.id}>
-                        <TableCell className="font-medium">{d.title}</TableCell>
+                        <TableCell className="font-medium max-w-[200px] truncate">{d.title}</TableCell>
+                        <TableCell><code className="text-[10px] bg-muted p-1 rounded font-mono">{d.id}</code></TableCell>
                         <TableCell><Badge variant="secondary">{d.category}</Badge></TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{d.source}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-x-2">
+                          <Dialog>
+                            <DialogTrigger asChild><Button variant="ghost" size="sm">{t('common.view')}</Button></DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                                <DialogHeader><DialogTitle>{d.title}</DialogTitle><DialogDescription>ID: {d.id}</DialogDescription></DialogHeader>
+                                <div className="space-y-4 my-4">
+                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">Descrição</h4><p className="text-sm">{d.description}</p></div>
+                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">Fonte</h4><p className="text-sm">{d.source}</p></div>
+                                </div>
+                            </DialogContent>
+                          </Dialog>
                           <AlertDialog>
                             <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>Deseja apagar este conjunto de dados? Esta ação é irreversível.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStatisticalData(d.id)} className="bg-destructive">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>Deseja apagar este conjunto de dados? Use isto para remover duplicados com o mesmo título mas IDs técnicos diferentes (ex: letras aleatórias).</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStatisticalData(d.id)} className="bg-destructive">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                           </AlertDialog>
                         </TableCell>
                       </TableRow>
