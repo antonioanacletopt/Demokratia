@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -352,7 +351,7 @@ export default function AdminPage() {
                         <TableCell className="font-medium">{u.displayName || 'Anon'}</TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell className="text-xs">
-                          {u.createdAt ? formatDistanceToNow(new Date(u.createdAt), { addSuffix: true, locale: pt }) : 'N/A'}
+                          {u.createdAt ? formatDistanceToNow(u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt), { addSuffix: true, locale: pt }) : 'N/A'}
                         </TableCell>
                       </TableRow>
                     )) : (
@@ -569,7 +568,7 @@ export default function AdminPage() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={setOpen => !setOpen && setIsFormOpen(false)}>
         <DialogContent><DialogHeader><DialogTitle>{editingSource ? t('admin.editSource') : t('admin.addSource')}</DialogTitle></DialogHeader>
           <DataSourceForm source={editingSource} onSave={handleSaveDataSource} onFinished={() => setIsFormOpen(false)} isSaving={isSaving} />
         </DialogContent>

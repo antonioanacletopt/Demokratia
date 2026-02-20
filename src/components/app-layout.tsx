@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
-import { doc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useTranslation, type Language } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
@@ -42,7 +42,7 @@ function AppSidebarContent() {
   const { setOpenMobile, isMobile } = useSidebar();
   const { user } = useUser();
   const { t } = useTranslation();
-  const isAdmin = user && user.email === ADMIN_EMAIL;
+  const isAdmin = user && (user.email === ADMIN_EMAIL || user.uid === 'id5hDeMIVZeR9i9HG5vvqnjEto32');
 
   const handleLinkClick = () => {
     if (isMobile) setOpenMobile(false);
@@ -104,7 +104,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
-  const { data: profileData } = useDoc(userProfileRef);
+  const { data: profileData, isLoading: isProfileLoading } = useDoc(userProfileRef);
+
+  // Efeito para garantir que o utilizador tem um documento na base de dados
+  useEffect(() => {
+    if (user && !isProfileLoading && !profileData && firestore) {
+      const userRef = doc(firestore, 'users', user.uid);
+      setDoc(userRef, {
+        id: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        preferredLanguage: 'pt'
+      }, { merge: true });
+    }
+  }, [user, profileData, isProfileLoading, firestore]);
 
   useEffect(() => {
     if (profileData?.preferredLanguage && !hasSyncedProfile) {

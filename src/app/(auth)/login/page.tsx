@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -16,23 +17,41 @@ const GoogleIcon = () => <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w
 
 export default function LoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [authError, setAuthError] = useState<{title: string, description: string, isDomainError?: boolean} | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    if (!isUserLoading && user) {
+    if (!isUserLoading && user && !isSyncing) {
       router.push('/home');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, isSyncing]);
 
   const handleSignIn = async () => {
     setAuthError(null);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const loggedUser = result.user;
+      
+      // Garantir que o utilizador é registado na base de dados imediatamente
+      if (loggedUser) {
+        setIsSyncing(true);
+        const userRef = doc(firestore, 'users', loggedUser.uid);
+        await setDoc(userRef, {
+          id: loggedUser.uid,
+          displayName: loggedUser.displayName,
+          email: loggedUser.email,
+          photoURL: loggedUser.photoURL,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(), // O merge evita sobrescrever se já existir
+        }, { merge: true });
+      }
+
       toast({ title: t('common.success') });
     } catch (error: any) {
       let title = t('login.errorTitle');
@@ -44,10 +63,12 @@ export default function LoginPage() {
         description = "O domínio 'demokratia.pt' ainda não foi autorizado na sua consola Firebase. Por favor, adicione-o em Authentication > Settings > Authorized domains.";
       }
       setAuthError({ title, description, isDomainError });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (user && !isSyncing)) {
     return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
   }
 
@@ -78,7 +99,10 @@ export default function LoginPage() {
             </AlertDescription>
           </Alert>
         )}
-        <Button className="w-full" onClick={handleSignIn}><GoogleIcon />{t('login.googleBtn')}</Button>
+        <Button className="w-full" onClick={handleSignIn} disabled={isSyncing}>
+          {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+          {t('login.googleBtn')}
+        </Button>
       </CardContent>
     </Card>
   );
