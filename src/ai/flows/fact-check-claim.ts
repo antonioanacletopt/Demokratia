@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview This file implements a Genkit flow for fact-checking claims
  * based on reliable public sources. Updated for maximum rigor and timeline analysis.
