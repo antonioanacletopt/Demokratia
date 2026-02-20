@@ -77,17 +77,15 @@ const statusConfig = {
   archived: { labelKey: 'contact.status.archived', icon: Archive, color: 'text-muted-foreground' },
 };
 
+/**
+ * Função de slugification ultra-estável para evitar duplicados.
+ */
 function generateSlug(text: string): string {
   return text.toLowerCase().trim()
-    .replace(/[àáâãäå]/g, "a")
-    .replace(/[èéêë]/g, "e")
-    .replace(/[ìíîï]/g, "i")
-    .replace(/[òóôõö]/g, "o")
-    .replace(/[ùúûü]/g, "u")
-    .replace(/[ç]/g, "c")
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/[^a-z0-9]/g, '-') // Substitui tudo o que não é letra/número por traço
+    .replace(/-+/g, '-') // Evita múltiplos traços seguidos (ex: ---)
+    .replace(/^-|-$/g, ''); // Remove traços no início ou fim
 }
 
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
@@ -366,7 +364,11 @@ export default function AdminPage() {
                         <TableCell className="text-right space-x-2">
                           <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
                           <AlertDialog>
-                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon" disabled={s.isSystemSource}><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
                             <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('admin.deleteSourceConfirm')}</AlertDialogTitle><AlertDialogDescription>{t('admin.deleteSourceDesc')}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteDataSource(s.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                           </AlertDialog>
                         </TableCell>

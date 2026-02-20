@@ -36,6 +36,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   useEffect(() => {
     if (language === 'en' && result) {
       const checkCache = async () => {
+        // Proteção contra erro de consulta por tamanho de string
         if (result.verdict.length > MAX_CACHE_LENGTH || result.explanation.length > MAX_CACHE_LENGTH) return;
         
         const cacheRef = collection(firestore, 'translations_cache');
@@ -75,6 +76,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       setTranslated({ verdict: resVerdict, explanation: resExpl });
       setShowOriginal(false);
 
+      // Só guarda no cache se respeitar o limite técnico do Firestore
       const cacheRef = collection(firestore, 'translations_cache');
       
       const saveToCache = (orig: string, trans: string) => {
