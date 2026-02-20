@@ -77,6 +77,19 @@ const statusConfig = {
   archived: { labelKey: 'contact.status.archived', icon: Archive, color: 'text-muted-foreground' },
 };
 
+function generateSlug(text: string): string {
+  return text.toLowerCase().trim()
+    .replace(/[àáâãäå]/g, "a")
+    .replace(/[èéêë]/g, "e")
+    .replace(/[ìíîï]/g, "i")
+    .replace(/[òóôõö]/g, "o")
+    .replace(/[ùúûü]/g, "u")
+    .replace(/[ç]/g, "c")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
   const { t } = useTranslation();
   const form = useForm<DataSourceFormValues>({
@@ -194,7 +207,7 @@ export default function AdminPage() {
 
   const handleSaveDataSource = (data: DataSourceFormValues) => {
     setIsSaving(true);
-    const id = data.id || data.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const id = data.id || generateSlug(data.name);
     const docRef = doc(firestore, 'dataSources', id);
     setDocumentNonBlocking(docRef, { ...data, id }, { merge: true });
     setTimeout(() => {
@@ -234,7 +247,7 @@ export default function AdminPage() {
     setIsSeedingSources(true);
     try {
       for (const source of systemDataSources) {
-        const id = source.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const id = generateSlug(source.name);
         const docRef = doc(firestore, 'dataSources', id);
         setDocumentNonBlocking(docRef, { ...source, id }, { merge: true });
       }

@@ -36,6 +36,8 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   useEffect(() => {
     if (language === 'en' && result) {
       const checkCache = async () => {
+        if (result.verdict.length > MAX_CACHE_LENGTH || result.explanation.length > MAX_CACHE_LENGTH) return;
+        
         const cacheRef = collection(firestore, 'translations_cache');
         
         const fetchCached = async (text: string) => {
