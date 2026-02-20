@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -30,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -69,6 +70,13 @@ interface Refutation {
   status: 'pending' | 'approved' | 'rejected';
   submissionDate: any;
   adminNotes?: string;
+}
+
+interface StatisticalData {
+  id: string;
+  title: string;
+  category: string;
+  source: string;
 }
 
 const statusConfig = {
@@ -165,6 +173,9 @@ export default function AdminPage() {
 
   const refutationsCollection = useMemoFirebase(() => collection(firestore, 'refutations'), [firestore]);
   const { data: refutations, isLoading: isLoadingRefutations } = useCollection<Refutation>(refutationsCollection);
+
+  const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
+  const { data: statsData, isLoading: isLoadingStats } = useCollection<StatisticalData>(statisticalDataCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -260,6 +271,11 @@ export default function AdminPage() {
     toast({ title: t('common.success') });
   };
 
+  const handleDeleteStatisticalData = (id: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'statisticalData', id));
+    toast({ title: t('common.success') });
+  };
+
   const handleUpdateMessageStatus = (id: string, status: 'read' | 'archived') => {
     updateDocumentNonBlocking(doc(firestore, 'contactMessages', id), { status });
     toast({ title: t('common.success') });
@@ -282,6 +298,7 @@ export default function AdminPage() {
         <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.refutations')}</TabsTrigger>
           <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />{t('admin.tabs.sources')}</TabsTrigger>
+          <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
           <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />{t('admin.tabs.messages')}</TabsTrigger>
           <TabsTrigger value="seed" className="gap-2"><Sparkles className="h-4 w-4" />{t('admin.tabs.seed')}</TabsTrigger>
         </TabsList>
@@ -366,6 +383,42 @@ export default function AdminPage() {
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('admin.deleteSourceConfirm')}</AlertDialogTitle><AlertDialogDescription>{t('admin.deleteSourceDesc')}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteDataSource(s.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('admin.tabs.data')}</CardTitle>
+              <CardDescription>Gira os itens individuais de dados estatísticos. Útil para remover duplicados.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30"><TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Fonte</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow></TableHeader>
+                  <TableBody>
+                    {isLoadingStats ? <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow> : statsData?.map(d => (
+                      <TableRow key={d.id}>
+                        <TableCell className="font-medium">{d.title}</TableCell>
+                        <TableCell><Badge variant="secondary">{d.category}</Badge></TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{d.source}</TableCell>
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
+                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>Deseja apagar este conjunto de dados? Esta ação é irreversível.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStatisticalData(d.id)} className="bg-destructive">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                           </AlertDialog>
                         </TableCell>
                       </TableRow>

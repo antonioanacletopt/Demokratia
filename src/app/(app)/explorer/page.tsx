@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
-import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic, getTranslation } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
@@ -36,6 +37,14 @@ interface PublicStatisticQuery extends FindPublicStatisticOutput {
   id: string;
   request: string;
   createdAt: any;
+}
+
+function generateSlug(text: string): string {
+  return text.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function DataTable({ jsonData }: { jsonData: string }) {
@@ -128,7 +137,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       
       const saveToCache = (orig: string, trans: string) => {
         if (orig.length > MAX_CACHE_LENGTH) return;
-        addDoc(cacheRef, {
+        setDoc(doc(cacheRef), {
           originalText: orig,
           translatedText: trans,
           targetLanguage: targetLang,
@@ -216,11 +225,13 @@ export default function ExplorerPage() {
 
       if (result.isFound) {
           const publicCollection = collection(firestore, 'publicStatisticQueries');
-          addDoc(publicCollection, {
+          // Usamos o slug da pergunta como ID para evitar duplicados na lista de recentes
+          const questionId = generateSlug(trimmedRequest);
+          setDoc(doc(publicCollection, questionId), {
             request: trimmedRequest,
             ...result,
             createdAt: serverTimestamp(),
-          }).catch(err => console.warn("Failed cache", err));
+          }, { merge: true }).catch(err => console.warn("Failed cache", err));
       }
     });
   };

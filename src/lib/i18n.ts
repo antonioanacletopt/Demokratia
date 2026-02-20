@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -83,7 +84,7 @@ export const translations = {
     },
     admin: {
       title: 'Painel de Administração', description: 'Bem-vindo, António. Gestão centralizada da plataforma.',
-      tabs: { refutations: 'Refutations', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)' },
+      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)', data: 'Base de Dados' },
       refutationsDesc: 'Analise as correções e evidências submetidas pela comunidade.',
       reviewTitle: 'Revisão de Refutação', reviewBy: 'Enviada por', userExplanation: 'Explicação do Utilizador:',
       evidenceLinks: 'Links e Provas:', reject: 'Rejeitar', approve: 'Aprovar e Publicar',
@@ -201,7 +202,7 @@ export const translations = {
     },
     admin: {
       title: 'Admin Dashboard', description: 'Welcome, António. Centralized platform management.',
-      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)' },
+      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)', data: 'Database' },
       refutationsDesc: 'Review corrections and evidence submitted by the community.',
       reviewTitle: 'Refutation Review', reviewBy: 'Submitted by', userExplanation: 'User Explanation:',
       evidenceLinks: 'Links & Evidence:', reject: 'Reject', approve: 'Approve & Publish',
