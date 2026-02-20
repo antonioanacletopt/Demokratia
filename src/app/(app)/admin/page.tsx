@@ -77,15 +77,12 @@ const statusConfig = {
   archived: { labelKey: 'contact.status.archived', icon: Archive, color: 'text-muted-foreground' },
 };
 
-/**
- * Função de slugification ultra-estável para evitar duplicados.
- */
 function generateSlug(text: string): string {
   return text.toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
-    .replace(/[^a-z0-9]/g, '-') // Substitui tudo o que não é letra/número por traço
-    .replace(/-+/g, '-') // Evita múltiplos traços seguidos (ex: ---)
-    .replace(/^-|-$/g, ''); // Remove traços no início ou fim
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
@@ -245,9 +242,8 @@ export default function AdminPage() {
     setIsSeedingSources(true);
     try {
       for (const source of systemDataSources) {
-        const id = generateSlug(source.name);
-        const docRef = doc(firestore, 'dataSources', id);
-        setDocumentNonBlocking(docRef, { ...source, id }, { merge: true });
+        const docRef = doc(firestore, 'dataSources', source.id);
+        setDocumentNonBlocking(docRef, source, { merge: true });
       }
       toast({ title: t('common.success') });
     } catch (e) { toast({ variant: 'destructive', title: t('common.error') }); }

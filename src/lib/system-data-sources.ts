@@ -10,8 +10,9 @@ export interface DataSource {
   isSystemSource: boolean;
 }
 
-export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
+export const systemDataSources: DataSource[] = [
   {
+    id: 'dgo',
     name: 'DGO - Direção-Geral do Orçamento',
     url: 'https://www.dgo.gov.pt',
     type: 'Website',
@@ -21,6 +22,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'transparencia',
     name: 'Portal da Transparência',
     url: 'https://www.transparencia.gov.pt',
     type: 'Website',
@@ -30,6 +32,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'ine',
     name: 'INE - Instituto Nacional de Estatística',
     url: 'https://www.ine.pt',
     type: 'Website',
@@ -39,6 +42,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'pordata',
     name: 'Pordata',
     url: 'https://www.pordata.pt',
     type: 'Website',
@@ -48,6 +52,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'banco-portugal',
     name: 'Banco de Portugal',
     url: 'https://www.bportugal.pt/estatisticas',
     type: 'Website',
@@ -57,6 +62,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'eurostat',
     name: 'Eurostat',
     url: 'https://ec.europa.eu/eurostat/data/database',
     type: 'Website',
@@ -66,6 +72,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'dre',
     name: 'Diário da República Eletrónico',
     url: 'https://diariodarepublica.pt',
     type: 'Website',
@@ -75,6 +82,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'aima',
     name: 'AIMA - Agência para a Integração, Migrações e Asilo',
     url: 'https://aima.gov.pt',
     type: 'Website',
@@ -84,6 +92,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'lusa',
     name: 'Agência Lusa',
     url: 'https://www.lusa.pt',
     type: 'Website',
@@ -93,6 +102,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'rtp',
     name: 'RTP Notícias',
     url: 'https://www.rtp.pt/noticias',
     type: 'Website',
@@ -102,6 +112,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'sic',
     name: 'SIC Notícias',
     url: 'https://sicnoticias.pt',
     type: 'Website',
@@ -111,6 +122,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'cnn',
     name: 'CNN Portugal',
     url: 'https://cnnportugal.iol.pt',
     type: 'Website',
@@ -120,6 +132,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'publico',
     name: 'Público',
     url: 'https://www.publico.pt',
     type: 'Website',
@@ -129,6 +142,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'expresso',
     name: 'Expresso',
     url: 'https://expresso.pt',
     type: 'Website',
@@ -138,6 +152,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'observador',
     name: 'Observador',
     url: 'https://observador.pt',
     type: 'Website',
@@ -147,6 +162,7 @@ export const systemDataSources: Omit<DataSource, 'id' | 'credentials'>[] = [
     isSystemSource: true,
   },
   {
+    id: 'tsf',
     name: 'TSF Rádio Notícias',
     url: 'https://www.tsf.pt',
     type: 'Website',
