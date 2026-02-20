@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -21,10 +21,10 @@ import { RefutationDialog } from '@/components/RefutationDialog';
 const MAX_CACHE_LENGTH = 1000;
 
 const verdictConfig = {
-  Verdadeiro: { icon: Check, color: 'bg-green-100 text-green-800 border-green-200' },
-  Falso: { icon: X, color: 'bg-red-100 text-red-800 border-red-200' },
-  Enganador: { icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  'Sem Evidência': { icon: HelpCircle, color: 'bg-gray-100 text-gray-800 border-gray-200' },
+  Verdadeiro: { icon: Check, color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300' },
+  Falso: { icon: X, color: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300' },
+  Enganador: { icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  'Sem Evidência': { icon: HelpCircle, color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300' },
 };
 
 function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, claim: string }) {
@@ -38,11 +38,10 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
     if (language === 'en' && result) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
-        const targetLang = 'English';
         
         const fetchCached = async (text: string) => {
           if (!text || text.length > MAX_CACHE_LENGTH) return null;
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
@@ -76,14 +75,13 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       setShowOriginal(false);
 
       const cacheRef = collection(firestore, 'translations_cache');
-      const targetLang = language === 'en' ? 'English' : 'Portuguese';
       
       const saveToCache = (orig: string, trans: string) => {
         if (!orig || orig.length > MAX_CACHE_LENGTH) return;
         addDoc(cacheRef, {
           originalText: orig,
           translatedText: trans,
-          targetLanguage: targetLang,
+          targetLanguage: 'English',
           createdAt: serverTimestamp()
         });
       };
@@ -96,7 +94,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   const currentVerdict = !showOriginal && translated ? translated.verdict : result.verdict;
   const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
 
-  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || { icon: HelpCircle, color: 'bg-gray-100 text-gray-800' };
+  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
   const VerdictIcon = config.icon;
 
   return (
@@ -162,8 +160,9 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
                   <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                     <span className="text-[10px] font-bold text-primary">{i + 1}</span>
                   </div>
-                  <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium leading-tight">
+                  <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium leading-tight flex items-center gap-1.5">
                     {s}
+                    <ExternalLink className="h-3 w-3" />
                   </Link>
                 </li>
               ))}
@@ -172,7 +171,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
         )}
       </CardContent>
       <CardFooter className="bg-muted/10 border-t py-3 flex justify-center">
-         <p className="text-[10px] text-muted-foreground italic">Informação gerada por IA com base em fontes públicas disponíveis em tempo real.</p>
+         <p className="text-[10px] text-muted-foreground italic">Informação gerada por IA baseada em análise rigorosa de fontes públicas e contexto temporal atualizado.</p>
       </CardFooter>
     </Card>
   );
@@ -195,7 +194,7 @@ export default function FactCheckPage() {
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, 'users', user.uid, 'factChecks'), where('userId', '==', user.uid));
+    return query(collection(firestore, 'users', user.uid, 'factChecks'), orderBy('createdAt', 'desc'), limit(10));
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
 
@@ -248,7 +247,7 @@ export default function FactCheckPage() {
           />
         </CardContent>
         <CardFooter className="bg-muted/30 py-4 flex justify-between items-center">
-          <p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais portuguesas e analisa o histórico de correções para validar a alegação.</p>
+          <p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.</p>
           <Button onClick={handleFactCheck} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">
             {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
             {t('factCheck.checkBtn')}

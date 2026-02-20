@@ -37,8 +37,8 @@ Alegação a verificar: "{{{claim}}}"
 Processo de Investigação:
 1. Use fontes oficiais (INE, Pordata, Diário da República, Banco de Portugal) e imprensa de referência (Público, Expresso, Lusa, SIC, RTP).
 2. **ANÁLISE TEMPORAL (CRÍTICO):** Não se limite aos dados iniciais ou às previsões otimistas. Verifique se, após o anúncio da previsão ou dado, ocorreram "tempestades" económicas, revisões em baixa ou se os próprios políticos/entidades admitiram posteriormente que os dados estavam incorretos ou eram enganadores.
-3. Se um ministro previu algo que os dados confirmaram inicialmente, mas que mais tarde se revelou insustentável ou foi desmentido por admissão direta, o veredicto deve refletir essa complexidade (ex: 'Enganador' ou 'Falso' com a devida explicação da mudança de contexto).
-4. Forneça um veredicto claro e uma explicação detalhada e pedagógica.
+3. Se um ministro previu algo que os dados confirmaram inicialmente, mas que mais tarde se revelou insustentável ou foi desmentido por admissão direta (ex: "afinal as contas estavam erradas" ou "o crescimento foi travado por fatores X"), o veredicto deve refletir essa complexidade (ex: 'Enganador' ou 'Falso' com a devida explicação da mudança de contexto).
+4. Forneça um veredicto claro e uma explicação detalhada, pedagógica e contextualizada em {{{language}}}.
 
 Todos os textos do JSON resultante devem estar em {{{language}}}.`,
 });

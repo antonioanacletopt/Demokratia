@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,7 +8,7 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/Logo';
 import { useTranslation } from '@/lib/i18n';
@@ -20,7 +21,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [authError, setAuthError] = useState<{title: string, description: string} | null>(null);
+  const [authError, setAuthError] = useState<{title: string, description: string, isDomainError?: boolean} | null>(null);
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -37,10 +38,13 @@ export default function LoginPage() {
     } catch (error: any) {
       let title = t('login.errorTitle');
       let description = error.message;
+      let isDomainError = false;
+
       if (error.code === 'auth/unauthorized-domain') {
-        description = t('login.unauthorized');
+        isDomainError = true;
+        description = "O domínio 'demokratia.pt' ainda não foi autorizado na sua consola Firebase. Por favor, adicione-o em Authentication > Settings > Authorized domains.";
       }
-      setAuthError({ title, description });
+      setAuthError({ title, description, isDomainError });
     }
   };
 
@@ -56,7 +60,25 @@ export default function LoginPage() {
         <CardDescription>{t('login.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {authError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>{authError.title}</AlertTitle><AlertDescription>{authError.description}</AlertDescription></Alert>}
+        {authError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{authError.title}</AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>{authError.description}</p>
+              {authError.isDomainError && (
+                <a 
+                  href="https://console.firebase.google.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-bold underline mt-2"
+                >
+                  Abrir Consola Firebase <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
         <Button className="w-full" onClick={handleSignIn}><GoogleIcon />{t('login.googleBtn')}</Button>
       </CardContent>
     </Card>
