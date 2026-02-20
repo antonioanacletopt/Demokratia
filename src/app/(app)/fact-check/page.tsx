@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getFactCheck, getTranslation } from '@/lib/actions';
 import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';

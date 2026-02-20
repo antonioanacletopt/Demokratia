@@ -30,7 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -146,6 +146,7 @@ export default function AdminPage() {
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
+  const [isSettingAdmin, setIsSettingAdmin] = useState(false);
   const [viewingRefutation, setViewingRefutation] = useState<Refutation | null>(null);
 
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
@@ -173,6 +174,23 @@ export default function AdminPage() {
       router.replace('/home');
     }
   }, [user, isUserLoading, router, toast]);
+
+  const handleMakeAdmin = async () => {
+    if (!user) return;
+    setIsSettingAdmin(true);
+    try {
+      const docRef = doc(firestore, 'roles_admin', user.uid);
+      setDocumentNonBlocking(docRef, { 
+        email: user.email, 
+        displayName: user.displayName,
+        assignedAt: serverTimestamp(),
+        grantedBy: 'admin-panel'
+      });
+      toast({ title: 'Perfil de administrador ativado!' });
+    } finally {
+      setIsSettingAdmin(false);
+    }
+  };
 
   const handleSaveDataSource = (data: DataSourceFormValues) => {
     setIsSaving(true);
@@ -378,6 +396,11 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="seed" className="space-y-6">
+          <Card className="border-primary bg-primary/5">
+            <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" />Ativação de Admin</CardTitle><CardDescription>Regista permanentemente o teu acesso nas regras de segurança.</CardDescription></CardHeader>
+            <CardContent><Button onClick={handleMakeAdmin} disabled={isSettingAdmin}>{isSettingAdmin ? <Loader2 className="mr-2 animate-spin" /> : <ShieldCheck className="mr-2" />}Ativar Perfil de Administrador Oficial</Button></CardContent>
+          </Card>
+
           <Card className="border-accent/20 bg-accent/5">
             <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-accent" />{t('admin.seedTitle')}</CardTitle><CardDescription>{t('admin.seedDesc')}</CardDescription></CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-3">
