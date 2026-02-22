@@ -226,6 +226,12 @@ export default function SimulationsPage() {
     if (policy) setPolicyInput(decodeURIComponent(policy));
   }, [searchParams]);
 
+  useEffect(() => {
+    if (currentSimulation && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentSimulation]);
+
   const savedSimsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'simulationScenarios'), orderBy('runTimestamp', 'desc'));
@@ -305,7 +311,7 @@ export default function SimulationsPage() {
         </CardFooter>
       </Card>
       
-      <div ref={resultRef}>
+      <div ref={resultRef} className="scroll-mt-20">
         {isSimulating && <Skeleton className="h-40 w-full" />}
         {currentSimulation && (
             <div className="pt-6 space-y-6">

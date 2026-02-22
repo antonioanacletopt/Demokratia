@@ -107,10 +107,10 @@ export default function SimulatorPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if ((simulation1 || isPending) && resultRef.current) {
+    if (simulation1 && resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [simulation1, isPending]);
+  }, [simulation1]);
 
   const handleSimulate = () => {
     if (!policy1.trim()) return;
@@ -209,7 +209,7 @@ export default function SimulatorPage() {
       
       <AdBanner />
 
-      <div ref={resultRef}>
+      <div ref={resultRef} className="scroll-mt-20">
         {isPending && (
           <Card>
             <CardHeader>

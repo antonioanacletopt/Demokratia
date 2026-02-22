@@ -230,10 +230,10 @@ export default function DashboardPage() {
   const { data: savedViews, isLoading: isLoadingViews } = useCollection<SavedDataView>(savedViewsCollectionRef);
 
   useEffect(() => {
-    if ((chartResponse || isPending) && resultRef.current) {
+    if (chartResponse && resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [chartResponse, isPending]);
+  }, [chartResponse]);
 
   const handleChartRequest = async () => {
     startTransition(async () => {
@@ -358,7 +358,7 @@ export default function DashboardPage() {
         </CardFooter>
       </Card>
 
-      <div ref={resultRef}>
+      <div ref={resultRef} className="scroll-mt-20">
         {isPending && (
           <Card>
             <CardHeader>

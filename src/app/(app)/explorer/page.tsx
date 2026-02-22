@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
@@ -209,10 +208,10 @@ export default function ExplorerPage() {
   const { data: recentQueries } = useCollection<PublicStatisticQuery>(publicQueriesCollection);
 
   useEffect(() => {
-    if ((aiResponse || isAiLoading) && resultRef.current) {
+    if (aiResponse && resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [aiResponse, isAiLoading]);
+  }, [aiResponse]);
 
   const handleStatRequest = () => {
     if (!statRequest.trim() || !firestore) return;
@@ -272,7 +271,7 @@ export default function ExplorerPage() {
             onChange={(e) => setStatRequest(e.target.value)}
             disabled={isAiLoading}
           />
-          <div ref={resultRef}>
+          <div ref={resultRef} className="scroll-mt-20">
             {isAiLoading && <Skeleton className="h-20 w-full" />}
             {aiResponse && !isAiLoading && (
               <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
@@ -341,7 +340,7 @@ export default function ExplorerPage() {
         <div className="space-y-6">
           {Object.entries(groupedAndFilteredDatasets).map(([cat, ds]) => (
             <div key={cat}>
-              <h3 className="text-lg font-semibold mb-2">{cat}</h3>
+              h3 className="text-lg font-semibold mb-2">{cat}</h3>
               <Accordion type="single" collapsible className="w-full border rounded-lg bg-card">
                 {ds.map(d => <StatAccordionItem key={d.id} dataset={d} />)}
               </Accordion>

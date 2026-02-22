@@ -147,10 +147,10 @@ export default function LegislationPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if ((result || isPending) && resultRef.current) {
+    if (result && resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [result, isPending]);
+  }, [result]);
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -217,7 +217,7 @@ export default function LegislationPage() {
       
       <AdBanner />
 
-      <div ref={resultRef}>
+      <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Skeleton className="h-40 w-full" />}
         {result && <LegislationResultDisplay result={result} questionId={question} />}
       </div>
