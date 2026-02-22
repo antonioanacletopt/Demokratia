@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -39,6 +40,12 @@ service cloud.firestore {
       }
     }
 
+    // Sessões de Analytics (Visitas)
+    match /analytics_sessions/{sessionId} {
+      allow create: if true; // Qualquer pessoa pode registar um acesso
+      allow read, list: if isAdmin();
+    }
+
     // Refutações da IA
     match /refutations/{refutationId} {
       allow read: if isSignedIn();
@@ -61,7 +68,7 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
-    // Cache e Dados Públicos (Apenas Admin pode escrever cache global)
+    // Cache e Dados Públicos
     match /translations_cache/{id} {
       allow read: if true;
       allow create: if isSignedIn();

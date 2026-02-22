@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useTranslation, type Language } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
@@ -105,6 +107,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     [user, firestore]
   );
   const { data: profileData, isLoading: isProfileLoading } = useDoc(userProfileRef);
+
+  // Registo de Sessão (Hit de Acesso)
+  useEffect(() => {
+    if (!firestore) return;
+    
+    const sessionKey = 'demokratia-session-logged';
+    const isLoggedThisSession = sessionStorage.getItem(sessionKey);
+
+    if (!isLoggedThisSession) {
+      const sessionsRef = collection(firestore, 'analytics_sessions');
+      addDocumentNonBlocking(sessionsRef, {
+        timestamp: serverTimestamp(),
+        isAnonymous: !user,
+        userId: user?.uid || null,
+        path: window.location.pathname
+      });
+      sessionStorage.setItem(sessionKey, 'true');
+    }
+  }, [firestore, user]);
 
   // Efeito para garantir que o utilizador tem um documento na base de dados
   useEffect(() => {

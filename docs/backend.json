@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -40,6 +41,19 @@
         "adminNotes": { "type": "string" }
       },
       "required": ["id", "userId", "aiContentIdentifier", "refutationText", "status", "submissionDate"]
+    },
+    "VisitorSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VisitorSession",
+      "type": "object",
+      "description": "Logs an individual access session to the app for analytics.",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isAnonymous": { "type": "boolean" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "isAnonymous"]
     }
   },
   "auth": {
@@ -62,24 +76,10 @@
         }
       },
       {
-        "path": "/contactMessages/{messageId}",
+        "path": "/analytics_sessions/{sessionId}",
         "definition": {
-          "entityName": "ContactMessage",
-          "description": "Support and contact messages from users."
-        }
-      },
-      {
-        "path": "/communityProposals/{proposalId}",
-        "definition": {
-          "entityName": "CommunityProposal",
-          "description": "User-submitted policy ideas."
-        }
-      },
-      {
-        "path": "/roles_admin/{userId}",
-        "definition": {
-          "entityName": "AdminRole",
-          "description": "Registry of administrative users."
+          "entityName": "VisitorSession",
+          "description": "Anonymous and registered user access logs."
         }
       }
     ]

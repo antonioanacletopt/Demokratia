@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -5,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
@@ -30,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2 } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -84,6 +85,12 @@ interface UserProfile {
   displayName: string;
   email: string;
   createdAt: any;
+}
+
+interface AnalyticsSession {
+  id: string;
+  isAnonymous: boolean;
+  timestamp: any;
 }
 
 const statusConfig = {
@@ -186,6 +193,9 @@ export default function AdminPage() {
 
   const usersCollection = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
   const { data: appUsers, isLoading: isLoadingUsers } = useCollection<UserProfile>(usersCollection);
+
+  const sessionsCollection = useMemoFirebase(() => collection(firestore, 'analytics_sessions'), [firestore]);
+  const { data: analyticsSessions, isLoading: isLoadingSessions } = useCollection<AnalyticsSession>(sessionsCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -206,6 +216,15 @@ export default function AdminPage() {
     if (!appUsers) return [];
     return [...appUsers].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   }, [appUsers]);
+
+  const sessionStats = useMemo(() => {
+    if (!analyticsSessions) return { total: 0, anon: 0, reg: 0 };
+    return {
+      total: analyticsSessions.length,
+      anon: analyticsSessions.filter(s => s.isAnonymous).length,
+      reg: analyticsSessions.filter(s => !s.isAnonymous).length,
+    };
+  }, [analyticsSessions]);
 
   useEffect(() => {
     if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
@@ -325,15 +344,37 @@ export default function AdminPage() {
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader className="p-4 pb-2">
+                <CardDescription className="text-xs uppercase font-bold tracking-wider">{t('admin.totalUsers')}</CardDescription>
+                <CardTitle className="text-3xl flex items-center gap-2"><UserCheck className="h-6 w-6 text-primary" /> {isLoadingUsers ? '...' : sortedUsers.length}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="bg-accent/5 border-accent/20">
+              <CardHeader className="p-4 pb-2">
+                <CardDescription className="text-xs uppercase font-bold tracking-wider">{t('admin.totalAccesses')}</CardDescription>
+                <CardTitle className="text-3xl flex items-center gap-2"><Eye className="h-6 w-6 text-accent" /> {isLoadingSessions ? '...' : sessionStats.total}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <CardDescription className="text-xs uppercase font-bold tracking-wider">{t('admin.anonymousAccesses')}</CardDescription>
+                <CardTitle className="text-xl">{isLoadingSessions ? '...' : sessionStats.anon}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="p-4 pb-2">
+                <CardDescription className="text-xs uppercase font-bold tracking-wider">{t('admin.registeredAccesses')}</CardDescription>
+                <CardTitle className="text-xl">{isLoadingSessions ? '...' : sessionStats.reg}</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2"><UserCheck className="h-5 w-5" />{t('admin.usersTitle')}</CardTitle>
-                <CardDescription>{t('admin.usersDesc')}</CardDescription>
-              </div>
-              <Badge variant="outline" className="px-4 py-1 text-sm bg-primary/5">
-                {t('admin.totalUsers')}: {isLoadingUsers ? '...' : sortedUsers.length}
-              </Badge>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><UserCheck className="h-5 w-5" />{t('admin.usersTitle')}</CardTitle>
+              <CardDescription>{t('admin.usersDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-hidden">
