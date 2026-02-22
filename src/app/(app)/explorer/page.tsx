@@ -340,7 +340,7 @@ export default function ExplorerPage() {
         <div className="space-y-6">
           {Object.entries(groupedAndFilteredDatasets).map(([cat, ds]) => (
             <div key={cat}>
-              h3 className="text-lg font-semibold mb-2">{cat}</h3>
+              <h3 className="text-lg font-semibold mb-2">{cat}</h3>
               <Accordion type="single" collapsible className="w-full border rounded-lg bg-card">
                 {ds.map(d => <StatAccordionItem key={d.id} dataset={d} />)}
               </Accordion>
