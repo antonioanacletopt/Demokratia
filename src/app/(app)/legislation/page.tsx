@@ -25,6 +25,7 @@ interface LegislationQuery extends ConsultLegislationOutput {
 }
 
 function generateSlug(text: string): string {
+  if (!text) return '';
   return text.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, '-')
@@ -163,7 +164,7 @@ export default function LegislationPage() {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'legislationQueries'), orderBy('createdAt', 'desc'), limit(10));
   }, [firestore, user]);
-  const { data: pastQueries, isLoading: isLoadingHistory } = useCollection<LegislationQuery>(historyQuery);
+  const { data: pastQueries } = useCollection<LegislationQuery>(historyQuery);
 
   const publicQueriesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -174,18 +175,18 @@ export default function LegislationPage() {
   const handleConsultation = async () => {
     if (!question.trim() || !firestore) return;
     const trimmedQuestion = question.trim();
-    const questionId = generateSlug(trimmedQuestion);
+    const id = generateSlug(trimmedQuestion);
 
     startTransition(async () => {
       setResult(null);
       const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 
-      const publicRef = doc(firestore, 'publicLegislationQueries', questionId);
+      const publicRef = doc(firestore, 'publicLegislationQueries', id);
       setDoc(publicRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
 
       if (user) {
-        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', questionId);
+        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', id);
         setDoc(userHistoryRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
       }
     });
@@ -227,7 +228,7 @@ export default function LegislationPage() {
 
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Skeleton className="h-40 w-full" />}
-        {result && <LegislationResultDisplay result={result} questionId={questionId} />}
+        {result && <LegislationResultDisplay result={result} questionId={generateSlug(question)} />}
       </div>
 
       <Card>

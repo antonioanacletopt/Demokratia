@@ -39,6 +39,7 @@ interface PublicStatisticQuery extends FindPublicStatisticOutput {
 }
 
 function generateSlug(text: string): string {
+  if (!text) return '';
   return text.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, '-')
@@ -217,7 +218,7 @@ export default function ExplorerPage() {
   const handleStatRequest = () => {
     if (!statRequest.trim() || !firestore) return;
     const trimmedRequest = statRequest.trim();
-    const questionId = generateSlug(trimmedRequest);
+    const id = generateSlug(trimmedRequest);
 
     startAiTransition(async () => {
       setAiResponse(null);
@@ -226,7 +227,7 @@ export default function ExplorerPage() {
 
       if (result.isFound) {
           const publicCollection = collection(firestore, 'publicStatisticQueries');
-          setDoc(doc(publicCollection, questionId), {
+          setDoc(doc(publicCollection, id), {
             request: trimmedRequest,
             ...result,
             createdAt: serverTimestamp(),
