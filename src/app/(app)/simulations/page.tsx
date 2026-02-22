@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getEconomicSimulation, getTranslation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit, where, getDocs, setDoc } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useTranslation } from '@/lib/i18n';
@@ -49,6 +49,15 @@ interface PublicSimulationRun {
   inputVariables: string;
   simulationResults: string;
   runTimestamp: any;
+}
+
+function generateSlug(text: string): string {
+  return text.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 150);
 }
 
 function SimulationResultDisplay({ simulation, policyId }: { simulation: EconomicPolicySimulationOutput, policyId: string }) {
@@ -100,7 +109,7 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
             const targetLang = language === 'en' ? 'English' : 'Portuguese';
             
             if (simulation.simulatedImpact.length <= MAX_CACHE_LENGTH) {
-              addDoc(cacheRef, {
+              setDoc(doc(cacheRef), {
                 originalText: simulation.simulatedImpact,
                 translatedText: resImpact,
                 targetLanguage: targetLang,
@@ -108,7 +117,7 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
               });
             }
             if (simulation.reasoning.length <= MAX_CACHE_LENGTH) {
-              addDoc(cacheRef, {
+              setDoc(doc(cacheRef), {
                 originalText: simulation.reasoning,
                 translatedText: resReasoning,
                 targetLanguage: targetLang,
@@ -124,7 +133,7 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
     return (
         <div className="space-y-6">
              <div className="flex justify-end gap-2">
-                  <RefutationDialog contentId={`simulation-${policyId}`} />
+                  <RefutationDialog contentId={`simulation-${generateSlug(policyId)}`} />
                   {language !== 'pt' && (
                     <Button 
                         variant="ghost" 
@@ -234,7 +243,7 @@ export default function SimulationsPage() {
 
   const savedSimsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, 'users', user.uid, 'simulationScenarios'), orderBy('runTimestamp', 'desc'));
+    return query(collection(firestore, 'users', user.uid, 'simulationScenarios'), orderBy('runTimestamp', 'desc'), limit(10));
   }, [firestore, user]);
   const { data: savedSimulations, isLoading: isLoadingSimulations } = useCollection<UserSimulationRun>(savedSimsQuery);
   
@@ -256,6 +265,7 @@ export default function SimulationsPage() {
   const handleSaveSimulation = async () => {
     if (!user || !firestore || !currentSimulation || !simulationTitle.trim()) return;
     setIsSaving(true);
+    const policyId = generateSlug(policyInput);
     const simData = {
         userId: user.uid,
         title: simulationTitle,
@@ -265,13 +275,13 @@ export default function SimulationsPage() {
         runTimestamp: serverTimestamp(),
     };
     try {
-        await addDoc(collection(firestore, 'users', user.uid, 'simulationScenarios'), simData);
+        await setDoc(doc(firestore, 'users', user.uid, 'simulationScenarios', policyId), simData, { merge: true });
         if (shareWithCommunity) {
-            addDoc(collection(firestore, 'publicSimulations'), {
+            await setDoc(doc(firestore, 'publicSimulations', policyId), {
                 ...simData,
                 userName: user.displayName || 'Anonymous',
                 userPhotoURL: user.photoURL || '',
-            });
+            }, { merge: true });
         }
         toast({ title: t('common.success') });
         setSaveDialogOpen(false);
@@ -356,13 +366,17 @@ export default function SimulationsPage() {
       {!user ? <p className="text-muted-foreground">{t('nav.login')}</p> : isLoadingSimulations ? <Skeleton className="h-20 w-full" /> : (
           <div className="space-y-4">
               {savedSimulations?.map(sim => (
-                  <Card key={sim.id} className="p-4 flex justify-between items-center">
-                      <div>
+                  <Card key={sim.id} className="p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors">
+                      <div className="cursor-pointer" onClick={() => {
+                          const parsed = JSON.parse(sim.simulationResults);
+                          setCurrentSimulation(parsed);
+                          setPolicyInput(sim.inputVariables);
+                        }}>
                           <h3 className="font-semibold">{sim.title}</h3>
                           <p className="text-sm text-muted-foreground">{sim.inputVariables}</p>
                       </div>
                       <div className="flex gap-2">
-                        <RefutationDialog contentId={`saved-sim-${sim.id}`} />
+                        <RefutationDialog contentId={`simulation-${sim.id}`} />
                         <Button variant="outline" size="sm" onClick={() => {
                           const parsed = JSON.parse(sim.simulationResults);
                           setCurrentSimulation(parsed);
@@ -381,7 +395,7 @@ export default function SimulationsPage() {
       {isLoadingPublic ? <Skeleton className="h-20 w-full" /> : (
           <div className="grid gap-6 md:grid-cols-2">
               {publicSimulations?.map(sim => (
-                  <Card key={sim.id} className="p-4">
+                  <Card key={sim.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
@@ -390,7 +404,7 @@ export default function SimulationsPage() {
                             </Avatar>
                             <span className="text-xs font-medium">{sim.userName}</span>
                           </div>
-                          <RefutationDialog contentId={`public-sim-${sim.id}`} />
+                          <RefutationDialog contentId={`simulation-${sim.id}`} />
                       </div>
                       <h3 className="font-semibold">{sim.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{sim.inputVariables}</p>

@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, orderBy, doc, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getFactCheck, getTranslation } from '@/lib/actions';
 import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';
@@ -25,6 +25,15 @@ const verdictConfig = {
   Enganador: { icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300' },
   'Sem Evidência': { icon: HelpCircle, color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300' },
 };
+
+function generateSlug(text: string): string {
+  return text.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 150);
+}
 
 function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, claim: string }) {
   const { t, language } = useTranslation();
@@ -69,7 +78,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
       const cacheRef = collection(firestore, 'translations_cache');
       const saveToCache = (orig: string, trans: string) => {
         if (!orig || orig.length > MAX_CACHE_LENGTH) return;
-        addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
+        setDoc(doc(cacheRef), { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
       };
       saveToCache(result.verdict, resVerdict);
       saveToCache(result.explanation, resExpl);
@@ -90,7 +99,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
             <CardDescription className="italic mt-1 line-clamp-2">"{claim}"</CardDescription>
           </div>
           <div className="flex gap-2 shrink-0">
-            <RefutationDialog contentId={`factcheck-${claim.substring(0, 50)}`} trigger={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive"><MessageSquareWarning className="h-3.5 w-3.5" />{t('refutation.refuteBtn')}</Button>} />
+            <RefutationDialog contentId={`factcheck-${generateSlug(claim)}`} trigger={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive"><MessageSquareWarning className="h-3.5 w-3.5" />{t('refutation.refuteBtn')}</Button>} />
             {language !== 'pt' && (
               <Button variant="outline" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 gap-1.5 text-xs">
                 {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
@@ -140,16 +149,19 @@ export default function FactCheckPage() {
 
   const handleFactCheck = async () => {
     if (!claim.trim()) return;
+    const claimId = generateSlug(claim);
+
     startTransition(async () => {
       setResult(null);
       const res = await getFactCheck({ claim }, language);
       setResult(res);
       if (firestore) {
-        const publicRef = collection(firestore, 'publicFactChecks');
-        addDoc(publicRef, { claim, ...res, createdAt: serverTimestamp() }).catch(e => console.warn("Failed public save", e));
+        const publicRef = doc(firestore, 'publicFactChecks', claimId);
+        setDoc(publicRef, { claim, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(e => console.warn("Failed public save", e));
         
         if (user) {
-          addDoc(collection(firestore, 'users', user.uid, 'factChecks'), { userId: user.uid, claim, ...res, createdAt: serverTimestamp() }).catch(e => console.warn("Failed history", e));
+          const userRef = doc(firestore, 'users', user.uid, 'factChecks', claimId);
+          setDoc(userRef, { userId: user.uid, claim, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(e => console.warn("Failed history", e));
         }
       }
     });
@@ -176,7 +188,7 @@ export default function FactCheckPage() {
       </div>
       <Card className="border-dashed bg-muted/5">
         <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5 text-muted-foreground" />{t('factCheck.historyTitle')}</CardTitle><CardDescription>{t('factCheck.historyDesc')}</CardDescription></CardHeader>
-        <CardContent>{!user ? (<div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed"><p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p><Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button></div>) : history && history.length > 0 ? (<div className="grid gap-4 sm:grid-cols-2">{history.map((h: any) => (<div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card"><div className="max-w-[75%]"><p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">"{h.claim}"</p><Badge variant={h.verdict === 'Verdadeiro' ? 'default' : 'secondary'} className="text-[9px] uppercase tracking-wider">{h.verdict}</Badge></div><div className="flex flex-col gap-2 shrink-0"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}><RefreshCw className="h-4 w-4 text-primary" /></Button><RefutationDialog contentId={`factcheck-history-${h.id}`} /></div></div>))}</div>) : (<div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/10"><HelpCircle className="mx-auto h-10 w-10 opacity-20 mb-3" /><p className="font-medium">{t('factCheck.noHistoryTitle')}</p><p className="text-xs mt-1">{t('factCheck.noHistoryDesc')}</p></div>)}</CardContent>
+        <CardContent>{!user ? (<div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed"><p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p><Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button></div>) : history && history.length > 0 ? (<div className="grid gap-4 sm:grid-cols-2">{history.map((h: any) => (<div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card"><div className="max-w-[75%]"><p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug cursor-pointer" onClick={() => { setClaim(h.claim); setResult(h); }}>"{h.claim}"</p><Badge variant={h.verdict === 'Verdadeiro' ? 'default' : 'secondary'} className="text-[9px] uppercase tracking-wider">{h.verdict}</Badge></div><div className="flex flex-col gap-2 shrink-0"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}><RefreshCw className="h-4 w-4 text-primary" /></Button><RefutationDialog contentId={`factcheck-${h.id}`} /></div></div>))}</div>) : (<div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/10"><HelpCircle className="mx-auto h-10 w-10 opacity-20 mb-3" /><p className="font-medium">{t('factCheck.noHistoryTitle')}</p><p className="text-xs mt-1">{t('factCheck.noHistoryDesc')}</p></div>)}</CardContent>
       </Card>
     </div>
   );

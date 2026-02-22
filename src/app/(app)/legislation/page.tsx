@@ -3,16 +3,15 @@
 import { useState, useTransition, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc, query, where, limit, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getLegislationInfo, getTranslation } from '@/lib/actions';
 import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Scale, History, User, FileText, Bot, Sparkles, Languages, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -23,6 +22,15 @@ interface LegislationQuery extends ConsultLegislationOutput {
   id: string;
   question: string;
   createdAt: any;
+}
+
+function generateSlug(text: string): string {
+  return text.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 150);
 }
 
 function LegislationResultDisplay({ result, questionId }: { result: ConsultLegislationOutput, questionId: string }) {
@@ -65,7 +73,7 @@ function LegislationResultDisplay({ result, questionId }: { result: ConsultLegis
 
       if (result.answer.length <= MAX_CACHE_LENGTH) {
         const cacheRef = collection(firestore, 'translations_cache');
-        addDoc(cacheRef, {
+        setDoc(doc(cacheRef), {
           originalText: result.answer,
           translatedText: res,
           targetLanguage: language === 'en' ? 'English' : 'Portuguese',
@@ -133,7 +141,6 @@ export default function LegislationPage() {
   const [question, setQuestion] = useState('');
   const [result, setResult] = useState<ConsultLegislationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
@@ -154,7 +161,7 @@ export default function LegislationPage() {
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return query(collection(firestore, 'users', user.uid, 'legislationQueries'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'users', user.uid, 'legislationQueries'), orderBy('createdAt', 'desc'), limit(10));
   }, [firestore, user]);
   const { data: pastQueries, isLoading: isLoadingHistory } = useCollection<LegislationQuery>(historyQuery);
 
@@ -167,18 +174,19 @@ export default function LegislationPage() {
   const handleConsultation = async () => {
     if (!question.trim() || !firestore) return;
     const trimmedQuestion = question.trim();
+    const questionId = generateSlug(trimmedQuestion);
 
     startTransition(async () => {
       setResult(null);
       const response = await getLegislationInfo({ question: trimmedQuestion }, language);
       setResult(response);
 
-      const publicRef = collection(firestore, 'publicLegislationQueries');
-      addDoc(publicRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() });
+      const publicRef = doc(firestore, 'publicLegislationQueries', questionId);
+      setDoc(publicRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
 
       if (user) {
-        const userHistoryRef = collection(firestore, 'users', user.uid, 'legislationQueries');
-        addDoc(userHistoryRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() });
+        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', questionId);
+        setDoc(userHistoryRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
       }
     });
   };
@@ -209,7 +217,7 @@ export default function LegislationPage() {
         </CardContent>
         <CardFooter>
           <Button onClick={handleConsultation} disabled={isPending || !question.trim()}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Scale className="mr-2 h-4 w-4" />}
             {t('legislation.consultBtn')}
           </Button>
         </CardFooter>
@@ -219,7 +227,7 @@ export default function LegislationPage() {
 
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Skeleton className="h-40 w-full" />}
-        {result && <LegislationResultDisplay result={result} questionId={question} />}
+        {result && <LegislationResultDisplay result={result} questionId={questionId} />}
       </div>
 
       <Card>
@@ -233,7 +241,7 @@ export default function LegislationPage() {
           {recentQueries && recentQueries.length > 0 ? (
             <div className="space-y-4">
               {recentQueries.map(q => (
-                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50" onClick={() => setQuestion(q.question)}>
+                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors" onClick={() => { setQuestion(q.question); setResult(q); }}>
                   <p className="font-semibold text-muted-foreground italic">"{q.question}"</p>
                 </button>
               ))}
@@ -257,9 +265,9 @@ export default function LegislationPage() {
           {!user ? <p className="text-muted-foreground">{t('nav.login')}</p> : pastQueries && pastQueries.length > 0 ? (
             <div className="space-y-4">
               {pastQueries.map(q => (
-                <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center">
-                  <p className="font-semibold text-muted-foreground italic">"{q.question}"</p>
-                  <RefutationDialog contentId={`legislation-${q.question}`} />
+                <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors">
+                  <p className="font-semibold text-muted-foreground italic cursor-pointer" onClick={() => { setQuestion(q.question); setResult(q); }}>"{q.question}"</p>
+                  <RefutationDialog contentId={`legislation-${q.id}`} />
                 </div>
               ))}
             </div>

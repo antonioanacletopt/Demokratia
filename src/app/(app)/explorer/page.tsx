@@ -43,7 +43,8 @@ function generateSlug(text: string): string {
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/^-|-$/g, '')
+    .substring(0, 150);
 }
 
 function DataTable({ jsonData }: { jsonData: string }) {
@@ -216,6 +217,7 @@ export default function ExplorerPage() {
   const handleStatRequest = () => {
     if (!statRequest.trim() || !firestore) return;
     const trimmedRequest = statRequest.trim();
+    const questionId = generateSlug(trimmedRequest);
 
     startAiTransition(async () => {
       setAiResponse(null);
@@ -224,8 +226,6 @@ export default function ExplorerPage() {
 
       if (result.isFound) {
           const publicCollection = collection(firestore, 'publicStatisticQueries');
-          // Usamos o slug da pergunta como ID para evitar duplicados na lista de recentes
-          const questionId = generateSlug(trimmedRequest);
           setDoc(doc(publicCollection, questionId), {
             request: trimmedRequest,
             ...result,
@@ -278,7 +278,7 @@ export default function ExplorerPage() {
                 <Bot className="h-4 w-4" />
                 <div className="flex justify-between items-start w-full">
                   <AlertTitle>{t('common.aiResponse')}</AlertTitle>
-                  <RefutationDialog contentId={`ai-stat-${statRequest}`} />
+                  <RefutationDialog contentId={`ai-stat-${generateSlug(statRequest)}`} />
                 </div>
                 <AlertDescription className="mt-2">
                   <p className="mb-2">{aiResponse.explanation}</p>
@@ -295,7 +295,7 @@ export default function ExplorerPage() {
         </CardContent>
         <CardFooter>
           <Button onClick={handleStatRequest} disabled={isAiLoading || !statRequest.trim()}>
-            {isAiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
             {t('explorer.searchBtn')}
           </Button>
         </CardFooter>
@@ -315,7 +315,7 @@ export default function ExplorerPage() {
           {recentQueries && recentQueries.length > 0 ? (
             <div className="space-y-4">
               {recentQueries.map(q => (
-                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors" onClick={() => setStatRequest(q.request)}>
+                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors" onClick={() => { setStatRequest(q.request); setAiResponse(q); }}>
                   <p className="font-semibold text-muted-foreground italic">"{q.request}"</p>
                 </button>
               ))}
