@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -72,7 +71,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
       <Button asChild variant="default" size={size} className="bg-primary hover:bg-primary/90 text-white border-none">
         <Link href={href}>
           <Zap className="mr-2 h-4 w-4 fill-current" />
-          <span className="font-bold">[{t('common.simulate').toUpperCase()}D O]</span>
+          <span className="font-bold">[{t('common.simulate').toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
           {t('common.view')}
           <ArrowRight className="ml-2 h-4 w-4" />
