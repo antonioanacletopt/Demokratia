@@ -1,6 +1,6 @@
 /**
  * @fileOverview Flow for finding public statistics. Context: 2026.
- * Instructs the AI to provide structured data for tables.
+ * Focado em fontes governamentais e bases de dados públicas portuguesas.
  */
 
 import { ai } from '@/ai/genkit';
@@ -15,7 +15,7 @@ const FindPublicStatisticOutputSchema = z.object({
   isFound: z.boolean().describe('Indicates if the requested statistic was found.'),
   explanation: z.string().describe('A clear text summary of the findings.'),
   source: z.string().optional().describe('The official source of the data.'),
-  data: z.string().optional().describe('The statistical data strictly formatted as a JSON array of objects for table display.'),
+  data: z.string().optional().describe('The statistical data formatted as a JSON array of objects.'),
 });
 export type FindPublicStatisticOutput = z.infer<typeof FindPublicStatisticOutputSchema>;
 
@@ -27,20 +27,22 @@ const prompt = ai.definePrompt({
   name: 'findPublicStatisticPrompt',
   input: { schema: FindPublicStatisticInputSchema },
   output: { schema: FindPublicStatisticOutputSchema },
-  prompt: `Você é um analista de dados especialista em Portugal, no ano de 2026. 
-A sua tarefa é encontrar uma estatística baseada no pedido do utilizador.
+  prompt: `Você é um analista de dados especialista em Portugal, no ano de 2026.
+A sua tarefa é encontrar uma estatística real baseada no pedido do utilizador.
 
-**INSTRUÇÕES OBRIGATÓRIAS:**
-1. Se encontrar os dados, defina 'isFound' como true.
-2. Forneça uma explicação detalhada e profissional no campo 'explanation'.
-3. **No campo 'data', forneça os dados numéricos formatados estritamente como uma string JSON contendo um array de objetos (ex: [{"Ano": 2025, "Valor": 61, "Posição": 30}]).** Estes dados serão usados para gerar automaticamente uma tabela na interface. Se não houver dados tabulares, deixe vazio.
-4. Use o campo 'source' para citar a fonte oficial (ex: INE, Transparency International, Pordata).
+FONTES OBRIGATÓRIAS (Consulte estas bases de dados):
+- INE (Instituto Nacional de Estatística)
+- Pordata (Fundação Francisco Manuel dos Santos)
+- DGO (Direção-Geral do Orçamento) - dgo.gov.pt
+- Portal da Transparência (transparencia.gov.pt)
+- Banco de Portugal
+- DRE (Diário da República Eletrónico)
 
-CONTEXTO ATUAL (2026):
-- O Orçamento do Estado em vigor é o OE2026.
-- A economia cresceu 2.1% em 2025.
-- A inflação estabilizou nos 2% no início de 2026.
-- O foco atual do governo está no PRR 2.0 e Habitação Social.
+REGRAS:
+1. Priorize dados do OE2026 e execução orçamental.
+2. Se encontrar os dados, forneça-os no campo 'data' como um array JSON de objetos (ex: [{"Ano": 2026, "Valor": 50}]).
+3. Cite a fonte oficial exata no campo 'source'.
+4. Se o dado for uma previsão governamental, identifique-a como tal.
 
 Pedido do Utilizador: "{{{request}}}"`,
 });

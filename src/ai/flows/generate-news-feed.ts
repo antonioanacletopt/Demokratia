@@ -1,8 +1,8 @@
-
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
  * Ensures every item has an action link with proper human-readable titles.
+ * PROIBIDO: O uso de IDs técnicos, underscores (_) ou códigos nos links.
  */
 
 import { ai } from '@/ai/genkit';
@@ -18,7 +18,7 @@ const FeedItemSchema = z.object({
   actionLink: z.object({
     href: z.string().describe('O URL para a ação relacionada.'),
     label: z.string().describe('O texto para o botão de ação.')
-  }).describe('Uma ação obrigatória: simulação para alegações, análise para leis, dados para análise.')
+  }).describe('Uma ação obrigatória.')
 });
 
 export type FeedItem = z.infer<typeof FeedItemSchema>;
@@ -36,25 +36,24 @@ const prompt = ai.definePrompt({
   name: 'generateNewsFeedPrompt',
   output: { schema: GenerateNewsFeedOutputSchema },
   prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. 
-A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes considerando que estamos em Março de 2026.
+A sua tarefa é gerar uma lista de 4 a 5 notícias recentes considerando que estamos em Março de 2026.
 
-REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
-1. O valor do parâmetro no URL deve ser EXATAMENTE igual ao 'title' da notícia.
-2. NUNCA use IDs técnicos, underscores (_), slugs, siglas técnicas ou códigos (ex: previsao_superavit ou 1T2026). 
-3. Use APENAS espaços normais e texto legível por humanos.
-4. FORMATOS OBRIGATÓRIOS:
-   - Se type for 'Alegação': /fact-check?claim=[COPIAR_TITLE_EXATO_AQUI]
-   - Se type for 'Nova Lei': /legislation?question=[COPIAR_TITLE_EXATO_AQUI]
-   - Se type for 'Análise': /explorer?request=[COPIAR_TITLE_EXATO_AQUI]
+REGRAS CRÍTICAS PARA OS LINKS (actionLink.href):
+1. Use APENAS o texto do título da notícia como parâmetro.
+2. NUNCA, SOB QUALQUER CIRCUNSTÂNCIA, use IDs técnicos como "previsao_superavit", "1T2026", underscores (_) ou códigos.
+3. Se o título for "Aumento do Salário Mínimo", o link deve ser "/fact-check?claim=Aumento do Salário Mínimo".
+4. FORMATOS:
+   - Alegação: /fact-check?claim=[TÍTULO EXATO]
+   - Nova Lei: /legislation?question=[TÍTULO EXATO]
+   - Análise: /explorer?request=[TÍTULO EXATO]
 
-EXEMPLO CORRETO (Sem códigos, apenas texto):
+Exemplo Humano:
 {
-  "title": "Aumento do Salário Mínimo em 2026",
-  "actionLink": { "href": "/fact-check?claim=Aumento do Salário Mínimo em 2026", "label": "Verificar Factos" }
+  "title": "Crescimento do PIB em 2026",
+  "actionLink": { "href": "/explorer?request=Crescimento do PIB em 2026", "label": "Explorar Dados" }
 }
 
-As notícias devem focar-se no OE2026, habitação e indicadores económicos reais de 2026.
-Use datas entre 2026-02-25 e 2026-03-10.`,
+As notícias devem focar-se no OE2026, habitação e indicadores económicos reais de 2026.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(

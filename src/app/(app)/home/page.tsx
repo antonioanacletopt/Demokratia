@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -34,7 +33,7 @@ const typeConfig = {
   },
   Análise: {
     icon: TrendingUp,
-    color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800',
+    color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-amber-800',
   },
 };
 
@@ -140,8 +139,8 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        // Mudamos para v3 para invalidar o cache antigo com underscores e nomes técnicos
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v3');
+        // Cache bust para v4 para limpar IDs técnicos
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v4');
         const cacheSnap = await getDoc(cacheRef);
         
         if (cacheSnap.exists()) {

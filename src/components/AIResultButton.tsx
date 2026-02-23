@@ -27,7 +27,6 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const firestore = useFirestore();
   
   // Analisamos o link para ver se já existe um resultado na base de dados
-  // Usamos URL normal para descodificar o parâmetro humano
   const getParam = (paramName: string) => {
       try {
           const url = new URL(href, 'https://demokratia.pt');
@@ -62,8 +61,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Icon className="mr-2 h-4 w-4" />
           <span className="font-bold">[{factCheck.verdict.toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          {t('common.view')}
-          <ArrowRight className="ml-2 h-4 w-4" />
+          Ver ->
         </Link>
       </Button>
     );
@@ -76,14 +74,12 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Zap className="mr-2 h-4 w-4 fill-current" />
           <span className="font-bold">[{t('common.simulate').toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          {t('common.view')}
-          <ArrowRight className="ml-2 h-4 w-4" />
+          Ver ->
         </Link>
       </Button>
     );
   }
 
-  // Botão padrão se não houver resultado prévio
   return (
     <Button asChild variant={variant} size={size}>
       <Link href={href}>
