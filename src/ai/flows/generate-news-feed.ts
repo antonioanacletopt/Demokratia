@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
- * Ensures every item has an action link with proper query parameters.
+ * Ensures every item has an action link with proper human-readable titles.
  */
 
 import { ai } from '@/ai/genkit';
@@ -35,22 +35,20 @@ const prompt = ai.definePrompt({
   name: 'generateNewsFeedPrompt',
   output: { schema: GenerateNewsFeedOutputSchema },
   prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. 
-A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes sobre o panorama político e económico português, 
-considerando que estamos em Março de 2026.
+A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes considerando que estamos em Março de 2026.
 
-REGRAS OBRIGATÓRIAS PARA OS LINKS DE AÇÃO (actionLink):
-1. Para cada 'Alegação', forneça SEMPRE um link para 'Verificar Facto' usando o parâmetro 'claim': (/fact-check?claim=TEXTO_DO_TITULO).
-2. Para cada 'Nova Lei', forneça um link para 'Consultar Detalhes' usando o parâmetro 'question': (/legislation?question=TEXTO_DO_TITULO).
-3. Para cada 'Análise', forneça um link para 'Explorar Dados' usando o parâmetro 'request': (/explorer?request=TEXTO_DO_TITULO) ou 'Ver Gráfico' (/dashboard?request=TEXTO_DO_TITULO).
+REGRAS CRÍTICAS PARA OS LINKS DE AÇÃO (actionLink):
+1. Use SEMPRE o título humano completo ou a pergunta exata como valor do parâmetro.
+2. NUNCA use IDs técnicos, underscores (ex: previsao_pib) ou slugs. Use espaços normais.
+3. Formatos obrigatórios:
+   - Para 'Alegação': /fact-check?claim=TITULO_DA_NOTICIA
+   - Para 'Nova Lei': /legislation?question=TITULO_DA_NOTICIA
+   - Para 'Análise': /explorer?request=TITULO_DA_NOTICIA ou /dashboard?request=TITULO_DA_NOTICIA
 
-As notícias devem focar-se em:
-- Execução do Orçamento do Estado 2026.
-- Debate sobre as próximas eleições.
-- Indicadores económicos recentes (PIB, Inflação).
-- Novas leis de habitação.
+EXEMPLO DE LINK CORRETO: /explorer?request=Previsão de Crescimento do PIB em 2026
+EXEMPLO DE LINK ERRADO: /explorer?request=previsao_pib_2026
 
-IMPORTANTE: O texto do parâmetro deve ser o título da notícia ou a pergunta exata que descreve o conteúdo.
-
+As notícias devem focar-se no OE2026, habitação e indicadores económicos.
 Use datas entre 2026-02-25 e 2026-03-10.`,
 });
 

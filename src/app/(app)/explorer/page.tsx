@@ -197,6 +197,7 @@ export default function ExplorerPage() {
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const processedRequestRef = useRef<string | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
   
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
@@ -204,17 +205,18 @@ export default function ExplorerPage() {
   const [statRequest, setStatRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
-  const resultRef = useRef<HTMLDivElement>(null);
 
-  const handleStatRequest = useCallback((customRequest?: string) => {
+  // Função de pesquisa principal
+  const handleStatRequest = useCallback(async (customRequest?: string) => {
     const requestToUse = (customRequest || statRequest).trim();
     if (!requestToUse) return;
     
+    setAiResponse(null);
     startAiTransition(async () => {
-      setAiResponse(null);
       const result = await getPublicStatistic({ request: requestToUse });
       setAiResponse(result);
 
+      // Gravação em background (quando o firestore estiver pronto)
       if (result.isFound && firestore) {
           const id = generateSlug(requestToUse);
           const publicCollection = collection(firestore, 'publicStatisticQueries');
@@ -227,11 +229,12 @@ export default function ExplorerPage() {
     });
   }, [statRequest, firestore]);
 
+  // Gatilho de URL Robusto (Descodifica espaços e dispara imediatamente)
   useEffect(() => {
-    const queryFromUrl = searchParams.get('request');
-    if (queryFromUrl && queryFromUrl !== processedRequestRef.current) {
-      processedRequestRef.current = queryFromUrl;
-      const decoded = decodeURIComponent(queryFromUrl.replace(/\+/g, ' '));
+    const queryParam = searchParams.get('request');
+    if (queryParam && queryParam !== processedRequestRef.current) {
+      processedRequestRef.current = queryParam;
+      const decoded = decodeURIComponent(queryParam.replace(/\+/g, ' '));
       setStatRequest(decoded);
       handleStatRequest(decoded);
     }

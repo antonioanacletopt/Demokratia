@@ -223,7 +223,6 @@ export default function SimulationsPage() {
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [simulationTitle, setSimulationTitle] = useState('');
   const [simulationNotes, setSimulationNotes] = useState('');
-  const [shareWithCommunity, setShareWithCommunity] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const { user } = useUser();
@@ -232,15 +231,17 @@ export default function SimulationsPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
-  const handleSimulate = useCallback((customPolicy?: string) => {
+  // Função de simulação principal (Arranca mesmo sem firestore pronto)
+  const handleSimulate = useCallback(async (customPolicy?: string) => {
     const textToUse = (customPolicy || policyInput).trim();
     if (!textToUse) return;
     
+    setCurrentSimulation(null);
     startSimulation(async () => {
-      setCurrentSimulation(null);
       const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
       setCurrentSimulation(result);
 
+      // Gravação em background
       if (firestore) {
           const policyId = generateSlug(textToUse);
           const publicRef = doc(firestore, 'publicSimulations', policyId);
@@ -248,7 +249,7 @@ export default function SimulationsPage() {
               userId: user?.uid || 'anon',
               userName: user?.displayName || 'Cidadão',
               userPhotoURL: user?.photoURL || '',
-              title: textToUse, // human friendly
+              title: textToUse,
               inputVariables: textToUse,
               simulationResults: JSON.stringify(result),
               runTimestamp: serverTimestamp(),
@@ -258,6 +259,8 @@ export default function SimulationsPage() {
   }, [policyInput, language, firestore, user]);
 
   const searchParams = useSearchParams();
+  
+  // Gatilho de URL Robusto
   useEffect(() => {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
