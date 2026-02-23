@@ -61,7 +61,7 @@ function generateSlug(text: string): string {
     .substring(0, 150);
 }
 
-function SimulationResultDisplay({ simulation, policyId }: { simulation: EconomicPolicySimulationOutput, policyId: string }) {
+function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
     const { t, language } = useTranslation();
     const firestore = useFirestore();
     const [isTranslating, startTransition] = useTransition();
@@ -134,7 +134,7 @@ function SimulationResultDisplay({ simulation, policyId }: { simulation: Economi
     return (
         <div className="space-y-6">
              <div className="flex justify-end gap-2">
-                  <RefutationDialog contentId={`simulation-${generateSlug(policyId)}`} />
+                  <RefutationDialog contentId={`simulation-${generateSlug(policyText)}`} />
                   {language !== 'pt' && (
                     <Button 
                         variant="ghost" 
@@ -247,7 +247,7 @@ export default function SimulationsPage() {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
       processedRef.current = policy;
-      const decoded = decodeURIComponent(policy);
+      const decoded = decodeURIComponent(policy.replace(/\+/g, ' '));
       setPolicyInput(decoded);
       handleSimulate(decoded);
     }
@@ -279,7 +279,7 @@ export default function SimulationsPage() {
         userId: user.uid,
         title: simulationTitle,
         notes: simulationNotes,
-        inputVariables: policyInput,
+        inputVariables: policyInput, // This is the human-readable text
         simulationResults: JSON.stringify(currentSimulation),
         runTimestamp: serverTimestamp(),
     };
@@ -365,7 +365,7 @@ export default function SimulationsPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
-                <SimulationResultDisplay simulation={currentSimulation} policyId={policyInput} />
+                <SimulationResultDisplay simulation={currentSimulation} policyText={policyInput} />
             </div>
         )}
       </div>
@@ -376,13 +376,13 @@ export default function SimulationsPage() {
           <div className="space-y-4">
               {savedSimulations?.map(sim => (
                   <Card key={sim.id} className="p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors">
-                      <div className="cursor-pointer" onClick={() => {
+                      <div className="cursor-pointer flex-1" onClick={() => {
                           const parsed = JSON.parse(sim.simulationResults);
                           setCurrentSimulation(parsed);
                           setPolicyInput(sim.inputVariables);
                         }}>
                           <h3 className="font-semibold">{sim.title}</h3>
-                          <p className="text-sm text-muted-foreground">{sim.inputVariables}</p>
+                          <p className="text-sm text-muted-foreground italic line-clamp-1">"{sim.inputVariables}"</p>
                       </div>
                       <div className="flex gap-2">
                         <RefutationDialog contentId={`simulation-${sim.id}`} />
@@ -416,7 +416,7 @@ export default function SimulationsPage() {
                           <RefutationDialog contentId={`simulation-${sim.id}`} />
                       </div>
                       <h3 className="font-semibold">{sim.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{sim.inputVariables}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 italic">"{sim.inputVariables}"</p>
                       <Button variant="link" className="mt-2 p-0" onClick={() => {
                         const parsed = JSON.parse(sim.simulationResults);
                         setCurrentSimulation(parsed);

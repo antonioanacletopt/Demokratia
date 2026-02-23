@@ -231,8 +231,9 @@ export default function ExplorerPage() {
     const queryFromUrl = searchParams.get('request');
     if (queryFromUrl && queryFromUrl !== processedRequestRef.current) {
       processedRequestRef.current = queryFromUrl;
-      const decoded = decodeURIComponent(queryFromUrl);
+      const decoded = decodeURIComponent(queryFromUrl.replace(/\+/g, ' '));
       setStatRequest(decoded);
+      // Trigger request after state is set
       handleStatRequest(decoded);
     }
   }, [searchParams, handleStatRequest]);
