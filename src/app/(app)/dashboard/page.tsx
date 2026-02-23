@@ -240,9 +240,13 @@ export default function DashboardPage() {
     if (queryFromUrl) {
       const decoded = decodeURIComponent(queryFromUrl);
       setRequest(decoded);
-      handleChartRequest(decoded);
+      startTransition(async () => {
+        setChartResponse(null);
+        const result = await getChartFromRequest({ request: decoded });
+        setChartResponse(result);
+      });
     }
-  }, [searchParams, handleChartRequest]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (chartResponse && resultRef.current) {

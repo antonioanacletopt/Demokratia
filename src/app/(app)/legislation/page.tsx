@@ -34,12 +34,14 @@ function generateSlug(text: string): string {
     .substring(0, 150);
 }
 
-function LegislationResultDisplay({ result, questionId }: { result: ConsultLegislationOutput, questionId: string }) {
+function LegislationResultDisplay({ result, questionText }: { result: ConsultLegislationOutput, questionText: string }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
+
+  const questionId = generateSlug(questionText);
 
   useEffect(() => {
     if (language === 'en' && result) {
@@ -149,10 +151,19 @@ export default function LegislationPage() {
 
   useEffect(() => {
     const questionFromQuery = searchParams.get('question');
-    if (questionFromQuery) {
-      setQuestion(decodeURIComponent(questionFromQuery.replace(/\+/g, ' ')));
+    if (questionFromQuery && firestore) {
+      const decoded = decodeURIComponent(questionFromQuery.replace(/\+/g, ' '));
+      setQuestion(decoded);
+      startTransition(async () => {
+        setResult(null);
+        const response = await getLegislationInfo({ question: decoded }, language);
+        setResult(response);
+        const id = generateSlug(decoded);
+        const publicRef = doc(firestore, 'publicLegislationQueries', id);
+        setDoc(publicRef, { question: decoded, ...response, createdAt: serverTimestamp() }, { merge: true });
+      });
     }
-  }, [searchParams]);
+  }, [searchParams, firestore, language]);
 
   useEffect(() => {
     if (result && resultRef.current) {
@@ -228,7 +239,7 @@ export default function LegislationPage() {
 
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Skeleton className="h-40 w-full" />}
-        {result && <LegislationResultDisplay result={result} questionId={generateSlug(question)} />}
+        {result && <LegislationResultDisplay result={result} questionText={question} />}
       </div>
 
       <Card>

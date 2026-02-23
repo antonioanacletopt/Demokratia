@@ -39,15 +39,17 @@ A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes sobre o
 considerando que estamos em Março de 2026.
 
 REGRAS OBRIGATÓRIAS PARA OS LINKS DE AÇÃO (actionLink):
-1. Para cada 'Alegação', forneça SEMPRE um link para 'Simular Impacto' (/simulations?policy=URL_ENCODED_CLAIM) ou 'Verificar Facto' (/fact-check?claim=URL_ENCODED_CLAIM).
-2. Para cada 'Nova Lei', forneça um link para 'Consultar Detalhes' (/legislation?question=URL_ENCODED_TITLE).
-3. Para cada 'Análise', forneça um link para 'Explorar Dados' (/explorer?request=URL_ENCODED_TITLE) ou 'Ver Gráfico' (/dashboard?request=URL_ENCODED_TITLE).
+1. Para cada 'Alegação', forneça SEMPRE um link para 'Verificar Facto' usando o parâmetro 'claim': (/fact-check?claim=TITULO_ENCODED).
+2. Para cada 'Nova Lei', forneça um link para 'Consultar Detalhes' usando o parâmetro 'question': (/legislation?question=TITULO_ENCODED).
+3. Para cada 'Análise', forneça um link para 'Explorar Dados' usando o parâmetro 'request': (/explorer?request=TITULO_ENCODED) ou 'Ver Gráfico' (/dashboard?request=TITULO_ENCODED).
 
 As notícias devem focar-se em:
 - Execução do Orçamento do Estado 2026.
 - Debate sobre as próximas eleições.
 - Indicadores económicos recentes (PIB, Inflação).
 - Novas leis de habitação.
+
+IMPORTANTE: O texto após o ponto de interrogação (?request=, ?claim=, etc) deve ser o título da notícia codificado para URL.
 
 Use datas entre 2026-02-25 e 2026-03-10.`,
 });

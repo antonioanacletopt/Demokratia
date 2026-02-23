@@ -227,14 +227,29 @@ export default function ExplorerPage() {
     });
   }, [statRequest, firestore]);
 
+  // Efeito para lidar com parâmetros de URL sem loops
   useEffect(() => {
     const queryFromUrl = searchParams.get('request');
     if (queryFromUrl) {
       const decoded = decodeURIComponent(queryFromUrl);
       setStatRequest(decoded);
-      handleStatRequest(decoded);
+      // Chamada direta para evitar dependência do callback
+      startAiTransition(async () => {
+        setAiResponse(null);
+        const result = await getPublicStatistic({ request: decoded });
+        setAiResponse(result);
+        if (result.isFound && firestore) {
+            const id = generateSlug(decoded);
+            const publicCollection = collection(firestore, 'publicStatisticQueries');
+            setDoc(doc(publicCollection, id), {
+              request: decoded,
+              ...result,
+              createdAt: serverTimestamp(),
+            }, { merge: true });
+        }
+      });
     }
-  }, [searchParams, handleStatRequest]);
+  }, [searchParams, firestore]);
 
   useEffect(() => {
     if (aiResponse && resultRef.current) {
