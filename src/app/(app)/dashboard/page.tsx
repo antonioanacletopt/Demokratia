@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, useMemo, useRef, useEffect } from 'react';
+import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Loader2, Bot, Frown, Save, User, NotebookText, Languages, RefreshCw } from 'lucide-react';
@@ -211,6 +212,7 @@ export default function DashboardPage() {
   const [request, setRequest] = useState('');
   const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
   const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
 
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [newViewName, setNewViewName] = useState('');
@@ -222,12 +224,25 @@ export default function DashboardPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const savedViewsCollectionRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(collection(firestore, 'users', user.uid, 'savedDataViews'), orderBy('createdAt', 'desc'));
-  }, [firestore, user]);
+  const handleChartRequest = useCallback((customRequest?: string) => {
+    const requestToUse = (customRequest || request).trim();
+    if (!requestToUse) return;
 
-  const { data: savedViews, isLoading: isLoadingViews } = useCollection<SavedDataView>(savedViewsCollectionRef);
+    startTransition(async () => {
+      setChartResponse(null);
+      const result = await getChartFromRequest({ request: requestToUse });
+      setChartResponse(result);
+    });
+  }, [request]);
+
+  useEffect(() => {
+    const queryFromUrl = searchParams.get('request');
+    if (queryFromUrl) {
+      const decoded = decodeURIComponent(queryFromUrl);
+      setRequest(decoded);
+      handleChartRequest(decoded);
+    }
+  }, [searchParams, handleChartRequest]);
 
   useEffect(() => {
     if (chartResponse && resultRef.current) {
@@ -235,13 +250,12 @@ export default function DashboardPage() {
     }
   }, [chartResponse]);
 
-  const handleChartRequest = async () => {
-    startTransition(async () => {
-      setChartResponse(null);
-      const result = await getChartFromRequest({ request });
-      setChartResponse(result);
-    });
-  };
+  const savedViewsCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'savedDataViews'), orderBy('createdAt', 'desc'));
+  }, [firestore, user]);
+
+  const { data: savedViews, isLoading: isLoadingViews } = useCollection<SavedDataView>(savedViewsCollectionRef);
 
   const handleSaveView = async () => {
     if (!user || !firestore || !chartResponse) return;
@@ -313,7 +327,7 @@ export default function DashboardPage() {
           />
         </CardContent>
         <CardFooter className="flex items-center justify-between">
-          <Button onClick={handleChartRequest} disabled={isPending || !request.trim()}>
+          <Button onClick={() => handleChartRequest()} disabled={isPending || !request.trim()}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('dashboard.generateBtn')}
           </Button>

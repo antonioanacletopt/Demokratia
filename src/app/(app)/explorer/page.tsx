@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useTransition, useRef, useEffect } from 'react';
+import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic, getTranslation } from '@/lib/actions';
@@ -194,6 +195,7 @@ export default function ExplorerPage() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
   
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
@@ -203,11 +205,36 @@ export default function ExplorerPage() {
   const [isAiLoading, startAiTransition] = useTransition();
   const resultRef = useRef<HTMLDivElement>(null);
 
-  const publicQueriesCollection = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'publicStatisticQueries'), orderBy('createdAt', 'desc'), limit(5));
-  }, [firestore]);
-  const { data: recentQueries } = useCollection<PublicStatisticQuery>(publicQueriesCollection);
+  const handleStatRequest = useCallback((customRequest?: string) => {
+    const requestToUse = (customRequest || statRequest).trim();
+    if (!requestToUse || !firestore) return;
+    
+    const id = generateSlug(requestToUse);
+
+    startAiTransition(async () => {
+      setAiResponse(null);
+      const result = await getPublicStatistic({ request: requestToUse });
+      setAiResponse(result);
+
+      if (result.isFound) {
+          const publicCollection = collection(firestore, 'publicStatisticQueries');
+          setDoc(doc(publicCollection, id), {
+            request: requestToUse,
+            ...result,
+            createdAt: serverTimestamp(),
+          }, { merge: true }).catch(err => console.warn("Failed cache", err));
+      }
+    });
+  }, [statRequest, firestore]);
+
+  useEffect(() => {
+    const queryFromUrl = searchParams.get('request');
+    if (queryFromUrl) {
+      const decoded = decodeURIComponent(queryFromUrl);
+      setStatRequest(decoded);
+      handleStatRequest(decoded);
+    }
+  }, [searchParams, handleStatRequest]);
 
   useEffect(() => {
     if (aiResponse && resultRef.current) {
@@ -215,26 +242,11 @@ export default function ExplorerPage() {
     }
   }, [aiResponse]);
 
-  const handleStatRequest = () => {
-    if (!statRequest.trim() || !firestore) return;
-    const trimmedRequest = statRequest.trim();
-    const id = generateSlug(trimmedRequest);
-
-    startAiTransition(async () => {
-      setAiResponse(null);
-      const result = await getPublicStatistic({ request: trimmedRequest });
-      setAiResponse(result);
-
-      if (result.isFound) {
-          const publicCollection = collection(firestore, 'publicStatisticQueries');
-          setDoc(doc(publicCollection, id), {
-            request: trimmedRequest,
-            ...result,
-            createdAt: serverTimestamp(),
-          }, { merge: true }).catch(err => console.warn("Failed cache", err));
-      }
-    });
-  };
+  const publicQueriesCollection = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'publicStatisticQueries'), orderBy('createdAt', 'desc'), limit(5));
+  }, [firestore]);
+  const { data: recentQueries } = useCollection<PublicStatisticQuery>(publicQueriesCollection);
 
   const groupedAndFilteredDatasets = useMemo(() => {
     if (!datasets) return {};
@@ -295,7 +307,7 @@ export default function ExplorerPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleStatRequest} disabled={isAiLoading || !statRequest.trim()}>
+          <Button onClick={() => handleStatRequest()} disabled={isAiLoading || !statRequest.trim()}>
             {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
             {t('explorer.searchBtn')}
           </Button>

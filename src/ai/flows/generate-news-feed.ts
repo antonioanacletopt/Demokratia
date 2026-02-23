@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
- * Ensures every item has an action link.
+ * Ensures every item has an action link with proper query parameters.
  */
 
 import { ai } from '@/ai/genkit';
@@ -41,7 +41,7 @@ considerando que estamos em Março de 2026.
 REGRAS OBRIGATÓRIAS PARA OS LINKS DE AÇÃO (actionLink):
 1. Para cada 'Alegação', forneça SEMPRE um link para 'Simular Impacto' (/simulations?policy=URL_ENCODED_CLAIM) ou 'Verificar Facto' (/fact-check?claim=URL_ENCODED_CLAIM).
 2. Para cada 'Nova Lei', forneça um link para 'Consultar Detalhes' (/legislation?question=URL_ENCODED_TITLE).
-3. Para cada 'Análise', forneça um link para 'Explorar Dados' (/dashboard ou /explorer).
+3. Para cada 'Análise', forneça um link para 'Explorar Dados' (/explorer?request=URL_ENCODED_TITLE) ou 'Ver Gráfico' (/dashboard?request=URL_ENCODED_TITLE).
 
 As notícias devem focar-se em:
 - Execução do Orçamento do Estado 2026.
