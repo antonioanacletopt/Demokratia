@@ -39,12 +39,11 @@ A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes conside
 
 REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
 1. O valor do parâmetro no URL deve ser EXATAMENTE igual ao 'title' da notícia.
-2. NUNCA use IDs técnicos, underscores, slugs ou códigos (ex: previsao_superavit).
-3. Use apenas espaços normais e texto humano.
-4. FORMATOS OBRIGATÓRIOS:
-   - Se type for 'Alegação': /fact-check?claim=[COPIAR_TITLE_AQUI]
-   - Se type for 'Nova Lei': /legislation?question=[COPIAR_TITLE_AQUI]
-   - Se type for 'Análise': /explorer?request=[COPIAR_TITLE_AQUI]
+2. NUNCA use IDs técnicos, underscores, slugs ou códigos (ex: previsao_superavit). Use APENAS espaços normais e texto humano.
+3. FORMATOS OBRIGATÓRIOS:
+   - Se type for 'Alegação': /fact-check?claim=[COPIAR_TITLE_EXATO_AQUI]
+   - Se type for 'Nova Lei': /legislation?question=[COPIAR_TITLE_EXATO_AQUI]
+   - Se type for 'Análise': /explorer?request=[COPIAR_TITLE_EXATO_AQUI]
 
 EXEMPLO CORRETO:
 {
