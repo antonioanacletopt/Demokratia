@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef, useMemo } from 'react';
+import { useState, useTransition, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompare, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown, Languages, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -52,6 +52,7 @@ interface PublicSimulationRun {
 }
 
 function generateSlug(text: string): string {
+  if (!text) return '';
   return text.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, '-')
@@ -228,12 +229,29 @@ export default function SimulationsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const resultRef = useRef<HTMLDivElement>(null);
+  const processedRef = useRef<string | null>(null);
+
+  const handleSimulate = useCallback((customPolicy?: string) => {
+    const textToUse = (customPolicy || policyInput).trim();
+    if (!textToUse) return;
+    
+    startSimulation(async () => {
+      setCurrentSimulation(null);
+      const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
+      setCurrentSimulation(result);
+    });
+  }, [policyInput, language]);
 
   const searchParams = useSearchParams();
   useEffect(() => {
     const policy = searchParams.get('policy');
-    if (policy) setPolicyInput(decodeURIComponent(policy));
-  }, [searchParams]);
+    if (policy && policy !== processedRef.current) {
+      processedRef.current = policy;
+      const decoded = decodeURIComponent(policy);
+      setPolicyInput(decoded);
+      handleSimulate(decoded);
+    }
+  }, [searchParams, handleSimulate]);
 
   useEffect(() => {
     if (currentSimulation && resultRef.current) {
@@ -252,15 +270,6 @@ export default function SimulationsPage() {
     return query(collection(firestore, 'publicSimulations'), orderBy('runTimestamp', 'desc'), limit(10));
   }, [firestore]);
   const { data: publicSimulations, isLoading: isLoadingPublic } = useCollection<PublicSimulationRun>(publicSimsQuery);
-
-  const handleSimulate = () => {
-    if (!policyInput.trim()) return;
-    startSimulation(async () => {
-      setCurrentSimulation(null);
-      const result = await getEconomicSimulation({ policyDescription: policyInput }, language);
-      setCurrentSimulation(result);
-    });
-  };
 
   const handleSaveSimulation = async () => {
     if (!user || !firestore || !currentSimulation || !simulationTitle.trim()) return;
@@ -314,7 +323,7 @@ export default function SimulationsPage() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSimulate} disabled={isSimulating || !policyInput.trim()}>
+          <Button onClick={() => handleSimulate()} disabled={isSimulating || !policyInput.trim()}>
             {isSimulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
             {isSimulating ? t('simulations.simulating') : t('simulations.simulateBtn')}
           </Button>

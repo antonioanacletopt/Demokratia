@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from 'react';
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
@@ -27,6 +27,7 @@ const verdictConfig = {
 };
 
 function generateSlug(text: string): string {
+  if (!text) return '';
   return text.toLowerCase().trim()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, '-')
@@ -134,38 +135,45 @@ export default function FactCheckPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
+  const processedRef = useRef<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const handleFactCheck = useCallback((customClaim?: string) => {
+    const textToUse = (customClaim || claim).trim();
+    if (!textToUse) return;
+    const claimId = generateSlug(textToUse);
+
+    startTransition(async () => {
+      setResult(null);
+      const res = await getFactCheck({ claim: textToUse }, language);
+      setResult(res);
+      if (firestore) {
+        const publicRef = doc(firestore, 'publicFactChecks', claimId);
+        setDoc(publicRef, { claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        
+        if (user) {
+          const userRef = doc(firestore, 'users', user.uid, 'factChecks', claimId);
+          setDoc(userRef, { userId: user.uid, claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        }
+      }
+    });
+  }, [claim, language, user, firestore]);
 
   useEffect(() => {
     const q = searchParams.get('claim');
-    if (q) setClaim(decodeURIComponent(q));
-  }, [searchParams]);
+    if (q && q !== processedRef.current) {
+      processedRef.current = q;
+      const decoded = decodeURIComponent(q);
+      setClaim(decoded);
+      handleFactCheck(decoded);
+    }
+  }, [searchParams, handleFactCheck]);
 
   const historyQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'factChecks'), orderBy('createdAt', 'desc'), limit(10));
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
-
-  const handleFactCheck = async () => {
-    if (!claim.trim()) return;
-    const claimId = generateSlug(claim);
-
-    startTransition(async () => {
-      setResult(null);
-      const res = await getFactCheck({ claim }, language);
-      setResult(res);
-      if (firestore) {
-        const publicRef = doc(firestore, 'publicFactChecks', claimId);
-        setDoc(publicRef, { claim, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(e => console.warn("Failed public save", e));
-        
-        if (user) {
-          const userRef = doc(firestore, 'users', user.uid, 'factChecks', claimId);
-          setDoc(userRef, { userId: user.uid, claim, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(e => console.warn("Failed history", e));
-        }
-      }
-    });
-  };
 
   useEffect(() => { 
     if (result && resultRef.current) {
@@ -179,7 +187,7 @@ export default function FactCheckPage() {
       <Card className="border-primary/20 shadow-lg">
         <CardHeader><CardTitle className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-primary" />{t('factCheck.cardTitle')}</CardTitle><CardDescription>{t('factCheck.cardDesc')}</CardDescription></CardHeader>
         <CardContent><Textarea placeholder={t('factCheck.textareaPlaceholder')} value={claim} onChange={(e) => setClaim(e.target.value)} rows={4} className="text-lg resize-none focus-visible:ring-primary" disabled={isPending} /></CardContent>
-        <CardFooter className="bg-muted/30 py-4 flex justify-between items-center"><p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.</p><Button onClick={handleFactCheck} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">{isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}{t('factCheck.checkBtn')}</Button></CardFooter>
+        <CardFooter className="bg-muted/30 py-4 flex justify-between items-center"><p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.</p><Button onClick={() => handleFactCheck()} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">{isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}{t('factCheck.checkBtn')}</Button></CardFooter>
       </Card>
       <AdBanner />
       <div ref={resultRef} className="scroll-mt-20">

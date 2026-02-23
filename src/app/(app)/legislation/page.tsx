@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef } from 'react';
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
@@ -10,7 +10,7 @@ import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
@@ -147,23 +147,39 @@ export default function LegislationPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
+  const processedRef = useRef<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const handleConsultation = useCallback((customQuestion?: string) => {
+    const textToUse = (customQuestion || question).trim();
+    if (!textToUse || !firestore) return;
+    
+    const id = generateSlug(textToUse);
+
+    startTransition(async () => {
+      setResult(null);
+      const response = await getLegislationInfo({ question: textToUse }, language);
+      setResult(response);
+
+      const publicRef = doc(firestore, 'publicLegislationQueries', id);
+      setDoc(publicRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
+
+      if (user) {
+        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', id);
+        setDoc(userHistoryRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
+      }
+    });
+  }, [question, firestore, language, user]);
 
   useEffect(() => {
     const questionFromQuery = searchParams.get('question');
-    if (questionFromQuery && firestore) {
+    if (questionFromQuery && questionFromQuery !== processedRef.current) {
+      processedRef.current = questionFromQuery;
       const decoded = decodeURIComponent(questionFromQuery.replace(/\+/g, ' '));
       setQuestion(decoded);
-      startTransition(async () => {
-        setResult(null);
-        const response = await getLegislationInfo({ question: decoded }, language);
-        setResult(response);
-        const id = generateSlug(decoded);
-        const publicRef = doc(firestore, 'publicLegislationQueries', id);
-        setDoc(publicRef, { question: decoded, ...response, createdAt: serverTimestamp() }, { merge: true });
-      });
+      handleConsultation(decoded);
     }
-  }, [searchParams, firestore, language]);
+  }, [searchParams, handleConsultation]);
 
   useEffect(() => {
     if (result && resultRef.current) {
@@ -182,26 +198,6 @@ export default function LegislationPage() {
     return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
   const { data: recentQueries } = useCollection<LegislationQuery>(publicQueriesQuery);
-
-  const handleConsultation = async () => {
-    if (!question.trim() || !firestore) return;
-    const trimmedQuestion = question.trim();
-    const id = generateSlug(trimmedQuestion);
-
-    startTransition(async () => {
-      setResult(null);
-      const response = await getLegislationInfo({ question: trimmedQuestion }, language);
-      setResult(response);
-
-      const publicRef = doc(firestore, 'publicLegislationQueries', id);
-      setDoc(publicRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
-
-      if (user) {
-        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', id);
-        setDoc(userHistoryRef, { question: trimmedQuestion, ...response, createdAt: serverTimestamp() }, { merge: true });
-      }
-    });
-  };
 
   return (
     <div className="space-y-8">
@@ -228,7 +224,7 @@ export default function LegislationPage() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={handleConsultation} disabled={isPending || !question.trim()}>
+          <Button onClick={() => handleConsultation()} disabled={isPending || !question.trim()}>
             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Scale className="mr-2 h-4 w-4" />}
             {t('legislation.consultBtn')}
           </Button>

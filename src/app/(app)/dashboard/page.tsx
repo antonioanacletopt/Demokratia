@@ -29,7 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AdBanner } from '@/components/AdBanner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -213,6 +213,7 @@ export default function DashboardPage() {
   const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
+  const processedRef = useRef<string | null>(null);
 
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [newViewName, setNewViewName] = useState('');
@@ -237,16 +238,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const queryFromUrl = searchParams.get('request');
-    if (queryFromUrl) {
+    if (queryFromUrl && queryFromUrl !== processedRef.current) {
+      processedRef.current = queryFromUrl;
       const decoded = decodeURIComponent(queryFromUrl);
       setRequest(decoded);
-      startTransition(async () => {
-        setChartResponse(null);
-        const result = await getChartFromRequest({ request: decoded });
-        setChartResponse(result);
-      });
+      handleChartRequest(decoded);
     }
-  }, [searchParams]);
+  }, [searchParams, handleChartRequest]);
 
   useEffect(() => {
     if (chartResponse && resultRef.current) {

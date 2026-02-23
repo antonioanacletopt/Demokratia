@@ -56,7 +56,6 @@ function DataTable({ jsonData }: { jsonData: string }) {
       const parsedData = JSON.parse(jsonData);
       return Array.isArray(parsedData) ? parsedData : [];
     } catch (e) {
-      console.error("Failed to parse JSON data:", e);
       return [];
     }
   }, [jsonData]);
@@ -196,6 +195,7 @@ export default function ExplorerPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
   const searchParams = useSearchParams();
+  const processedRequestRef = useRef<string | null>(null);
   
   const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
@@ -222,34 +222,20 @@ export default function ExplorerPage() {
             request: requestToUse,
             ...result,
             createdAt: serverTimestamp(),
-          }, { merge: true }).catch(err => console.warn("Failed cache", err));
+          }, { merge: true }).catch(() => {});
       }
     });
   }, [statRequest, firestore]);
 
-  // Efeito para lidar com parâmetros de URL sem loops
   useEffect(() => {
     const queryFromUrl = searchParams.get('request');
-    if (queryFromUrl) {
+    if (queryFromUrl && queryFromUrl !== processedRequestRef.current) {
+      processedRequestRef.current = queryFromUrl;
       const decoded = decodeURIComponent(queryFromUrl);
       setStatRequest(decoded);
-      // Chamada direta para evitar dependência do callback
-      startAiTransition(async () => {
-        setAiResponse(null);
-        const result = await getPublicStatistic({ request: decoded });
-        setAiResponse(result);
-        if (result.isFound && firestore) {
-            const id = generateSlug(decoded);
-            const publicCollection = collection(firestore, 'publicStatisticQueries');
-            setDoc(doc(publicCollection, id), {
-              request: decoded,
-              ...result,
-              createdAt: serverTimestamp(),
-            }, { merge: true });
-        }
-      });
+      handleStatRequest(decoded);
     }
-  }, [searchParams, firestore]);
+  }, [searchParams, handleStatRequest]);
 
   useEffect(() => {
     if (aiResponse && resultRef.current) {
