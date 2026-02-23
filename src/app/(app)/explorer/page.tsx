@@ -21,8 +21,6 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
 
-const MAX_CACHE_LENGTH = 1000;
-
 interface StatisticalData {
   id: string;
   title: string;
@@ -93,66 +91,6 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  useEffect(() => {
-    if (language === 'en' && dataset && firestore) {
-      const checkCache = async () => {
-        const cacheRef = collection(firestore, 'translations_cache');
-        const targetLang = 'English';
-        
-        const fetchCached = async (text: string) => {
-          if (!text || text.length > MAX_CACHE_LENGTH) return null;
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
-          const snap = await getDocs(q);
-          return !snap.empty ? snap.docs[0].data().translatedText : null;
-        };
-
-        const [tTitle, tDesc, tCat] = await Promise.all([
-          fetchCached(dataset.title),
-          fetchCached(dataset.description),
-          fetchCached(dataset.category)
-        ]);
-
-        if (tTitle && tDesc && tCat) {
-          setTranslated({ title: tTitle, desc: tDesc, cat: tCat });
-          setShowOriginal(false);
-        }
-      };
-      checkCache();
-    } else {
-      setTranslated(null);
-      setShowOriginal(true);
-    }
-  }, [language, dataset, firestore]);
-
-  const handleTranslate = () => {
-    if (!firestore) return;
-    startTransition(async () => {
-      const resTitle = await getTranslation(dataset.title, language);
-      const resDesc = await getTranslation(dataset.description, language);
-      const resCat = await getTranslation(dataset.category, language);
-      
-      setTranslated({ title: resTitle, desc: resDesc, cat: resCat });
-      setShowOriginal(false);
-
-      const cacheRef = collection(firestore, 'translations_cache');
-      const targetLang = language === 'en' ? 'English' : 'Portuguese';
-      
-      const saveToCache = (orig: string, trans: string) => {
-        if (orig.length > MAX_CACHE_LENGTH) return;
-        setDoc(doc(cacheRef), {
-          originalText: orig,
-          translatedText: trans,
-          targetLanguage: targetLang,
-          createdAt: serverTimestamp()
-        });
-      };
-
-      saveToCache(dataset.title, resTitle);
-      saveToCache(dataset.description, resDesc);
-      saveToCache(dataset.category, resCat);
-    });
-  };
-
   const currentTitle = !showOriginal && translated ? translated.title : dataset.title;
   const currentDesc = !showOriginal && translated ? translated.desc : dataset.description;
   const currentCat = !showOriginal && translated ? translated.cat : dataset.category;
@@ -168,18 +106,6 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
       <AccordionContent className="space-y-4 px-4 relative">
         <div className="flex justify-end gap-2 pt-2">
             <RefutationDialog contentId={`dataset-${dataset.id}`} />
-            {language !== 'pt' && (
-              <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                  disabled={isTranslating} 
-                  className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-              >
-                  {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-                  {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-              </Button>
-            )}
         </div>
         <p className="text-sm text-muted-foreground">{currentDesc}</p>
         <DataTable jsonData={dataset.data} />
@@ -206,7 +132,6 @@ export default function ExplorerPage() {
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
 
-  // Função de pesquisa principal
   const handleStatRequest = useCallback(async (customRequest?: string) => {
     const requestToUse = (customRequest || statRequest).trim();
     if (!requestToUse) return;
@@ -216,7 +141,6 @@ export default function ExplorerPage() {
       const result = await getPublicStatistic({ request: requestToUse });
       setAiResponse(result);
 
-      // Gravação em background (quando o firestore estiver pronto)
       if (result.isFound && firestore) {
           const id = generateSlug(requestToUse);
           const publicCollection = collection(firestore, 'publicStatisticQueries');
@@ -229,13 +153,14 @@ export default function ExplorerPage() {
     });
   }, [statRequest, firestore]);
 
-  // Gatilho de URL Robusto (Descodifica espaços e dispara imediatamente)
+  // Gatilho Atómico de URL
   useEffect(() => {
     const queryParam = searchParams.get('request');
     if (queryParam && queryParam !== processedRequestRef.current) {
       processedRequestRef.current = queryParam;
       const decoded = decodeURIComponent(queryParam.replace(/\+/g, ' '));
       setStatRequest(decoded);
+      // Disparamos diretamente sem esperar pelo estado statRequest atualizar
       handleStatRequest(decoded);
     }
   }, [searchParams, handleStatRequest]);

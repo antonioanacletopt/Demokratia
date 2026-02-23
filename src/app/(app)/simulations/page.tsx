@@ -2,14 +2,12 @@
 
 import { useState, useTransition, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompare, PlusCircle, Trash2, Save, User, NotebookText, MessageSquare, Search, Frown, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, Save, Languages, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation, getTranslation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
-import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit, where, getDocs, setDoc } from 'firebase/firestore';
-import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -22,13 +20,9 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
-
-const MAX_CACHE_LENGTH = 1000;
 
 interface UserSimulationRun {
   id: string;
@@ -62,92 +56,11 @@ function generateSlug(text: string): string {
 }
 
 function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
-    const { t, language } = useTranslation();
-    const firestore = useFirestore();
-    const [isTranslating, startTransition] = useTransition();
-    const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
-    const [showOriginal, setShowOriginal] = useState(true);
-
-    useEffect(() => {
-      if (language === 'en' && simulation && firestore) {
-        const checkCache = async () => {
-          const cacheRef = collection(firestore, 'translations_cache');
-          const targetLang = 'English';
-          
-          const fetchCached = async (text: string) => {
-            if (!text || text.length > MAX_CACHE_LENGTH) return null;
-            const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
-            const snap = await getDocs(q);
-            return !snap.empty ? snap.docs[0].data().translatedText : null;
-          };
-
-          const [tImpact, tReasoning] = await Promise.all([
-            fetchCached(simulation.simulatedImpact),
-            fetchCached(simulation.reasoning)
-          ]);
-
-          if (tImpact && tReasoning) {
-            setTranslated({ impact: tImpact, reasoning: tReasoning });
-            setShowOriginal(false);
-          }
-        };
-        checkCache();
-      } else {
-        setTranslated(null);
-        setShowOriginal(true);
-      }
-    }, [language, simulation, firestore]);
-
-    const handleTranslate = () => {
-        if (!firestore) return;
-        startTransition(async () => {
-            const resImpact = await getTranslation(simulation.simulatedImpact, language);
-            const resReasoning = await getTranslation(simulation.reasoning, language);
-            
-            setTranslated({ impact: resImpact, reasoning: resReasoning });
-            setShowOriginal(false);
-
-            const cacheRef = collection(firestore, 'translations_cache');
-            const targetLang = language === 'en' ? 'English' : 'Portuguese';
-            
-            if (simulation.simulatedImpact.length <= MAX_CACHE_LENGTH) {
-              setDoc(doc(cacheRef), {
-                originalText: simulation.simulatedImpact,
-                translatedText: resImpact,
-                targetLanguage: targetLang,
-                createdAt: serverTimestamp()
-              });
-            }
-            if (simulation.reasoning.length <= MAX_CACHE_LENGTH) {
-              setDoc(doc(cacheRef), {
-                originalText: simulation.reasoning,
-                translatedText: resReasoning,
-                targetLanguage: targetLang,
-                createdAt: serverTimestamp()
-              });
-            }
-        });
-    };
-
-    const currentImpact = !showOriginal && translated ? translated.impact : simulation.simulatedImpact;
-    const currentReasoning = !showOriginal && translated ? translated.reasoning : simulation.reasoning;
-
+    const { t } = useTranslation();
     return (
         <div className="space-y-6">
              <div className="flex justify-end gap-2">
                   <RefutationDialog contentId={`simulation-${generateSlug(policyText)}`} />
-                  {language !== 'pt' && (
-                    <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
-                        disabled={isTranslating}
-                        className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
-                    >
-                        {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
-                        {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
-                    </Button>
-                  )}
              </div>
 
              {simulation.isRealPolicy && (
@@ -172,7 +85,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">{currentImpact}</p>
+                    <p className="text-muted-foreground">{simulation.simulatedImpact}</p>
                 </CardContent>
             </Card>
 
@@ -207,7 +120,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                     <CardTitle>{t('simulations.aiReasoning')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{currentReasoning}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{simulation.reasoning}</p>
                 </CardContent>
             </Card>
         </div>
@@ -231,7 +144,6 @@ export default function SimulationsPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
-  // Função de simulação principal (Arranca mesmo sem firestore pronto)
   const handleSimulate = useCallback(async (customPolicy?: string) => {
     const textToUse = (customPolicy || policyInput).trim();
     if (!textToUse) return;
@@ -241,7 +153,6 @@ export default function SimulationsPage() {
       const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
       setCurrentSimulation(result);
 
-      // Gravação em background
       if (firestore) {
           const policyId = generateSlug(textToUse);
           const publicRef = doc(firestore, 'publicSimulations', policyId);
@@ -260,13 +171,14 @@ export default function SimulationsPage() {
 
   const searchParams = useSearchParams();
   
-  // Gatilho de URL Robusto
+  // Gatilho Atómico de URL
   useEffect(() => {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
       processedRef.current = policy;
       const decoded = decodeURIComponent(policy.replace(/\+/g, ' '));
       setPolicyInput(decoded);
+      // Disparo direto ignorando delays de estado
       handleSimulate(decoded);
     }
   }, [searchParams, handleSimulate]);

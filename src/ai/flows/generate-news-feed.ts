@@ -37,16 +37,20 @@ const prompt = ai.definePrompt({
   prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. 
 A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes considerando que estamos em Março de 2026.
 
-REGRAS CRÍTICAS PARA OS LINKS DE AÇÃO (actionLink):
-1. Use SEMPRE o título humano completo ou a pergunta exata como valor do parâmetro.
-2. NUNCA use IDs técnicos, underscores (ex: previsao_pib) ou slugs. Use espaços normais.
-3. Formatos obrigatórios:
-   - Para 'Alegação': /fact-check?claim=TITULO_DA_NOTICIA
-   - Para 'Nova Lei': /legislation?question=TITULO_DA_NOTICIA
-   - Para 'Análise': /explorer?request=TITULO_DA_NOTICIA ou /dashboard?request=TITULO_DA_NOTICIA
+REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
+1. O valor do parâmetro no URL deve ser EXATAMENTE igual ao 'title' da notícia.
+2. NUNCA use IDs técnicos, underscores, slugs ou códigos (ex: previsao_superavit).
+3. Use apenas espaços normais e texto humano.
+4. FORMATOS OBRIGATÓRIOS:
+   - Se type for 'Alegação': /fact-check?claim=[COPIAR_TITLE_AQUI]
+   - Se type for 'Nova Lei': /legislation?question=[COPIAR_TITLE_AQUI]
+   - Se type for 'Análise': /explorer?request=[COPIAR_TITLE_AQUI]
 
-EXEMPLO DE LINK CORRETO: /explorer?request=Previsão de Crescimento do PIB em 2026
-EXEMPLO DE LINK ERRADO: /explorer?request=previsao_pib_2026
+EXEMPLO CORRETO:
+{
+  "title": "Aumento do Salário Mínimo em 2026",
+  "actionLink": { "href": "/fact-check?claim=Aumento do Salário Mínimo em 2026", "label": "Verificar Factos" }
+}
 
 As notícias devem focar-se no OE2026, habitação e indicadores económicos.
 Use datas entre 2026-02-25 e 2026-03-10.`,

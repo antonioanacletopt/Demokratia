@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -27,20 +26,17 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const { t } = useTranslation();
   const firestore = useFirestore();
   
-  // Extrair o texto alvo do URL
+  // Analisamos o link para ver se já existe um resultado na base de dados
   const url = new URL(href, 'https://demokratia.pt');
   const claim = url.searchParams.get('claim');
   const policy = url.searchParams.get('policy');
-  const question = url.searchParams.get('question');
 
-  // Query para Fact-Check
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
     return query(collection(firestore, 'publicFactChecks'), where('claim', '==', claim), limit(1));
   }, [firestore, claim]);
   const { data: factCheckResults } = useCollection(factCheckQuery);
 
-  // Query para Simulação
   const simulationQuery = useMemoFirebase(() => {
     if (!firestore || !policy) return null;
     return query(collection(firestore, 'publicSimulations'), where('inputVariables', '==', policy), limit(1));
@@ -57,7 +53,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
       <Button asChild variant="default" size={size} className={style.className}>
         <Link href={href}>
           <Icon className="mr-2 h-4 w-4" />
-          <span className="font-bold">[{factCheck.verdict}]</span>
+          <span className="font-bold">[{factCheck.verdict.toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
           {t('common.view')}
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -80,7 +76,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
     );
   }
 
-  // Fallback para o botão original
+  // Botão padrão se não houver resultado prévio
   return (
     <Button asChild variant={variant} size={size}>
       <Link href={href}>
