@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, Save, Languages, RefreshCw } from 'lucide-react';
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Loader2, Zap, Info, Link as LinkIcon, Save } from 'lucide-react';
 import Link from 'next/link';
-import { getEconomicSimulation, getTranslation } from '@/lib/actions';
+import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc, limit, where, getDocs, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -150,13 +150,14 @@ export default function SimulationsPage() {
     
     setCurrentSimulation(null);
     startSimulation(async () => {
+      // Disparo imediato da IA
       const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
       setCurrentSimulation(result);
 
+      // Gravação em background
       if (firestore) {
           const policyId = generateSlug(textToUse);
-          const publicRef = doc(firestore, 'publicSimulations', policyId);
-          setDoc(publicRef, {
+          setDoc(doc(firestore, 'publicSimulations', policyId), {
               userId: user?.uid || 'anon',
               userName: user?.displayName || 'Cidadão',
               userPhotoURL: user?.photoURL || '',
@@ -178,7 +179,6 @@ export default function SimulationsPage() {
       processedRef.current = policy;
       const decoded = decodeURIComponent(policy.replace(/\+/g, ' '));
       setPolicyInput(decoded);
-      // Disparo direto ignorando delays de estado
       handleSimulate(decoded);
     }
   }, [searchParams, handleSimulate]);

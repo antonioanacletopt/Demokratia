@@ -27,9 +27,16 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const firestore = useFirestore();
   
   // Analisamos o link para ver se já existe um resultado na base de dados
-  const url = new URL(href, 'https://demokratia.pt');
-  const claim = url.searchParams.get('claim');
-  const policy = url.searchParams.get('policy');
+  // Usamos URL normal para descodificar o parâmetro humano
+  const getParam = (paramName: string) => {
+      try {
+          const url = new URL(href, 'https://demokratia.pt');
+          return url.searchParams.get(paramName);
+      } catch (e) { return null; }
+  };
+
+  const claim = getParam('claim');
+  const policy = getParam('policy');
 
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;

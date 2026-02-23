@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { getPublicStatistic, getTranslation } from '@/lib/actions';
+import { getPublicStatistic } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
 import { useTranslation } from '@/lib/i18n';
 
@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, Sparkles, Languages, RefreshCw } from 'lucide-react';
+import { Search, Bot, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -85,29 +85,20 @@ function DataTable({ jsonData }: { jsonData: string }) {
 }
 
 function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
-  const { t, language } = useTranslation();
-  const firestore = useFirestore();
-  const [isTranslating, startTransition] = useTransition();
-  const [translated, setTranslated] = useState<{ title: string, desc: string, cat: string } | null>(null);
-  const [showOriginal, setShowOriginal] = useState(true);
-
-  const currentTitle = !showOriginal && translated ? translated.title : dataset.title;
-  const currentDesc = !showOriginal && translated ? translated.desc : dataset.description;
-  const currentCat = !showOriginal && translated ? translated.cat : dataset.category;
-
+  const { t } = useTranslation();
   return (
     <AccordionItem value={dataset.id}>
       <AccordionTrigger className="px-4">
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-left">
-          <span className="font-semibold">{currentTitle}</span>
-          <Badge variant="secondary">{currentCat}</Badge>
+          <span className="font-semibold">{dataset.title}</span>
+          <Badge variant="secondary">{dataset.category}</Badge>
         </div>
       </AccordionTrigger>
       <AccordionContent className="space-y-4 px-4 relative">
         <div className="flex justify-end gap-2 pt-2">
             <RefutationDialog contentId={`dataset-${dataset.id}`} />
         </div>
-        <p className="text-sm text-muted-foreground">{currentDesc}</p>
+        <p className="text-sm text-muted-foreground">{dataset.description}</p>
         <DataTable jsonData={dataset.data} />
         <div className="text-xs text-muted-foreground pt-2">
           <p><strong>{t('explorer.source')}:</strong> {dataset.source}</p>
@@ -125,9 +116,6 @@ export default function ExplorerPage() {
   const processedRequestRef = useRef<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   
-  const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
-  const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
-
   const [statRequest, setStatRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
   const [isAiLoading, startAiTransition] = useTransition();
@@ -138,13 +126,14 @@ export default function ExplorerPage() {
     
     setAiResponse(null);
     startAiTransition(async () => {
+      // Disparamos a IA IMEDIATAMENTE sem esperar pelo Firestore
       const result = await getPublicStatistic({ request: requestToUse });
       setAiResponse(result);
 
+      // Tentamos gravar na base de dados APÓS termos o resultado e SE o firestore estiver pronto
       if (result.isFound && firestore) {
           const id = generateSlug(requestToUse);
-          const publicCollection = collection(firestore, 'publicStatisticQueries');
-          setDoc(doc(publicCollection, id), {
+          setDoc(doc(collection(firestore, 'publicStatisticQueries'), id), {
             request: requestToUse,
             ...result,
             createdAt: serverTimestamp(),
@@ -160,7 +149,7 @@ export default function ExplorerPage() {
       processedRequestRef.current = queryParam;
       const decoded = decodeURIComponent(queryParam.replace(/\+/g, ' '));
       setStatRequest(decoded);
-      // Disparamos diretamente sem esperar pelo estado statRequest atualizar
+      // Disparamos diretamente ignorando delays de estado
       handleStatRequest(decoded);
     }
   }, [searchParams, handleStatRequest]);
@@ -170,6 +159,9 @@ export default function ExplorerPage() {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [aiResponse]);
+
+  const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
+  const { data: datasets, isLoading } = useCollection<StatisticalData>(statisticalDataCollection);
 
   const publicQueriesCollection = useMemoFirebase(() => {
     if (!firestore) return null;
