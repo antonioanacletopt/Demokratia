@@ -69,7 +69,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
     const [showOriginal, setShowOriginal] = useState(true);
 
     useEffect(() => {
-      if (language === 'en' && simulation) {
+      if (language === 'en' && simulation && firestore) {
         const checkCache = async () => {
           const cacheRef = collection(firestore, 'translations_cache');
           const targetLang = 'English';
@@ -99,6 +99,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
     }, [language, simulation, firestore]);
 
     const handleTranslate = () => {
+        if (!firestore) return;
         startTransition(async () => {
             const resImpact = await getTranslation(simulation.simulatedImpact, language);
             const resReasoning = await getTranslation(simulation.reasoning, language);
@@ -239,8 +240,22 @@ export default function SimulationsPage() {
       setCurrentSimulation(null);
       const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
       setCurrentSimulation(result);
+
+      if (firestore) {
+          const policyId = generateSlug(textToUse);
+          const publicRef = doc(firestore, 'publicSimulations', policyId);
+          setDoc(publicRef, {
+              userId: user?.uid || 'anon',
+              userName: user?.displayName || 'Cidadão',
+              userPhotoURL: user?.photoURL || '',
+              title: textToUse, // human friendly
+              inputVariables: textToUse,
+              simulationResults: JSON.stringify(result),
+              runTimestamp: serverTimestamp(),
+          }, { merge: true }).catch(() => {});
+      }
     });
-  }, [policyInput, language]);
+  }, [policyInput, language, firestore, user]);
 
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -279,19 +294,12 @@ export default function SimulationsPage() {
         userId: user.uid,
         title: simulationTitle,
         notes: simulationNotes,
-        inputVariables: policyInput, // This is the human-readable text
+        inputVariables: policyInput,
         simulationResults: JSON.stringify(currentSimulation),
         runTimestamp: serverTimestamp(),
     };
     try {
         await setDoc(doc(firestore, 'users', user.uid, 'simulationScenarios', policyId), simData, { merge: true });
-        if (shareWithCommunity) {
-            await setDoc(doc(firestore, 'publicSimulations', policyId), {
-                ...simData,
-                userName: user.displayName || 'Anonymous',
-                userPhotoURL: user.photoURL || '',
-            }, { merge: true });
-        }
         toast({ title: t('common.success') });
         setSaveDialogOpen(false);
     } catch (e) {
@@ -331,8 +339,12 @@ export default function SimulationsPage() {
       </Card>
       
       <div ref={resultRef} className="scroll-mt-20">
-        {isSimulating && <Skeleton className="h-40 w-full" />}
-        {currentSimulation && (
+        {isSimulating && (
+          <div className="space-y-4 pt-6">
+            <Skeleton className="h-40 w-full" />
+          </div>
+        )}
+        {currentSimulation && !isSimulating && (
             <div className="pt-6 space-y-6">
                 <div className="flex justify-end">
                      <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
@@ -351,10 +363,6 @@ export default function SimulationsPage() {
                                 <Input value={simulationTitle} onChange={(e) => setSimulationTitle(e.target.value)} />
                                 <Label>{t('dashboard.viewDescription')}</Label>
                                 <Textarea value={simulationNotes} onChange={(e) => setSimulationNotes(e.target.value)} />
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox id="share" checked={shareWithCommunity} onCheckedChange={v => setShareWithCommunity(!!v)} />
-                                  <Label htmlFor="share">{t('common.share')}</Label>
-                                </div>
                             </div>
                             <DialogFooter>
                                 <DialogClose asChild>
@@ -415,7 +423,7 @@ export default function SimulationsPage() {
                           </div>
                           <RefutationDialog contentId={`simulation-${sim.id}`} />
                       </div>
-                      <h3 className="font-semibold">{sim.title}</h3>
+                      <h3 className="font-semibold">{sim.title || sim.inputVariables}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 italic">"{sim.inputVariables}"</p>
                       <Button variant="link" className="mt-2 p-0" onClick={() => {
                         const parsed = JSON.parse(sim.simulationResults);

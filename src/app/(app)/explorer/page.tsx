@@ -94,7 +94,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   const [showOriginal, setShowOriginal] = useState(true);
 
   useEffect(() => {
-    if (language === 'en' && dataset) {
+    if (language === 'en' && dataset && firestore) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
         const targetLang = 'English';
@@ -125,6 +125,7 @@ function StatAccordionItem({ dataset }: { dataset: StatisticalData }) {
   }, [language, dataset, firestore]);
 
   const handleTranslate = () => {
+    if (!firestore) return;
     startTransition(async () => {
       const resTitle = await getTranslation(dataset.title, language);
       const resDesc = await getTranslation(dataset.description, language);
@@ -207,16 +208,15 @@ export default function ExplorerPage() {
 
   const handleStatRequest = useCallback((customRequest?: string) => {
     const requestToUse = (customRequest || statRequest).trim();
-    if (!requestToUse || !firestore) return;
+    if (!requestToUse) return;
     
-    const id = generateSlug(requestToUse);
-
     startAiTransition(async () => {
       setAiResponse(null);
       const result = await getPublicStatistic({ request: requestToUse });
       setAiResponse(result);
 
-      if (result.isFound) {
+      if (result.isFound && firestore) {
+          const id = generateSlug(requestToUse);
           const publicCollection = collection(firestore, 'publicStatisticQueries');
           setDoc(doc(publicCollection, id), {
             request: requestToUse,
@@ -233,7 +233,6 @@ export default function ExplorerPage() {
       processedRequestRef.current = queryFromUrl;
       const decoded = decodeURIComponent(queryFromUrl.replace(/\+/g, ' '));
       setStatRequest(decoded);
-      // Trigger request after state is set
       handleStatRequest(decoded);
     }
   }, [searchParams, handleStatRequest]);
@@ -287,9 +286,14 @@ export default function ExplorerPage() {
             disabled={isAiLoading}
           />
           <div ref={resultRef} className="scroll-mt-20">
-            {isAiLoading && <Skeleton className="h-20 w-full" />}
+            {isAiLoading && (
+              <div className="space-y-3 pt-4">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            )}
             {aiResponse && !isAiLoading && (
-              <Alert variant={aiResponse.isFound ? 'default' : 'destructive'}>
+              <Alert variant={aiResponse.isFound ? 'default' : 'destructive'} className="mt-4">
                 <Bot className="h-4 w-4" />
                 <div className="flex justify-between items-start w-full">
                   <AlertTitle>{t('common.aiResponse')}</AlertTitle>
@@ -351,7 +355,12 @@ export default function ExplorerPage() {
         </div>
       </div>
 
-      {isLoading ? <Skeleton className="h-40 w-full" /> : (
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ) : (
         <div className="space-y-6">
           {Object.entries(groupedAndFilteredDatasets).map(([cat, ds]) => (
             <div key={cat}>

@@ -54,7 +54,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   const { data: dataSet, isLoading } = useDoc<PublicData>(dataSetDocRef);
 
   useEffect(() => {
-    if (language === 'en' && dataSet) {
+    if (language === 'en' && dataSet && firestore) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
         const targetLang = 'English';
@@ -84,7 +84,7 @@ function DataSetChart({ dataSetKey }: { dataSetKey: DataSetKey }) {
   }, [language, dataSet, firestore]);
 
   const handleTranslate = () => {
-    if (!dataSet) return;
+    if (!dataSet || !firestore) return;
     startTransition(async () => {
       const resTitle = await getTranslation(dataSet.label, language);
       const resDesc = await getTranslation(dataSet.description, language);
@@ -240,7 +240,7 @@ export default function DashboardPage() {
     const queryFromUrl = searchParams.get('request');
     if (queryFromUrl && queryFromUrl !== processedRef.current) {
       processedRef.current = queryFromUrl;
-      const decoded = decodeURIComponent(queryFromUrl);
+      const decoded = decodeURIComponent(queryFromUrl.replace(/\+/g, ' '));
       setRequest(decoded);
       handleChartRequest(decoded);
     }
