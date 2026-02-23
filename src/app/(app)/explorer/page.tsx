@@ -323,7 +323,7 @@ export default function ExplorerPage() {
         </CardContent>
         <CardFooter>
           <Button onClick={() => handleStatRequest()} disabled={isAiLoading || !statRequest.trim()}>
-            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             {t('explorer.searchBtn')}
           </Button>
         </CardFooter>

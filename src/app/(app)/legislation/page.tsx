@@ -10,7 +10,7 @@ import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/skeleton';
 import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
