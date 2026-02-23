@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, Sparkles } from 'lucide-react';
+import { Search, Bot, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -77,7 +77,8 @@ export default function ExplorerPage() {
   const processedRef = useRef<string | null>(null);
 
   const performSearch = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+    if (!text || !text.trim()) return;
+    
     setIsAiLoading(true);
     setAiResponse(null);
     setStatRequest(text);
@@ -85,6 +86,8 @@ export default function ExplorerPage() {
     try {
       const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
+      
+      // Gravação assíncrona se o firestore estiver pronto
       if (result.isFound && firestore) {
           const id = generateSlug(text);
           setDoc(doc(collection(firestore, 'publicStatisticQueries'), id), {
@@ -96,7 +99,7 @@ export default function ExplorerPage() {
     }
   }, [firestore]);
 
-  // GATILHO ATÓMICO: Dispara assim que deteta o URL, sem filtros.
+  // GATILHO ATÓMICO: Dispara imediatamente ignorando firestore
   useEffect(() => {
     const rawParam = searchParams.get('request');
     if (rawParam && rawParam !== processedRef.current) {
@@ -107,7 +110,11 @@ export default function ExplorerPage() {
     }
   }, [searchParams, performSearch]);
 
-  useEffect(() => { if (aiResponse && resultRef.current) resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [aiResponse]);
+  useEffect(() => { 
+    if (aiResponse && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [aiResponse]);
 
   const datasetsRef = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<StatisticalData>(datasetsRef);

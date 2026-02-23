@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap } from 'lucide-react';
+import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 interface AIResultButtonProps {
@@ -26,7 +26,6 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const { t } = useTranslation();
   const firestore = useFirestore();
   
-  // Analisamos o link para ver se já existe um resultado na base de dados
   const getParam = (paramName: string) => {
       try {
           const url = new URL(href, 'https://demokratia.pt');
@@ -61,7 +60,8 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Icon className="mr-2 h-4 w-4" />
           <span className="font-bold">[{factCheck.verdict.toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          Ver ->
+          {t('common.view')}
+          <ChevronRight className="ml-1 h-3 w-3" />
         </Link>
       </Button>
     );
@@ -74,7 +74,8 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Zap className="mr-2 h-4 w-4 fill-current" />
           <span className="font-bold">[{t('common.simulate').toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          Ver ->
+          {t('common.view')}
+          <ChevronRight className="ml-1 h-3 w-3" />
         </Link>
       </Button>
     );

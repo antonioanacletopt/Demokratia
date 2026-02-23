@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -146,9 +145,8 @@ export default function SimulationsPage() {
   const processedRef = useRef<string | null>(null);
   const searchParams = useSearchParams();
 
-  // Função robusta de simulação
   const performSimulation = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+    if (!text || !text.trim()) return;
     
     setIsSimulating(true);
     setCurrentSimulation(null);
@@ -175,7 +173,6 @@ export default function SimulationsPage() {
     }
   }, [language, firestore, user]);
 
-  // Gatilho Atómico de URL
   useEffect(() => {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
