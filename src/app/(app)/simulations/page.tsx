@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -131,7 +132,7 @@ export default function SimulationsPage() {
   const { t, language } = useTranslation();
   const [policyInput, setPolicyInput] = useState('');
   const [currentSimulation, setCurrentSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
-  const [isSimulating, startSimulation] = useTransition();
+  const [isSimulating, setIsSimulating] = useState(false);
   
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [simulationTitle, setSimulationTitle] = useState('');
@@ -143,45 +144,46 @@ export default function SimulationsPage() {
   const { toast } = useToast();
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
+  const searchParams = useSearchParams();
 
-  const handleSimulate = useCallback(async (customPolicy?: string) => {
-    const textToUse = (customPolicy || policyInput).trim();
-    if (!textToUse) return;
+  // Função robusta de simulação
+  const performSimulation = useCallback(async (text: string) => {
+    if (!text.trim()) return;
     
+    setIsSimulating(true);
     setCurrentSimulation(null);
-    startSimulation(async () => {
-      // Disparo imediato da IA
-      const result = await getEconomicSimulation({ policyDescription: textToUse }, language);
+    setPolicyInput(text);
+
+    try {
+      const result = await getEconomicSimulation({ policyDescription: text }, language);
       setCurrentSimulation(result);
 
-      // Gravação em background
       if (firestore) {
-          const policyId = generateSlug(textToUse);
+          const policyId = generateSlug(text);
           setDoc(doc(firestore, 'publicSimulations', policyId), {
               userId: user?.uid || 'anon',
               userName: user?.displayName || 'Cidadão',
               userPhotoURL: user?.photoURL || '',
-              title: textToUse,
-              inputVariables: textToUse,
+              title: text,
+              inputVariables: text,
               simulationResults: JSON.stringify(result),
               runTimestamp: serverTimestamp(),
           }, { merge: true }).catch(() => {});
       }
-    });
-  }, [policyInput, language, firestore, user]);
+    } finally {
+      setIsSimulating(false);
+    }
+  }, [language, firestore, user]);
 
-  const searchParams = useSearchParams();
-  
   // Gatilho Atómico de URL
   useEffect(() => {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
       processedRef.current = policy;
       const decoded = decodeURIComponent(policy.replace(/\+/g, ' '));
-      setPolicyInput(decoded);
-      handleSimulate(decoded);
+      performSimulation(decoded);
     }
-  }, [searchParams, handleSimulate]);
+  }, [searchParams, performSimulation]);
 
   useEffect(() => {
     if (currentSimulation && resultRef.current) {
@@ -246,7 +248,7 @@ export default function SimulationsPage() {
           />
         </CardContent>
         <CardFooter>
-          <Button onClick={() => handleSimulate()} disabled={isSimulating || !policyInput.trim()}>
+          <Button onClick={() => performSimulation(policyInput)} disabled={isSimulating || !policyInput.trim()}>
             {isSimulating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}
             {isSimulating ? t('simulations.simulating') : t('simulations.simulateBtn')}
           </Button>

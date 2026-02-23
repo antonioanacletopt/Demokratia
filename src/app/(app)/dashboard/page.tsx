@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -211,7 +212,7 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const [request, setRequest] = useState('');
   const [chartResponse, setChartResponse] = useState<GenerateChartOutput | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const searchParams = useSearchParams();
   const processedRef = useRef<string | null>(null);
 
@@ -225,26 +226,29 @@ export default function DashboardPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const handleChartRequest = useCallback((customRequest?: string) => {
-    const requestToUse = (customRequest || request).trim();
-    if (!requestToUse) return;
+  const performChartSearch = useCallback(async (text: string) => {
+    if (!text.trim()) return;
+    
+    setIsAiLoading(true);
+    setChartResponse(null);
+    setRequest(text);
 
-    startTransition(async () => {
-      setChartResponse(null);
-      const result = await getChartFromRequest({ request: requestToUse });
+    try {
+      const result = await getChartFromRequest({ request: text });
       setChartResponse(result);
-    });
-  }, [request]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const queryFromUrl = searchParams.get('request');
     if (queryFromUrl && queryFromUrl !== processedRef.current) {
       processedRef.current = queryFromUrl;
       const decoded = decodeURIComponent(queryFromUrl.replace(/\+/g, ' '));
-      setRequest(decoded);
-      handleChartRequest(decoded);
+      performChartSearch(decoded);
     }
-  }, [searchParams, handleChartRequest]);
+  }, [searchParams, performChartSearch]);
 
   useEffect(() => {
     if (chartResponse && resultRef.current) {
@@ -326,11 +330,12 @@ export default function DashboardPage() {
             placeholder={t('dashboard.textareaPlaceholder')}
             value={request}
             onChange={(e) => setRequest(e.target.value)}
+            disabled={isAiLoading}
           />
         </CardContent>
         <CardFooter className="flex items-center justify-between">
-          <Button onClick={() => handleChartRequest()} disabled={isPending || !request.trim()}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button onClick={() => performChartSearch(request)} disabled={isAiLoading || !request.trim()}>
+            {isAiLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('dashboard.generateBtn')}
           </Button>
           {chartResponse?.isChartable && user && (
@@ -375,7 +380,7 @@ export default function DashboardPage() {
       </Card>
 
       <div ref={resultRef} className="scroll-mt-20">
-        {isPending && (
+        {isAiLoading && (
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-1/2" />
@@ -387,7 +392,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {chartResponse && (
+        {chartResponse && !isAiLoading && (
           chartResponse.isChartable && chartResponse.chartData ? (
             <Card>
               <CardHeader>

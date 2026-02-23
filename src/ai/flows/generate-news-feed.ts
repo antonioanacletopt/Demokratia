@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
@@ -39,19 +40,20 @@ A sua tarefa é gerar uma lista de 4 a 5 notícias recentes e relevantes conside
 
 REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
 1. O valor do parâmetro no URL deve ser EXATAMENTE igual ao 'title' da notícia.
-2. NUNCA use IDs técnicos, underscores, slugs ou códigos (ex: previsao_superavit). Use APENAS espaços normais e texto humano.
-3. FORMATOS OBRIGATÓRIOS:
+2. NUNCA use IDs técnicos, underscores (_), slugs, siglas técnicas ou códigos (ex: previsao_superavit ou 1T2026). 
+3. Use APENAS espaços normais e texto legível por humanos.
+4. FORMATOS OBRIGATÓRIOS:
    - Se type for 'Alegação': /fact-check?claim=[COPIAR_TITLE_EXATO_AQUI]
    - Se type for 'Nova Lei': /legislation?question=[COPIAR_TITLE_EXATO_AQUI]
    - Se type for 'Análise': /explorer?request=[COPIAR_TITLE_EXATO_AQUI]
 
-EXEMPLO CORRETO:
+EXEMPLO CORRETO (Sem códigos, apenas texto):
 {
   "title": "Aumento do Salário Mínimo em 2026",
   "actionLink": { "href": "/fact-check?claim=Aumento do Salário Mínimo em 2026", "label": "Verificar Factos" }
 }
 
-As notícias devem focar-se no OE2026, habitação e indicadores económicos.
+As notícias devem focar-se no OE2026, habitação e indicadores económicos reais de 2026.
 Use datas entre 2026-02-25 e 2026-03-10.`,
 });
 

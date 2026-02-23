@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react';
@@ -113,46 +114,48 @@ export default function ExplorerPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const firestore = useFirestore();
   const searchParams = useSearchParams();
-  const processedRequestRef = useRef<string | null>(null);
+  const processedRef = useRef<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   
   const [statRequest, setStatRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
-  const [isAiLoading, startAiTransition] = useTransition();
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
-  const handleStatRequest = useCallback(async (customRequest?: string) => {
-    const requestToUse = (customRequest || statRequest).trim();
-    if (!requestToUse) return;
+  // Função central de pesquisa IA - desacoplada de estados voláteis
+  const performSearch = useCallback(async (text: string) => {
+    if (!text.trim()) return;
     
+    setIsAiLoading(true);
     setAiResponse(null);
-    startAiTransition(async () => {
-      // Disparamos a IA IMEDIATAMENTE sem esperar pelo Firestore
-      const result = await getPublicStatistic({ request: requestToUse });
+    setStatRequest(text);
+
+    try {
+      const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
 
-      // Tentamos gravar na base de dados APÓS termos o resultado e SE o firestore estiver pronto
+      // Gravação em background após termos o resultado
       if (result.isFound && firestore) {
-          const id = generateSlug(requestToUse);
+          const id = generateSlug(text);
           setDoc(doc(collection(firestore, 'publicStatisticQueries'), id), {
-            request: requestToUse,
+            request: text,
             ...result,
             createdAt: serverTimestamp(),
           }, { merge: true }).catch(() => {});
       }
-    });
-  }, [statRequest, firestore]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [firestore]);
 
-  // Gatilho Atómico de URL
+  // Gatilho Atómico de URL - Correção Definitiva
   useEffect(() => {
     const queryParam = searchParams.get('request');
-    if (queryParam && queryParam !== processedRequestRef.current) {
-      processedRequestRef.current = queryParam;
+    if (queryParam && queryParam !== processedRef.current) {
+      processedRef.current = queryParam;
       const decoded = decodeURIComponent(queryParam.replace(/\+/g, ' '));
-      setStatRequest(decoded);
-      // Disparamos diretamente ignorando delays de estado
-      handleStatRequest(decoded);
+      performSearch(decoded);
     }
-  }, [searchParams, handleStatRequest]);
+  }, [searchParams, performSearch]);
 
   useEffect(() => {
     if (aiResponse && resultRef.current) {
@@ -233,7 +236,7 @@ export default function ExplorerPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={() => handleStatRequest()} disabled={isAiLoading || !statRequest.trim()}>
+          <Button onClick={() => performSearch(statRequest)} disabled={isAiLoading || !statRequest.trim()}>
             {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             {t('explorer.searchBtn')}
           </Button>

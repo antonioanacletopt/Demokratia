@@ -140,18 +140,31 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest');
+        // Mudamos para v3 para invalidar o cache antigo com underscores e nomes técnicos
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v3');
         const cacheSnap = await getDoc(cacheRef);
+        
         if (cacheSnap.exists()) {
           const cacheData = cacheSnap.data();
           const lastUpdated = cacheData.lastUpdated?.toDate() || new Date(0);
           const diffHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-          if (diffHours < CACHE_EXPIRATION_HOURS) { setFeedItems(cacheData.feedItems); setLoading(false); return; }
+          
+          if (diffHours < CACHE_EXPIRATION_HOURS) { 
+            setFeedItems(cacheData.feedItems); 
+            setLoading(false); 
+            return; 
+          }
         }
+        
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
         setDoc(cacheRef, { feedItems: newsFeed.feedItems, lastUpdated: serverTimestamp() }).catch(e => console.warn("Failed news cache", e));
-      } catch (err) { console.error('Failed news:', err); setError(true); } finally { setLoading(false); }
+      } catch (err) { 
+        console.error('Failed news:', err); 
+        setError(true); 
+      } finally { 
+        setLoading(false); 
+      }
     }
     loadFeed();
   }, [firestore]);
