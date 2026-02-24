@@ -87,18 +87,16 @@ export default function ExplorerPage() {
       const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
       
-      // Gravação assíncrona do histórico tenta usar firestore se disponível
+      // Gravação assíncrona do histórico
       if (result.isFound) {
-          try {
-            const db = getFirestore();
-            const id = generateSlug(text);
-            setDoc(doc(collection(db, 'publicStatisticQueries'), id), {
-              request: text, ...result, createdAt: serverTimestamp(),
-            }, { merge: true });
-          } catch (e) {
-            // Firestore not ready yet, silent fail for history
-          }
+          const db = getFirestore();
+          const id = generateSlug(text);
+          setDoc(doc(collection(db, 'publicStatisticQueries'), id), {
+            request: text, ...result, createdAt: serverTimestamp(),
+          }, { merge: true }).catch(() => {});
       }
+    } catch (err) {
+      console.error("AI Error:", err);
     } finally {
       setIsAiLoading(false);
     }
@@ -108,8 +106,10 @@ export default function ExplorerPage() {
     const rawParam = searchParams.get('request');
     if (rawParam && rawParam !== processedRef.current) {
       processedRef.current = rawParam;
+      // Descodificação robusta de espaços (+)
       const decoded = decodeURIComponent(rawParam.replace(/\+/g, ' '));
       setStatRequest(decoded);
+      // Disparo imediato da IA
       performSearch(decoded);
     }
   }, [searchParams, performSearch]);
