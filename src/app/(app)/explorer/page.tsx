@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, getFirestore } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { getPublicStatistic } from '@/lib/actions';
 import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
@@ -76,7 +76,6 @@ export default function ExplorerPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
-  // Função de pesquisa Pura: não depende de firestore para arrancar
   const performSearch = useCallback(async (text: string) => {
     if (!text || !text.trim()) return;
     
@@ -88,19 +87,23 @@ export default function ExplorerPage() {
       const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
       
-      // Gravação assíncrona do histórico apenas se o firestore existir
-      if (result.isFound && firestore) {
-          const id = generateSlug(text);
-          setDoc(doc(collection(firestore, 'publicStatisticQueries'), id), {
-            request: text, ...result, createdAt: serverTimestamp(),
-          }, { merge: true }).catch(() => {});
+      // Gravação assíncrona do histórico tenta usar firestore se disponível
+      if (result.isFound) {
+          try {
+            const db = getFirestore();
+            const id = generateSlug(text);
+            setDoc(doc(collection(db, 'publicStatisticQueries'), id), {
+              request: text, ...result, createdAt: serverTimestamp(),
+            }, { merge: true });
+          } catch (e) {
+            // Firestore not ready yet, silent fail for history
+          }
       }
     } finally {
       setIsAiLoading(false);
     }
-  }, [firestore]);
+  }, []);
 
-  // GATILHO ATÓMICO: Dispara assim que deteta o parâmetro no URL
   useEffect(() => {
     const rawParam = searchParams.get('request');
     if (rawParam && rawParam !== processedRef.current) {

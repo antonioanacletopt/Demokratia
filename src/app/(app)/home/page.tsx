@@ -139,8 +139,8 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        // Cache bust para v7 para limpar IDs técnicos definitivamente
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v7');
+        // Cache bust para v8 para limpar IDs técnicos e aplicar regras humanas
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v8');
         const cacheSnap = await getDoc(cacheRef);
         
         if (cacheSnap.exists()) {

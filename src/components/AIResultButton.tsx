@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap, ChevronRight } from 'lucide-react';
+import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap, ChevronRight, Eye } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
 interface AIResultButtonProps {
@@ -35,6 +35,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
 
   const claim = getParam('claim');
   const policy = getParam('policy');
+  const request = getParam('request');
 
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
@@ -60,8 +61,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Icon className="mr-2 h-4 w-4" />
           <span className="font-bold">[{factCheck.verdict.toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          {t('common.view')}
-          <ChevronRight className="ml-1 h-3 w-3" />
+          <span className="flex items-center gap-1">{t('common.view')} <Eye className="h-3.5 w-3.5" /></span>
         </Link>
       </Button>
     );
@@ -74,8 +74,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
           <Zap className="mr-2 h-4 w-4 fill-current" />
           <span className="font-bold">[{t('common.simulate').toUpperCase()}]</span>
           <span className="mx-2 opacity-50">|</span>
-          {t('common.view')}
-          <ChevronRight className="ml-1 h-3 w-3" />
+          <span className="flex items-center gap-1">{t('common.view')} <Eye className="h-3.5 w-3.5" /></span>
         </Link>
       </Button>
     );

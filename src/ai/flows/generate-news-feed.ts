@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
- * PROIBIÇÃO ABSOLUTA: Não usar IDs técnicos, underscores ou códigos nos links.
+ * REGRAS CRÍTICAS: Nunca usar identificadores técnicos, IDs ou underscores nos links.
  */
 
 import { ai } from '@/ai/genkit';
@@ -36,14 +36,15 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateNewsFeedOutputSchema },
   prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. Estamos em Março de 2026.
 
-REGRAS CRÍTICAS PARA OS LINKS (actionLink.href):
-1. O parâmetro do link deve ser EXATAMENTE o texto do título da notícia.
-2. É ESTRITAMENTE PROIBIDO usar identificadores técnicos como "previsao_pib", "1T2026", underscores (_) ou códigos.
+REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
+1. O parâmetro do link deve ser EXATAMENTE o texto humano do título da notícia.
+2. É ESTRITAMENTE PROIBIDO usar identificadores técnicos, IDs simplificados, underscores (_) ou códigos.
 3. Se o título for "Previsão de Superavit 2026", o link deve ser "/explorer?request=Previsão de Superavit 2026".
 4. FORMATOS OBRIGATÓRIOS:
-   - Alegação: /fact-check?claim=[TÍTULO DA NOTÍCIA]
-   - Nova Lei: /legislation?question=[TÍTULO DA NOTÍCIA]
-   - Análise: /explorer?request=[TÍTULO DA NOTÍCIA]
+   - Alegação: /fact-check?claim=[TÍTULO DA NOTÍCIA EXATO]
+   - Nova Lei: /legislation?question=[TÍTULO DA NOTÍCIA EXATO]
+   - Análise (Estatística): /explorer?request=[TÍTULO DA NOTÍCIA EXATO]
+   - Simulação (Política): /simulations?policy=[TÍTULO DA NOTÍCIA EXATO]
 
 As notícias devem focar-se no Orçamento de Estado 2026, habitação e crescimento económico real de 2026.`,
 });
