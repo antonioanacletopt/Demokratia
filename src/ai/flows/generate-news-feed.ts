@@ -39,14 +39,17 @@ const prompt = ai.definePrompt({
 REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
 1. O parâmetro do link deve ser EXATAMENTE o texto humano do título da notícia.
 2. É ESTRITAMENTE PROIBIDO usar identificadores técnicos, IDs simplificados, underscores (_) ou códigos.
-3. Se o título for "Previsão de Superavit 2026", o link deve ser "/explorer?request=Previsão de Superavit 2026".
-4. FORMATOS OBRIGATÓRIOS:
+3. FORMATOS OBRIGATÓRIOS:
    - Alegação: /fact-check?claim=[TÍTULO DA NOTÍCIA EXATO]
    - Nova Lei: /legislation?question=[TÍTULO DA NOTÍCIA EXATO]
    - Análise (Estatística): /explorer?request=[TÍTULO DA NOTÍCIA EXATO]
-   - Simulação (Política): /simulations?policy=[TÍTULO DA NOTÍCIA EXATO]
+   - Simulação (Impacto/Política): /simulations?policy=[TÍTULO DA NOTÍCIA EXATO]
 
-As notícias devem focar-se no Orçamento de Estado 2026, habitação e crescimento económico real de 2026.`,
+4. CRITÉRIO DE CATEGORIA (MUITO IMPORTANTE):
+   - Se a notícia fala de "Impacto", "Consequências", "Previsão de efeitos" ou "Novas taxas/impostos", use obrigatoriamente a ação de Simulação (/simulations) e o rótulo "Simular Impacto".
+   - Se a notícia fala de "Dados consolidados", "Estatísticas do INE/Pordata", "Números de 2025", use Análise (/explorer) e o rótulo "Explorar Dados".
+
+As notícias devem focar-se no Orçamento de Estado 2026, habitação, novos impostos imobiliários e crescimento económico real de 2026.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(

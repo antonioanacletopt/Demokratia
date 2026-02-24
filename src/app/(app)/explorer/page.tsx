@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -14,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2 } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
@@ -24,6 +23,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { safeDecode } from '@/lib/safe-decode';
+import Link from 'next/link';
 
 interface DataPoint {
   label: string | number;
@@ -224,6 +224,7 @@ export default function ExplorerPage() {
   const [request, setRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<UniversalData | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
   
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
@@ -235,6 +236,7 @@ export default function ExplorerPage() {
     if (!text || !text.trim()) return;
     setIsAiLoading(true);
     setAiResponse(null);
+    setNoResults(false);
     const humanText = safeDecode(text);
     setRequest(humanText);
 
@@ -281,9 +283,12 @@ export default function ExplorerPage() {
         if (firestore) {
           setDoc(doc(firestore, 'publicStatisticQueries', docId), { ...finalResult, createdAt: serverTimestamp() }).catch(() => {});
         }
+      } else {
+        setNoResults(true);
       }
     } catch (e) {
       console.error(e);
+      setNoResults(true);
     } finally {
       setIsAiLoading(false);
     }
@@ -345,6 +350,23 @@ export default function ExplorerPage() {
           />
           <div>
             {isAiLoading && <div className="space-y-4 pt-4"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-[300px] w-full" /></div>}
+            
+            {noResults && !isAiLoading && (
+              <div className="pt-4">
+                <Card className="border-amber-200 bg-amber-50/50">
+                  <CardContent className="py-6 flex flex-col items-center gap-4 text-center">
+                    <p className="text-amber-800 font-medium">Não foram encontrados dados estatísticos brutos para esta pesquisa.</p>
+                    <p className="text-sm text-amber-700">Se procura o impacto económico ou social de uma medida, tente o nosso <strong>Simulador Político</strong>.</p>
+                    <Button asChild variant="outline" className="border-amber-300 bg-white hover:bg-amber-100">
+                      <Link href={`/simulations?policy=${encodeURIComponent(request)}`}>
+                        <Zap className="mr-2 h-4 w-4" /> Ir para o Simulador
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {aiResponse && !isAiLoading && (
               <div className="mt-6 space-y-4">
                 <UniversalDataCard 
