@@ -4,7 +4,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getFactCheck, getTranslation } from '@/lib/actions';
 import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';
@@ -13,12 +13,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
 import { cn } from '@/lib/utils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -177,6 +179,7 @@ export default function FactCheckPage() {
   const [result, setResult] = useState<FactCheckOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const { user } = useUser();
+  const { toast } = useToast();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const processedRef = useRef<string | null>(null);
@@ -236,6 +239,16 @@ export default function FactCheckPage() {
     }
   }, [result]);
 
+  const handleDeleteHistory = async (id: string) => {
+    if (!user || !firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'factChecks', id));
+      toast({ title: t('common.success') });
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col gap-2">
@@ -280,9 +293,28 @@ export default function FactCheckPage() {
                       </Badge>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}>
-                        <RefreshCw className="h-4 w-4 text-primary" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}>
+                          <RefreshCw className="h-4 w-4 text-primary" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-destructive/10 text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                              <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteHistory(h.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                       <RefutationDialog contentId={`factcheck-${h.id}`} />
                     </div>
                   </div>

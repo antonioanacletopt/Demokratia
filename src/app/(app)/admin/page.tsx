@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User, Scale } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -99,6 +99,19 @@ interface PublicSimulation {
   title: string;
   inputVariables: string;
   runTimestamp: any;
+}
+
+interface PublicFactCheck {
+  id: string;
+  claim: string;
+  verdict: string;
+  createdAt: any;
+}
+
+interface PublicLegislation {
+  id: string;
+  question: string;
+  createdAt: any;
 }
 
 const statusConfig = {
@@ -207,6 +220,12 @@ export default function AdminPage() {
 
   const publicSimsCollection = useMemoFirebase(() => collection(firestore, 'publicSimulations'), [firestore]);
   const { data: publicSims, isLoading: isLoadingPublicSims } = useCollection<PublicSimulation>(publicSimsCollection);
+
+  const publicFactChecksCollection = useMemoFirebase(() => collection(firestore, 'publicFactChecks'), [firestore]);
+  const { data: publicFactChecks, isLoading: isLoadingPublicFactChecks } = useCollection<PublicFactCheck>(publicFactChecksCollection);
+
+  const publicLegislationCollection = useMemoFirebase(() => collection(firestore, 'publicLegislationQueries'), [firestore]);
+  const { data: publicLegislation, isLoading: isLoadingPublicLegislation } = useCollection<PublicLegislation>(publicLegislationCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -232,6 +251,16 @@ export default function AdminPage() {
     if (!publicSims) return [];
     return [...publicSims].sort((a, b) => (b.runTimestamp?.seconds || 0) - (a.runTimestamp?.seconds || 0));
   }, [publicSims]);
+
+  const sortedPublicFactChecks = useMemo(() => {
+    if (!publicFactChecks) return [];
+    return [...publicFactChecks].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [publicFactChecks]);
+
+  const sortedPublicLegislation = useMemo(() => {
+    if (!publicLegislation) return [];
+    return [...publicLegislation].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [publicLegislation]);
 
   const sessionStats = useMemo(() => {
     if (!analyticsSessions) return { total: 0, anon: 0, reg: 0 };
@@ -341,6 +370,16 @@ export default function AdminPage() {
     toast({ title: t('common.success') });
   };
 
+  const handleDeletePublicFactCheck = (id: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'publicFactChecks', id));
+    toast({ title: t('common.success') });
+  };
+
+  const handleDeletePublicLegislation = (id: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'publicLegislationQueries', id));
+    toast({ title: t('common.success') });
+  };
+
   const handleUpdateMessageStatus = (id: string, status: 'read' | 'archived') => {
     updateDocumentNonBlocking(doc(firestore, 'contactMessages', id), { status });
     toast({ title: t('common.success') });
@@ -363,6 +402,8 @@ export default function AdminPage() {
         <TabsList className="bg-muted/50 p-1 flex flex-wrap h-auto">
           <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />{t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="simulations" className="gap-2"><Zap className="h-4 w-4" />{t('admin.tabs.simulations')}</TabsTrigger>
+          <TabsTrigger value="factchecks" className="gap-2"><ShieldAlert className="h-4 w-4" />Fact-Checks</TabsTrigger>
+          <TabsTrigger value="legislation" className="gap-2"><Scale className="h-4 w-4" />Legislação</TabsTrigger>
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.refutations')}</TabsTrigger>
           <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />{t('admin.tabs.sources')}</TabsTrigger>
           <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
@@ -485,6 +526,126 @@ export default function AdminPage() {
                       </TableRow>
                     )) : (
                       <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Nenhuma simulação pública registada.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="factchecks" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5" />Gestão de Fact-Checks Públicos</CardTitle>
+              <CardDescription>Limpeza de verificações de factos com IDs técnicos ou obsoletos.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead>Alegação</TableHead>
+                      <TableHead>Veredicto</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoadingPublicFactChecks ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                    ) : sortedPublicFactChecks.length > 0 ? sortedPublicFactChecks.map((fc) => (
+                      <TableRow key={fc.id}>
+                        <TableCell className="font-medium max-w-[300px] truncate">
+                          {fc.claim}
+                          <br />
+                          <code className="text-[10px] bg-muted px-1 rounded text-muted-foreground">{fc.id}</code>
+                        </TableCell>
+                        <TableCell><Badge variant="outline">{fc.verdict}</Badge></TableCell>
+                        <TableCell className="text-xs">
+                          {fc.createdAt ? formatDistanceToNow(fc.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeletePublicFactCheck(fc.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Nenhum fact-check público registado.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="legislation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Scale className="h-5 w-5" />Gestão de Consultas Legislativas</CardTitle>
+              <CardDescription>Gestão de respostas legais públicas.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead>Pergunta</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoadingPublicLegislation ? (
+                      <TableRow><TableCell colSpan={3} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                    ) : sortedPublicLegislation.length > 0 ? sortedPublicLegislation.map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="font-medium max-w-[400px] truncate">
+                          {l.question}
+                          <br />
+                          <code className="text-[10px] bg-muted px-1 rounded text-muted-foreground">{l.id}</code>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {l.createdAt ? formatDistanceToNow(l.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeletePublicLegislation(l.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">Nenhuma consulta legislativa pública.</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>

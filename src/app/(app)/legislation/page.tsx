@@ -4,7 +4,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getLegislationInfo, getTranslation } from '@/lib/actions';
 import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
@@ -12,11 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw, Info } from 'lucide-react';
+import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw, Info, Trash2 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -147,6 +149,7 @@ export default function LegislationPage() {
   const [result, setResult] = useState<ConsultLegislationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const { user } = useUser();
+  const { toast } = useToast();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const processedRef = useRef<string | null>(null);
@@ -207,6 +210,16 @@ export default function LegislationPage() {
     return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
   const { data: recentQueries } = useCollection<LegislationQuery>(publicQueriesQuery);
+
+  const handleDeleteHistory = async (id: string) => {
+    if (!user || !firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'legislationQueries', id));
+      toast({ title: t('common.success') });
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -290,7 +303,26 @@ export default function LegislationPage() {
               {pastQueries.map(q => (
                 <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors">
                   <p className="font-semibold text-muted-foreground italic cursor-pointer" onClick={() => { setQuestion(q.question); setResult(q); }}>"{q.question}"</p>
-                  <RefutationDialog contentId={`legislation-${q.id}`} />
+                  <div className="flex gap-2">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                          <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteHistory(q.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <RefutationDialog contentId={`legislation-${q.id}`} />
+                  </div>
                 </div>
               ))}
             </div>

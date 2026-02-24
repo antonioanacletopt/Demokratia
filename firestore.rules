@@ -4,8 +4,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules v1.3
-     * ATENÇÃO: Coleções públicas têm prioridade absoluta no topo.
+     * Demokratia Portugal: Security Rules v1.4
+     * Gestão administrativa completa de cache pública e conteúdos.
      */
 
     // --- 1. Global Helper Functions ---
@@ -26,7 +26,7 @@ service cloud.firestore {
       );
     }
 
-    // --- 2. Public Content (Read Access for ALL, including anonymous) ---
+    // --- 2. Public Content (Read Access for ALL, Manage for Admin) ---
 
     match /publicSimulations/{id} {
       allow read: if true;
