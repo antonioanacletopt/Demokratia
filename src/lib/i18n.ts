@@ -22,6 +22,11 @@ export const translations = {
       supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...',
       confirm_delete: 'Tem a certeza que deseja apagar?'
     },
+    dashboard: {
+      savedTitle: 'Vistas Guardadas',
+      viewName: 'Nome da Vista',
+      viewDescription: 'Descrição da Vista'
+    },
     home: {
       title: 'Feed de Atualizações', description: 'Acompanhe as últimas notícias e análises de 2026.',
       welcomeTitle: 'Bem-vindo à Demokratia',
@@ -204,6 +209,11 @@ export const translations = {
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
       supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...',
       confirm_delete: 'Are you sure you want to delete?'
+    },
+    dashboard: {
+      savedTitle: 'Saved Views',
+      viewName: 'View Name',
+      viewDescription: 'View Description'
     },
     home: {
       title: 'Updates Feed', description: 'Follow the latest news and analyses in 2026.',
