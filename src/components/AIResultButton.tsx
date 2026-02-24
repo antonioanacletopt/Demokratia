@@ -1,12 +1,14 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap, Eye } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { safeDecode } from '@/lib/safe-decode';
 
 interface AIResultButtonProps {
   href: string;
@@ -30,7 +32,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
       try {
           const url = new URL(href, 'https://demokratia.pt');
           const val = url.searchParams.get(paramName);
-          return val ? val.trim() : null;
+          return val ? safeDecode(val).trim() : null;
       } catch (e) { return null; }
   };
 
@@ -41,12 +43,14 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
     if (!firestore || !claim) return null;
     return query(collection(firestore, 'publicFactChecks'), where('claim', '==', claim), limit(1));
   }, [firestore, claim]);
+  
   const { data: factCheckResults } = useCollection(factCheckQuery);
 
   const simulationQuery = useMemoFirebase(() => {
     if (!firestore || !policy) return null;
     return query(collection(firestore, 'publicSimulations'), where('title', '==', policy), limit(1));
   }, [firestore, policy]);
+  
   const { data: simulationResults } = useCollection(simulationQuery);
 
   const factCheck = factCheckResults?.[0];
