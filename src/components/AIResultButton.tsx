@@ -36,21 +36,29 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
       } catch (e) { return null; }
   };
 
-  const claim = getParam('claim');
-  const policy = getParam('policy');
+  const rawClaim = getParam('claim');
+  const rawPolicy = getParam('policy');
+
+  // Normalização e Limite para evitar erros de permissão em strings complexas
+  const claim = useMemo(() => rawClaim ? rawClaim.substring(0, 500) : null, [rawClaim]);
+  const policy = useMemo(() => rawPolicy ? rawPolicy.substring(0, 500) : null, [rawPolicy]);
 
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
-    const colRef = collection(firestore, 'publicFactChecks');
-    return query(colRef, where('claim', '==', claim), limit(1));
+    try {
+      const colRef = collection(firestore, 'publicFactChecks');
+      return query(colRef, where('claim', '==', claim), limit(1));
+    } catch (e) { return null; }
   }, [firestore, claim]);
   
   const { data: factCheckResults } = useCollection(factCheckQuery);
 
   const simulationQuery = useMemoFirebase(() => {
     if (!firestore || !policy) return null;
-    const colRef = collection(firestore, 'publicSimulations');
-    return query(colRef, where('title', '==', policy), limit(1));
+    try {
+      const colRef = collection(firestore, 'publicSimulations');
+      return query(colRef, where('title', '==', policy), limit(1));
+    } catch (e) { return null; }
   }, [firestore, policy]);
   
   const { data: simulationResults } = useCollection(simulationQuery);

@@ -4,11 +4,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules v1.2
-     * Prioridade absoluta para coleções públicas e permissões administrativas.
+     * Demokratia Portugal: Security Rules v1.3
+     * ATENÇÃO: Coleções públicas têm prioridade absoluta no topo.
      */
 
-    // --- Global Helper Functions ---
+    // --- 1. Global Helper Functions ---
 
     function isSignedIn() {
       return request.auth != null;
@@ -26,46 +26,44 @@ service cloud.firestore {
       );
     }
 
-    // --- 1. Public Content (Total Read Access for all) ---
+    // --- 2. Public Content (Read Access for ALL, including anonymous) ---
 
     match /publicSimulations/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicFactChecks/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicLegislationQueries/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicStatisticQueries/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /statisticalData/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     match /dataSources/{id} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- 2. Community Proposals ---
-
     match /communityProposals/{proposalId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
