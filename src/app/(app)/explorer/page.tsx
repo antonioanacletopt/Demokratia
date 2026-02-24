@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -13,14 +14,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { safeDecode } from '@/lib/safe-decode';
 
@@ -67,6 +68,34 @@ function downloadCsv(data: any[], filename: string) {
   document.body.removeChild(link);
 }
 
+function ChartRenderer({ data, chartType, unit, height = 250 }: { data: DataPoint[], chartType: 'bar' | 'line', unit: string, height?: number }) {
+  const chartConfig: ChartConfig = {
+    value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
+  };
+
+  return (
+    <ChartContainer config={chartConfig} className="w-full" style={{ height: `${height}px` }}>
+      {chartType === 'line' ? (
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
+          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+          <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+          <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-value)' }} activeDot={{ r: 6 }} />
+        </LineChart>
+      ) : (
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
+          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+          <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+          <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      )}
+    </ChartContainer>
+  );
+}
+
 function UniversalDataCard({ 
   title, 
   description, 
@@ -86,10 +115,6 @@ function UniversalDataCard({
     );
   }
 
-  const chartConfig: ChartConfig = {
-    value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
-  };
-
   const headers = data?.[0] ? Object.keys(data[0]) : [];
 
   return (
@@ -103,31 +128,58 @@ function UniversalDataCard({
           <div className="flex items-center gap-1 shrink-0">
             <Button variant={viewMode === 'chart' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('chart')}><BarChart3 className="h-4 w-4" /></Button>
             <Button variant={viewMode === 'table' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><TableIcon className="h-4 w-4" /></Button>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Maximize2 className="h-4 w-4" /></Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl w-[95vw] h-[80vh] flex flex-col">
+                <DialogHeader>
+                  <DialogTitle>{title}</DialogTitle>
+                  <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 min-h-0 py-6">
+                  {viewMode === 'chart' ? (
+                    <ChartRenderer data={data} chartType={chartType} unit={unit} height={450} />
+                  ) : (
+                    <div className="h-full overflow-auto rounded-md border">
+                      <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                          <TableRow>
+                            {headers.map(h => <TableHead key={h} className="uppercase font-bold">{h}</TableHead>)}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {data.map((row, i) => (
+                            <TableRow key={i}>
+                              {headers.map((h, j) => (
+                                <TableCell key={j} className="text-base py-3">
+                                  {String(row[h] !== undefined ? row[h] : '')}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter className="flex justify-between items-center sm:justify-between">
+                  <p className="text-xs text-muted-foreground italic">Fonte: {source}</p>
+                  <Button variant="outline" size="sm" onClick={() => downloadCsv(data, title)}><Download className="h-4 w-4 mr-2" /> Exportar CSV</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, title)}><Download className="h-4 w-4" /></Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6">
         {viewMode === 'chart' ? (
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            {chartType === 'line' ? (
-              <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-value)' }} activeDot={{ r: 6 }} />
-              </LineChart>
-            ) : (
-              <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
-                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            )}
-          </ChartContainer>
+          <div className="cursor-zoom-in" title="Clique para expandir">
+            <ChartRenderer data={data} chartType={chartType} unit={unit} />
+          </div>
         ) : (
           <div className="overflow-x-auto rounded-md border max-h-[250px]">
             <Table>
