@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /profile
-Disallow: /admin
-Disallow: /seed
-Disallow: /scenarios
+Allow: /ads.txt
+
+Sitemap: https://demokratia.pt/sitemap.xml
