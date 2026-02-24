@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
+import { safeDecode } from '@/lib/safe-decode';
 
 interface UserSimulationRun {
   id: string;
@@ -193,7 +194,7 @@ export default function SimulationsPage() {
     const policy = searchParams.get('policy');
     if (policy && policy !== processedRef.current) {
       processedRef.current = policy;
-      const decoded = decodeURIComponent(policy.replace(/\+/g, ' '));
+      const decoded = safeDecode(policy);
       performSimulation(decoded);
     }
   }, [searchParams, performSimulation]);

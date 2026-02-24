@@ -16,6 +16,7 @@ import { AdBanner } from '@/components/AdBanner';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useTranslation } from '@/lib/i18n';
+import { safeDecode } from '@/lib/safe-decode';
 
 function SimulationResult({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
     return (
@@ -102,7 +103,7 @@ export default function SimulatorPage() {
   useEffect(() => {
     const policyFromQuery = searchParams.get('policy');
     if (policyFromQuery) {
-      setPolicy1(decodeURIComponent(policyFromQuery));
+      setPolicy1(safeDecode(policyFromQuery));
     }
   }, [searchParams]);
 

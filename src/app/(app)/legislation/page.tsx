@@ -15,6 +15,7 @@ import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw } from 'lu
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
+import { safeDecode } from '@/lib/safe-decode';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -183,7 +184,7 @@ export default function LegislationPage() {
     const questionFromQuery = searchParams.get('question');
     if (questionFromQuery && questionFromQuery !== processedRef.current) {
       processedRef.current = questionFromQuery;
-      const decoded = decodeURIComponent(questionFromQuery.replace(/\+/g, ' '));
+      const decoded = safeDecode(questionFromQuery);
       setQuestion(decoded);
       handleConsultation(decoded);
     }

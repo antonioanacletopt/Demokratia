@@ -22,6 +22,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'rec
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { safeDecode } from '@/lib/safe-decode';
 
 interface DataPoint {
   label: string | number;
@@ -89,7 +90,7 @@ function UniversalDataCard({
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
 
-  const headers = data && data[0] ? Object.keys(data[0]) : [];
+  const headers = data?.[0] ? Object.keys(data[0]) : [];
 
   return (
     <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-shadow">
@@ -182,7 +183,7 @@ export default function ExplorerPage() {
     if (!text || !text.trim()) return;
     setIsAiLoading(true);
     setAiResponse(null);
-    const humanText = decodeURIComponent(text.replace(/\+/g, ' '));
+    const humanText = safeDecode(text);
     setRequest(humanText);
 
     try {

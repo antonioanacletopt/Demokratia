@@ -16,6 +16,7 @@ import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Lan
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
+import { safeDecode } from '@/lib/safe-decode';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -175,7 +176,7 @@ export default function FactCheckPage() {
     const q = searchParams.get('claim');
     if (q && q !== processedRef.current) {
       processedRef.current = q;
-      const decoded = decodeURIComponent(q.replace(/\+/g, ' '));
+      const decoded = safeDecode(q);
       setClaim(decoded);
       handleFactCheck(decoded);
     }
