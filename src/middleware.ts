@@ -4,12 +4,13 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // EXCEÇÃO CRÍTICA E TOTAL: Permitir acesso direto a ficheiros de sistema e pasta public
-  // Isto garante que o AdSense, Google Crawlers e ficheiros estáticos nunca são bloqueados
+  // EXCEÇÃO CRÍTICA E TOTAL: Permitir acesso direto e anónimo a ficheiros de sistema e pasta public
+  // Isto garante que o AdSense, Google Crawlers e ficheiros estáticos nunca são bloqueados ou redirecionados
   if (
     pathname === '/ads.txt' || 
     pathname === '/robots.txt' || 
     pathname === '/favicon.ico' || 
+    pathname === '/sitemap.xml' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api')
   ) {
@@ -21,7 +22,7 @@ export function middleware(request: NextRequest) {
   
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
 
-  // Redirecionamento de domínio apenas se não for um ficheiro estático
+  // Redirecionamento de domínio apenas se não for um ficheiro estático público
   if (host === sourceDomain) {
       const newUrl = new URL(request.url);
       newUrl.hostname = targetDomain;

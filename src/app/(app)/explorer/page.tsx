@@ -87,7 +87,7 @@ export default function ExplorerPage() {
       const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
       
-      // Gravação assíncrona do histórico
+      // Gravação silenciosa no histórico quando possível
       if (result.isFound) {
           const db = getFirestore();
           const id = generateSlug(text);
@@ -109,7 +109,7 @@ export default function ExplorerPage() {
       // Descodificação robusta de espaços (+)
       const decoded = decodeURIComponent(rawParam.replace(/\+/g, ' '));
       setStatRequest(decoded);
-      // Disparo imediato da IA
+      // Disparo imediato sem depender de firestore ready
       performSearch(decoded);
     }
   }, [searchParams, performSearch]);
