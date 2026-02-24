@@ -1,8 +1,8 @@
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
- * REGRAS CRÍTICAS: Nunca usar identificadores técnicos, IDs ou underscores nos links.
- * Incorpora agora fontes do Diário da República (DRE).
+ * REGRAS CRÍTICAS: Foco total na relevância social, política e económica para o cidadão.
+ * Prioriza o impacto real na vida das pessoas (bolso, direitos, serviços públicos).
  */
 
 import { ai } from '@/ai/genkit';
@@ -37,21 +37,24 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateNewsFeedOutputSchema },
   prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. Estamos em Março de 2026.
 
+CRITÉRIO DE SELEÇÃO (MUITO IMPORTANTE):
+A sua tarefa não é apenas listar notícias, mas selecionar os factos que têm maior RELEVÂNCIA SOCIAL. 
+Escolha temas que impactem diretamente a vida, o bolso ou os direitos do cidadão comum, como:
+- Alterações fiscais (IRS, impostos sobre habitação).
+- Decisões sobre o SNS ou Educação.
+- Evolução real do poder de compra e inflação.
+- Simplificação da burocracia (heranças, legalizações).
+- Grandes decisões parlamentares com impacto social.
+
 REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
 1. O parâmetro do link deve ser EXATAMENTE o texto humano do título da notícia.
-2. É ESTRITAMENTE PROIBIDO usar identificadores técnicos, IDs simplificados, underscores (_) ou códigos.
-3. FORMATOS OBRIGATÓRIOS:
+2. FORMATOS OBRIGATÓRIOS:
    - Alegação: /fact-check?claim=[TÍTULO DA NOTÍCIA EXATO]
    - Nova Lei: /legislation?question=[TÍTULO DA NOTÍCIA EXATO]
    - Análise (Estatística): /explorer?request=[TÍTULO DA NOTÍCIA EXATO]
    - Simulação (Impacto/Política): /simulations?policy=[TÍTULO DA NOTÍCIA EXATO]
 
-4. CRITÉRIO DE CATEGORIA E RÓTULO (MUITO IMPORTANTE):
-   - Se a notícia fala de "Impacto", "Consequências", "Previsão de efeitos" ou "Novas taxas/impostos", use Simulação (/simulations) e o rótulo "Simular Impacto".
-   - Se a notícia fala de "Dados consolidados", "Estatísticas do INE/Pordata", "Números de 2025", use Análise (/explorer) e o rótulo "Explorar Dados".
-   - Se a notícia provém do "Diário da República", "DRE", ou refere um "Novo Decreto-Lei", "Simplificação Administrativa" ou "Alteração Legislativa", use Legislação (/legislation) e o rótulo "Analisar Lei".
-
-As notícias devem focar-se no Orçamento de Estado 2026, habitação, novos impostos imobiliários, deburocratização de heranças, legalização de imóveis devolutos e crescimento económico real de 2026. O Diário da República (DRE) deve ser considerado uma fonte primária fundamental para notícias sobre novas leis e simplificação de processos.`,
+As notícias devem ser diversas e refletir o que importa à sociedade para estar informada de forma isenta e rigorosa em 2026.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -141,7 +140,7 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v13');
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v14');
         const cacheSnap = await getDoc(cacheRef);
         
         if (cacheSnap.exists()) {
