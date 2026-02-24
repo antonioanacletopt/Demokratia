@@ -2,8 +2,7 @@
 'use server';
 /**
  * @fileOverview AI flow to analyze and explain a user-created macroeconomic scenario.
- *
- * - analyzeScenario - Function to handle the analysis.
+ * Updated to handle new parameters: IRC, SMN, Public Debt and Budget Balance.
  */
 
 import { ai } from '@/ai/genkit';
@@ -13,12 +12,16 @@ const AnalyzeScenarioInputSchema = z.object({
   parameters: z.object({
     irs: z.number(),
     iva: z.number(),
+    irc: z.number(),
     investment: z.number(),
+    smn: z.number(),
   }),
   results: z.object({
     gdp: z.number(),
     unemployment: z.number(),
     inflation: z.number(),
+    debt: z.number(),
+    balance: z.number(),
   }),
   language: z.enum(['Portuguese', 'English']).default('Portuguese'),
 });
@@ -40,19 +43,26 @@ const prompt = ai.definePrompt({
   prompt: `Você é um analista sénior do Conselho de Finanças Públicas de Portugal. 
 Sua tarefa é analisar criticamente um cenário macroeconómico hipotético criado por um cidadão para o ano de 2026.
 
-**DADOS DO CENÁRIO:**
-- Ajuste de IRS: {{parameters.irs}}% (Face à média atual)
-- Ajuste de IVA: {{parameters.iva}}% (Face à média atual)
+**DADOS DO CENÁRIO (POLÍTICAS):**
+- Taxa Média IRS: {{parameters.irs}}%
+- Taxa Média IVA: {{parameters.iva}}%
+- Taxa IRC: {{parameters.irc}}%
 - Investimento Público: {{parameters.investment}}% do PIB
-- Resultado PIB Projetado: {{results.gdp}}%
-- Resultado Desemprego: {{results.unemployment}}%
-- Resultado Inflação: {{results.inflation}}%
+- Salário Mínimo Nacional (SMN): {{parameters.smn}}€
 
-**INSTRUÇÕES:**
-1. Avalie se o cenário é sustentável (ex: baixar todos os impostos e subir investimento causa défice excessivo).
-2. Explique os mecanismos económicos em jogo (ex: efeito multiplicador do investimento vs pressão inflacionista).
-3. Seja pedagógico e neutro. Use um tom profissional.
-4. Escreva a sua análise obrigatoriamente em {{language}}.
+**PROJEÇÕES DE RESULTADO:**
+- Crescimento PIB: {{results.gdp}}%
+- Desemprego: {{results.unemployment}}%
+- Inflação: {{results.inflation}}%
+- Dívida Pública: {{results.debt}}% do PIB
+- Saldo Orçamental: {{results.balance}}% do PIB (Positivo = Superávit, Negativo = Défice)
+
+**INSTRUÇÕES DE ANÁLISE:**
+1. Avalie a **Consistência Orçamental**: Baixar impostos (IRS/IVA/IRC) e subir o SMN/Investimento simultaneamente gera um défice perigoso?
+2. Avalie a **Competitividade**: Como é que a alteração do IRC e SMN afeta a atração de empresas e o emprego.
+3. Explique os mecanismos (ex: Curva de Laffer se os impostos baixarem muito, ou efeito multiplicador do investimento).
+4. Use um tom profissional, pedagógico e neutro.
+5. Escreva obrigatoriamente em {{language}}.
 
 **ANÁLISE:**`,
 });
