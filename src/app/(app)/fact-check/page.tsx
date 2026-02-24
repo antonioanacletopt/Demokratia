@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2 } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Share2 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -59,10 +59,12 @@ function generateSlug(text: string): string {
 
 function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, claim: string }) {
   const { t, language } = useTranslation();
+  const { toast } = useToast();
   const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ verdict: string, explanation: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (language === 'en' && result) {
@@ -107,6 +109,15 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
     });
   };
 
+  const handleCopyLink = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('claim', claim);
+    navigator.clipboard.writeText(url.toString());
+    setCopied(true);
+    toast({ title: t('common.linkCopied') });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const currentVerdict = !showOriginal && translated ? translated.verdict : result.verdict;
   const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
   const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
@@ -115,12 +126,16 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   return (
     <Card className="border-primary/10 shadow-lg overflow-hidden">
       <CardHeader className="border-b bg-muted/30">
-        <div className="flex justify-between items-start gap-4">
+        <div className="flex flex-wrap justify-between items-start gap-4">
           <div className="flex-1">
             <CardTitle className="text-xl flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" />{t('factCheck.resultTitle')}</CardTitle>
             <CardDescription className="italic mt-1 line-clamp-2">"{claim}"</CardDescription>
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={handleCopyLink} className="h-8 gap-1.5 text-xs">
+              {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Share2 className="h-3.5 w-3.5" />}
+              {t('common.share')}
+            </Button>
             <RefutationDialog contentId={`factcheck-${generateSlug(claim)}`} trigger={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive"><MessageSquareWarning className="h-3.5 w-3.5" />{t('refutation.refuteBtn')}</Button>} />
             {language !== 'pt' && (
               <Button variant="outline" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 gap-1.5 text-xs">
@@ -287,7 +302,7 @@ export default function FactCheckPage() {
                 return (
                   <div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card">
                     <div className="max-w-[75%]">
-                      <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug cursor-pointer" onClick={() => { setClaim(h.claim); setResult(h); }}>"{h.claim}"</p>
+                      <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">"{h.claim}"</p>
                       <Badge variant="outline" className={cn("text-[9px] uppercase tracking-wider border-none", config.badge)}>
                         {h.verdict}
                       </Badge>

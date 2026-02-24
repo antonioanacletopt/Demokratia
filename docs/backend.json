@@ -81,6 +81,27 @@
           "entityName": "VisitorSession",
           "description": "Anonymous and registered user access logs."
         }
+      },
+      {
+        "path": "/publicSimulations/{simId}",
+        "definition": {
+          "entityName": "SimulationCache",
+          "description": "Publicly cached economic simulations."
+        }
+      },
+      {
+        "path": "/publicFactChecks/{checkId}",
+        "definition": {
+          "entityName": "FactCheckCache",
+          "description": "Publicly cached fact verification results."
+        }
+      },
+      {
+        "path": "/publicLegislationQueries/{queryId}",
+        "definition": {
+          "entityName": "LegislationCache",
+          "description": "Publicly cached legal queries and analysis."
+        }
       }
     ]
   }

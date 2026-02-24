@@ -3,7 +3,7 @@
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle } from 'lucide-react';
+import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle, Share2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
@@ -60,7 +60,9 @@ function generateSlug(text: string): string {
 
 function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const router = useRouter();
+    const [copied, setCopied] = useState(false);
 
     const handleConvertToProposal = () => {
         const params = new URLSearchParams();
@@ -69,9 +71,22 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
         router.push(`/proposals?${params.toString()}`);
     };
 
+    const handleCopyLink = () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('policy', policyText);
+        navigator.clipboard.writeText(url.toString());
+        setCopied(true);
+        toast({ title: t('common.linkCopied') });
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
         <div className="space-y-6">
-             <div className="flex justify-end gap-2">
+             <div className="flex flex-wrap justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={handleCopyLink} className="gap-2">
+                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Share2 className="h-4 w-4" />}
+                      {t('common.share')}
+                  </Button>
                   <Button variant="outline" size="sm" onClick={handleConvertToProposal} className="gap-2 text-accent border-accent/20 hover:bg-accent/10">
                       <MessageSquarePlus className="h-4 w-4" />
                       {t('simulations.convertToProposal')}
@@ -439,7 +454,7 @@ export default function SimulationsPage() {
                       </div>
                       <h3 className="font-semibold">{sim.title || sim.inputVariables}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 italic">"{sim.inputVariables}"</p>
-                      <Button variant="link" className="mt-2 p-0" onClick={() => {
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => {
                         const parsed = JSON.parse(sim.simulationResults);
                         setCurrentSimulation(parsed);
                         setPolicyInput(sim.inputVariables);

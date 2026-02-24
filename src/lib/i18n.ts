@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -7,14 +8,14 @@ export type Language = 'pt' | 'en';
 export const translations = {
   pt: {
     nav: {
-      home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador', simulations: 'Simulações', factCheck: 'Fact Check',
+      home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
       noResults: 'Nenhum resultado encontrado.', view: 'Ver', back: 'Voltar', submit: 'Submeter', aiResponse: 'Resposta da IA',
-      sources: 'Fontes Oficiais', share: 'Partilhar com a comunidade', error: 'Ocorreu um erro.', success: 'Sucesso!',
+      sources: 'Fontes Oficiais', share: 'Partilhar Link', copyLink: 'Copiar Link', linkCopied: 'Link copiado!', error: 'Ocorreu um erro.', success: 'Sucesso!',
       portuguese: 'Português', english: 'Inglês', language: 'Idioma', warning: 'Aviso', close: 'Fechar', accept: 'Aceitar',
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
       supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...',
@@ -159,14 +160,14 @@ export const translations = {
   },
   en: {
     nav: {
-      home: 'Home', dashboard: 'Dashboard', explorer: 'Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
+      home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
       noResults: 'No results found.', view: 'View', back: 'Back', submit: 'Submit', aiResponse: 'AI Response',
-      sources: 'Official Sources', share: 'Share with community', error: 'An error occurred.', success: 'Success!',
+      sources: 'Official Sources', share: 'Share Link', copyLink: 'Copy Link', linkCopied: 'Link copied!', error: 'An error occurred.', success: 'Success!',
       portuguese: 'Portuguese', english: 'English', language: 'Language', warning: 'Warning', close: 'Close', accept: 'Accept',
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
       supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...',
