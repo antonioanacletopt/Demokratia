@@ -89,8 +89,7 @@ function UniversalDataCard({
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
 
-  // HEADER PROTECTION: Garantir que não crasha se data[0] for undefined
-  const headers = data?.[0] ? Object.keys(data[0]) : [];
+  const headers = data && data[0] ? Object.keys(data[0]) : [];
 
   return (
     <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-shadow">
@@ -187,7 +186,6 @@ export default function ExplorerPage() {
     setRequest(humanText);
 
     try {
-      // LOGICA CACHE GLOBAL: Verificar se a resposta já existe publicamente
       const docId = generateSlug(humanText);
       if (firestore) {
         const publicRef = doc(firestore, 'publicStatisticQueries', docId);
@@ -227,7 +225,6 @@ export default function ExplorerPage() {
 
       if (finalResult) {
         setAiResponse(finalResult);
-        // Gravar publicamente para o próximo cidadão não gastar tokens
         if (firestore) {
           setDoc(doc(firestore, 'publicStatisticQueries', docId), { ...finalResult, createdAt: serverTimestamp() }).catch(() => {});
         }
@@ -347,8 +344,8 @@ export default function ExplorerPage() {
                   {ds.map((d: any) => {
                     const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
                     const chartFriendlyData = Array.isArray(parsedData) ? parsedData.map(item => ({
-                      label: item.Ano || item.Escalão || item.Especialidade || item.Fluxo || Object.values(item)[0],
-                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || item['Taxa (%)'] || item.Quantidade || item.Inscritos || item['Nº Empresas'] || Object.values(item)[1]).replace('%', '').replace(',', '.')) || 0
+                      label: item.Ano || item.Escalão || item.Especialidade || item.Fluxo || (item && Object.values(item)[0] ? Object.values(item)[0] : 'N/A'),
+                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || item['Taxa (%)'] || item.Quantidade || item.Inscritos || item['Nº Empresas'] || (item && Object.values(item)[1] ? Object.values(item)[1] : '0')).replace('%', '').replace(',', '.')) || 0
                     })) : [];
 
                     return (
