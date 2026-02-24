@@ -1,8 +1,7 @@
 'use server';
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
- * Ensures every item has an action link with proper human-readable titles.
- * PROIBIDO: O uso de IDs técnicos, underscores (_) ou códigos nos links.
+ * PROIBIÇÃO ABSOLUTA: Não usar IDs técnicos, underscores ou códigos nos links.
  */
 
 import { ai } from '@/ai/genkit';
@@ -35,25 +34,18 @@ export async function generateNewsFeed(): Promise<GenerateNewsFeedOutput> {
 const prompt = ai.definePrompt({
   name: 'generateNewsFeedPrompt',
   output: { schema: GenerateNewsFeedOutputSchema },
-  prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. 
-A sua tarefa é gerar uma lista de 4 a 5 notícias recentes considerando que estamos em Março de 2026.
+  prompt: `Você é um analista político e económico experiente, focado na atualidade portuguesa no ano de 2026. Estamos em Março de 2026.
 
 REGRAS CRÍTICAS PARA OS LINKS (actionLink.href):
-1. Use APENAS o texto do título da notícia como parâmetro.
-2. NUNCA, SOB QUALQUER CIRCUNSTÂNCIA, use IDs técnicos como "previsao_superavit", "1T2026", underscores (_) ou códigos.
-3. Se o título for "Aumento do Salário Mínimo", o link deve ser "/fact-check?claim=Aumento do Salário Mínimo".
-4. FORMATOS:
-   - Alegação: /fact-check?claim=[TÍTULO EXATO]
-   - Nova Lei: /legislation?question=[TÍTULO EXATO]
-   - Análise: /explorer?request=[TÍTULO EXATO]
+1. O parâmetro do link deve ser EXATAMENTE o texto do título da notícia.
+2. É ESTRITAMENTE PROIBIDO usar identificadores técnicos como "previsao_pib", "1T2026", underscores (_) ou códigos.
+3. Se o título for "Previsão de Superavit 2026", o link deve ser "/explorer?request=Previsão de Superavit 2026".
+4. FORMATOS OBRIGATÓRIOS:
+   - Alegação: /fact-check?claim=[TÍTULO DA NOTÍCIA]
+   - Nova Lei: /legislation?question=[TÍTULO DA NOTÍCIA]
+   - Análise: /explorer?request=[TÍTULO DA NOTÍCIA]
 
-Exemplo Humano:
-{
-  "title": "Crescimento do PIB em 2026",
-  "actionLink": { "href": "/explorer?request=Crescimento do PIB em 2026", "label": "Explorar Dados" }
-}
-
-As notícias devem focar-se no OE2026, habitação e indicadores económicos reais de 2026.`,
+As notícias devem focar-se no Orçamento de Estado 2026, habitação e crescimento económico real de 2026.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(

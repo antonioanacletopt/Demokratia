@@ -76,6 +76,7 @@ export default function ExplorerPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
+  // Função de pesquisa Pura: não depende de firestore para arrancar
   const performSearch = useCallback(async (text: string) => {
     if (!text || !text.trim()) return;
     
@@ -87,7 +88,7 @@ export default function ExplorerPage() {
       const result = await getPublicStatistic({ request: text });
       setAiResponse(result);
       
-      // Gravação assíncrona se o firestore estiver pronto
+      // Gravação assíncrona do histórico apenas se o firestore existir
       if (result.isFound && firestore) {
           const id = generateSlug(text);
           setDoc(doc(collection(firestore, 'publicStatisticQueries'), id), {
@@ -99,7 +100,7 @@ export default function ExplorerPage() {
     }
   }, [firestore]);
 
-  // GATILHO ATÓMICO: Dispara imediatamente ignorando firestore
+  // GATILHO ATÓMICO: Dispara assim que deteta o parâmetro no URL
   useEffect(() => {
     const rawParam = searchParams.get('request');
     if (rawParam && rawParam !== processedRef.current) {
