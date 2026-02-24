@@ -1,21 +1,22 @@
+
 /**
  * @fileOverview This file implements a Genkit flow for fact-checking claims
- * based on reliable public sources. Updated for maximum rigor and timeline analysis.
+ * based on reliable public sources. Updated for 2026 and input normalization.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const FactCheckInputSchema = z.object({
-  claim: z.string().describe('The claim or statement to be fact-checked.'),
-  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('The language for the output.'),
+  claim: z.string().describe('A alegação a verificar.'),
+  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('O idioma para o resultado.'),
 });
 export type FactCheckInput = z.infer<typeof FactCheckInputSchema>;
 
 const FactCheckOutputSchema = z.object({
-  verdict: z.enum(['Verdadeiro', 'Falso', 'Enganador', 'Sem Evidência']).describe('The final verdict of the fact-check.'),
-  explanation: z.string().describe('A detailed explanation supporting the verdict.'),
-  sources: z.array(z.string()).describe('A list of URLs to the primary sources used.'),
+  verdict: z.enum(['Verdadeiro', 'Falso', 'Enganador', 'Sem Evidência']).describe('O veredicto final.'),
+  explanation: z.string().describe('Explicação detalhada com contexto.'),
+  sources: z.array(z.string()).describe('Lista de URLs das fontes primárias.'),
 });
 export type FactCheckOutput = z.infer<typeof FactCheckOutputSchema>;
 
@@ -27,19 +28,19 @@ const prompt = ai.definePrompt({
   name: 'factCheckClaimPrompt',
   input: { schema: FactCheckInputSchema },
   output: { schema: FactCheckOutputSchema },
-  prompt: `Você é um jornalista de verificação de factos (fact-checker) de investigação, extremamente rigoroso e focado na realidade portuguesa.
+  prompt: `Você é um jornalista de investigação especializado em fact-checking, focado na realidade portuguesa de Março de 2026.
 
-**REGRA DE OURO: A sua resposta completa (campos 'verdict' e 'explanation') deve ser escrita OBRIGATORIAMENTE em {{{language}}}.**
+**NORMALIZAÇÃO DE INPUT:**
+- O utilizador pode submeter texto com erros ortográficos. Corrija-os mentalmente e baseie a sua verificação no sentido correto da frase. A sua explicação deve estar escrita de forma gramaticalmente impecável em {{{language}}}.
+
+**Análise Rigorosa (Contexto 2026):**
+1. Não aceite dados de 2023 como "atuais" se existirem atualizações em 2024 ou 2025.
+2. Verifique se a alegação se refere ao Orçamento de Estado 2026 ou a medidas recentes do governo.
+3. Se um dado era verdadeiro em 2023 mas foi desmentido ou alterado em 2025, o veredicto deve ser 'Falso' ou 'Enganador' com a devida explicação da evolução temporal.
 
 Alegação a verificar: "{{{claim}}}"
 
-Processo de Investigação:
-1. Use fontes oficiais (INE, Pordata, Diário da República, Banco de Portugal, AIMA - Agência para a Integração, Migrações e Asilo) e imprensa de referência (Público, Expresso, Lusa, SIC, RTP).
-2. **ANÁLISE TEMPORAL (CRÍTICO):** Não se limite aos dados iniciais ou às previsões otimistas. Verifique se, após o anúncio da previsão ou dado, ocorreram "tempestades" económicas, revisões em baixa ou se os próprios políticos/entidades admitiram posteriormente que os dados estavam incorretos ou eram enganadores.
-3. Se um ministro previu algo que os dados confirmaram inicialmente, mas que mais tarde se revelou insustentável ou foi desmentido por admissão direta (ex: "afinal as contas estavam erradas" ou "o crescimento foi travado por fatores X"), o veredicto deve refletir essa complexidade (ex: 'Enganador' ou 'Falso' com a devida explicação da mudança de contexto).
-4. Forneça um veredicto claro e uma explicação detalhada, pedagógica e contextualizada em {{{language}}}.
-
-Todos os textos do JSON resultante devem estar em {{{language}}}.`,
+Escreva a sua resposta (campos 'verdict' e 'explanation') obrigatoriamente em {{{language}}}.`,
 });
 
 const factCheckClaimFlow = ai.defineFlow(

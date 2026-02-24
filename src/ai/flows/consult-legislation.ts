@@ -1,9 +1,7 @@
+
 /**
  * @fileOverview This file implements a Genkit flow for consulting Portuguese legislation.
- *
- * - consultLegislation - A function that handles answering legal questions.
- * - ConsultLegislationInput - The input type for the function.
- * - ConsultLegislationOutput - The return type for the function.
+ * Updated for latest laws (2025/2026) and input correction.
  */
 
 import { ai } from '@/ai/genkit';
@@ -11,13 +9,13 @@ import { z } from 'genkit';
 
 const ConsultLegislationInputSchema = z.object({
   question: z.string().describe('A pergunta do utilizador sobre a legislação portuguesa.'),
-  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('O idioma em que a resposta deve ser escrita.'),
+  language: z.enum(['Portuguese', 'English']).default('Portuguese').describe('O idioma da resposta.'),
 });
 export type ConsultLegislationInput = z.infer<typeof ConsultLegislationInputSchema>;
 
 const ConsultLegislationOutputSchema = z.object({
-  answer: z.string().describe('A resposta detalhada à pergunta, baseada na legislação em vigor.'),
-  sources: z.array(z.string().url()).describe('Uma lista de URLs para as fontes oficiais da legislação (ex: Diário da República).'),
+  answer: z.string().describe('A resposta detalhada baseada na lei em vigor em 2026.'),
+  sources: z.array(z.string().url()).describe('URLs oficiais (dre.pt).'),
 });
 export type ConsultLegislationOutput = z.infer<typeof ConsultLegislationOutputSchema>;
 
@@ -29,45 +27,16 @@ const prompt = ai.definePrompt({
   name: 'consultLegislationPrompt',
   input: { schema: ConsultLegislationInputSchema },
   output: { schema: ConsultLegislationOutputSchema },
-  config: {
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-    ],
-  },
-  prompt: `Você é um assistente jurídico especialista em legislação portuguesa. A sua tarefa é responder a perguntas de utilizadores de forma clara, precisa e baseada estritamente na lei em vigor.
+  prompt: `Você é um assistente jurídico especialista na legislação portuguesa atualizada a Março de 2026.
 
-**IMPORTANTE: A sua resposta no campo 'answer' deve ser escrita obrigatoriamente em {{{language}}}.**
+**RIGOR E CORREÇÃO:**
+- O utilizador pode escrever com erros (ex: "leis de imigrasao"). Interprete corretamente e responda com perfeição gramatical em {{{language}}}.
+- Ignore leis revogadas. Foque-se na legislação consolidada e nas alterações publicadas no Diário da República em 2024 e 2025.
+- Se a pergunta for sobre heranças ou imóveis (burocracia), use os dados mais recentes de simplificação administrativa de 2025/2026.
 
-Fontes primárias de consulta:
-- Diário da República Eletrónico (dre.pt)
-- AIMA - Agência para a Integração, Migrações e Asilo (para questões de imigração e asilo)
-- Legislação consolidada disponível em portais governamentais.
-- Sites oficiais de entidades reguladoras.
+Pergunta: "{{{question}}}"
 
-Processo:
-1.  Analise a pergunta do utilizador: {{{question}}}.
-2.  Identifique a área do direito e a legislação aplicável (ex: Lei da Nacionalidade, Código do Trabalho, Lei de Estrangeiros, etc.).
-3.  Formule uma resposta clara e objetiva no campo 'answer' em {{{language}}}. Evite jargão legal sempre que possível ou explique-o de forma simples. A resposta não deve ser um conselho legal, mas sim uma informação sobre o que a lei diz.
-4.  No campo 'sources', liste os URLs diretos para os artigos de lei ou decretos-lei específicos que fundamentam a sua resposta.
-
-Pergunta do Utilizador:
-"{{{question}}}"
-`,
+A resposta no campo 'answer' deve estar em {{{language}}}.`,
 });
 
 const consultLegislationFlow = ai.defineFlow(

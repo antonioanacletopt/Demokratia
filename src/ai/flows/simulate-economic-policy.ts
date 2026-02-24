@@ -1,7 +1,7 @@
 
 /**
  * @fileOverview This file defines a Genkit flow for simulating the economic impact
- * of hypothetical policies on Portugal's economy.
+ * of hypothetical policies on Portugal's economy. Updated for 2026 context.
  */
 
 import {ai} from '@/ai/genkit';
@@ -25,7 +25,7 @@ const EconomicPolicySimulationOutputSchema = z.object({
     .array(
       z.object({
         name: z.string().describe('O nome do indicador económico (ex: "Crescimento do PIB").'),
-        currentValue: z.number().describe('O valor atual do indicador.'),
+        currentValue: z.number().describe('O valor atual do indicador (baseado em 2025/2026).'),
         projectedValue: z.number().describe('O valor projetado do indicador após a política.'),
         unit: z.string().describe('A unidade do indicador (ex: "%").'),
       })
@@ -51,19 +51,26 @@ const economicPolicySimulationPrompt = ai.definePrompt({
   name: 'economicPolicySimulationPrompt',
   input: {schema: EconomicPolicySimulationInputSchema},
   output: {schema: EconomicPolicySimulationOutputSchema},
-  prompt: `Você é um economista especialista com profundo conhecimento da economia portuguesa. A sua tarefa é simular os potenciais impactos económicos de uma política descrita pelo utilizador.
+  prompt: `Você é um economista sénior especialista na economia de Portugal, operando em Março de 2026.
 
-**IMPORTANTE: A sua resposta completa (textos, nomes de indicadores, explicações) deve ser escrita em {{{language}}}.**
+**REGRA DE OURO SOBRE DADOS:**
+- Ignore dados antigos (2023 ou anterior) para o estado "Atual" dos indicadores.
+- Use exclusivamente dados de execução de 2025 e as previsões oficiais do OE2026 (Orçamento do Estado 2026).
+- Se não existirem dados reais para 2026, use estimativas fundamentadas e declare-as explicitamente como "Estimativas OE2026" ou "Projeções".
+
+**REGRA DE OURO SOBRE LINGUAGEM:**
+- O utilizador pode escrever com erros ortográficos ou gramaticais (ex: "heransa" em vez de "herança"). 
+- A sua tarefa é interpretar o significado pretendido, corrigir silenciosamente esses erros na sua análise e produzir uma resposta gramaticalmente perfeita em {{{language}}}.
 
 Analise a descrição da política:
-{{{policyDescription}}}
+"{{{policyDescription}}}"
 
-1. Determine se é uma política real em Portugal. Se sim, inclua a fonte.
-2. Simule o impacto nos indicadores económicos (PIB, Desemprego, Inflação, etc.) usando modelos estabelecidos.
-3. Forneça um raciocínio detalhado, mencionando a teoria económica utilizada.
-4. Considere impactos em diferentes segmentos da sociedade.
+1. Determine se é uma política real ou em debate em Portugal em 2025/2026.
+2. Simule o impacto no PIB, Desemprego e Inflação usando modelos económicos modernos.
+3. Forneça um raciocínio detalhado e técnico, mas acessível.
+4. Se a política envolver habitação ou fiscalidade, considere o contexto das leis de 2025.
 
-Todos os campos de texto no JSON de saída devem estar em {{{language}}}.`,
+Todos os campos do JSON devem estar em {{{language}}}.`,
 });
 
 const economicPolicySimulationFlow = ai.defineFlow(
