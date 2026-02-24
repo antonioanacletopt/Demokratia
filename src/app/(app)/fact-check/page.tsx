@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getFactCheck, getTranslation } from '@/lib/actions';
 import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';
@@ -145,8 +145,20 @@ export default function FactCheckPage() {
 
     startTransition(async () => {
       setResult(null);
+
+      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
+      if (firestore) {
+        const publicRef = doc(firestore, 'publicFactChecks', claimId);
+        const snap = await getDoc(publicRef);
+        if (snap.exists()) {
+          setResult(snap.data() as FactCheckOutput);
+          return;
+        }
+      }
+
       const res = await getFactCheck({ claim: textToUse }, language);
       setResult(res);
+      
       if (firestore) {
         const publicRef = doc(firestore, 'publicFactChecks', claimId);
         setDoc(publicRef, { claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});

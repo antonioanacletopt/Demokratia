@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -154,6 +154,21 @@ export default function SimulationsPage() {
     setPolicyInput(normalizedText);
 
     try {
+      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
+      const policyId = generateSlug(normalizedText);
+      if (firestore) {
+        const publicRef = doc(firestore, 'publicSimulations', policyId);
+        const snap = await getDoc(publicRef);
+        if (snap.exists()) {
+          const cached = snap.data();
+          if (cached.simulationResults) {
+            setCurrentSimulation(JSON.parse(cached.simulationResults));
+            setIsSimulating(false);
+            return;
+          }
+        }
+      }
+
       const result = await getEconomicSimulation({ policyDescription: normalizedText }, language);
       setCurrentSimulation(result);
 

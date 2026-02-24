@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ACESSO PÚBLICO TOTAL: Garantir que crawlers do Google e anónimos acedem a ficheiros de sistema
+  // ACESSO PÚBLICO TOTAL: Garantir que crawlers e anónimos acedem a ficheiros de sistema sem restrições
   if (
     pathname === '/ads.txt' || 
     pathname === '/robots.txt' || 

@@ -139,8 +139,8 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        // Cache bust v11 para garantir links humanizados
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v11');
+        // Cache bust v12 para garantir links humanos e sem underscores
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v12');
         const cacheSnap = await getDoc(cacheRef);
         
         if (cacheSnap.exists()) {

@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getLegislationInfo, getTranslation } from '@/lib/actions';
 import type { ConsultLegislationOutput } from '@/ai/flows/consult-legislation';
@@ -158,10 +158,18 @@ export default function LegislationPage() {
 
     startTransition(async () => {
       setResult(null);
+
+      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
+      const publicRef = doc(firestore, 'publicLegislationQueries', id);
+      const snap = await getDoc(publicRef);
+      if (snap.exists()) {
+        setResult(snap.data() as ConsultLegislationOutput);
+        return;
+      }
+
       const response = await getLegislationInfo({ question: textToUse }, language);
       setResult(response);
 
-      const publicRef = doc(firestore, 'publicLegislationQueries', id);
       setDoc(publicRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
 
       if (user) {

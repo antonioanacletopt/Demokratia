@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, query, orderBy, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, addDoc, getDoc, doc, setDoc } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { getPublicStatistic, getChartFromRequest } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
@@ -38,10 +38,20 @@ interface UniversalData {
   chartType?: 'bar' | 'line';
 }
 
+function generateSlug(text: string): string {
+  if (!text) return '';
+  return text.toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 150);
+}
+
 function convertToCsv(data: any[]): string {
   if (!data || data.length === 0) return '';
-  const headers = Object.keys(data[0]);
-  const rows = data.map(obj => headers.map(h => `"${String(obj[h]).replace(/"/g, '""')}"`).join(','));
+  const headers = Object.keys(data[0] || {});
+  const rows = data.map(obj => headers.map(h => `"${String(obj[h] || '').replace(/"/g, '""')}"`).join(','));
   return [headers.join(','), ...rows].join('\n');
 }
 
@@ -78,6 +88,8 @@ function UniversalDataCard({
   const chartConfig: ChartConfig = {
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
+
+  const headers = data && data.length > 0 ? Object.keys(data[0] || {}) : [];
 
   return (
     <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-shadow">
@@ -120,11 +132,11 @@ function UniversalDataCard({
             <Table>
               <TableHeader className="bg-muted/50 sticky top-0 z-10">
                 <TableRow>
-                  {(Object.keys(data[0] || {})).map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}
+                  {headers.map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((row, i) => (<TableRow key={i}>{Object.values(row).map((v, j) => (<TableCell key={j} className="text-sm py-2">{String(v)}</TableCell>))}</TableRow>))}
+                {data.map((row, i) => (<TableRow key={i}>{headers.map((h, j) => (<TableCell key={j} className="text-sm py-2">{String(row[h] || '')}</TableCell>))}</TableRow>))}
               </TableBody>
             </Table>
           </div>
@@ -165,26 +177,49 @@ export default function ExplorerPage() {
     setRequest(text);
 
     try {
+      // LOGICA CACHE GLOBAL: Verificar se a resposta já existe publicamente
+      const docId = generateSlug(text);
+      if (firestore) {
+        const publicRef = doc(firestore, 'publicStatisticQueries', docId);
+        const snap = await getDoc(publicRef);
+        if (snap.exists()) {
+          const cached = snap.data() as UniversalData;
+          setAiResponse(cached);
+          setIsAiLoading(false);
+          return;
+        }
+      }
+
       const res = await getChartFromRequest({ request: text });
+      let finalResult: UniversalData | null = null;
+
       if (res.isChartable && res.chartData && res.chartData.length > 0) {
-        setAiResponse({
-          title: res.chartTitle || 'Dados de IA',
+        finalResult = {
+          title: res.chartTitle || text,
           description: res.explanation,
           source: 'Análise IA via Fontes Oficiais',
           unit: res.yAxisLabel,
           data: res.chartData,
           chartType: res.chartType
-        });
+        };
       } else {
         const statRes = await getPublicStatistic({ request: text });
         if (statRes.isFound && statRes.data) {
           const parsed = JSON.parse(statRes.data);
-          setAiResponse({
+          finalResult = {
             title: text,
             description: statRes.explanation,
             source: statRes.source || 'Fontes Oficiais',
             data: Array.isArray(parsed) ? parsed : [parsed]
-          });
+          };
+        }
+      }
+
+      if (finalResult) {
+        setAiResponse(finalResult);
+        // Gravar publicamente para o próximo cidadão não gastar tokens
+        if (firestore) {
+          setDoc(doc(firestore, 'publicStatisticQueries', docId), { ...finalResult, createdAt: serverTimestamp() }).catch(() => {});
         }
       }
     } catch (e) {
@@ -192,7 +227,7 @@ export default function ExplorerPage() {
     } finally {
       setIsAiLoading(false);
     }
-  }, []);
+  }, [firestore]);
 
   useEffect(() => {
     const raw = searchParams.get('request');
