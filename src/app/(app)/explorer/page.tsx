@@ -89,7 +89,8 @@ function UniversalDataCard({
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
 
-  const headers = data && data.length > 0 ? Object.keys(data[0] || {}) : [];
+  // HEADER PROTECTION: Garantir que não crasha se data[0] for undefined
+  const headers = data?.[0] ? Object.keys(data[0]) : [];
 
   return (
     <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-shadow">
@@ -136,7 +137,15 @@ function UniversalDataCard({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((row, i) => (<TableRow key={i}>{headers.map((h, j) => (<TableCell key={j} className="text-sm py-2">{String(row[h] || '')}</TableCell>))}</TableRow>))}
+                {data.map((row, i) => (
+                  <TableRow key={i}>
+                    {headers.map((h, j) => (
+                      <TableCell key={j} className="text-sm py-2">
+                        {String(row[h] !== undefined ? row[h] : '')}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -174,11 +183,12 @@ export default function ExplorerPage() {
     if (!text || !text.trim()) return;
     setIsAiLoading(true);
     setAiResponse(null);
-    setRequest(text);
+    const humanText = decodeURIComponent(text.replace(/\+/g, ' '));
+    setRequest(humanText);
 
     try {
       // LOGICA CACHE GLOBAL: Verificar se a resposta já existe publicamente
-      const docId = generateSlug(text);
+      const docId = generateSlug(humanText);
       if (firestore) {
         const publicRef = doc(firestore, 'publicStatisticQueries', docId);
         const snap = await getDoc(publicRef);
@@ -190,12 +200,12 @@ export default function ExplorerPage() {
         }
       }
 
-      const res = await getChartFromRequest({ request: text });
+      const res = await getChartFromRequest({ request: humanText });
       let finalResult: UniversalData | null = null;
 
       if (res.isChartable && res.chartData && res.chartData.length > 0) {
         finalResult = {
-          title: res.chartTitle || text,
+          title: res.chartTitle || humanText,
           description: res.explanation,
           source: 'Análise IA via Fontes Oficiais',
           unit: res.yAxisLabel,
@@ -203,11 +213,11 @@ export default function ExplorerPage() {
           chartType: res.chartType
         };
       } else {
-        const statRes = await getPublicStatistic({ request: text });
+        const statRes = await getPublicStatistic({ request: humanText });
         if (statRes.isFound && statRes.data) {
           const parsed = JSON.parse(statRes.data);
           finalResult = {
-            title: text,
+            title: humanText,
             description: statRes.explanation,
             source: statRes.source || 'Fontes Oficiais',
             data: Array.isArray(parsed) ? parsed : [parsed]
@@ -233,8 +243,7 @@ export default function ExplorerPage() {
     const raw = searchParams.get('request');
     if (raw && raw !== processedRef.current) {
       processedRef.current = raw;
-      const decoded = decodeURIComponent(raw.replace(/\+/g, ' '));
-      performSearch(decoded);
+      performSearch(raw);
     }
   }, [searchParams, performSearch]);
 
@@ -338,8 +347,8 @@ export default function ExplorerPage() {
                   {ds.map((d: any) => {
                     const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
                     const chartFriendlyData = Array.isArray(parsedData) ? parsedData.map(item => ({
-                      label: item.Ano || item.Ano || Object.values(item)[0],
-                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || Object.values(item)[1]).replace('%', '')) || 0
+                      label: item.Ano || item.Escalão || item.Especialidade || item.Fluxo || Object.values(item)[0],
+                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || item['Taxa (%)'] || item.Quantidade || item.Inscritos || item['Nº Empresas'] || Object.values(item)[1]).replace('%', '').replace(',', '.')) || 0
                     })) : [];
 
                     return (
@@ -348,7 +357,7 @@ export default function ExplorerPage() {
                         title={d.title}
                         description={d.description}
                         source={d.source}
-                        unit={d.title.includes('%') ? '%' : '€'}
+                        unit={d.title.includes('%') ? '%' : (d.title.includes('Ganho') ? '€' : '')}
                         data={chartFriendlyData.length > 0 ? chartFriendlyData : parsedData}
                       />
                     );
