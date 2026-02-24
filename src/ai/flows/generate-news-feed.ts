@@ -2,6 +2,7 @@
 /**
  * @fileOverview A news feed generation AI agent. Updated for 2026.
  * REGRAS CRÍTICAS: Nunca usar identificadores técnicos, IDs ou underscores nos links.
+ * Incorpora agora fontes do Diário da República (DRE).
  */
 
 import { ai } from '@/ai/genkit';
@@ -11,7 +12,7 @@ const FeedItemSchema = z.object({
   id: z.string().describe('Um identificador único para o item de feed.'),
   type: z.enum(['Alegação', 'Nova Lei', 'Análise']).describe('O tipo de notícia.'),
   title: z.string().describe('O título da notícia.'),
-  source: z.string().describe('A fonte da notícia (ex: "Governo", "Deputado X", "INE").'),
+  source: z.string().describe('A fonte da notícia (ex: "Governo", "DRE", "INE").'),
   date: z.string().describe('A data da notícia no formato AAAA-MM-DD.'),
   description: z.string().describe('Uma breve descrição da notícia.'),
   actionLink: z.object({
@@ -45,11 +46,12 @@ REGRAS ABSOLUTAS PARA OS LINKS (actionLink.href):
    - Análise (Estatística): /explorer?request=[TÍTULO DA NOTÍCIA EXATO]
    - Simulação (Impacto/Política): /simulations?policy=[TÍTULO DA NOTÍCIA EXATO]
 
-4. CRITÉRIO DE CATEGORIA (MUITO IMPORTANTE):
-   - Se a notícia fala de "Impacto", "Consequências", "Previsão de efeitos" ou "Novas taxas/impostos", use obrigatoriamente a ação de Simulação (/simulations) e o rótulo "Simular Impacto".
+4. CRITÉRIO DE CATEGORIA E RÓTULO (MUITO IMPORTANTE):
+   - Se a notícia fala de "Impacto", "Consequências", "Previsão de efeitos" ou "Novas taxas/impostos", use Simulação (/simulations) e o rótulo "Simular Impacto".
    - Se a notícia fala de "Dados consolidados", "Estatísticas do INE/Pordata", "Números de 2025", use Análise (/explorer) e o rótulo "Explorar Dados".
+   - Se a notícia provém do "Diário da República", "DRE", ou refere um "Novo Decreto-Lei", "Simplificação Administrativa" ou "Alteração Legislativa", use Legislação (/legislation) e o rótulo "Analisar Lei".
 
-As notícias devem focar-se no Orçamento de Estado 2026, habitação, novos impostos imobiliários e crescimento económico real de 2026.`,
+As notícias devem focar-se no Orçamento de Estado 2026, habitação, novos impostos imobiliários, deburocratização de heranças, legalização de imóveis devolutos e crescimento económico real de 2026. O Diário da República (DRE) deve ser considerado uma fonte primária fundamental para notícias sobre novas leis e simplificação de processos.`,
 });
 
 const generateNewsFeedFlow = ai.defineFlow(
