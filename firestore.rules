@@ -4,8 +4,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules v1.4
-     * Gestão administrativa completa de cache pública e conteúdos.
+     * Demokratia Portugal: Security Rules v1.5
+     * Gestão administrativa completa de cache pública e novos cenários macro.
      */
 
     // --- 1. Global Helper Functions ---
@@ -47,6 +47,12 @@ service cloud.firestore {
     }
 
     match /publicStatisticQueries/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /publicScenarios/{id} {
       allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
