@@ -40,17 +40,21 @@ const prompt = ai.definePrompt({
 
 Search for the requested data from reliable public sources only (INE, Pordata, Banco de Portugal, Eurostat, etc.).
 
+**REGRAS CRÍTICAS PARA GRÁFICOS:**
+1. **CONTEXTO HISTÓRICO:** Se o pedido referir um ano específico (ex: 2025), tente sempre encontrar dados dos últimos 3 a 5 anos para fornecer contexto e permitir a visualização de tendências. Um gráfico com apenas uma barra ou um ponto não é útil.
+2. **TÍTULOS E LEGENDAS:** Use títulos curtos e profissionais em português.
+
 - If you find suitable data and it can be visualized:
   - Set 'isChartable' to true.
-  - In 'explanation', provide a brief, clear summary of what the data represents and the source.
+  - In 'explanation', provide a brief, clear summary of what the data represents and the source. Inclua uma breve análise da tendência observada (ex: "Os dados revelam uma estabilização após o pico de 2023").
   - In 'chartData', provide the data formatted as a JSON array of objects with 'label' (for the X-axis, e.g., year) and 'value' (for the Y-axis). The data should be ordered chronologically or logically.
   - In 'chartType', suggest 'bar' for comparisons or 'line' for time-series data.
   - In 'chartTitle', create a descriptive title for the chart.
   - In 'yAxisLabel', specify the unit of the data (e.g., '%', '€', 'milhões').
 
-- If you cannot find the data or it's not suitable for a simple chart (e.g., requires complex multi-variable analysis):
+- If you cannot find the data or it's not suitable for a simple chart:
   - Set 'isChartable' to false.
-  - In 'explanation', clearly explain why the data could not be found or visualized. For example, it might not be publicly available, it's too specific, or it's not easily represented in a bar/line chart. Do not suggest the user provide a source.
+  - In 'explanation', clearly explain why the data could not be found or visualized.
   - Leave the other fields empty.
 
 User's Request:

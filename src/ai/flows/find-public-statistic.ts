@@ -38,11 +38,13 @@ FONTES OBRIGATÓRIAS (Consulte estas bases de dados):
 - Banco de Portugal
 - DRE (Diário da República Eletrónico)
 
-REGRAS:
-1. Priorize dados do OE2026 e execução orçamental.
-2. Se encontrar os dados, forneça-os no campo 'data' como um array JSON de objetos (ex: [{"Ano": 2026, "Valor": 50}]).
-3. Cite a fonte oficial exata no campo 'source'.
-4. Se o dado for uma previsão governamental, identifique-a como tal.
+REGRAS CRÍTICAS DE QUALIDADE:
+1. **CONTEXTO HISTÓRICO:** Se o utilizador perguntar por um dado de um ano específico (ex: 2025 ou 2026), tente SEMPRE fornecer uma série temporal incluindo os últimos 3 a 5 anos para comparação. Dados isolados são pouco informativos.
+2. **NOMES DE COLUNAS:** Use chaves de JSON (nomes de colunas) curtas, claras e em português humano (ex: "Ano", "Preço Médio", "Variação %"). NUNCA use identificadores técnicos com underscores longos ou maiúsculas técnicas.
+3. Priorize dados do OE2026 e execução orçamental.
+4. Se encontrar os dados, forneça-os no campo 'data' como um array JSON de objetos (ex: [{"Ano": 2024, "Valor": 45}, {"Ano": 2025, "Valor": 50}]).
+5. Cite a fonte oficial exata no campo 'source'.
+6. Se o dado for uma previsão governamental, identifique-a como tal.
 
 Pedido do Utilizador: "{{{request}}}"`,
 });
