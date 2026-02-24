@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -43,7 +42,7 @@ export const translations = {
       mainIndicators: 'Indicadores Principais', dataNotFound: 'Dados não encontrados', seedNotice: 'Clique em Seed na página Admin.'
     },
     explorer: {
-      title: 'Data Explorer', 
+      title: 'Explorador de Dados', 
       description: 'Consulte estatísticas oficiais detalhadas.', 
       howItWorks: 'Utilizamos dados brutos do INE, Pordata e Banco de Portugal. A IA ajuda a cruzar informações e a criar visualizações que revelam tendências históricas reais.',
       aiCardTitle: 'Perguntar à IA',
@@ -229,7 +228,7 @@ export const translations = {
     },
     legislation: {
       title: 'Consult Legislation', 
-      description: 'Legal questions answered by AI.', 
+      description: 'Legal questions answered by IA.', 
       howItWorks: 'The legal AI analyzes the Official Gazette and consolidated legislation to answer your questions simply, always citing direct legal sources.',
       cardTitle: 'Analyze Legislation',
       cardDesc: 'Ask your question.', textareaPlaceholder: "e.g., 'Remote work rights'", consultBtn: 'Consult',
