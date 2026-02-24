@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ThumbsUp, Edit, Trash2, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, ThumbsUp, Edit, Trash2, Languages, RefreshCw, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -171,7 +171,17 @@ export default function ProposalsPage() {
   
   return (
     <div className="space-y-6">
-      <div><h1 className="text-3xl font-bold font-headline tracking-tight">{t('proposals.title')}</h1><p className="text-muted-foreground">{t('proposals.description')}</p></div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('proposals.title')}</h1>
+        <p className="text-muted-foreground">{t('proposals.description')}</p>
+        <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
+          <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t('proposals.howItWorks')}
+          </p>
+        </div>
+      </div>
+
       <Dialog open={!!editingProposal} onOpenChange={(o) => !o && setEditingProposal(null)}>
         <DialogContent><DialogHeader><DialogTitle>{t('proposals.editTitle')}</DialogTitle></DialogHeader><Form {...form}><form onSubmit={form.handleSubmit(handleEditProposalSubmit)} className="space-y-4 pt-4"><FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>{t('proposals.titleLabel')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} /><FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('proposals.descLabel')}</FormLabel><FormControl><Textarea rows={6} {...field} /></FormControl><FormMessage /></FormItem>)} /><DialogFooter><Button type="submit" disabled={isEditing}>{isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('common.save')}</Button></DialogFooter></form></Form></DialogContent>
       </Dialog>

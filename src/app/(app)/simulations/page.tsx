@@ -63,7 +63,6 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
     const router = useRouter();
 
     const handleConvertToProposal = () => {
-        // Levamos o utilizador para a página de propostas com os dados da simulação
         const params = new URLSearchParams();
         params.set('title', policyText.substring(0, 100));
         params.set('description', `Impacto Simulado: ${simulation.simulatedImpact}\n\nRaciocínio: ${simulation.reasoning}`);
@@ -267,9 +266,15 @@ export default function SimulationsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t('simulations.title')}</h1>
         <p className="text-muted-foreground">{t('simulations.description')}</p>
+        <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
+          <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t('simulations.howItWorks')}
+          </p>
+        </div>
       </div>
 
       <Card>

@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -11,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
@@ -139,7 +141,6 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        // Cache bust v13: Direcionar impactos para o simulador
         const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v13');
         const cacheSnap = await getDoc(cacheRef);
         
@@ -169,10 +170,85 @@ export default function HomePage() {
   }, [firestore]);
 
   return (
-    <div className="space-y-8">
-      <div><h1 className="text-3xl font-bold font-headline tracking-tight">{t('home.title')}</h1><p className="text-muted-foreground">{t('home.description')}</p></div>
+    <div className="space-y-12">
+      {/* Intro Section */}
+      <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-12 text-primary-foreground sm:px-12 sm:py-16 shadow-2xl">
+        <div className="relative z-10 max-w-3xl space-y-6">
+          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1 text-sm font-semibold uppercase tracking-wider">
+            <Sparkles className="mr-2 h-4 w-4 fill-white animate-pulse" /> {t('home.welcomeSubtitle')}
+          </Badge>
+          <h1 className="text-4xl font-bold font-headline leading-tight sm:text-5xl lg:text-6xl tracking-tight">
+            {t('home.welcomeTitle')}
+          </h1>
+          <p className="text-lg opacity-90 leading-relaxed max-w-2xl font-medium">
+            {t('home.welcomeIntro')}
+          </p>
+          <div className="flex flex-wrap gap-4 pt-4">
+            <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg">
+              <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> Explorar Dados</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
+              <Link href="/proposals"><MessageSquarePlus className="mr-2 h-5 w-5" /> Partilhar Ideia</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-accent/20 blur-[100px]" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/30 blur-[80px]" />
+      </section>
+
+      {/* How it Works Grid */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-none shadow-md bg-muted/30">
+          <CardHeader className="pb-2">
+            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center mb-2"><TrendingUp className="h-6 w-6 text-accent" /></div>
+            <CardTitle className="text-xl">Dados e Factos</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Aceda a estatísticas reais e visualizações dinâmicas. Sem ruído, apenas informação bruta transformada em conhecimento.
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-md bg-muted/30">
+          <CardHeader className="pb-2">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2"><Lightbulb className="h-6 w-6 text-primary" /></div>
+            <CardTitle className="text-xl">Simulações IA</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Teste o impacto de políticas antes de as propor. A nossa IA projeta efeitos económicos baseando-se em modelos científicos.
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-md bg-muted/30">
+          <CardHeader className="pb-2">
+            <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2"><ShieldCheck className="h-6 w-6 text-green-600" /></div>
+            <CardTitle className="text-xl">Rigor e Isenção</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            O nosso compromisso é com a verdade. Todas as análises são baseadas em fontes oficiais e partilhadas de forma transparente.
+          </CardContent>
+        </Card>
+      </div>
+
       <AdBanner />
-      <div className="space-y-6">{loading ? (<div className="flex flex-col items-center justify-center py-12 gap-4"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-sm text-muted-foreground">{t('home.loadingText')}</p></div>) : error ? (<Card><CardHeader><CardTitle>{t('home.error')}</CardTitle></CardHeader></Card>) : (feedItems.map((item) => <FeedItemCard key={item.id} item={item} />))}</div>
+
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b pb-4">
+          <div>
+            <h2 className="text-2xl font-bold font-headline">{t('home.title')}</h2>
+            <p className="text-muted-foreground text-sm">{t('home.description')}</p>
+          </div>
+        </div>
+        <div className="space-y-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">{t('home.loadingText')}</p>
+            </div>
+          ) : error ? (
+            <Card><CardHeader><CardTitle>{t('home.error')}</CardTitle></CardHeader></Card>
+          ) : (
+            feedItems.map((item) => <FeedItemCard key={item.id} item={item} />)
+          )}
+        </div>
+      </div>
     </div>
   );
 }

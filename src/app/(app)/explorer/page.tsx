@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -13,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
@@ -333,6 +334,12 @@ export default function ExplorerPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('explorer.title')}</h1>
         <p className="text-muted-foreground text-lg">{t('explorer.description')}</p>
+        <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
+          <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t('explorer.howItWorks')}
+          </p>
+        </div>
       </div>
 
       <Card className="border-primary/20 shadow-lg">

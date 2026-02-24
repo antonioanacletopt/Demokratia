@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw } from 'lucide-react';
+import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw, Info } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -160,7 +161,6 @@ export default function LegislationPage() {
     startTransition(async () => {
       setResult(null);
 
-      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
       const publicRef = doc(firestore, 'publicLegislationQueries', id);
       const snap = await getDoc(publicRef);
       if (snap.exists()) {
@@ -210,9 +210,15 @@ export default function LegislationPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{t('legislation.title')}</h1>
         <p className="text-muted-foreground">{t('legislation.description')}</p>
+        <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
+          <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t('legislation.howItWorks')}
+          </p>
+        </div>
       </div>
 
       <Card>

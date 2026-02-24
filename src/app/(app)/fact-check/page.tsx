@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -147,7 +148,6 @@ export default function FactCheckPage() {
     startTransition(async () => {
       setResult(null);
 
-      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
       if (firestore) {
         const publicRef = doc(firestore, 'publicFactChecks', claimId);
         const snap = await getDoc(publicRef);
@@ -196,7 +196,17 @@ export default function FactCheckPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      <div><h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('factCheck.title')}</h1><p className="text-muted-foreground text-lg mt-2">{t('factCheck.description')}</p></div>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('factCheck.title')}</h1>
+        <p className="text-muted-foreground text-lg">{t('factCheck.description')}</p>
+        <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
+          <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {t('factCheck.howItWorks')}
+          </p>
+        </div>
+      </div>
+
       <Card className="border-primary/20 shadow-lg">
         <CardHeader><CardTitle className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-primary" />{t('factCheck.cardTitle')}</CardTitle><CardDescription>{t('factCheck.cardDesc')}</CardDescription></CardHeader>
         <CardContent><Textarea placeholder={t('factCheck.textareaPlaceholder')} value={claim} onChange={(e) => setClaim(e.target.value)} rows={4} className="text-lg resize-none focus-visible:ring-primary" disabled={isPending} /></CardContent>

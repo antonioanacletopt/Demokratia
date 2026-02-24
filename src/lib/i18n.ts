@@ -22,7 +22,14 @@ export const translations = {
       confirm_delete: 'Tem a certeza que deseja apagar?'
     },
     home: {
-      title: 'Feed de Atualizações', description: 'Acompanhe as últimas alegações, propostas e análises em 2026.',
+      title: 'Feed de Atualizações', description: 'Acompanhe as últimas notícias e análises de 2026.',
+      welcomeTitle: 'Bem-vindo à Demokratia',
+      welcomeSubtitle: 'Ciência de dados ao serviço da cidadania.',
+      welcomeIntro: 'O nosso objetivo é fornecer análises rigorosas, neutras e baseadas em factos puros. Sem partidarismo, apenas dados oficiais e métodos científicos para ajudar a compreender Portugal.',
+      howItWorksTitle: 'Como funciona?',
+      howItWorksDesc: 'A nossa IA consulta em tempo real bases de dados oficiais (INE, Pordata, Diário da República) para validar alegações, simular impactos económicos e simplificar a legislação para si.',
+      ctaProposals: 'Tem uma sugestão ou ideia para o país?',
+      ctaProposalsBtn: 'Criar Proposta',
       error: 'Erro ao carregar notícias.', source: 'Fonte', date: 'Data', 
       loadingText: 'A analisar a atualidade política de 2026...',
       newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
@@ -36,14 +43,20 @@ export const translations = {
       mainIndicators: 'Indicadores Principais', dataNotFound: 'Dados não encontrados', seedNotice: 'Clique em Seed na página Admin.'
     },
     explorer: {
-      title: 'Data Explorer', description: 'Consulte estatísticas oficiais detalhadas.', aiCardTitle: 'Perguntar à IA',
+      title: 'Data Explorer', 
+      description: 'Consulte estatísticas oficiais detalhadas.', 
+      howItWorks: 'Utilizamos dados brutos do INE, Pordata e Banco de Portugal. A IA ajuda a cruzar informações e a criar visualizações que revelam tendências históricas reais.',
+      aiCardTitle: 'Perguntar à IA',
       aiCardDesc: 'Diga que estatística procura.', textareaPlaceholder: "Ex: 'Qual a evolução da dívida pública?'",
       searchBtn: 'Procurar', recentQueries: 'Pesquisas Recentes', recentQueriesDesc: 'O que outros users procuram.',
       noRecentTitle: 'Sem pesquisas', noRecentDesc: 'Seja o primeiro!', existingDataTitle: 'Dados Disponíveis',
       searchPlaceholder: 'Filtrar por título...', noResultsTitle: 'Sem resultados', source: 'Fonte', category: 'Categoria'
     },
     simulations: {
-      title: 'Simulações Políticas', description: 'Simule impactos de novas medidas económicas.', newSimTitle: 'Nova Simulação',
+      title: 'Simulações Políticas', 
+      description: 'Simule impactos de novas medidas económicas.', 
+      howItWorks: 'Introduza uma política (real ou hipotética) e a nossa IA projetará os seus efeitos no PIB, inflação e desemprego, baseando-se em modelos económicos e dados do OE2026.',
+      newSimTitle: 'Nova Simulação',
       newSimDesc: 'Descreva a política a simular.', textareaPlaceholder: "Ex: 'Aumentar SMN para 1000€'", simulateBtn: 'Simular Impacto',
       simulating: 'A simular...', resultsTitle: 'Análise de Impacto', saveBtn: 'Guardar Simulação', impactSummary: 'Resumo',
       indicatorsTitle: 'Indicadores Projetados', indicator: 'Indicator', currentValue: 'Atual', projectedValue: 'Projetado',
@@ -51,19 +64,28 @@ export const translations = {
       convertToProposal: 'Transformar em Proposta', convertDesc: 'Partilhe esta ideia com a comunidade para ser votada.'
     },
     factCheck: {
-      title: 'Verificação de Factos', description: 'Valide alegações com IA rigorosa.', cardTitle: 'Verificar Alegação',
+      title: 'Verificação de Factos', 
+      description: 'Valide alegações com IA rigorosa.', 
+      howItWorks: 'Submeta uma afirmação pública. A IA cruza a informação com fontes oficiais e analisa o contexto temporal para emitir um veredicto imparcial sobre a sua veracidade.',
+      cardTitle: 'Verificar Alegação',
       cardDesc: 'Introduza a afirmação.', textareaPlaceholder: "Ex: 'Portugal tem os impostos mais altos da UE'", checkBtn: 'Verificar',
       resultTitle: 'Resultado', verdict: 'Veredicto', explanation: 'Explicação', sources: 'Fontes', historyTitle: 'Histórico',
       historyDesc: 'As suas verificações.', noHistoryTitle: 'Sem histórico', noHistoryDesc: 'Faça a sua primeira verificação.'
     },
     legislation: {
-      title: 'Consultar Legislação', description: 'Perguntas legais respondidas pela IA.', cardTitle: 'Analisar Legislação',
+      title: 'Consultar Legislação', 
+      description: 'Perguntas legais respondidas pela IA.', 
+      howItWorks: 'A IA jurídica analisa o Diário da República e legislação consolidada para responder às suas dúvidas de forma simples, citando sempre as fontes legais diretas.',
+      cardTitle: 'Analisar Legislação',
       cardDesc: 'Faça a sua pergunta.', textareaPlaceholder: "Ex: 'Direitos sobre teletrabalho'", consultBtn: 'Consultar',
       resultTitle: 'Análise Legal', analysis: 'Análise', sources: 'Fontes', recentQueries: 'Consultas Recentes',
       historyTitle: 'Histórico', noHistoryTitle: 'Sem consultas'
     },
     proposals: {
-      title: 'O Povo Propõe', description: 'Submeta ideias e apoie a comunidade.', newTitle: 'Nova Proposta',
+      title: 'O Povo Propõe', 
+      description: 'Submeta ideias e apoie a comunidade.', 
+      howItWorks: 'A democracia é participação. Crie propostas baseadas em simulações que realizou ou em necessidades que identificou. A comunidade vota e debate as melhores ideias.',
+      newTitle: 'Nova Proposta',
       newDesc: 'Descreva a sua ideia.', titleLabel: 'Título', descLabel: 'Descrição', submitBtn: 'Submeter',
       communityTitle: 'Ideias da Comunidade', searchPlaceholder: 'Filtrar ideias...', noProposalsTitle: 'Sem ideias',
       voteBtn: 'Apoiar', votedBtn: 'Apoiado', simulateBtn: 'Simular', editTitle: 'Editar', titleMinError: 'Mínimo 10 carateres.',
@@ -100,7 +122,7 @@ export const translations = {
       messagesTitle: 'Caixa de Entrada', messagesDesc: 'Mensagens de apoio e contacto dos utilizadores.',
       from: 'De', subject: 'Assunto', status: 'Estado', archive: 'Arquivar',
       seedTitle: 'Carregamento de Dados (Seed)', seedDesc: 'Popula o sistema com os dados de 2026.',
-      indicators: 'Indicadores', indicatorsDesc: 'PIB, Inflação e Desemprego.', loadIndicators: 'Carregar Indicadores',
+      indicators: 'Indicadores', indicatorsDesc: 'GDP, Inflation and Unemployment.', loadIndicators: 'Carregar Indicadores',
       stats: 'Estatísticas', statsDesc: 'Tabelas para o Explorador.', loadStats: 'Carregar Estatísticas',
       sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Fontes',
       simulationsDesc: 'Gira as simulações públicas para remover dados obsoletos ou IDs técnicos.'
@@ -148,8 +170,15 @@ export const translations = {
       confirm_delete: 'Are you sure you want to delete?'
     },
     home: {
-      title: 'Updates Feed', description: 'Follow claims and analyses in 2026.', error: 'Error loading news.',
-      source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
+      title: 'Updates Feed', description: 'Follow the latest news and analyses in 2026.',
+      welcomeTitle: 'Welcome to Demokratia',
+      welcomeSubtitle: 'Data science for citizenship.',
+      welcomeIntro: 'Our goal is to provide rigorous, neutral, and fact-based analyses. No partisanship, just official data and scientific methods to help understand Portugal.',
+      howItWorksTitle: 'How it works?',
+      howItWorksDesc: 'Our AI consults official databases (INE, Pordata, Official Gazette) in real-time to validate claims, simulate economic impacts, and simplify legislation for you.',
+      ctaProposals: 'Have a suggestion or idea for the country?',
+      ctaProposalsBtn: 'Create Proposal',
+      error: 'Error loading news.', source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
       newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
     },
     dashboard: {
@@ -161,14 +190,20 @@ export const translations = {
       mainIndicators: 'Main Indicators', dataNotFound: 'Data not found', seedNotice: 'Click Seed in Admin.'
     },
     explorer: {
-      title: 'Data Explorer', description: 'Check detailed official stats.', aiCardTitle: 'Ask AI',
+      title: 'Data Explorer', 
+      description: 'Check detailed official stats.', 
+      howItWorks: 'We use raw data from INE, Pordata, and the Bank of Portugal. AI helps cross-reference information and create visualizations that reveal real historical trends.',
+      aiCardTitle: 'Ask AI',
       aiCardDesc: 'What stat are you looking for?', textareaPlaceholder: "e.g., 'Public debt evolution'",
       searchBtn: 'Search', recentQueries: 'Recent Searches', recentQueriesDesc: 'What others look for.',
       noRecentTitle: 'No searches', noRecentDesc: 'Be the first!', existingDataTitle: 'Available Data',
       searchPlaceholder: 'Filter by title...', noResultsTitle: 'No results', source: 'Source', category: 'Category'
     },
     simulations: {
-      title: 'Policy Simulations', description: 'Simulate impacts of economic measures.', newSimTitle: 'New Simulation',
+      title: 'Policy Simulations', 
+      description: 'Simulate impacts of economic measures.', 
+      howItWorks: 'Enter a policy (real or hypothetical) and our AI will project its effects on GDP, inflation, and unemployment, based on economic models and 2026 budget data.',
+      newSimTitle: 'New Simulation',
       newSimDesc: 'Describe the policy.', textareaPlaceholder: "e.g., 'Minimum wage to 1000€'", simulateBtn: 'Simulate',
       simulating: 'Simulating...', resultsTitle: 'Impact Analysis', saveBtn: 'Save Simulation', impactSummary: 'Summary',
       indicatorsTitle: 'Projected Indicators', indicator: 'Indicator', currentValue: 'Current', projectedValue: 'Projected',
@@ -176,19 +211,28 @@ export const translations = {
       convertToProposal: 'Turn into Proposal', convertDesc: 'Share this idea with the community to be voted on.'
     },
     factCheck: {
-      title: 'Fact Checking', description: 'Validate claims with rigorous AI.', cardTitle: 'Check Claim',
+      title: 'Fact Checking', 
+      description: 'Validate claims with rigorous AI.', 
+      howItWorks: 'Submit a public statement. AI cross-references the information with official sources and analyzes the temporal context to issue an impartial verdict on its truthfulness.',
+      cardTitle: 'Check Claim',
       cardDesc: 'Enter statement.', textareaPlaceholder: "e.g., 'Highest taxes in EU'", checkBtn: 'Check',
       resultTitle: 'Result', verdict: 'Verdict', explanation: 'Explanation', sources: 'Sources', historyTitle: 'History',
       historyDesc: 'Your checks.', noHistoryTitle: 'No history', noHistoryDesc: 'Make your first check.'
     },
     legislation: {
-      title: 'Consult Legislation', description: 'Legal questions answered by AI.', cardTitle: 'Analyze Legislation',
+      title: 'Consult Legislation', 
+      description: 'Legal questions answered by AI.', 
+      howItWorks: 'The legal AI analyzes the Official Gazette and consolidated legislation to answer your questions simply, always citing direct legal sources.',
+      cardTitle: 'Analyze Legislation',
       cardDesc: 'Ask your question.', textareaPlaceholder: "e.g., 'Remote work rights'", consultBtn: 'Consult',
       resultTitle: 'Legal Analysis', analysis: 'Analysis', sources: 'Sources', recentQueries: 'Recent Queries',
       historyTitle: 'History', noHistoryTitle: 'No queries'
     },
     proposals: {
-      title: 'The People Propose', description: 'Submit ideas and support community.', newTitle: 'New Proposal',
+      title: 'The People Propose', 
+      description: 'Submit ideas and support community.', 
+      howItWorks: 'Democracy is participation. Create proposals based on simulations you performed or needs you identified. The community votes and debates the best ideas.',
+      newTitle: 'New Proposal',
       newDesc: 'Describe your idea.', titleLabel: 'Title', descLabel: 'Description', submitBtn: 'Submit',
       communityTitle: 'Community Ideas', searchPlaceholder: 'Filter ideas...', noProposalsTitle: 'No ideas',
       voteBtn: 'Support', votedBtn: 'Supported', simulateBtn: 'Simulate', editTitle: 'Edit', titleMinError: 'Min 10 chars.',
