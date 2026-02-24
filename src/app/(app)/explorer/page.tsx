@@ -1,166 +1,332 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, getFirestore } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { getPublicStatistic } from '@/lib/actions';
-import type { FindPublicStatisticOutput } from '@/ai/flows/find-public-statistic';
+import { collection, serverTimestamp, doc, setDoc, query, orderBy, where, limit, getDocs, addDoc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { getPublicStatistic, getChartFromRequest, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
+import { useToast } from '@/hooks/use-toast';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2 } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, RefreshCw, Languages, Save, NotebookText, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
-interface StatisticalData {
-  id: string;
+interface DataPoint {
+  label: string | number;
+  value: number;
+  [key: string]: any;
+}
+
+interface UniversalData {
   title: string;
   description: string;
-  category: string;
   source: string;
-  dataType: string;
-  data: string;
+  unit?: string;
+  data: DataPoint[];
+  chartType?: 'bar' | 'line';
 }
 
-function generateSlug(text: string): string {
-  if (!text) return '';
-  return text.toLowerCase().trim()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .substring(0, 150);
-}
-
-function DataTable({ jsonData }: { jsonData: string }) {
-  const { t } = useTranslation();
-  const data = useMemo(() => {
-    try {
-      const parsedData = JSON.parse(jsonData);
-      return Array.isArray(parsedData) ? parsedData : [];
-    } catch (e) {
-      return [];
-    }
-  }, [jsonData]);
-
-  if (data.length === 0) return <p className="text-sm text-muted-foreground">{t('common.noResults')}</p>;
+function convertToCsv(data: any[]): string {
+  if (!data || data.length === 0) return '';
   const headers = Object.keys(data[0]);
+  const rows = data.map(obj => headers.map(h => `"${String(obj[h]).replace(/"/g, '""')}"`).join(','));
+  return [headers.join(','), ...rows].join('\n');
+}
+
+function downloadCsv(data: any[], filename: string) {
+  const csv = convertToCsv(data);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', `${filename}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function UniversalDataCard({ 
+  title, 
+  description, 
+  source, 
+  data, 
+  unit = '', 
+  chartType = 'bar',
+  showSave = false,
+  onSave = () => {}
+}: UniversalData & { showSave?: boolean, onSave?: () => void }) {
+  const { t, language } = useTranslation();
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  
+  const chartConfig: ChartConfig = {
+    value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
+  };
 
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <Table>
-        <TableHeader><TableRow>{headers.map(h => <TableHead key={h}>{h}</TableHead>)}</TableRow></TableHeader>
-        <TableBody>{data.map((row, i) => (<TableRow key={i}>{headers.map(h => <TableCell key={`${i}-${h}`}>{String(row[h])}</TableCell>)}</TableRow>))}</TableBody>
-      </Table>
-    </div>
+    <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader className="bg-muted/30 pb-4">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <CardTitle className="text-lg leading-tight">{title}</CardTitle>
+            <CardDescription className="mt-1 text-xs line-clamp-2">{description}</CardDescription>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button variant={viewMode === 'chart' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('chart')}><BarChart3 className="h-4 w-4" /></Button>
+            <Button variant={viewMode === 'table' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><TableIcon className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, title)}><Download className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-6">
+        {viewMode === 'chart' ? (
+          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+            {chartType === 'line' ? (
+              <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-value)' }} activeDot={{ r: 6 }} />
+              </LineChart>
+            ) : (
+              <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <Bar dataKey="value" fill="var(--color-value)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            )}
+          </ChartContainer>
+        ) : (
+          <div className="overflow-x-auto rounded-md border max-h-[250px]">
+            <Table>
+              <TableHeader className="bg-muted/50 sticky top-0 z-10"><TableRow>{Object.keys(data[0] || {}).map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}</TableRow></TableHeader>
+              <TableBody>{data.map((row, i) => (<TableRow key={i}>{Object.values(row).map((v, j) => (<TableCell key={j} className="text-sm py-2">{String(v)}</TableCell>))}</TableRow>))}</TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="bg-muted/10 border-t py-2 flex justify-between items-center">
+        <p className="text-[10px] text-muted-foreground italic">Fonte: {source}</p>
+        <div className="flex gap-2">
+          {showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />Guardar</Button>}
+          <RefutationDialog contentId={`data-${title}`} />
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
 
 export default function ExplorerPage() {
-  const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { t, language } = useTranslation();
   const firestore = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
-  const [statRequest, setStatRequest] = useState('');
-  const [aiResponse, setAiResponse] = useState<FindPublicStatisticOutput | null>(null);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [request, setRequest] = useState('');
+  const [aiResponse, setAiResponse] = useState<UniversalData | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  
+  const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveName, setSaveName] = useState('');
+  const [saveDesc, setSaveNameDesc] = useState('');
+  
   const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
   const performSearch = useCallback(async (text: string) => {
     if (!text || !text.trim()) return;
-    
     setIsAiLoading(true);
     setAiResponse(null);
-    setStatRequest(text);
+    setRequest(text);
 
     try {
-      const result = await getPublicStatistic({ request: text });
-      setAiResponse(result);
-      
-      // Gravação silenciosa no histórico quando possível
-      if (result.isFound) {
-          const db = getFirestore();
-          const id = generateSlug(text);
-          setDoc(doc(collection(db, 'publicStatisticQueries'), id), {
-            request: text, ...result, createdAt: serverTimestamp(),
-          }, { merge: true }).catch(() => {});
+      // Tentar gerar gráfico primeiro pois é mais visual para o novo explorador
+      const res = await getChartFromRequest({ request: text });
+      if (res.isChartable && res.chartData) {
+        setAiResponse({
+          title: res.chartTitle || 'Dados de IA',
+          description: res.explanation,
+          source: 'Análise IA via Fontes Oficiais',
+          unit: res.yAxisLabel,
+          data: res.chartData,
+          chartType: res.chartType
+        });
+      } else {
+        // Fallback para estatística pura se não for "chartable"
+        const statRes = await getPublicStatistic({ request: text });
+        if (statRes.isFound && statRes.data) {
+          const parsed = JSON.parse(statRes.data);
+          setAiResponse({
+            title: text,
+            description: statRes.explanation,
+            source: statRes.source || 'Fontes Oficiais',
+            data: Array.isArray(parsed) ? parsed : [parsed]
+          });
+        }
       }
-    } catch (err) {
-      console.error("AI Error:", err);
     } finally {
       setIsAiLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const rawParam = searchParams.get('request');
-    if (rawParam && rawParam !== processedRef.current) {
-      processedRef.current = rawParam;
-      // Descodificação robusta de espaços (+)
-      const decoded = decodeURIComponent(rawParam.replace(/\+/g, ' '));
-      setStatRequest(decoded);
-      // Disparo imediato sem depender de firestore ready
+    const raw = searchParams.get('request');
+    if (raw && raw !== processedRef.current) {
+      processedRef.current = raw;
+      const decoded = decodeURIComponent(raw.replace(/\+/g, ' '));
       performSearch(decoded);
     }
   }, [searchParams, performSearch]);
 
-  useEffect(() => { 
-    if (aiResponse && resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [aiResponse]);
-
   const datasetsRef = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
-  const { data: datasets, isLoading } = useCollection<StatisticalData>(datasetsRef);
+  const { data: datasets, isLoading } = useCollection<any>(datasetsRef);
 
-  const groupedDatasets = useMemo(() => {
-    if (!datasets) return {};
-    const filtered = searchTerm ? datasets.filter(d => d.title.toLowerCase().includes(searchTerm.toLowerCase())) : datasets;
-    return filtered.reduce((acc, d) => {
-      const cat = d.category || 'Outros';
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(d);
-      return acc;
-    }, {} as Record<string, StatisticalData[]>);
-  }, [datasets, searchTerm]);
+  const savedViewsRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'savedDataViews'), orderBy('createdAt', 'desc'));
+  }, [firestore, user]);
+  const { data: savedViews } = useCollection<any>(savedViewsRef);
+
+  const handleSave = async () => {
+    if (!user || !aiResponse) return;
+    try {
+      await addDoc(collection(firestore, 'users', user.uid, 'savedDataViews'), {
+        userId: user.uid,
+        name: saveName || aiResponse.title,
+        description: saveDesc || aiResponse.description,
+        viewConfiguration: JSON.stringify(aiResponse),
+        createdAt: serverTimestamp()
+      });
+      toast({ title: t('common.success') });
+      setSaveDialogOpen(false);
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div><h1 className="text-3xl font-bold font-headline">{t('explorer.title')}</h1><p className="text-muted-foreground">{t('explorer.description')}</p></div>
-      <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="text-accent" />{t('explorer.aiCardTitle')}</CardTitle><CardDescription>{t('explorer.aiCardDesc')}</CardDescription></CardHeader>
+    <div className="flex flex-col gap-8 pb-12">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('explorer.title')}</h1>
+        <p className="text-muted-foreground text-lg">{t('explorer.description')}</p>
+      </div>
+
+      <Card className="border-primary/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Bot className="text-accent" />Perguntar à IA</CardTitle>
+          <CardDescription>Gere gráficos ou tabelas sobre qualquer tema económico ou social de Portugal.</CardDescription>
+        </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea placeholder={t('explorer.textareaPlaceholder')} value={statRequest} onChange={(e) => setStatRequest(e.target.value)} disabled={isAiLoading} />
+          <Textarea 
+            placeholder="Ex: 'Evolução da dívida pública nos últimos 10 anos' ou 'Distribuição de empresas por setor'" 
+            value={request} 
+            onChange={(e) => setRequest(e.target.value)} 
+            disabled={isAiLoading}
+            className="text-lg"
+          />
           <div ref={resultRef} className="scroll-mt-20">
-            {isAiLoading && <div className="space-y-3 pt-4"><Skeleton className="h-4 w-1/3" /><Skeleton className="h-20 w-full" /></div>}
+            {isAiLoading && <div className="space-y-4 pt-4"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-[300px] w-full" /></div>}
             {aiResponse && !isAiLoading && (
-              <Alert variant={aiResponse.isFound ? 'default' : 'destructive'} className="mt-4">
-                <Bot className="h-4 w-4" /><div className="flex justify-between items-start w-full"><AlertTitle>{t('common.aiResponse')}</AlertTitle><RefutationDialog contentId={`ai-stat-${generateSlug(statRequest)}`} /></div>
-                <AlertDescription className="mt-2"><p className="mb-2">{aiResponse.explanation}</p>{aiResponse.isFound && aiResponse.data && (<div className="mt-4 space-y-2"><DataTable jsonData={aiResponse.data} />{aiResponse.source && <p className="text-xs text-muted-foreground pt-2"><strong>{t('explorer.source')}:</strong> {aiResponse.source}</p>}</div>)}</AlertDescription>
-              </Alert>
+              <div className="mt-6 space-y-4">
+                <UniversalDataCard 
+                  {...aiResponse} 
+                  showSave={!!user} 
+                  onSave={() => { setSaveName(aiResponse.title); setSaveDialogOpen(true); }} 
+                />
+              </div>
             )}
           </div>
         </CardContent>
-        <CardFooter><Button onClick={() => performSearch(statRequest)} disabled={isAiLoading || !statRequest.trim()}>{isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{t('explorer.searchBtn')}</Button></CardFooter>
+        <CardFooter className="bg-muted/30 py-4 flex justify-between">
+          <p className="text-xs text-muted-foreground italic max-w-[60%]">Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.</p>
+          <Button onClick={() => performSearch(request)} disabled={isAiLoading || !request.trim()} size="lg" className="px-8">
+            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            Explorar
+          </Button>
+        </CardFooter>
       </Card>
+
       <AdBanner />
-      <div><h2 className="text-2xl font-bold">{t('explorer.existingDataTitle')}</h2><div className="relative mt-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={t('explorer.searchPlaceholder')} className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div></div>
-      {isLoading ? <Skeleton className="h-12 w-full" /> : (<div className="space-y-6">{Object.entries(groupedDatasets).map(([cat, ds]) => (<div key={cat}><h3 className="text-lg font-semibold mb-2">{cat}</h3><Accordion type="single" collapsible className="w-full border rounded-lg bg-card">{ds.map(d => (
-        <AccordionItem key={d.id} value={d.id}>
-          <AccordionTrigger className="px-4"><div className="flex gap-2"><span className="font-semibold">{d.title}</span><Badge variant="secondary">{d.category}</Badge></div></AccordionTrigger>
-          <AccordionContent className="space-y-4 px-4"><div className="flex justify-end pt-2"><RefutationDialog contentId={`dataset-${d.id}`} /></div><p className="text-sm text-muted-foreground">{d.description}</p><DataTable jsonData={d.data} /><p className="text-xs text-muted-foreground"><strong>{t('explorer.source')}:</strong> {d.source}</p></AccordionContent>
-        </AccordionItem>
-      ))}</Accordion></div>))}</div>)}
+
+      {savedViews && savedViews.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2"><NotebookText className="h-6 w-6 text-accent" />{t('dashboard.savedTitle')}</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {savedViews.map(view => {
+              const config = JSON.parse(view.viewConfiguration);
+              return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />;
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">{t('explorer.existingDataTitle')}</h2>
+        {isLoading ? <Skeleton className="h-20 w-full" /> : (
+          <div className="space-y-8">
+            {datasets && Object.entries(datasets.reduce((acc: any, d: any) => {
+              const cat = d.category || 'Geral';
+              if (!acc[cat]) acc[cat] = [];
+              acc[cat].push(d);
+              return acc;
+            }, {})).map(([cat, ds]: any) => (
+              <div key={cat} className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2 border-b pb-2"><Badge variant="secondary">{cat}</Badge></h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {ds.map((d: any) => {
+                    const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
+                    // Adaptar dados de tabela para gráfico se possível (Ano/Valor)
+                    const chartFriendlyData = Array.isArray(parsedData) ? parsedData.map(item => ({
+                      label: item.Ano || item.Ano || Object.values(item)[0],
+                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || Object.values(item)[1]).replace('%', '')) || 0
+                    })) : [];
+
+                    return (
+                      <UniversalDataCard 
+                        key={d.id}
+                        title={d.title}
+                        description={d.description}
+                        source={d.source}
+                        unit={d.title.includes('%') ? '%' : '€'}
+                        data={chartFriendlyData.length > 0 ? chartFriendlyData : parsedData}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Guardar no Meu Dashboard</DialogTitle><DialogDescription>Dê um nome e descrição para esta visualização personalizada.</DialogDescription></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2"><Label>Nome da Visualização</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Descrição Opcional</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div>
+          </div>
+          <DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>Cancelar</Button><Button onClick={handleSave}>Guardar</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

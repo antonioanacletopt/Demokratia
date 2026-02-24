@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, LayoutDashboard, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -52,8 +51,7 @@ function AppSidebarContent() {
 
   const allNavItems = [
     { href: "/home", icon: Home, label: t('nav.home'), public: true },
-    { href: "/dashboard", icon: LayoutDashboard, label: t('nav.dashboard'), public: true },
-    { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
+    { href: "/explorer", icon: BarChartHorizontalBig, label: "Dados e Análises", public: true },
     { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
     { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
     { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
@@ -108,13 +106,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const { data: profileData, isLoading: isProfileLoading } = useDoc(userProfileRef);
 
-  // Registo de Sessão (Hit de Acesso)
   useEffect(() => {
     if (!firestore) return;
-    
     const sessionKey = 'demokratia-session-logged';
     const isLoggedThisSession = sessionStorage.getItem(sessionKey);
-
     if (!isLoggedThisSession) {
       const sessionsRef = collection(firestore, 'analytics_sessions');
       addDocumentNonBlocking(sessionsRef, {
@@ -127,7 +122,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [firestore, user]);
 
-  // Efeito para garantir que o utilizador tem um documento na base de dados
   useEffect(() => {
     if (user && !isProfileLoading && !profileData && firestore) {
       const userRef = doc(firestore, 'users', user.uid);
