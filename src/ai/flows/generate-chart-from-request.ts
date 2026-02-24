@@ -42,19 +42,20 @@ Search for the requested data from reliable public sources only (INE, Pordata, B
 
 **REGRAS CRÍTICAS PARA GRÁFICOS:**
 1. **CONTEXTO HISTÓRICO:** Se o pedido referir um ano específico (ex: 2025), tente sempre encontrar dados dos últimos 3 a 5 anos para fornecer contexto e permitir a visualização de tendências. Um gráfico com apenas uma barra ou um ponto não é útil.
-2. **TÍTULOS E LEGENDAS:** Use títulos curtos e profissionais em português.
+2. **MAPEAMENTO DE DADOS:** Se encontrar dados em formato de lista ou tabela, transforme-os SEMPRE para o formato 'chartData' com as chaves 'label' (para o eixo X, ex: Anos) e 'value' (para o eixo Y, valores numéricos).
+3. **TÍTULOS E LEGENDAS:** Use títulos curtos e profissionais em português.
 
 - If you find suitable data and it can be visualized:
   - Set 'isChartable' to true.
   - In 'explanation', provide a brief, clear summary of what the data represents and the source. Inclua uma breve análise da tendência observada (ex: "Os dados revelam uma estabilização após o pico de 2023").
-  - In 'chartData', provide the data formatted as a JSON array of objects with 'label' (for the X-axis, e.g., year) and 'value' (for the Y-axis). The data should be ordered chronologically or logically.
+  - In 'chartData', provide the data formatted as a JSON array of objects with 'label' and 'value'. The data should be ordered chronologically or logically.
   - In 'chartType', suggest 'bar' for comparisons or 'line' for time-series data.
   - In 'chartTitle', create a descriptive title for the chart.
   - In 'yAxisLabel', specify the unit of the data (e.g., '%', '€', 'milhões').
 
 - If you cannot find the data or it's not suitable for a simple chart:
   - Set 'isChartable' to false.
-  - In 'explanation', clearly explain why the data could not be found or visualized.
+  - In 'explanation', clearly explain porquê os dados não puderam ser encontrados ou visualizados.
   - Leave the other fields empty.
 
 User's Request:

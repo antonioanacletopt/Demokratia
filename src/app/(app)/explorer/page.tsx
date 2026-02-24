@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
@@ -69,15 +68,52 @@ function downloadCsv(data: any[], filename: string) {
   document.body.removeChild(link);
 }
 
+/**
+ * Intelligent helper to transform any array of objects into chart-friendly data points.
+ * Guesses labels and values based on key names.
+ */
+function transformToChartData(rawData: any[]): DataPoint[] {
+  if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return [];
+  
+  const first = rawData[0];
+  const keys = Object.keys(first);
+  
+  // If already has label and value keys, trust it
+  if (keys.includes('label') && keys.includes('value')) {
+    return rawData as DataPoint[];
+  }
+
+  // Identify label key (look for Year, Date, Name, Category terms)
+  const labelKey = keys.find(k => /ano|date|year|mês|mes|month|categoria|category|país|country|tipo|type|entidade|label|nome|name/i.test(k)) || keys[0];
+  
+  // Identify value key (look for Valor, Total, rate, currency symbols, or numeric type)
+  const valueKey = keys.find(k => /valor|value|total|taxa|rate|quantidade|amount|€|%|pib|gdp|índice|indice/i.test(k)) 
+    || keys.find(k => typeof first[k] === 'number') 
+    || keys[1] 
+    || keys[0];
+
+  return rawData.map(item => ({
+    ...item,
+    label: String(item[labelKey] || 'N/A'),
+    value: typeof item[valueKey] === 'number' 
+      ? item[valueKey] 
+      : parseFloat(String(item[valueKey] || '0').replace(/[^\d.-]/g, '').replace(',', '.')) || 0
+  }));
+}
+
 function ChartRenderer({ data, chartType, unit, height = 250 }: { data: DataPoint[], chartType: 'bar' | 'line', unit: string, height?: number }) {
+  const chartData = useMemo(() => transformToChartData(data), [data]);
+  
   const chartConfig: ChartConfig = {
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
 
+  if (chartData.length === 0) return null;
+
   return (
     <ChartContainer config={chartConfig} className="w-full" style={{ height: `${height}px` }}>
       {chartType === 'line' ? (
-        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
@@ -85,7 +121,7 @@ function ChartRenderer({ data, chartType, unit, height = 250 }: { data: DataPoin
           <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-value)' }} activeDot={{ r: 6 }} />
         </LineChart>
       ) : (
-        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.5} />
           <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `${v}${unit}`} />
@@ -261,6 +297,7 @@ export default function ExplorerPage() {
         }
       }
 
+      // Try focused chart generation first
       const res = await getChartFromRequest({ request: humanText });
       let finalResult: UniversalData | null = null;
 
@@ -274,14 +311,18 @@ export default function ExplorerPage() {
           chartType: res.chartType
         };
       } else {
+        // Fallback to broader statistic search
         const statRes = await getPublicStatistic({ request: humanText });
         if (statRes.isFound && statRes.data) {
           const parsed = JSON.parse(statRes.data);
+          const rawDataArray = Array.isArray(parsed) ? parsed : [parsed];
+          
           finalResult = {
             title: humanText,
             description: statRes.explanation,
             source: statRes.source || 'Fontes Oficiais',
-            data: Array.isArray(parsed) ? parsed : [parsed]
+            data: rawDataArray,
+            chartType: rawDataArray.length > 1 ? 'bar' : undefined
           };
         }
       }
@@ -467,11 +508,6 @@ export default function ExplorerPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {ds.map((d: any) => {
                     const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
-                    const chartFriendlyData = Array.isArray(parsedData) ? parsedData.map(item => ({
-                      label: item.Ano || item.Escalão || item.Especialidade || item.Fluxo || (item && Object.values(item)[0] ? Object.values(item)[0] : 'N/A'),
-                      value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || item['Taxa (%)'] || item.Quantidade || item.Inscritos || item['Nº Empresas'] || (item && Object.values(item)[1] ? Object.values(item)[1] : '0')).replace('%', '').replace(',', '.')) || 0
-                    })) : [];
-
                     return (
                       <UniversalDataCard 
                         key={d.id}
@@ -479,7 +515,7 @@ export default function ExplorerPage() {
                         description={d.description}
                         source={d.source}
                         unit={d.title.includes('%') ? '%' : (d.title.includes('Ganho') ? '€' : '')}
-                        data={chartFriendlyData.length > 0 ? chartFriendlyData : parsedData}
+                        data={parsedData}
                       />
                     );
                   })}
