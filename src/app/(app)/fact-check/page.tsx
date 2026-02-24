@@ -18,14 +18,31 @@ import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
+import { cn } from '@/lib/utils';
 
 const MAX_CACHE_LENGTH = 1000;
 
 const verdictConfig = {
-  Verdadeiro: { icon: Check, color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300' },
-  Falso: { icon: X, color: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300' },
-  Enganador: { icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300' },
-  'Sem Evidência': { icon: HelpCircle, color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300' },
+  Verdadeiro: { 
+    icon: Check, 
+    color: 'bg-green-600 text-white border-green-700 dark:bg-green-700',
+    badge: 'bg-green-600 hover:bg-green-700 text-white border-transparent'
+  },
+  Falso: { 
+    icon: X, 
+    color: 'bg-red-600 text-white border-red-700 dark:bg-red-700',
+    badge: 'bg-red-600 hover:bg-red-700 text-white border-transparent'
+  },
+  Enganador: { 
+    icon: AlertTriangle, 
+    color: 'bg-amber-500 text-white border-amber-600 dark:bg-amber-600',
+    badge: 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
+  },
+  'Sem Evidência': { 
+    icon: HelpCircle, 
+    color: 'bg-slate-500 text-white border-slate-600 dark:bg-slate-600',
+    badge: 'bg-slate-500 hover:bg-slate-600 text-white border-transparent'
+  },
 };
 
 function generateSlug(text: string): string {
@@ -113,18 +130,43 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
         </div>
       </CardHeader>
       <CardContent className="space-y-8 pt-6">
-        <div><h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.verdict')}</h3><div className={`flex items-center gap-4 p-5 rounded-2xl border-2 shadow-sm ${config.color}`}><div className="bg-white/20 p-2 rounded-full"><VerdictIcon className="h-8 w-8" /></div><span className="text-3xl font-bold font-headline tracking-tight">{currentVerdict}</span></div></div>
-        <div><h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.explanation')}</h3><div className="bg-muted/40 p-6 rounded-2xl border leading-relaxed shadow-inner"><p className="text-foreground whitespace-pre-wrap text-base">{currentExplanation}</p></div></div>
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.verdict')}</h3>
+          <div className={cn("flex items-center gap-4 p-5 rounded-2xl border-2 shadow-sm", config.color)}>
+            <div className="bg-white/20 p-2 rounded-full">
+              <VerdictIcon className="h-8 w-8" />
+            </div>
+            <span className="text-3xl font-bold font-headline tracking-tight">{currentVerdict}</span>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t('factCheck.explanation')}</h3>
+          <div className="bg-muted/40 p-6 rounded-2xl border leading-relaxed shadow-inner">
+            <p className="text-foreground whitespace-pre-wrap text-base">{currentExplanation}</p>
+          </div>
+        </div>
         {result.sources && result.sources.length > 0 && (
           <div className="pt-4 border-t border-dashed">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t('factCheck.sources')}</h3>
             <ul className="grid gap-3 sm:grid-cols-1">
-              {result.sources.map((s, i) => (<li key={i} className="flex items-start gap-3 group"><div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors"><span className="text-[10px] font-bold text-primary">{i + 1}</span></div><Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium leading-tight flex items-center gap-1.5">{s}<ExternalLink className="h-3 w-3" /></Link></li>))}
+              {result.sources.map((s, i) => (
+                <li key={i} className="flex items-start gap-3 group">
+                  <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+                  </div>
+                  <Link href={s} target="_blank" className="text-primary hover:underline text-sm break-all font-medium leading-tight flex items-center gap-1.5">
+                    {s}
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         )}
       </CardContent>
-      <CardFooter className="bg-muted/10 border-t py-3 flex justify-center"><p className="text-[10px] text-muted-foreground italic">Informação gerada por IA baseada em análise rigorosa de fontes públicas e contexto temporal atualizado.</p></CardFooter>
+      <CardFooter className="bg-muted/10 border-t py-3 flex justify-center">
+        <p className="text-[10px] text-muted-foreground italic">Informação gerada por IA baseada em análise rigorosa de fontes públicas e contexto temporal atualizado.</p>
+      </CardFooter>
     </Card>
   );
 }
@@ -219,7 +261,42 @@ export default function FactCheckPage() {
       </div>
       <Card className="border-dashed bg-muted/5">
         <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5 text-muted-foreground" />{t('factCheck.historyTitle')}</CardTitle><CardDescription>{t('factCheck.historyDesc')}</CardDescription></CardHeader>
-        <CardContent>{!user ? (<div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed"><p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p><Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button></div>) : history && history.length > 0 ? (<div className="grid gap-4 sm:grid-cols-2">{history.map((h: any) => (<div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card"><div className="max-w-[75%]"><p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug cursor-pointer" onClick={() => { setClaim(h.claim); setResult(h); }}>"{h.claim}"</p><Badge variant={h.verdict === 'Verdadeiro' ? 'default' : 'secondary'} className="text-[9px] uppercase tracking-wider">{h.verdict}</Badge></div><div className="flex flex-col gap-2 shrink-0"><Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}><RefreshCw className="h-4 w-4 text-primary" /></Button><RefutationDialog contentId={`factcheck-${h.id}`} /></div></div>))}</div>) : (<div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/10"><HelpCircle className="mx-auto h-10 w-10 opacity-20 mb-3" /><p className="font-medium">{t('factCheck.noHistoryTitle')}</p><p className="text-xs mt-1">{t('factCheck.noHistoryDesc')}</p></div>)}</CardContent>
+        <CardContent>
+          {!user ? (
+            <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
+              <p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p>
+              <Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button>
+            </div>
+          ) : history && history.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {history.map((h: any) => {
+                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
+                return (
+                  <div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card">
+                    <div className="max-w-[75%]">
+                      <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug cursor-pointer" onClick={() => { setClaim(h.claim); setResult(h); }}>"{h.claim}"</p>
+                      <Badge variant="outline" className={cn("text-[9px] uppercase tracking-wider border-none", config.badge)}>
+                        {h.verdict}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/5 hover:bg-primary/10" onClick={() => { setClaim(h.claim); setResult(h); }}>
+                        <RefreshCw className="h-4 w-4 text-primary" />
+                      </Button>
+                      <RefutationDialog contentId={`factcheck-${h.id}`} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-2xl bg-muted/10">
+              <HelpCircle className="mx-auto h-10 w-10 opacity-20 mb-3" />
+              <p className="font-medium">{t('factCheck.noHistoryTitle')}</p>
+              <p className="text-xs mt-1">{t('factCheck.noHistoryDesc')}</p>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
