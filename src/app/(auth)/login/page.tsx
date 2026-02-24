@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -75,7 +76,11 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-md shadow-2xl">
       <CardHeader className="text-center">
-         <div className="flex justify-center mb-4"><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground"><Logo className="size-8" /></div></div>
+         <div className="flex justify-center mb-4">
+           <div className="flex h-16 w-16 items-center justify-center">
+             <Logo className="size-12" />
+           </div>
+         </div>
         <CardTitle className="text-2xl font-headline">{t('login.welcome')}</CardTitle>
         <CardDescription>{t('login.subtitle')}</CardDescription>
       </CardHeader>
