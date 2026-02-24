@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Share2 } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Share2, Sparkles } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -248,6 +248,12 @@ export default function FactCheckPage() {
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
 
+  const recentPublicChecksQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'publicFactChecks'), orderBy('createdAt', 'desc'), limit(6));
+  }, [firestore]);
+  const { data: recentPublicChecks, isLoading: isLoadingPublic } = useCollection(recentPublicChecksQuery);
+
   useEffect(() => { 
     if (result && resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -282,11 +288,43 @@ export default function FactCheckPage() {
         <CardContent><Textarea placeholder={t('factCheck.textareaPlaceholder')} value={claim} onChange={(e) => setClaim(e.target.value)} rows={4} className="text-lg resize-none focus-visible:ring-primary" disabled={isPending} /></CardContent>
         <CardFooter className="bg-muted/30 py-4 flex justify-between items-center"><p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.</p><Button onClick={() => handleFactCheck()} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">{isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}{t('factCheck.checkBtn')}</Button></CardFooter>
       </Card>
+      
       <AdBanner />
+
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Card className="border-primary/10 shadow-lg"><CardHeader className="bg-muted/30"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-4 w-full mt-2" /></CardHeader><CardContent className="space-y-6 pt-6"><Skeleton className="h-20 w-full rounded-2xl" /><Skeleton className="h-48 w-full rounded-2xl" /><div className="space-y-3"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></CardContent></Card>}
         {result && <FactCheckResultDisplay result={result} claim={claim} />}
       </div>
+
+      <Card className="border-none bg-muted/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Sparkles className="h-5 w-5 text-accent" />
+            {t('factCheck.recentChecks')}
+          </CardTitle>
+          <CardDescription>{t('factCheck.recentChecksDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingPublic ? <Skeleton className="h-24 w-full" /> : recentPublicChecks && recentPublicChecks.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recentPublicChecks.map((h: any) => {
+                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
+                return (
+                  <button key={h.id} className="p-4 text-left border rounded-xl hover:bg-white hover:shadow-md transition-all group bg-card flex flex-col justify-between h-full" onClick={() => { setClaim(h.claim); setResult(h); }}>
+                    <p className="font-semibold italic text-xs line-clamp-3 mb-3 leading-snug">"{h.claim}"</p>
+                    <Badge variant="outline" className={cn("text-[8px] uppercase tracking-wider border-none w-fit", config.badge)}>
+                      {h.verdict}
+                    </Badge>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center py-8 text-muted-foreground italic">{t('common.noResults')}</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="border-dashed bg-muted/5">
         <CardHeader><CardTitle className="flex items-center gap-2 text-xl"><History className="h-5 w-5 text-muted-foreground" />{t('factCheck.historyTitle')}</CardTitle><CardDescription>{t('factCheck.historyDesc')}</CardDescription></CardHeader>
         <CardContent>

@@ -207,9 +207,9 @@ export default function LegislationPage() {
 
   const publicQueriesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(5));
+    return query(collection(firestore, 'publicLegislationQueries'), orderBy('createdAt', 'desc'), limit(10));
   }, [firestore]);
-  const { data: recentQueries } = useCollection<LegislationQuery>(publicQueriesQuery);
+  const { data: recentQueries, isLoading: isLoadingPublic } = useCollection<LegislationQuery>(publicQueriesQuery);
 
   const handleDeleteHistory = async (id: string) => {
     if (!user || !firestore) return;
@@ -266,7 +266,7 @@ export default function LegislationPage() {
         {result && <LegislationResultDisplay result={result} questionText={question} />}
       </div>
 
-      <Card>
+      <Card className="border-none bg-muted/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-accent" />
@@ -274,39 +274,44 @@ export default function LegislationPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentQueries && recentQueries.length > 0 ? (
-            <div className="space-y-4">
+          {isLoadingPublic ? <Skeleton className="h-20 w-full" /> : recentQueries && recentQueries.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
               {recentQueries.map(q => (
-                <button key={q.id} className="w-full text-left rounded-lg border p-4 hover:bg-muted/50 transition-colors" onClick={() => { setQuestion(q.question); setResult(q); }}>
-                  <p className="font-semibold text-muted-foreground italic">"{q.question}"</p>
+                <button key={q.id} className="w-full text-left rounded-xl border p-4 bg-card hover:bg-white hover:shadow-md transition-all group" onClick={() => { setQuestion(q.question); setResult(q); }}>
+                  <p className="font-semibold text-muted-foreground italic text-sm line-clamp-2 leading-relaxed">"{q.question}"</p>
                 </button>
               ))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">{t('common.noResults')}</p>
+              <p className="text-muted-foreground italic">{t('common.noResults')}</p>
             </div>
           )}
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="border-dashed bg-muted/5">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <History className="h-5 w-5" />
             {t('legislation.historyTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!user ? <p className="text-muted-foreground">{t('nav.login')}</p> : pastQueries && pastQueries.length > 0 ? (
+          {!user ? (
+            <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
+              <p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p>
+              <Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button>
+            </div>
+          ) : pastQueries && pastQueries.length > 0 ? (
             <div className="space-y-4">
               {pastQueries.map(q => (
-                <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors">
-                  <p className="font-semibold text-muted-foreground italic cursor-pointer" onClick={() => { setQuestion(q.question); setResult(q); }}>"{q.question}"</p>
+                <div key={q.id} className="rounded-lg border p-4 flex justify-between items-center group hover:bg-muted/30 transition-colors bg-card">
+                  <p className="font-semibold text-muted-foreground italic cursor-pointer text-sm" onClick={() => { setQuestion(q.question); setResult(q); }}>"{q.question}"</p>
                   <div className="flex gap-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive">
+                        <Button variant="ghost" size="icon" className="text-destructive h-8 w-8">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>

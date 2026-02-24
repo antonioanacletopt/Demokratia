@@ -73,8 +73,9 @@ export const translations = {
       howItWorks: 'Submeta uma afirmação pública. A IA cruza a informação com fontes oficiais e analisa o contexto temporal para emitir um veredicto imparcial sobre a sua veracidade.',
       cardTitle: 'Verificar Alegação',
       cardDesc: 'Introduza a afirmação.', textareaPlaceholder: "Ex: 'Portugal tem os impostos mais altos da UE'", checkBtn: 'Verificar',
-      resultTitle: 'Resultado', verdict: 'Veredicto', explanation: 'Explicação', sources: 'Fontes', historyTitle: 'Histórico',
-      historyDesc: 'As suas verificações.', noHistoryTitle: 'Sem histórico', noHistoryDesc: 'Faça a sua primeira verificação.'
+      resultTitle: 'Resultado', verdict: 'Veredicto', explanation: 'Explicação', sources: 'Fontes', historyTitle: 'O Meu Histórico',
+      historyDesc: 'As suas verificações privadas.', noHistoryTitle: 'Sem histórico', noHistoryDesc: 'Faça a sua primeira verificação.',
+      recentChecks: 'Verificações da Comunidade', recentChecksDesc: 'O que os cidadãos andam a verificar.'
     },
     legislation: {
       title: 'Consultar Legislação', 
@@ -82,8 +83,8 @@ export const translations = {
       howItWorks: 'A IA jurídica analisa o Diário da República e legislação consolidada para responder às suas dúvidas de forma simples, citando sempre as fontes legais diretas.',
       cardTitle: 'Analisar Legislação',
       cardDesc: 'Faça a sua pergunta.', textareaPlaceholder: "Ex: 'Direitos sobre teletrabalho'", consultBtn: 'Consultar',
-      resultTitle: 'Análise Legal', analysis: 'Análise', sources: 'Fontes', recentQueries: 'Consultas Recentes',
-      historyTitle: 'Histórico', noHistoryTitle: 'Sem consultas'
+      resultTitle: 'Análise Legal', analysis: 'Análise', sources: 'Fontes', recentQueries: 'Inteligência Coletiva (Recentes)',
+      historyTitle: 'O Meu Histórico', noHistoryTitle: 'Sem consultas'
     },
     proposals: {
       title: 'O Povo Propõe', 
@@ -203,7 +204,7 @@ export const translations = {
       noRecentTitle: 'No searches', noRecentDesc: 'Be the first!', existingDataTitle: 'Available Data',
       searchPlaceholder: 'Filter by title...', noResultsTitle: 'No results', source: 'Source', category: 'Category',
       suggestSource: 'Suggest Data Source', suggestSourceDesc: 'Know an official portal or relevant API? Help us grow.',
-      sourceName: 'Entity Name', sourceUrl: 'Official URL', sourcePurpose: 'What does it contain?', suggestBtn: 'Send Suggestion'
+      sourceName: 'Source Name', sourceUrl: 'Official URL', sourcePurpose: 'What does it contain?', suggestBtn: 'Send Suggestion'
     },
     simulations: {
       title: 'Policy Simulations', 
@@ -224,8 +225,9 @@ export const translations = {
       howItWorks: 'Submit a public statement. AI cross-references the information with official sources and analyzes the temporal context to issue an impartial verdict on its truthfulness.',
       cardTitle: 'Check Claim',
       cardDesc: 'Enter statement.', textareaPlaceholder: "e.g., 'Highest taxes in EU'", checkBtn: 'Check',
-      resultTitle: 'Result', verdict: 'Verdict', explanation: 'Explanation', sources: 'Sources', historyTitle: 'History',
-      historyDesc: 'Your checks.', noHistoryTitle: 'No history', noHistoryDesc: 'Make your first check.'
+      resultTitle: 'Result', verdict: 'Verdict', explanation: 'Explanation', sources: 'Sources', historyTitle: 'My History',
+      historyDesc: 'Your private checks.', noHistoryTitle: 'No history', noHistoryDesc: 'Make your first check.',
+      recentChecks: 'Community Verifications', recentChecksDesc: 'What citizens are checking lately.'
     },
     legislation: {
       title: 'Consult Legislation', 
@@ -233,8 +235,8 @@ export const translations = {
       howItWorks: 'The legal AI analyzes the Official Gazette and consolidated legislation to answer your questions simply, always citing direct legal sources.',
       cardTitle: 'Analyze Legislation',
       cardDesc: 'Ask your question.', textareaPlaceholder: "e.g., 'Remote work rights'", consultBtn: 'Consult',
-      resultTitle: 'Legal Analysis', analysis: 'Analysis', sources: 'Sources', recentQueries: 'Recent Queries',
-      historyTitle: 'History', noHistoryTitle: 'No queries'
+      resultTitle: 'Legal Analysis', analysis: 'Analysis', sources: 'Sources', recentQueries: 'Collective Intelligence (Recent)',
+      historyTitle: 'My History', noHistoryTitle: 'No queries'
     },
     proposals: {
       title: 'The People Propose', 
