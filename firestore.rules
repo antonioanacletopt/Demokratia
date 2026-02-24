@@ -4,8 +4,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules v1.1
-     * Forçando redeploy para garantir acesso administrativo e público.
+     * Demokratia Portugal: Security Rules v1.2
+     * Prioridade absoluta para coleções públicas e permissões administrativas.
      */
 
     // --- Global Helper Functions ---
@@ -26,42 +26,52 @@ service cloud.firestore {
       );
     }
 
-    // --- Public Content (Read-only for all, write for Admin) ---
+    // --- 1. Public Content (Total Read Access for all) ---
 
     match /publicSimulations/{id} {
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicFactChecks/{id} {
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicLegislationQueries/{id} {
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
     match /publicStatisticQueries/{id} {
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
-    // --- Community Proposals ---
+    match /statisticalData/{id} {
+      allow get, list: if true;
+      allow write: if isAdmin();
+    }
+
+    match /dataSources/{id} {
+      allow get, list: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- 2. Community Proposals ---
 
     match /communityProposals/{proposalId} {
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
-    // --- User Profiles & Private Data ---
+    // --- 3. User Profiles & Private Data ---
 
     match /users/{userId} {
       allow get, list: if isOwner(userId) || isAdmin();
@@ -74,7 +84,7 @@ service cloud.firestore {
       }
     }
 
-    // --- System & Analytics ---
+    // --- 4. System & Analytics ---
 
     match /analytics_sessions/{sessionId} {
       allow create: if true;
@@ -85,6 +95,12 @@ service cloud.firestore {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow list: if isAdmin();
+    }
+
+    match /refutations/{refutationId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
 
     match /translations_cache/{id} {
@@ -99,16 +115,6 @@ service cloud.firestore {
 
     match /roles_admin/{userId} {
       allow get: if isOwner(userId) || isAdmin();
-      allow write: if isAdmin();
-    }
-
-    match /statisticalData/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /dataSources/{id} {
-      allow read: if true;
       allow write: if isAdmin();
     }
   }

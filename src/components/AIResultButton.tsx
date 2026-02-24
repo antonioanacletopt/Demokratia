@@ -41,14 +41,16 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
 
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
-    return query(collection(firestore, 'publicFactChecks'), where('claim', '==', claim), limit(1));
+    const colRef = collection(firestore, 'publicFactChecks');
+    return query(colRef, where('claim', '==', claim), limit(1));
   }, [firestore, claim]);
   
   const { data: factCheckResults } = useCollection(factCheckQuery);
 
   const simulationQuery = useMemoFirebase(() => {
     if (!firestore || !policy) return null;
-    return query(collection(firestore, 'publicSimulations'), where('title', '==', policy), limit(1));
+    const colRef = collection(firestore, 'publicSimulations');
+    return query(colRef, where('title', '==', policy), limit(1));
   }, [firestore, policy]);
   
   const { data: simulationResults } = useCollection(simulationQuery);
