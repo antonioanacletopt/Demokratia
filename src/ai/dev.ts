@@ -11,3 +11,4 @@ import '@/ai/flows/fact-check-claim.ts';
 import '@/ai/flows/consult-legislation.ts';
 import '@/ai/flows/generate-news-feed.ts';
 import '@/ai/flows/translate-content.ts';
+import '@/ai/flows/explain-scenario-impact.ts';

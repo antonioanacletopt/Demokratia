@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -32,6 +33,11 @@ import {
   FindPublicStatisticInput,
   FindPublicStatisticOutput,
 } from '@/ai/flows/find-public-statistic';
+import {
+  analyzeScenario,
+  AnalyzeScenarioInput,
+  AnalyzeScenarioOutput,
+} from '@/ai/flows/explain-scenario-impact';
 
 import type { Language } from './i18n';
 
@@ -73,6 +79,14 @@ export async function getChartFromRequest(
 
 export async function getNewsFeed(): Promise<GenerateNewsFeedOutput> {
   return await generateNewsFeed();
+}
+
+export async function getScenarioAnalysis(
+  input: Omit<AnalyzeScenarioInput, 'language'>,
+  lang: Language
+): Promise<AnalyzeScenarioOutput> {
+  const language = lang === 'en' ? 'English' : 'Portuguese';
+  return await analyzeScenario({ ...input, language });
 }
 
 /**

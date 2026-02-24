@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -51,8 +52,9 @@ function AppSidebarContent() {
 
   const allNavItems = [
     { href: "/home", icon: Home, label: t('nav.home'), public: true },
-    { href: "/explorer", icon: BarChartHorizontalBig, label: "Dados e Análises", public: true },
+    { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
     { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
+    { href: "/scenarios", icon: Zap, label: t('nav.scenarios'), public: true },
     { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
     { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
     { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },

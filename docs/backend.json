@@ -54,6 +54,23 @@
         "userId": { "type": "string" }
       },
       "required": ["id", "timestamp", "isAnonymous"]
+    },
+    "MacroScenario": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MacroScenario",
+      "type": "object",
+      "description": "A user-created economic scenario with custom parameters and AI feedback.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "title": { "type": "string" },
+        "parameters": { "type": "object" },
+        "results": { "type": "object" },
+        "aiFeedback": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "parameters", "createdAt"]
     }
   },
   "auth": {
@@ -101,6 +118,13 @@
         "definition": {
           "entityName": "LegislationCache",
           "description": "Publicly cached legal queries and analysis."
+        }
+      },
+      {
+        "path": "/publicScenarios/{scenarioId}",
+        "definition": {
+          "entityName": "MacroScenario",
+          "description": "Publicly shared macroeconomic policy exercises."
         }
       }
     ]

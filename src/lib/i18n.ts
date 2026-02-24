@@ -8,9 +8,10 @@ export type Language = 'pt' | 'en';
 export const translations = {
   pt: {
     nav: {
-      home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
+      home: 'Início', dashboard: 'Dashboard', explorer: 'Dados e Análises', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
-      login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies'
+      login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
+      scenarios: 'Laboratório Macro'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -34,13 +35,32 @@ export const translations = {
       loadingText: 'A analisar a atualidade política de 2026...',
       newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
     },
-    dashboard: {
-      title: 'Dashboard Interativo', description: 'Gere gráficos dinâmicos sobre Portugal.', aiCardTitle: 'Gráfico com IA',
-      aiCardDesc: 'Descreva os dados que pretende visualizar.', textareaPlaceholder: "Ex: 'Evolução do desemprego jovem desde 2015'",
-      generateBtn: 'Gerar Gráfico', saveToDash: 'Guardar Dashboard', saveDialogTitle: 'Guardar Visualização',
-      saveDialogDesc: 'Dê um nome a este gráfico.', viewName: 'Nome', viewDescription: 'Descrição',
-      savedTitle: 'Dashboards Guardados', noSavedTitle: 'Sem gráficos guardados', noSavedDesc: 'Gere e guarde um gráfico.',
-      mainIndicators: 'Indicadores Principais', dataNotFound: 'Dados não encontrados', seedNotice: 'Clique em Seed na página Admin.'
+    scenarios: {
+      title: 'Laboratório de Cenários Macro',
+      description: 'Ajuste os indicadores e veja o impacto na economia em tempo real.',
+      howItWorks: 'Este simulador usa um motor de correlações económicas (Baseado na Lei de Okun e Curva de Phillips). Arraste os seletores para mudar as políticas fiscais e veja as projeções automáticas no PIB e emprego.',
+      inputs: 'Políticas e Ajustes',
+      outputs: 'Projeções de Resultado',
+      irsLabel: 'Taxa Média de IRS',
+      ivaLabel: 'Taxa Média de IVA',
+      investLabel: 'Investimento Público',
+      gdpLabel: 'Crescimento do PIB',
+      unemploymentLabel: 'Taxa de Desemprego',
+      inflationLabel: 'Inflação (Preços)',
+      tooltips: {
+        irs: 'Alterar o IRS afeta o rendimento disponível. Menos imposto costuma estimular o consumo, mas pode aumentar o défice se não houver crescimento.',
+        iva: 'O IVA impacta diretamente o preço final dos bens. Subidas de IVA aumentam a inflação a curto prazo e podem reduzir o consumo das famílias.',
+        invest: 'O investimento em infraestruturas e serviços públicos gera emprego e estimula o PIB, mas requer financiamento orçamental.',
+        gdp: 'O Produto Interno Bruto reflete a saúde da economia. Alvos acima de 2.5% são considerados expansivos para Portugal.',
+        unemployment: 'Existe uma correlação inversa com o PIB (Lei de Okun). Se a economia cresce rápido, o desemprego tende a cair.',
+        inflation: 'Reflete o aumento de preços. O objetivo do BCE é manter este valor perto dos 2% para estabilidade.'
+      },
+      saveTitle: 'Guardar Exercício',
+      saveDesc: 'Dê um nome ao seu cenário para o partilhar.',
+      myScenarios: 'Meus Cenários Guardados',
+      publicScenarios: 'Cenários da Comunidade',
+      aiAnalysis: 'Parecer da IA sobre este Cenário',
+      reset: 'Reset para Realidade 2026'
     },
     explorer: {
       title: 'Explorador de Dados', 
@@ -73,7 +93,7 @@ export const translations = {
       howItWorks: 'Submeta uma afirmação pública. A IA cruza a informação com fontes oficiais e analisa o contexto temporal para emitir um veredicto imparcial sobre a sua veracidade.',
       cardTitle: 'Verificar Alegação',
       cardDesc: 'Introduza a afirmação.', textareaPlaceholder: "Ex: 'Portugal tem os impostos mais altos da UE'", checkBtn: 'Verificar',
-      resultTitle: 'Resultado', verdict: 'Veredicto', explanation: 'Explicação', sources: 'Fontes', historyTitle: 'O Meu Histórico',
+      resultTitle: 'Resultado', verdict: 'Veredicto', explanation: 'Explanation', sources: 'Fontes', historyTitle: 'O Meu Histórico',
       historyDesc: 'As suas verificações privadas.', noHistoryTitle: 'Sem histórico', noHistoryDesc: 'Faça a sua primeira verificação.',
       recentChecks: 'Verificações da Comunidade', recentChecksDesc: 'O que os cidadãos andam a verificar.'
     },
@@ -104,7 +124,7 @@ export const translations = {
       status: { title: 'Estado', new: 'Nova', read: 'Lida', archived: 'Arquivada' }
     },
     refutation: {
-      title: 'Refutar Informação', description: 'Acredita que a IA errou? Submeta provas para correção.', label: 'Explicação',
+      title: 'Refutar Informação', description: 'Acredita que a IA errou? Submeta provas para correção.', label: 'Explanation',
       placeholder: 'Explique porque a informação está errada...', evidence: 'Links/Provas', 
       evidencePlaceholder: 'Links para fontes oficiais, documentos, etc.',
       submitBtn: 'Submeter Refutação', refuteBtn: 'Refutar Informação', success: 'Refutação enviada para análise.',
@@ -129,7 +149,7 @@ export const translations = {
       seedTitle: 'Carregamento de Dados (Seed)', seedDesc: 'Popula o sistema com os dados de 2026.',
       indicators: 'Indicadores', indicatorsDesc: 'GDP, Inflation and Unemployment.', loadIndicators: 'Carregar Indicadores',
       stats: 'Estatísticas', statsDesc: 'Tabelas para o Explorador.', loadStats: 'Carregar Estatísticas',
-      sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Fontes',
+      sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Estatísticas',
       simulationsDesc: 'Gira as simulações públicas para remover dados obsoletos ou IDs técnicos.'
     },
     profile: {
@@ -161,9 +181,10 @@ export const translations = {
   },
   en: {
     nav: {
-      home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
+      home: 'Home', dashboard: 'Dashboard', explorer: 'Data & Analysis', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
-      login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies'
+      login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
+      scenarios: 'Macro Lab'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -186,13 +207,32 @@ export const translations = {
       error: 'Error loading news.', source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
       newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
     },
-    dashboard: {
-      title: 'Interactive Dashboard', description: 'Generate charts about Portugal with AI.', aiCardTitle: 'AI Chart',
-      aiCardDesc: 'Describe what you want to see.', textareaPlaceholder: "e.g., 'Youth unemployment since 2015'",
-      generateBtn: 'Generate Chart', saveToDash: 'Save to Dashboard', saveDialogTitle: 'Save View',
-      saveDialogDesc: 'Give this chart a name.', viewName: 'Name', viewDescription: 'Description',
-      savedTitle: 'Saved Dashboards', noSavedTitle: 'No saved charts', noSavedDesc: 'Generate and save a chart.',
-      mainIndicators: 'Main Indicators', dataNotFound: 'Data not found', seedNotice: 'Click Seed in Admin.'
+    scenarios: {
+      title: 'Macro Scenario Lab',
+      description: 'Adjust indicators and see the impact on the economy in real-time.',
+      howItWorks: 'This simulator uses an economic correlation engine (Based on Okun\'s Law and Phillips Curve). Drag the sliders to change fiscal policies and see automatic projections on GDP and employment.',
+      inputs: 'Policies & Adjustments',
+      outputs: 'Outcome Projections',
+      irsLabel: 'Average IRS Rate',
+      ivaLabel: 'Average VAT Rate',
+      investLabel: 'Public Investment',
+      gdpLabel: 'GDP Growth',
+      unemploymentLabel: 'Unemployment Rate',
+      inflationLabel: 'Inflation (Prices)',
+      tooltips: {
+        irs: 'Changing IRS affects disposable income. Lower taxes usually stimulate consumption but can increase deficit if growth doesn\'t follow.',
+        iva: 'VAT directly impacts the final price of goods. VAT hikes increase inflation in the short term and can reduce household consumption.',
+        invest: 'Investment in infrastructure and public services creates jobs and stimulates GDP, but requires budgetary funding.',
+        gdp: 'Gross Domestic Product reflects economic health. Targets above 2.5% are considered expansive for Portugal.',
+        unemployment: 'There is an inverse correlation with GDP (Okun\'s Law). If the economy grows fast, unemployment tends to fall.',
+        inflation: 'Reflects the price increase. The ECB target is to keep this value near 2% for stability.'
+      },
+      saveTitle: 'Save Exercise',
+      saveDesc: 'Name your scenario to share it.',
+      myScenarios: 'My Saved Scenarios',
+      publicScenarios: 'Community Scenarios',
+      aiAnalysis: 'AI Feedback on this Scenario',
+      reset: 'Reset to 2026 Reality'
     },
     explorer: {
       title: 'Data Explorer', 
