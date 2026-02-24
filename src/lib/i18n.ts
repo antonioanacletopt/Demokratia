@@ -50,7 +50,9 @@ export const translations = {
       aiCardDesc: 'Diga que estatística procura.', textareaPlaceholder: "Ex: 'Qual a evolução da dívida pública?'",
       searchBtn: 'Procurar', recentQueries: 'Pesquisas Recentes', recentQueriesDesc: 'O que outros users procuram.',
       noRecentTitle: 'Sem pesquisas', noRecentDesc: 'Seja o primeiro!', existingDataTitle: 'Dados Disponíveis',
-      searchPlaceholder: 'Filtrar por título...', noResultsTitle: 'Sem resultados', source: 'Fonte', category: 'Categoria'
+      searchPlaceholder: 'Filtrar por título...', noResultsTitle: 'Sem resultados', source: 'Fonte', category: 'Categoria',
+      suggestSource: 'Sugerir Nova Fonte', suggestSourceDesc: 'Conhece um portal oficial ou API relevante? Ajude-nos a crescer.',
+      sourceName: 'Nome da Entidade', sourceUrl: 'URL Oficial', sourcePurpose: 'O que contém?', suggestBtn: 'Enviar Sugestão'
     },
     simulations: {
       title: 'Simulações Políticas', 
@@ -61,7 +63,9 @@ export const translations = {
       simulating: 'A simular...', resultsTitle: 'Análise de Impacto', saveBtn: 'Guardar Simulação', impactSummary: 'Resumo',
       indicatorsTitle: 'Indicadores Projetados', indicator: 'Indicator', currentValue: 'Atual', projectedValue: 'Projetado',
       aiReasoning: 'Raciocínio', mySimsTitle: 'As Minhas Simulações', publicSimsTitle: 'Simulações Públicas', realPolicy: 'Política Real', viewOfficial: 'Ver Fonte',
-      convertToProposal: 'Transformar em Proposta', convertDesc: 'Partilhe esta ideia com a comunidade para ser votada.'
+      convertToProposal: 'Transformar em Proposta', convertDesc: 'Partilhe esta ideia com a comunidade para ser votada.',
+      suggestVariable: 'Sugerir Indicador', suggestVariableDesc: 'Falta algum dado nas simulações? Sugira novas métricas de análise.',
+      variableName: 'Nome do Indicador', variableReason: 'Porque é relevante?'
     },
     factCheck: {
       title: 'Verificação de Factos', 
@@ -197,7 +201,9 @@ export const translations = {
       aiCardDesc: 'What stat are you looking for?', textareaPlaceholder: "e.g., 'Public debt evolution'",
       searchBtn: 'Search', recentQueries: 'Recent Searches', recentQueriesDesc: 'What others look for.',
       noRecentTitle: 'No searches', noRecentDesc: 'Be the first!', existingDataTitle: 'Available Data',
-      searchPlaceholder: 'Filter by title...', noResultsTitle: 'No results', source: 'Source', category: 'Category'
+      searchPlaceholder: 'Filter by title...', noResultsTitle: 'No results', source: 'Source', category: 'Category',
+      suggestSource: 'Suggest Data Source', suggestSourceDesc: 'Know an official portal or relevant API? Help us grow.',
+      sourceName: 'Entity Name', sourceUrl: 'Official URL', sourcePurpose: 'What does it contain?', suggestBtn: 'Send Suggestion'
     },
     simulations: {
       title: 'Policy Simulations', 
@@ -208,7 +214,9 @@ export const translations = {
       simulating: 'Simulating...', resultsTitle: 'Impact Analysis', saveBtn: 'Save Simulation', impactSummary: 'Summary',
       indicatorsTitle: 'Projected Indicators', indicator: 'Indicator', currentValue: 'Current', projectedValue: 'Projected',
       aiReasoning: 'Reasoning', mySimsTitle: 'My Simulations', publicSimsTitle: 'Public Simulations', realPolicy: 'Real Policy', viewOfficial: 'View Source',
-      convertToProposal: 'Turn into Proposal', convertDesc: 'Share this idea with the community to be voted on.'
+      convertToProposal: 'Turn into Proposal', convertDesc: 'Share this idea with the community to be voted on.',
+      suggestVariable: 'Suggest Indicator', suggestVariableDesc: 'Is any data missing in simulations? Suggest new analysis metrics.',
+      variableName: 'Indicator Name', variableReason: 'Why is it relevant?'
     },
     factCheck: {
       title: 'Fact Checking', 

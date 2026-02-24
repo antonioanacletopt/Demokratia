@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -188,7 +188,7 @@ export default function AdminPage() {
   const [viewingRefutation, setViewingRefutation] = useState<Refutation | null>(null);
 
   const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
-  const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<DataSource>(dataSourcesCollection);
+  const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<any>(dataSourcesCollection);
   
   const contactMessagesCollection = useMemoFirebase(() => collection(firestore, 'contactMessages'), [firestore]);
   const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>(contactMessagesCollection);
@@ -277,6 +277,11 @@ export default function AdminPage() {
       setIsFormOpen(false);
       setEditingSource(undefined);
     }, 1000);
+  };
+
+  const handleApproveSource = (id: string) => {
+    updateDocumentNonBlocking(doc(firestore, 'dataSources', id), { isSystemSource: true, status: 'approved' });
+    toast({ title: t('common.success') });
   };
 
   const handleSeedPublicData = async () => {
@@ -552,14 +557,35 @@ export default function AdminPage() {
             <CardContent>
               <div className="rounded-md border overflow-hidden">
                 <Table>
-                  <TableHeader className="bg-muted/30"><TableRow><TableHead>{t('admin.sourceName')}</TableHead><TableHead>{t('admin.sourceType')}</TableHead><TableHead>{t('admin.isSystem')}</TableHead><TableHead className="text-right">{t('common.actions')}</TableHead></TableRow></TableHeader>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead>{t('admin.sourceName')}</TableHead>
+                      <TableHead>{t('admin.sourceType')}</TableHead>
+                      <TableHead>Origem</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
-                    {isLoadingDataSources ? <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow> : dataSources?.map(s => (
+                    {isLoadingDataSources ? <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow> : dataSources?.map((s: any) => (
                       <TableRow key={s.id}>
-                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {s.name}
+                          {s.status === 'pending' && <Badge variant="destructive" className="ml-2">Sugestão</Badge>}
+                        </TableCell>
                         <TableCell><Badge variant="outline" className="gap-1.5">{s.type === 'API' ? <Server className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}{s.type}</Badge></TableCell>
-                        <TableCell>{s.isSystemSource ? <Badge variant="secondary">Sim</Badge> : <span className="text-muted-foreground text-xs">User</span>}</TableCell>
+                        <TableCell>
+                          {s.isSystemSource ? <Badge variant="secondary">Sistema</Badge> : (
+                            <div className="flex flex-col">
+                              <span className="text-xs flex items-center gap-1"><User className="h-3 w-3" /> {s.submittedByName || 'User'}</span>
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right space-x-2">
+                          {s.status === 'pending' && (
+                            <Button variant="outline" size="sm" className="h-8 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveSource(s.id)}>
+                              <CheckCircle2 className="h-4 w-4 mr-1" /> Aprovar
+                            </Button>
+                          )}
                           <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -655,7 +681,7 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="seed" className="space-y-6">
-          <Card className="border-primary bg-primary/5">
+          <Card className="border-primary padding-4 bg-primary/5">
             <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" />Ativação de Admin</CardTitle><CardDescription>Regista permanentemente o teu acesso nas regras de segurança.</CardDescription></CardHeader>
             <CardContent><Button onClick={handleMakeAdmin} disabled={isSettingAdmin}>{isSettingAdmin ? <Loader2 className="mr-2 animate-spin" /> : <ShieldCheck className="mr-2" />}Ativar Perfil de Administrador Oficial</Button></CardContent>
           </Card>

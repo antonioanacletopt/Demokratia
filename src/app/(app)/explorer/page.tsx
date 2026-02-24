@@ -14,14 +14,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { safeDecode } from '@/lib/safe-decode';
 import Link from 'next/link';
@@ -230,6 +230,13 @@ export default function ExplorerPage() {
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveNameDesc] = useState('');
+
+  // Sugestão de Fonte
+  const [isSuggestDialogOpen, setSuggestDialogOpen] = useState(false);
+  const [suggestName, setSuggestName] = useState('');
+  const [suggestUrl, setSuggestUrl] = useState('');
+  const [suggestPurpose, setSuggestPurpose] = useState('');
+  const [isSuggesting, setIsSuggesting] = useState(false);
   
   const processedRef = useRef<string | null>(null);
 
@@ -329,11 +336,46 @@ export default function ExplorerPage() {
     }
   };
 
+  const handleSuggestSource = async () => {
+    if (!user || !firestore || !suggestName.trim() || !suggestUrl.trim()) return;
+    setIsSuggesting(true);
+    try {
+      await addDoc(collection(firestore, 'dataSources'), {
+        name: suggestName,
+        url: suggestUrl,
+        description: suggestPurpose,
+        type: 'Website',
+        requiresAuth: false,
+        authMethod: 'None',
+        isSystemSource: false,
+        submittedBy: user.uid,
+        submittedByName: user.displayName,
+        createdAt: serverTimestamp(),
+        status: 'pending'
+      });
+      toast({ title: t('common.success'), description: 'Sugestão enviada para validação administrativa.' });
+      setSuggestDialogOpen(false);
+      setSuggestName(''); setSuggestUrl(''); setSuggestPurpose('');
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
+    } finally {
+      setIsSuggesting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 pb-12">
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('explorer.title')}</h1>
-        <p className="text-muted-foreground text-lg">{t('explorer.description')}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('explorer.title')}</h1>
+            <p className="text-muted-foreground text-lg">{t('explorer.description')}</p>
+          </div>
+          <Button variant="outline" className="gap-2" onClick={() => setSuggestDialogOpen(true)} disabled={!user}>
+            <PlusCircle className="h-4 w-4" />
+            {t('explorer.suggestSource')}
+          </Button>
+        </div>
         <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
           <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -455,6 +497,36 @@ export default function ExplorerPage() {
             <div className="space-y-2"><Label>{t('dashboard.viewDescription')}</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div>
           </div>
           <DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isSuggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('explorer.suggestSource')}</DialogTitle>
+            <DialogDescription>{t('explorer.suggestSourceDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('explorer.sourceName')}</Label>
+              <Input placeholder="Ex: Pordata, INE, Banco de Portugal" value={suggestName} onChange={(e) => setSuggestName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('explorer.sourceUrl')}</Label>
+              <Input placeholder="https://..." value={suggestUrl} onChange={(e) => setSuggestUrl(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('explorer.sourcePurpose')}</Label>
+              <Textarea placeholder="Explique que tipo de dados factuais esta fonte fornece..." value={suggestPurpose} onChange={(e) => setSuggestPurpose(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose>
+            <Button onClick={handleSuggestSource} disabled={isSuggesting || !suggestName.trim() || !suggestUrl.trim()}>
+              {isSuggesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('explorer.suggestBtn')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

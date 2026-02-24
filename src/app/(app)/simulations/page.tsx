@@ -3,12 +3,12 @@
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus } from 'lucide-react';
+import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -154,6 +154,12 @@ export default function SimulationsPage() {
   const [simulationNotes, setSimulationNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Sugestão de Variável
+  const [isVarDialogOpen, setVarDialogOpen] = useState(false);
+  const [varName, setVarName] = useState('');
+  const [varReason, setVarReason] = useState('');
+  const [isSuggestingVar, setIsSuggestingVar] = useState(false);
+
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -254,6 +260,29 @@ export default function SimulationsPage() {
     }
   };
 
+  const handleSuggestVar = async () => {
+    if (!user || !firestore || !varName.trim()) return;
+    setIsSuggestingVar(true);
+    try {
+      await addDoc(collection(firestore, 'contactMessages'), {
+        userId: user.uid,
+        userName: user.displayName,
+        userEmail: user.email,
+        subject: `Sugestão de Variável: ${varName}`,
+        message: `Sugestão de nova variável para o simulador:\n\nNome: ${varName}\nMotivo: ${varReason}`,
+        status: 'new',
+        createdAt: serverTimestamp()
+      });
+      toast({ title: t('common.success'), description: 'Sugestão de indicador enviada.' });
+      setVarDialogOpen(false);
+      setVarName(''); setVarReason('');
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
+    } finally {
+      setIsSuggestingVar(false);
+    }
+  };
+
   const handleDeleteSavedSimulation = async (id: string) => {
     if (!user || !firestore) return;
     try {
@@ -267,8 +296,16 @@ export default function SimulationsPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('simulations.title')}</h1>
-        <p className="text-muted-foreground">{t('simulations.description')}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold font-headline tracking-tight">{t('simulations.title')}</h1>
+            <p className="text-muted-foreground">{t('simulations.description')}</p>
+          </div>
+          <Button variant="outline" className="gap-2" onClick={() => setVarDialogOpen(true)} disabled={!user}>
+            <PlusCircle className="h-4 w-4" />
+            {t('simulations.suggestVariable')}
+          </Button>
+        </div>
         <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
           <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -413,6 +450,32 @@ export default function SimulationsPage() {
               ))}
           </div>
       )}
+
+      <Dialog open={isVarDialogOpen} onOpenChange={setVarDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('simulations.suggestVariable')}</DialogTitle>
+            <DialogDescription>{t('simulations.suggestVariableDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('simulations.variableName')}</Label>
+              <Input placeholder="Ex: Custo médio da energia industrial" value={varName} onChange={(e) => setVarName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('simulations.variableReason')}</Label>
+              <Textarea placeholder="Explique porque este indicador ajudaria a simular políticas melhor..." value={varReason} onChange={(e) => setVarReason(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose>
+            <Button onClick={handleSuggestVar} disabled={isSuggestingVar || !varName.trim()}>
+              {isSuggestingVar && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('common.submit')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
