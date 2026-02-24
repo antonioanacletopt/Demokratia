@@ -163,7 +163,7 @@ export default function FactCheckPage() {
     const q = searchParams.get('claim');
     if (q && q !== processedRef.current) {
       processedRef.current = q;
-      const decoded = decodeURIComponent(q);
+      const decoded = decodeURIComponent(q.replace(/\+/g, ' '));
       setClaim(decoded);
       handleFactCheck(decoded);
     }

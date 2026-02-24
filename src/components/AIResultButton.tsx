@@ -29,12 +29,14 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const getParam = (paramName: string) => {
       try {
           const url = new URL(href, 'https://demokratia.pt');
-          return url.searchParams.get(paramName);
+          const val = url.searchParams.get(paramName);
+          return val ? val.trim() : null;
       } catch (e) { return null; }
   };
 
   const claim = getParam('claim');
   const policy = getParam('policy');
+  const request = getParam('request');
 
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
@@ -44,7 +46,7 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
 
   const simulationQuery = useMemoFirebase(() => {
     if (!firestore || !policy) return null;
-    return query(collection(firestore, 'publicSimulations'), where('inputVariables', '==', policy), limit(1));
+    return query(collection(firestore, 'publicSimulations'), where('title', '==', policy), limit(1));
   }, [firestore, policy]);
   const { data: simulationResults } = useCollection(simulationQuery);
 

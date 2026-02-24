@@ -150,20 +150,21 @@ export default function SimulationsPage() {
     
     setIsSimulating(true);
     setCurrentSimulation(null);
-    setPolicyInput(text);
+    const normalizedText = text.trim();
+    setPolicyInput(normalizedText);
 
     try {
-      const result = await getEconomicSimulation({ policyDescription: text }, language);
+      const result = await getEconomicSimulation({ policyDescription: normalizedText }, language);
       setCurrentSimulation(result);
 
       if (firestore) {
-          const policyId = generateSlug(text);
+          const policyId = generateSlug(normalizedText);
           setDoc(doc(firestore, 'publicSimulations', policyId), {
               userId: user?.uid || 'anon',
               userName: user?.displayName || 'Cidadão',
               userPhotoURL: user?.photoURL || '',
-              title: text,
-              inputVariables: text,
+              title: normalizedText,
+              inputVariables: normalizedText,
               simulationResults: JSON.stringify(result),
               runTimestamp: serverTimestamp(),
           }, { merge: true }).catch(() => {});
