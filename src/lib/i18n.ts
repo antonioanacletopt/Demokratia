@@ -18,7 +18,8 @@ export const translations = {
       sources: 'Fontes Oficiais', share: 'Partilhar com a comunidade', error: 'Ocorreu um erro.', success: 'Sucesso!',
       portuguese: 'Português', english: 'Inglês', language: 'Idioma', warning: 'Aviso', close: 'Fechar', accept: 'Aceitar',
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
-      supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...'
+      supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...',
+      confirm_delete: 'Tem a certeza que deseja apagar?'
     },
     home: {
       title: 'Feed de Atualizações', description: 'Acompanhe as últimas alegações, propostas e análises em 2026.',
@@ -46,7 +47,8 @@ export const translations = {
       newSimDesc: 'Descreva a política a simular.', textareaPlaceholder: "Ex: 'Aumentar SMN para 1000€'", simulateBtn: 'Simular Impacto',
       simulating: 'A simular...', resultsTitle: 'Análise de Impacto', saveBtn: 'Guardar Simulação', impactSummary: 'Resumo',
       indicatorsTitle: 'Indicadores Projetados', indicator: 'Indicator', currentValue: 'Atual', projectedValue: 'Projetado',
-      aiReasoning: 'Raciocínio', mySimsTitle: 'As Minhas Simulações', publicSimsTitle: 'Simulações Públicas', realPolicy: 'Política Real', viewOfficial: 'Ver Fonte'
+      aiReasoning: 'Raciocínio', mySimsTitle: 'As Minhas Simulações', publicSimsTitle: 'Simulações Públicas', realPolicy: 'Política Real', viewOfficial: 'Ver Fonte',
+      convertToProposal: 'Transformar em Proposta', convertDesc: 'Partilhe esta ideia com a comunidade para ser votada.'
     },
     factCheck: {
       title: 'Verificação de Factos', description: 'Valide alegações com IA rigorosa.', cardTitle: 'Verificar Alegação',
@@ -84,7 +86,7 @@ export const translations = {
     },
     admin: {
       title: 'Painel de Administração', description: 'Bem-vindo, António. Gestão centralizada da plataforma.',
-      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)', data: 'Base de Dados', users: 'Comunidade' },
+      tabs: { refutations: 'Refutações', sources: 'Fontes de Dados', messages: 'Mensagens', seed: 'Configuração (Seed)', data: 'Base de Dados', users: 'Comunidade', simulations: 'Simulações' },
       usersTitle: 'Cidadãos Registados', usersDesc: 'Lista de cidadãos registados na plataforma.', totalUsers: 'Cidadãos',
       registrationDate: 'Data de Registo',
       reachTitle: 'Impacto e Alcance', totalAccesses: 'Total de Acessos', anonymousAccesses: 'Visitas Anónimas',
@@ -100,7 +102,8 @@ export const translations = {
       seedTitle: 'Carregamento de Dados (Seed)', seedDesc: 'Popula o sistema com os dados de 2026.',
       indicators: 'Indicadores', indicatorsDesc: 'PIB, Inflação e Desemprego.', loadIndicators: 'Carregar Indicadores',
       stats: 'Estatísticas', statsDesc: 'Tabelas para o Explorador.', loadStats: 'Carregar Estatísticas',
-      sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Fontes'
+      sourcesSeed: 'Fontes', sourcesSeedDesc: 'Entidades oficiais (INE, etc).', loadSources: 'Carregar Fontes',
+      simulationsDesc: 'Gira as simulações públicas para remover dados obsoletos ou IDs técnicos.'
     },
     profile: {
       title: 'O Meu Perfil', description: 'Gira as suas preferências e dados pessoais.', displayName: 'Nome de Apresentação',
@@ -141,7 +144,8 @@ export const translations = {
       sources: 'Official Sources', share: 'Share with community', error: 'An error occurred.', success: 'Success!',
       portuguese: 'Portuguese', english: 'English', language: 'Language', warning: 'Warning', close: 'Close', accept: 'Accept',
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
-      supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...'
+      supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...',
+      confirm_delete: 'Are you sure you want to delete?'
     },
     home: {
       title: 'Updates Feed', description: 'Follow claims and analyses in 2026.', error: 'Error loading news.',
@@ -168,7 +172,8 @@ export const translations = {
       newSimDesc: 'Describe the policy.', textareaPlaceholder: "e.g., 'Minimum wage to 1000€'", simulateBtn: 'Simulate',
       simulating: 'Simulating...', resultsTitle: 'Impact Analysis', saveBtn: 'Save Simulation', impactSummary: 'Summary',
       indicatorsTitle: 'Projected Indicators', indicator: 'Indicator', currentValue: 'Current', projectedValue: 'Projected',
-      aiReasoning: 'Reasoning', mySimsTitle: 'My Simulations', publicSimsTitle: 'Public Simulations', realPolicy: 'Real Policy', viewOfficial: 'View Source'
+      aiReasoning: 'Reasoning', mySimsTitle: 'My Simulations', publicSimsTitle: 'Public Simulations', realPolicy: 'Real Policy', viewOfficial: 'View Source',
+      convertToProposal: 'Turn into Proposal', convertDesc: 'Share this idea with the community to be voted on.'
     },
     factCheck: {
       title: 'Fact Checking', description: 'Validate claims with rigorous AI.', cardTitle: 'Check Claim',
@@ -206,7 +211,7 @@ export const translations = {
     },
     admin: {
       title: 'Admin Dashboard', description: 'Welcome, António. Centralized platform management.',
-      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)', data: 'Database', users: 'Community' },
+      tabs: { refutations: 'Refutations', sources: 'Data Sources', messages: 'Messages', seed: 'Config (Seed)', data: 'Database', users: 'Community', simulations: 'Simulations' },
       usersTitle: 'Registered Citizens', usersDesc: 'List of citizens registered on the platform.', totalUsers: 'Citizens',
       registrationDate: 'Registration Date',
       reachTitle: 'Impact & Reach', totalAccesses: 'Total Accesses', anonymousAccesses: 'Anonymous Visits',
@@ -222,7 +227,8 @@ export const translations = {
       seedTitle: 'Data Loading (Seed)', seedDesc: 'Populate the system with 2026 data.',
       indicators: 'Indicators', indicatorsDesc: 'GDP, Inflation and Unemployment.', loadIndicators: 'Load Indicators',
       stats: 'Statistics', statsDesc: 'Tables for the Data Explorer.', loadStats: 'Load Statistics',
-      sourcesSeed: 'Sources', sourcesSeedDesc: 'Official entities (INE, etc).', loadSources: 'Load Statistics'
+      sourcesSeed: 'Sources', sourcesSeedDesc: 'Official entities (INE, etc).', loadSources: 'Load Statistics',
+      simulationsDesc: 'Manage public simulations to remove obsolete data or technical IDs.'
     },
     profile: {
       title: 'My Profile', description: 'Manage your preferences and personal data.', displayName: 'Display Name',

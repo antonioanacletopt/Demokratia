@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc, where, limit, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { useForm } from 'react-hook-form';
@@ -114,6 +114,8 @@ export default function ProposalsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -129,7 +131,21 @@ export default function ProposalsPage() {
     return proposals.filter(p => p.title.toLowerCase().includes(low) || p.description.toLowerCase().includes(low));
   }, [proposals, searchTerm]);
   
-  const form = useForm<ProposalFormValues>({ resolver: zodResolver(proposalFormSchema(t)), defaultValues: { title: '', description: '' } });
+  const form = useForm<ProposalFormValues>({ 
+    resolver: zodResolver(proposalFormSchema(t)), 
+    defaultValues: { 
+      title: searchParams.get('title') || '', 
+      description: searchParams.get('description') || '' 
+    } 
+  });
+
+  useEffect(() => {
+    const title = searchParams.get('title');
+    const desc = searchParams.get('description');
+    if (title || desc) {
+      form.reset({ title: title || '', description: desc || '' });
+    }
+  }, [searchParams, form]);
 
   const handleNewProposalSubmit = async (values: ProposalFormValues) => {
     if (!user || !firestore) return;

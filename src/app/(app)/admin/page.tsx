@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2 } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -91,6 +91,14 @@ interface AnalyticsSession {
   id: string;
   isAnonymous: boolean;
   timestamp: any;
+}
+
+interface PublicSimulation {
+  id: string;
+  userName: string;
+  title: string;
+  inputVariables: string;
+  runTimestamp: any;
 }
 
 const statusConfig = {
@@ -196,6 +204,9 @@ export default function AdminPage() {
 
   const sessionsCollection = useMemoFirebase(() => collection(firestore, 'analytics_sessions'), [firestore]);
   const { data: analyticsSessions, isLoading: isLoadingSessions } = useCollection<AnalyticsSession>(sessionsCollection);
+
+  const publicSimsCollection = useMemoFirebase(() => collection(firestore, 'publicSimulations'), [firestore]);
+  const { data: publicSims, isLoading: isLoadingPublicSims } = useCollection<PublicSimulation>(publicSimsCollection);
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -216,6 +227,11 @@ export default function AdminPage() {
     if (!appUsers) return [];
     return [...appUsers].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   }, [appUsers]);
+
+  const sortedPublicSims = useMemo(() => {
+    if (!publicSims) return [];
+    return [...publicSims].sort((a, b) => (b.runTimestamp?.seconds || 0) - (a.runTimestamp?.seconds || 0));
+  }, [publicSims]);
 
   const sessionStats = useMemo(() => {
     if (!analyticsSessions) return { total: 0, anon: 0, reg: 0 };
@@ -315,6 +331,11 @@ export default function AdminPage() {
     toast({ title: t('common.success') });
   };
 
+  const handleDeletePublicSimulation = (id: string) => {
+    deleteDocumentNonBlocking(doc(firestore, 'publicSimulations', id));
+    toast({ title: t('common.success') });
+  };
+
   const handleUpdateMessageStatus = (id: string, status: 'read' | 'archived') => {
     updateDocumentNonBlocking(doc(firestore, 'contactMessages', id), { status });
     toast({ title: t('common.success') });
@@ -336,6 +357,7 @@ export default function AdminPage() {
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList className="bg-muted/50 p-1 flex flex-wrap h-auto">
           <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />{t('admin.tabs.users')}</TabsTrigger>
+          <TabsTrigger value="simulations" className="gap-2"><Zap className="h-4 w-4" />{t('admin.tabs.simulations')}</TabsTrigger>
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.refutations')}</TabsTrigger>
           <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />{t('admin.tabs.sources')}</TabsTrigger>
           <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
@@ -397,6 +419,67 @@ export default function AdminPage() {
                       </TableRow>
                     )) : (
                       <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">Nenhum utilizador registado ainda.</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="simulations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Zap className="h-5 w-5" />Gestão de Simulações Públicas</CardTitle>
+              <CardDescription>{t('admin.simulationsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead>Título / Input</TableHead>
+                      <TableHead>Cidadão</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoadingPublicSims ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                    ) : sortedPublicSims.length > 0 ? sortedPublicSims.map((sim) => (
+                      <TableRow key={sim.id}>
+                        <TableCell className="font-medium max-w-[300px] truncate">
+                          {sim.title || sim.inputVariables}
+                          <br />
+                          <code className="text-[10px] bg-muted px-1 rounded text-muted-foreground">{sim.id}</code>
+                        </TableCell>
+                        <TableCell className="text-sm">{sim.userName}</TableCell>
+                        <TableCell className="text-xs">
+                          {sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                                <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeletePublicSimulation(sim.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </TableCell>
+                      </TableRow>
+                    )) : (
+                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Nenhuma simulação pública registada.</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>

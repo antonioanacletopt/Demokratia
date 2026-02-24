@@ -1,13 +1,14 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Loader2, Zap, Info, Link as LinkIcon, Save } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus } from 'lucide-react';
 import Link from 'next/link';
 import { getEconomicSimulation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface UserSimulationRun {
   id: string;
@@ -58,9 +60,23 @@ function generateSlug(text: string): string {
 
 function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
     const { t } = useTranslation();
+    const router = useRouter();
+
+    const handleConvertToProposal = () => {
+        // Levamos o utilizador para a página de propostas com os dados da simulação
+        const params = new URLSearchParams();
+        params.set('title', policyText.substring(0, 100));
+        params.set('description', `Impacto Simulado: ${simulation.simulatedImpact}\n\nRaciocínio: ${simulation.reasoning}`);
+        router.push(`/proposals?${params.toString()}`);
+    };
+
     return (
         <div className="space-y-6">
              <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={handleConvertToProposal} className="gap-2 text-accent border-accent/20 hover:bg-accent/10">
+                      <MessageSquarePlus className="h-4 w-4" />
+                      {t('simulations.convertToProposal')}
+                  </Button>
                   <RefutationDialog contentId={`simulation-${generateSlug(policyText)}`} />
              </div>
 
@@ -155,7 +171,6 @@ export default function SimulationsPage() {
     setPolicyInput(normalizedText);
 
     try {
-      // LOGICA CACHE GLOBAL: Verificar se já existe publicamente
       const policyId = generateSlug(normalizedText);
       if (firestore) {
         const publicRef = doc(firestore, 'publicSimulations', policyId);
@@ -237,6 +252,16 @@ export default function SimulationsPage() {
         toast({ variant: 'destructive', title: t('common.error') });
     } finally {
         setIsSaving(false);
+    }
+  };
+
+  const handleDeleteSavedSimulation = async (id: string) => {
+    if (!user || !firestore) return;
+    try {
+      await deleteDoc(doc(firestore, 'users', user.uid, 'simulationScenarios', id));
+      toast({ title: t('common.success') });
+    } catch (e) {
+      toast({ variant: 'destructive', title: t('common.error') });
     }
   };
 
@@ -324,7 +349,6 @@ export default function SimulationsPage() {
                           <p className="text-sm text-muted-foreground italic line-clamp-1">"{sim.inputVariables}"</p>
                       </div>
                       <div className="flex gap-2">
-                        <RefutationDialog contentId={`simulation-${sim.id}`} />
                         <Button variant="outline" size="sm" onClick={() => {
                           const parsed = JSON.parse(sim.simulationResults);
                           setCurrentSimulation(parsed);
@@ -332,6 +356,23 @@ export default function SimulationsPage() {
                         }}>
                             {t('common.view')}
                         </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('common.warning')}</AlertDialogTitle>
+                              <AlertDialogDescription>{t('common.confirm_delete')}</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteSavedSimulation(sim.id)} className="bg-destructive text-destructive-foreground">{t('common.delete')}</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                   </Card>
               ))}
