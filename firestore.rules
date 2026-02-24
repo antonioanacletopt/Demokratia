@@ -94,18 +94,22 @@ service cloud.firestore {
     match /publicStatisticQueries/{id} {
       allow read: if true;
       allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
     match /publicLegislationQueries/{id} {
       allow read: if true;
       allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
     match /publicSimulations/{id} {
       allow read: if true;
       allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
     match /publicFactChecks/{id} {
       allow read: if true;
       allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
 
     // Funções Administrativas
