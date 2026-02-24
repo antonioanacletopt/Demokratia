@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, setDoc, query, orderBy, where, limit, getDocs, addDoc } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { getPublicStatistic, getChartFromRequest, getTranslation } from '@/lib/actions';
+import { collection, serverTimestamp, query, orderBy, addDoc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { getPublicStatistic, getChartFromRequest } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
@@ -12,19 +12,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, RefreshCw, Languages, Save, NotebookText, User } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import Link from 'next/link';
 
 interface DataPoint {
   label: string | number;
@@ -69,9 +66,15 @@ function UniversalDataCard({
   showSave = false,
   onSave = () => {}
 }: UniversalData & { showSave?: boolean, onSave?: () => void }) {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <Card className="border-dashed"><CardContent className="py-8 text-center text-muted-foreground italic">Sem dados para visualizar.</CardContent></Card>
+    );
+  }
+
   const chartConfig: ChartConfig = {
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
@@ -115,8 +118,14 @@ function UniversalDataCard({
         ) : (
           <div className="overflow-x-auto rounded-md border max-h-[250px]">
             <Table>
-              <TableHeader className="bg-muted/50 sticky top-0 z-10"><TableRow>{Object.keys(data[0] || {}).map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}</TableRow></TableHeader>
-              <TableBody>{data.map((row, i) => (<TableRow key={i}>{Object.values(row).map((v, j) => (<TableCell key={j} className="text-sm py-2">{String(v)}</TableCell>))}</TableRow>))}</TableBody>
+              <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                <TableRow>
+                  {(Object.keys(data[0] || {})).map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((row, i) => (<TableRow key={i}>{Object.values(row).map((v, j) => (<TableCell key={j} className="text-sm py-2">{String(v)}</TableCell>))}</TableRow>))}
+              </TableBody>
             </Table>
           </div>
         )}
@@ -124,7 +133,7 @@ function UniversalDataCard({
       <CardFooter className="bg-muted/10 border-t py-2 flex justify-between items-center">
         <p className="text-[10px] text-muted-foreground italic">Fonte: {source}</p>
         <div className="flex gap-2">
-          {showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />Guardar</Button>}
+          {showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />{t('common.save')}</Button>}
           <RefutationDialog contentId={`data-${title}`} />
         </div>
       </CardFooter>
@@ -133,13 +142,12 @@ function UniversalDataCard({
 }
 
 export default function ExplorerPage() {
-  const { t, language } = useTranslation();
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   
-  const [searchTerm, setSearchTerm] = useState('');
   const [request, setRequest] = useState('');
   const [aiResponse, setAiResponse] = useState<UniversalData | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -148,7 +156,6 @@ export default function ExplorerPage() {
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveNameDesc] = useState('');
   
-  const resultRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<string | null>(null);
 
   const performSearch = useCallback(async (text: string) => {
@@ -158,9 +165,8 @@ export default function ExplorerPage() {
     setRequest(text);
 
     try {
-      // Tentar gerar gráfico primeiro pois é mais visual para o novo explorador
       const res = await getChartFromRequest({ request: text });
-      if (res.isChartable && res.chartData) {
+      if (res.isChartable && res.chartData && res.chartData.length > 0) {
         setAiResponse({
           title: res.chartTitle || 'Dados de IA',
           description: res.explanation,
@@ -170,7 +176,6 @@ export default function ExplorerPage() {
           chartType: res.chartType
         });
       } else {
-        // Fallback para estatística pura se não for "chartable"
         const statRes = await getPublicStatistic({ request: text });
         if (statRes.isFound && statRes.data) {
           const parsed = JSON.parse(statRes.data);
@@ -182,6 +187,8 @@ export default function ExplorerPage() {
           });
         }
       }
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsAiLoading(false);
     }
@@ -231,18 +238,18 @@ export default function ExplorerPage() {
 
       <Card className="border-primary/20 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Bot className="text-accent" />Perguntar à IA</CardTitle>
-          <CardDescription>Gere gráficos ou tabelas sobre qualquer tema económico ou social de Portugal.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Bot className="text-accent" />{t('explorer.aiCardTitle')}</CardTitle>
+          <CardDescription>{t('explorer.aiCardDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea 
-            placeholder="Ex: 'Evolução da dívida pública nos últimos 10 anos' ou 'Distribuição de empresas por setor'" 
+            placeholder={t('explorer.textareaPlaceholder')}
             value={request} 
             onChange={(e) => setRequest(e.target.value)} 
             disabled={isAiLoading}
             className="text-lg"
           />
-          <div ref={resultRef} className="scroll-mt-20">
+          <div>
             {isAiLoading && <div className="space-y-4 pt-4"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-[300px] w-full" /></div>}
             {aiResponse && !isAiLoading && (
               <div className="mt-6 space-y-4">
@@ -259,7 +266,7 @@ export default function ExplorerPage() {
           <p className="text-xs text-muted-foreground italic max-w-[60%]">Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.</p>
           <Button onClick={() => performSearch(request)} disabled={isAiLoading || !request.trim()} size="lg" className="px-8">
             {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-            Explorar
+            {t('explorer.searchBtn')}
           </Button>
         </CardFooter>
       </Card>
@@ -271,8 +278,10 @@ export default function ExplorerPage() {
           <h2 className="text-2xl font-bold flex items-center gap-2"><NotebookText className="h-6 w-6 text-accent" />{t('dashboard.savedTitle')}</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {savedViews.map(view => {
-              const config = JSON.parse(view.viewConfiguration);
-              return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />;
+              try {
+                const config = JSON.parse(view.viewConfiguration);
+                return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />;
+              } catch(e) { return null; }
             })}
           </div>
         </div>
@@ -293,7 +302,6 @@ export default function ExplorerPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {ds.map((d: any) => {
                     const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
-                    // Adaptar dados de tabela para gráfico se possível (Ano/Valor)
                     const chartFriendlyData = Array.isArray(parsedData) ? parsedData.map(item => ({
                       label: item.Ano || item.Ano || Object.values(item)[0],
                       value: parseFloat(String(item.Valor || item['Ganho Médio (€)'] || item['Dívida (% PIB)'] || Object.values(item)[1]).replace('%', '')) || 0
@@ -319,12 +327,11 @@ export default function ExplorerPage() {
 
       <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Guardar no Meu Dashboard</DialogTitle><DialogDescription>Dê um nome e descrição para esta visualização personalizada.</DialogDescription></DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2"><Label>Nome da Visualização</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Descrição Opcional</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div>
+            <div className="space-y-2"><Label>{t('dashboard.viewName')}</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div>
+            <div className="space-y-2"><Label>{t('dashboard.viewDescription')}</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div>
           </div>
-          <DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>Cancelar</Button><Button onClick={handleSave}>Guardar</Button></DialogFooter>
+          <DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

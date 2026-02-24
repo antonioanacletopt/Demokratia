@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // EXCEÇÃO TOTAL: Garantir acesso anónimo e público a ficheiros de sistema e raiz
+  // ACESSO PÚBLICO TOTAL: Garantir que crawlers do Google e anónimos acedem a ficheiros de sistema
   if (
     pathname === '/ads.txt' || 
     pathname === '/robots.txt' || 

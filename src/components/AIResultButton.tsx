@@ -37,7 +37,6 @@ export function AIResultButton({ href, label, variant = "secondary", size = "sm"
   const claim = getParam('claim');
   const policy = getParam('policy');
 
-  // Consulta pública resiliente (funciona para anónimos)
   const factCheckQuery = useMemoFirebase(() => {
     if (!firestore || !claim) return null;
     return query(collection(firestore, 'publicFactChecks'), where('claim', '==', claim), limit(1));
