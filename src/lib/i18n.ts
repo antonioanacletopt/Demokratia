@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ export type Language = 'pt' | 'en';
 export const translations = {
   pt: {
     nav: {
-      home: 'Início', dashboard: 'Dashboard', explorer: 'Dados e Análises', simulations: 'Simulações', factCheck: 'Fact Check',
+      home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
       scenarios: 'Laboratório Macro'
@@ -209,7 +208,7 @@ export const translations = {
   },
   en: {
     nav: {
-      home: 'Home', dashboard: 'Dashboard', explorer: 'Data & Analysis', simulations: 'Simulations', factCheck: 'Fact Check',
+      home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
       scenarios: 'Macro Lab'
@@ -422,17 +421,30 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('preferred-language') as Language;
+    let finalLang: Language = 'pt';
+    
     if (saved && (saved === 'pt' || saved === 'en')) {
-      setLanguageState(saved);
+      finalLang = saved;
     } else {
       const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'pt';
-      if (browserLang === 'en') setLanguageState('en');
+      // Se não for português, assume inglês como língua franca internacional
+      if (browserLang !== 'pt') {
+        finalLang = 'en';
+      }
+    }
+    
+    setLanguageState(finalLang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = finalLang === 'pt' ? 'pt-PT' : 'en-US';
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('preferred-language', lang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang === 'pt' ? 'pt-PT' : 'en-US';
+    }
   };
 
   const t = (path: string) => {

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
@@ -162,9 +161,9 @@ export default function ScenariosPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      // Correctly passing parameters including the new budget object
+      // Properly formatting the analysis request
       const res = await getScenarioAnalysis({ 
-        parameters: { ...params, budget: budget }, 
+        parameters: { ...params, budget }, 
         results 
       }, language);
       setAiAnalysis(res.feedback);
