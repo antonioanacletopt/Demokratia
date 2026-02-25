@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -138,7 +137,13 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
             </Button>
             <RefutationDialog contentId={`factcheck-${generateSlug(claim)}`} trigger={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive"><MessageSquareWarning className="h-3.5 w-3.5" />{t('refutation.refuteBtn')}</Button>} />
             {language !== 'pt' && (
-              <Button variant="outline" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 gap-1.5 text-xs">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating} 
+                className="h-8 gap-1.5 text-xs border-accent/50 text-accent font-bold hover:bg-accent/10 hover:text-accent"
+              >
                 {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Languages className="h-3.5 w-3.5" />}
                 {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
               </Button>
@@ -284,9 +289,32 @@ export default function FactCheckPage() {
       </div>
 
       <Card className="border-primary/20 shadow-lg">
-        <CardHeader><CardTitle className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-primary" />{t('factCheck.cardTitle')}</CardTitle><CardDescription>{t('factCheck.cardDesc')}</CardDescription></CardHeader>
-        <CardContent><Textarea placeholder={t('factCheck.textareaPlaceholder')} value={claim} onChange={(e) => setClaim(e.target.value)} rows={4} className="text-lg resize-none focus-visible:ring-primary" disabled={isPending} /></CardContent>
-        <CardFooter className="bg-muted/30 py-4 flex justify-between items-center"><p className="text-xs text-muted-foreground max-w-[60%] italic">A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.</p><Button onClick={() => handleFactCheck()} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">{isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}{t('factCheck.checkBtn')}</Button></CardFooter>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <ShieldCheck className="h-7 w-7 text-primary" />
+            {t('factCheck.cardTitle')}
+          </CardTitle>
+          <CardDescription>{t('factCheck.cardDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea 
+            placeholder={t('factCheck.textareaPlaceholder')} 
+            value={claim} 
+            onChange={(e) => setClaim(e.target.value)} 
+            rows={4} 
+            className="text-lg resize-none focus-visible:ring-primary" 
+            disabled={isPending} 
+          />
+        </CardContent>
+        <CardFooter className="bg-muted/30 py-4 flex justify-between items-center">
+          <p className="text-xs text-muted-foreground max-w-[60%] italic">
+            A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.
+          </p>
+          <Button onClick={() => handleFactCheck()} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">
+            {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
+            {t('factCheck.checkBtn')}
+          </Button>
+        </CardFooter>
       </Card>
       
       <AdBanner />

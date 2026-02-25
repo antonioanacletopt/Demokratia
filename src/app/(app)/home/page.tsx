@@ -109,8 +109,14 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
             <div className="flex items-center justify-between gap-2 mb-1">
                 <CardTitle className="text-lg">{currentTitle}</CardTitle>
                 {language !== 'pt' && (
-                  <Button variant="ghost" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0">
-                      {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                    disabled={isTranslating} 
+                    className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/30 text-accent hover:bg-accent/10 hover:text-accent shrink-0"
+                  >
+                      {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1.5 h-3 w-3" /> : <Languages className="mr-1.5 h-3 w-3" />}
                       {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
                   </Button>
                 )}

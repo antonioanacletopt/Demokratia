@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
@@ -98,8 +97,14 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       <div className="flex justify-between items-start gap-4">
         <CardTitle className="text-xl">{currentTitle}</CardTitle>
         {language !== 'pt' && (
-          <Button variant="ghost" size="sm" onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary shrink-0">
-            {isTranslating ? <Loader2 className="animate-spin h-3 w-3" /> : (translated ? <RefreshCw className="h-3 w-3" /> : <Languages className="h-3 w-3" />)}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+            disabled={isTranslating} 
+            className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent shrink-0"
+          >
+            {isTranslating ? <Loader2 className="animate-spin h-3.5 w-3.5 mr-1.5" /> : (translated ? <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> : <Languages className="h-3.5 w-3.5 mr-1.5" />)}
             {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
           </Button>
         )}

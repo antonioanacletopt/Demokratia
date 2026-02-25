@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
@@ -104,13 +103,13 @@ function LegislationResultDisplay({ result, questionText }: { result: ConsultLeg
             <RefutationDialog contentId={`legislation-${questionId}`} />
             {language !== 'pt' && (
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm" 
                 onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
                 disabled={isTranslating}
-                className="h-8 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-primary"
+                className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
               >
-                {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1.5 h-3 w-3" /> : <Languages className="mr-1.5 h-3 w-3" />}
                 {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
               </Button>
             )}
