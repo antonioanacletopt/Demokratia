@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ACESSO PÚBLICO TOTAL: Garantir que crawlers e anónimos acedem a ficheiros de sistema sem restrições
+  // ACESSO PÚBLICO TOTAL E DIRETO PARA FICHEIROS DE VERIFICAÇÃO
+  // O Google AdSense é muito sensível a redirecionamentos nestes ficheiros
   if (
     pathname === '/ads.txt' || 
     pathname === '/robots.txt' || 
@@ -21,6 +22,7 @@ export function middleware(request: NextRequest) {
   
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
 
+  // Só redirecionamos se não for um ficheiro estático já validado acima
   if (host === sourceDomain) {
       const newUrl = new URL(request.url);
       newUrl.hostname = targetDomain;

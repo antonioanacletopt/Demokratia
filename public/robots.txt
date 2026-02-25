@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
-Allow: /ads.txt
+
+User-agent: Mediapartners-Google
+Allow: /
 
 Sitemap: https://demokratia.pt/sitemap.xml
