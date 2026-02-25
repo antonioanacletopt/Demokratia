@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, addDoc, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -19,9 +19,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, Info, Save, RefreshCcw, Share2, TrendingUp, Briefcase, Activity, 
-  Landmark, Sparkles, Loader2, Check, Target, PlusCircle, Scale, Wallet, Coins
+  Landmark, Sparkles, Loader2, Check, Target, PlusCircle, Scale, Wallet, Coins,
+  HeartPulse, GraduationCap, Shield, Construction, Landmark as GovBuilding
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { cn } from '@/lib/utils';
@@ -40,6 +42,16 @@ const REALITY_2026 = {
   balance: 0.2 // % PIB base (Superávit)
 };
 
+// --- State Budget Estimates (OE2026 - Billions €) ---
+const BUDGET_2026 = {
+  health: 15.2,
+  education: 9.8,
+  social: 24.5,
+  defense: 2.8,
+  infra: 5.4,
+  revenue: 72.5 // Estimated total revenue for context
+};
+
 export default function ScenariosPage() {
   const { t, language } = useTranslation();
   const { user } = useUser();
@@ -47,13 +59,22 @@ export default function ScenariosPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  // --- UI State ---
+  // --- UI State - Fiscal ---
   const [params, setParams] = useState({ 
     irs: REALITY_2026.irs, 
     iva: REALITY_2026.iva, 
     irc: REALITY_2026.irc,
     investment: REALITY_2026.investment,
     smn: REALITY_2026.smn
+  });
+
+  // --- UI State - Budget ---
+  const [budget, setBudget] = useState({
+    health: BUDGET_2026.health,
+    education: BUDGET_2026.education,
+    social: BUDGET_2026.social,
+    defense: BUDGET_2026.defense,
+    infra: BUDGET_2026.infra
   });
   
   const [results, setResults] = useState({
@@ -78,35 +99,44 @@ export default function ScenariosPage() {
 
   // --- Economic Engine Logic ---
   useEffect(() => {
-    // Cálculo de desvios
+    // 1. Fiscal Deviations
     const dIrs = params.irs - REALITY_2026.irs;
     const dIva = params.iva - REALITY_2026.iva;
     const dIrc = params.irc - REALITY_2026.irc;
     const dInvest = params.investment - REALITY_2026.investment;
-    const dSmn = (params.smn - REALITY_2026.smn) / 10; // Normalizado por cada 10€
+    const dSmn = (params.smn - REALITY_2026.smn) / 10; 
 
-    // 1. PIB (Crescimento)
-    // Mais investimento (+) | Menos IRS (+) | Menos IRC (Competitividade +) | SMN (Consumo + mas custo empresas -)
-    const gdpShift = ((-0.1 * dIrs) + (-0.12 * dIva) + (-0.08 * dIrc) + (0.35 * dInvest) + (0.02 * dSmn));
-    const newGdp = Math.max(-5, REALITY_2026.gdp + gdpShift);
+    // 2. Budget Deviations
+    const dHealth = budget.health - BUDGET_2026.health;
+    const dEdu = budget.education - BUDGET_2026.education;
+    const dSocial = budget.social - BUDGET_2026.social;
+    const dDef = budget.defense - BUDGET_2026.defense;
+    const dInfra = budget.infra - BUDGET_2026.infra;
+    const totalBudgetDeviation = dHealth + dEdu + dSocial + dDef + dInfra;
 
-    // 2. Desemprego (Lei de Okun)
+    // --- GDP Calculation ---
+    // Multipliers: Infra (0.8), Education (0.5), Health (0.3), Def (-0.1)
+    const budgetGdpImpact = (0.08 * dInfra) + (0.05 * dEdu) + (0.02 * dHealth);
+    const fiscalGdpImpact = ((-0.1 * dIrs) + (-0.12 * dIva) + (-0.08 * dIrc) + (0.35 * dInvest) + (0.02 * dSmn));
+    const newGdp = Math.max(-5, REALITY_2026.gdp + fiscalGdpImpact + budgetGdpImpact);
+
+    // --- Unemployment (Okun's Law) ---
     const growthGap = newGdp - 2.0;
-    const unempShift = (-0.35 * growthGap) + (0.01 * dSmn); // SMN alto sobe ligeiro desemprego
+    const unempShift = (-0.35 * growthGap) + (0.01 * dSmn); 
     const newUnemp = Math.max(3, REALITY_2026.unemployment + unempShift);
 
-    // 3. Inflação (Procura e Custos)
+    // --- Inflation ---
     const inflShift = (0.2 * growthGap) + (0.25 * dIva) + (0.05 * dSmn);
     const newInfl = Math.max(-1, REALITY_2026.inflation + inflShift);
 
-    // 4. Saldo Orçamental (Simplificado)
-    // Receita: Sobes impostos (+) | Despesa: Sobes investimento e SMN público (-)
+    // --- Budget Balance ---
     const revenueImpact = (0.4 * dIrs) + (0.5 * dIva) + (0.2 * dIrc);
+    // Convert budget deviations (B€) to % of GDP (approx 265B€ in 2026)
+    const budgetBalanceImpact = -(totalBudgetDeviation / 265) * 100;
     const spendingImpact = (1.0 * dInvest) + (0.05 * dSmn);
-    const newBalance = REALITY_2026.balance + revenueImpact - spendingImpact;
+    const newBalance = REALITY_2026.balance + revenueImpact - spendingImpact + budgetBalanceImpact;
 
-    // 5. Dívida Pública
-    // Se há défice (Balance < 0), a dívida sobe. Se o PIB cresce, o rácio desce.
+    // --- Public Debt ---
     const debtShift = (-0.8 * growthGap) - (1.2 * newBalance);
     const newDebt = Math.max(50, REALITY_2026.debt + debtShift);
 
@@ -117,23 +147,24 @@ export default function ScenariosPage() {
       debt: parseFloat(newDebt.toFixed(2)),
       balance: parseFloat(newBalance.toFixed(2))
     });
-  }, [params]);
+  }, [params, budget]);
 
   // --- Actions ---
   const handleReset = () => {
     setParams({ 
-      irs: REALITY_2026.irs, 
-      iva: REALITY_2026.iva, 
-      irc: REALITY_2026.irc, 
-      investment: REALITY_2026.investment, 
-      smn: REALITY_2026.smn 
+      irs: REALITY_2026.irs, iva: REALITY_2026.iva, irc: REALITY_2026.irc, 
+      investment: REALITY_2026.investment, smn: REALITY_2026.smn 
+    });
+    setBudget({
+      health: BUDGET_2026.health, education: BUDGET_2026.education, 
+      social: BUDGET_2026.social, defense: BUDGET_2026.defense, infra: BUDGET_2026.infra
     });
     setAiAnalysis(null);
   };
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      const res = await getScenarioAnalysis({ parameters: params, results }, language);
+      const res = await getScenarioAnalysis({ parameters: { ...params, budget }, results }, language);
       setAiAnalysis(res.feedback);
     });
   };
@@ -146,7 +177,7 @@ export default function ScenariosPage() {
         userId: user.uid,
         userName: user.displayName,
         title: scenarioTitle,
-        parameters: params,
+        parameters: { fiscal: params, budget: budget },
         results: results,
         aiFeedback: aiAnalysis,
         createdAt: serverTimestamp()
@@ -169,12 +200,12 @@ export default function ScenariosPage() {
         userId: user.uid,
         userName: user.displayName,
         userEmail: user.email,
-        subject: 'Sugestão de Indicador Macro',
-        message: `Sugestão de nova variável/indicador para o Laboratório: ${suggestText}`,
+        subject: 'Sugestão de Indicador Macro/Orçamental',
+        message: `Sugestão: ${suggestText}`,
         status: 'new',
         createdAt: serverTimestamp()
       });
-      toast({ title: t('common.success'), description: 'Sugestão enviada para a equipa técnica.' });
+      toast({ title: t('common.success'), description: 'Sugestão enviada.' });
       setSuggestDialogOpen(false);
       setSuggestText('');
     } finally {
@@ -187,30 +218,15 @@ export default function ScenariosPage() {
     url.searchParams.set('irs', params.irs.toString());
     url.searchParams.set('iva', params.iva.toString());
     url.searchParams.set('irc', params.irc.toString());
-    url.searchParams.set('inv', params.investment.toString());
-    url.searchParams.set('smn', params.smn.toString());
     navigator.clipboard.writeText(url.toString());
     setCopied(true);
     toast({ title: t('common.linkCopied') });
     setTimeout(() => setCopied(false), 2000);
   };
 
-  useEffect(() => {
-    const pIrs = searchParams.get('irs');
-    const pIva = searchParams.get('iva');
-    const pIrc = searchParams.get('irc');
-    const pInv = searchParams.get('inv');
-    const pSmn = searchParams.get('smn');
-    if (pIrs && pIva) {
-      setParams({
-        irs: parseFloat(pIrs),
-        iva: parseFloat(pIva),
-        irc: pIrc ? parseFloat(pIrc) : REALITY_2026.irc,
-        investment: pInv ? parseFloat(pInv) : REALITY_2026.investment,
-        smn: pSmn ? parseFloat(pSmn) : REALITY_2026.smn
-      });
-    }
-  }, [searchParams]);
+  const totalSpend = useMemo(() => {
+    return Object.values(budget).reduce((a, b) => a + b, 0);
+  }, [budget]);
 
   const publicScenariosQuery = useMemoFirebase(() => query(collection(firestore, 'publicScenarios'), orderBy('createdAt', 'desc'), limit(6)), [firestore]);
   const { data: publicScenarios } = useCollection<any>(publicScenariosQuery);
@@ -242,74 +258,120 @@ export default function ScenariosPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* --- Inputs Column --- */}
-        <Card className="border-primary/10 shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2"><Landmark className="text-primary" /> {t('scenarios.inputs')}</CardTitle>
-              <CardDescription>Configure as políticas para 2026.</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold" onClick={() => setSuggestDialogOpen(true)}>
-              <PlusCircle className="h-3.5 w-3.5 mr-1" /> {t('scenarios.suggestIndicator')}
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-8 pt-4">
-            {/* IRS */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="flex items-center gap-2">{t('scenarios.irsLabel')} <TooltipProvider><Tooltip><TooltipTrigger><Info className="h-3 w-3 opacity-50" /></TooltipTrigger><TooltipContent>{t('scenarios.tooltips.irs')}</TooltipContent></Tooltip></TooltipProvider></Label>
-                <Badge variant="secondary" className="font-mono">{params.irs}%</Badge>
-              </div>
-              <Slider value={[params.irs]} onValueChange={([v]) => setParams(p => ({ ...p, irs: v }))} min={10} max={45} step={0.5} />
-            </div>
+        {/* --- Inputs Column with Tabs --- */}
+        <div className="space-y-6">
+          <Tabs defaultValue="fiscal" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="fiscal" className="gap-2"><Scale className="h-4 w-4" /> {t('scenarios.tabs.fiscal')}</TabsTrigger>
+              <TabsTrigger value="budget" className="gap-2"><GovBuilding className="h-4 w-4" /> {t('scenarios.tabs.budget')}</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="fiscal">
+              <Card className="border-primary/10 shadow-lg mt-4">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{t('scenarios.inputs')}</CardTitle>
+                    <CardDescription>Ajuste as políticas fiscais básicas.</CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-8 pt-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2">{t('scenarios.irsLabel')}</Label>
+                      <Badge variant="secondary" className="font-mono">{params.irs}%</Badge>
+                    </div>
+                    <Slider value={[params.irs]} onValueChange={([v]) => setParams(p => ({ ...p, irs: v }))} min={10} max={45} step={0.5} />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2">{t('scenarios.ivaLabel')}</Label>
+                      <Badge variant="secondary" className="font-mono">{params.iva}%</Badge>
+                    </div>
+                    <Slider value={[params.iva]} onValueChange={([v]) => setParams(p => ({ ...p, iva: v }))} min={15} max={30} step={0.5} />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2">{t('scenarios.ircLabel')}</Label>
+                      <Badge variant="secondary" className="font-mono">{params.irc}%</Badge>
+                    </div>
+                    <Slider value={[params.irc]} onValueChange={([v]) => setParams(p => ({ ...p, irc: v }))} min={10} max={30} step={0.5} />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2">{t('scenarios.smnLabel')}</Label>
+                      <Badge variant="secondary" className="font-mono">{params.smn}€</Badge>
+                    </div>
+                    <Slider value={[params.smn]} onValueChange={([v]) => setParams(p => ({ ...p, smn: v }))} min={820} max={1200} step={5} />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-            {/* IVA */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="flex items-center gap-2">{t('scenarios.ivaLabel')} <TooltipProvider><Tooltip><TooltipTrigger><Info className="h-3 w-3 opacity-50" /></TooltipTrigger><TooltipContent>{t('scenarios.tooltips.iva')}</TooltipContent></Tooltip></TooltipProvider></Label>
-                <Badge variant="secondary" className="font-mono">{params.iva}%</Badge>
-              </div>
-              <Slider value={[params.iva]} onValueChange={([v]) => setParams(p => ({ ...p, iva: v }))} min={15} max={30} step={0.5} />
-            </div>
+            <TabsContent value="budget">
+              <Card className="border-primary/10 shadow-lg mt-4">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">Gestão de Rubricas (B€)</CardTitle>
+                      <CardDescription>Redistribua a despesa pública do OE2026.</CardDescription>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground">{t('scenarios.budget.total')}</p>
+                      <p className="text-xl font-bold text-primary">{totalSpend.toFixed(1)}B€</p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-8 pt-4">
+                  {/* Health */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-red-500" /> {t('scenarios.budget.health')}</Label>
+                      <Badge variant={budget.health > BUDGET_2026.health ? "default" : "secondary"}>{budget.health.toFixed(1)}B€</Badge>
+                    </div>
+                    <Slider value={[budget.health]} onValueChange={([v]) => setBudget(b => ({ ...p, health: v }))} min={10} max={25} step={0.1} />
+                  </div>
+                  {/* Education */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-500" /> {t('scenarios.budget.education')}</Label>
+                      <Badge variant={budget.education > BUDGET_2026.education ? "default" : "secondary"}>{budget.education.toFixed(1)}B€</Badge>
+                    </div>
+                    <Slider value={[budget.education]} onValueChange={([v]) => setBudget(b => ({ ...p, education: v }))} min={5} max={15} step={0.1} />
+                  </div>
+                  {/* Social Security */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2"><Shield className="h-4 w-4 text-green-500" /> {t('scenarios.budget.social')}</Label>
+                      <Badge variant={budget.social > BUDGET_2026.social ? "default" : "secondary"}>{budget.social.toFixed(1)}B€</Badge>
+                    </div>
+                    <Slider value={[budget.social]} onValueChange={([v]) => setBudget(b => ({ ...p, social: v }))} min={15} max={35} step={0.1} />
+                  </div>
+                  {/* Infra */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label className="flex items-center gap-2"><Construction className="h-4 w-4 text-amber-500" /> {t('scenarios.budget.infra')}</Label>
+                      <Badge variant={budget.infra > BUDGET_2026.infra ? "default" : "secondary"}>{budget.infra.toFixed(1)}B€</Badge>
+                    </div>
+                    <Slider value={[budget.infra]} onValueChange={([v]) => setBudget(b => ({ ...p, infra: v }))} min={2} max={12} step={0.1} />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
-            {/* IRC */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="flex items-center gap-2">{t('scenarios.ircLabel')} <TooltipProvider><Tooltip><TooltipTrigger><Info className="h-3 w-3 opacity-50" /></TooltipTrigger><TooltipContent>{t('scenarios.tooltips.irc')}</TooltipContent></Tooltip></TooltipProvider></Label>
-                <Badge variant="secondary" className="font-mono">{params.irc}%</Badge>
-              </div>
-              <Slider value={[params.irc]} onValueChange={([v]) => setParams(p => ({ ...p, irc: v }))} min={10} max={30} step={0.5} />
-            </div>
-
-            {/* Investimento */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="flex items-center gap-2">{t('scenarios.investLabel')} <TooltipProvider><Tooltip><TooltipTrigger><Info className="h-3 w-3 opacity-50" /></TooltipTrigger><TooltipContent>{t('scenarios.tooltips.invest')}</TooltipContent></Tooltip></TooltipProvider></Label>
-                <Badge variant="secondary" className="font-mono">{params.investment}%</Badge>
-              </div>
-              <Slider value={[params.investment]} onValueChange={([v]) => setParams(p => ({ ...p, investment: v }))} min={0.5} max={10} step={0.1} />
-            </div>
-
-            {/* SMN */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="flex items-center gap-2">{t('scenarios.smnLabel')} <TooltipProvider><Tooltip><TooltipTrigger><Info className="h-3 w-3 opacity-50" /></TooltipTrigger><TooltipContent>{t('scenarios.tooltips.smn')}</TooltipContent></Tooltip></TooltipProvider></Label>
-                <Badge variant="secondary" className="font-mono">{params.smn}€</Badge>
-              </div>
-              <Slider value={[params.smn]} onValueChange={([v]) => setParams(p => ({ ...p, smn: v }))} min={820} max={1200} step={5} />
-            </div>
-          </CardContent>
-        </Card>
+          <Button variant="ghost" size="sm" className="w-full text-[10px] uppercase font-bold border border-dashed" onClick={() => setSuggestDialogOpen(true)}>
+            <PlusCircle className="h-3.5 w-3.5 mr-1" /> {t('scenarios.suggestIndicator')}
+          </Button>
+        </div>
 
         {/* --- Outputs Column --- */}
         <div className="space-y-6">
           <Card className="border-accent/20 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2"><Activity className="text-accent" /> {t('scenarios.outputs')}</CardTitle>
-              <CardDescription>Impacto nas projeções oficiais de 2026.</CardDescription>
+              <CardDescription>Painel de bordo da economia nacional.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pt-4">
-              {/* GDP */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold">
                   <span className="flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5 text-primary" /> {t('scenarios.gdpLabel')}</span>
@@ -317,8 +379,6 @@ export default function ScenariosPage() {
                 </div>
                 <Progress value={Math.min(100, (results.gdp + 5) * 10)} className="h-1.5" />
               </div>
-
-              {/* Unemployment */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold">
                   <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5 text-primary" /> {t('scenarios.unemploymentLabel')}</span>
@@ -326,8 +386,6 @@ export default function ScenariosPage() {
                 </div>
                 <Progress value={results.unemployment * 5} className="h-1.5" />
               </div>
-
-              {/* Public Debt */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold">
                   <span className="flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5 text-primary" /> {t('scenarios.debtLabel')}</span>
@@ -335,8 +393,6 @@ export default function ScenariosPage() {
                 </div>
                 <Progress value={results.debt - 50} className="h-1.5" />
               </div>
-
-              {/* Budget Balance */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-bold">
                   <span className="flex items-center gap-1.5"><Coins className="h-3.5 w-3.5 text-primary" /> {t('scenarios.balanceLabel')}</span>
@@ -354,7 +410,7 @@ export default function ScenariosPage() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>{t('scenarios.saveTitle')}</DialogTitle><DialogDescription>{t('scenarios.saveDesc')}</DialogDescription></DialogHeader>
-                  <div className="py-4 space-y-2"><Label>Título do Cenário</Label><Input value={scenarioTitle} onChange={(e) => setScenarioTitle(e.target.value)} placeholder="Ex: Portugal Competitivo 2026" /></div>
+                  <div className="py-4 space-y-2"><Label>Título do Cenário</Label><Input value={scenarioTitle} onChange={(e) => setScenarioTitle(e.target.value)} placeholder="Ex: Portugal OE2026 Alternativo" /></div>
                   <DialogFooter><DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose><Button onClick={handleSave} disabled={isSaving || !scenarioTitle.trim()}>{isSaving && <Loader2 className="mr-2 animate-spin h-4 w-4" />} {t('common.save')}</Button></DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -383,7 +439,10 @@ export default function ScenariosPage() {
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {publicScenarios?.map((s: any) => (
-            <Card key={s.id} className="hover:shadow-lg transition-all cursor-pointer group" onClick={() => setParams(s.parameters)}>
+            <Card key={s.id} className="hover:shadow-lg transition-all cursor-pointer group" onClick={() => {
+              if(s.parameters.fiscal) setParams(s.parameters.fiscal);
+              if(s.parameters.budget) setBudget(s.parameters.budget);
+            }}>
               <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-sm line-clamp-1 group-hover:text-primary transition-colors">{s.title}</CardTitle>
                 <CardDescription className="text-[10px]">Por {s.userName || 'Cidadão'}</CardDescription>
@@ -400,12 +459,11 @@ export default function ScenariosPage() {
         </div>
       </div>
 
-      {/* --- Suggestion Dialog --- */}
       <Dialog open={isSuggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>{t('scenarios.suggestIndicator')}</DialogTitle><DialogDescription>{t('scenarios.suggestIndicatorDesc')}</DialogDescription></DialogHeader>
           <div className="py-4 space-y-4">
-            <Textarea placeholder="Ex: Gostaria de ver o impacto no rácio de natalidade ou no custo da eletricidade..." value={suggestText} onChange={(e) => setSuggestText(e.target.value)} rows={4} />
+            <Textarea placeholder="Ex: Gostaria de ver o impacto de alterar a verba da Cultura ou Ciência..." value={suggestText} onChange={(e) => setSuggestText(e.target.value)} rows={4} />
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose>

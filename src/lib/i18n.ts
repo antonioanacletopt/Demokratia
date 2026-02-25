@@ -44,6 +44,10 @@ export const translations = {
       title: 'Laboratório de Cenários Macro',
       description: 'Ajuste os indicadores e veja o impacto na economia em tempo real.',
       howItWorks: 'Este simulador usa um motor de correlações económicas. Arraste os seletores para mudar as políticas fiscais e veja as projeções automáticas no PIB, Emprego e Contas Públicas.',
+      tabs: {
+        fiscal: 'Políticas Fiscais',
+        budget: 'Orçamento de Estado (OE2026)'
+      },
       inputs: 'Políticas e Ajustes',
       outputs: 'Projeções de Resultado',
       irsLabel: 'IRS (Taxa Média)',
@@ -56,6 +60,15 @@ export const translations = {
       inflationLabel: 'Inflação (Preços)',
       debtLabel: 'Dívida Pública',
       balanceLabel: 'Saldo Orçamental',
+      budget: {
+        health: 'Saúde (SNS)',
+        education: 'Educação',
+        social: 'Segurança Social',
+        defense: 'Defesa e Segurança',
+        infra: 'Infraestruturas',
+        total: 'Despesa Total Simulada',
+        allocation: 'Alocação de Recursos'
+      },
       tooltips: {
         irs: 'Alterar o IRS afeta o rendimento disponível. Menos imposto costuma estimular o consumo, mas reduz a receita fiscal.',
         iva: 'Impacta diretamente os preços. Subidas de IVA aumentam a inflação e podem reduzir o consumo das famílias.',
@@ -231,6 +244,10 @@ export const translations = {
       title: 'Macro Scenario Lab',
       description: 'Adjust indicators and see the impact on the economy in real-time.',
       howItWorks: 'This simulator uses an economic correlation engine. Drag the sliders to change fiscal policies and see automatic projections on GDP, Employment and Public Finances.',
+      tabs: {
+        fiscal: 'Fiscal Policies',
+        budget: 'State Budget (OE2026)'
+      },
       inputs: 'Policies & Adjustments',
       outputs: 'Outcome Projections',
       irsLabel: 'IRS (Avg Rate)',
@@ -243,6 +260,15 @@ export const translations = {
       inflationLabel: 'Inflation (Prices)',
       debtLabel: 'Public Debt',
       balanceLabel: 'Budget Balance',
+      budget: {
+        health: 'Health (SNS)',
+        education: 'Education',
+        social: 'Social Security',
+        defense: 'Defense & Security',
+        infra: 'Infrastructure',
+        total: 'Simulated Total Spend',
+        allocation: 'Resource Allocation'
+      },
       tooltips: {
         irs: 'Changing IRS affects disposable income. Lower taxes usually stimulate consumption but reduce fiscal revenue.',
         iva: 'Directly impacts prices. VAT hikes increase inflation and can reduce household consumption.',
