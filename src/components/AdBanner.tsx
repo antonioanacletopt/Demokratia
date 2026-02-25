@@ -17,16 +17,27 @@ export function AdBanner() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Só tentamos carregar o anúncio se não estivermos num ambiente de desenvolvimento local
-    // e se o objeto adsbygoogle estiver disponível.
-    try {
-      if (typeof window !== 'undefined') {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
+    // Só tentamos carregar o anúncio se estivermos no browser
+    if (typeof window === 'undefined') return;
+
+    // Usamos um pequeno timeout para garantir que o componente está montado
+    // e o Next.js completou a transição de rota.
+    const timer = setTimeout(() => {
+      try {
+        // Verificamos se existe algum bloco de anúncios na página que ainda não foi processado.
+        // O AdSense adiciona o atributo 'data-adsbygoogle-status' quando preenche o bloco.
+        const unpopulatedAds = document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])');
+        
+        if (unpopulatedAds.length > 0 && window.adsbygoogle) {
+          window.adsbygoogle.push({});
+        }
+      } catch (err) {
+        // Silenciamos o erro "All ins elements already have ads" que é comum em SPAs
+        // e não deve interromper a experiência do utilizador nem o build do Next.js.
       }
-    } catch (err) {
-      // O erro "All 'ins' elements already have ads in them" é comum e inofensivo em SPAs
-      console.warn("AdSense logic executing...", err);
-    }
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   return (
