@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
@@ -102,12 +103,12 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
   const currentActionLabel = !showOriginal && translated?.actionLabel ? translated.actionLabel : item.actionLink?.label;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-all">
+      <CardHeader className="bg-muted/30 pb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 mb-1">
-                <CardTitle className="text-lg">{currentTitle}</CardTitle>
+                <CardTitle className="text-lg leading-snug">{currentTitle}</CardTitle>
                 {language !== 'pt' && (
                   <Button 
                     variant="outline" 
@@ -121,14 +122,14 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
                   </Button>
                 )}
             </div>
-            <CardDescription>{t('home.source')}: {item.source} &middot; {t('home.date')}: {item.date}</CardDescription>
+            <CardDescription className="text-xs">{t('home.source')}: {item.source} &middot; {item.date}</CardDescription>
           </div>
-          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3 w-3" />{t(`home.newsTypes.${item.type as any}`)}</Badge>
+          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3.5 w-3.5" />{t(`home.newsTypes.${item.type as any}`)}</Badge>
         </div>
       </CardHeader>
-      <CardContent><p className="text-muted-foreground">{currentDesc}</p></CardContent>
+      <CardContent className="pt-4"><p className="text-muted-foreground leading-relaxed">{currentDesc}</p></CardContent>
       {item.actionLink && (
-        <CardFooter>
+        <CardFooter className="bg-muted/5 border-t py-3">
           <AIResultButton href={item.actionLink.href} label={currentActionLabel!} />
         </CardFooter>
       )}
@@ -201,34 +202,43 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/30 blur-[80px]" />
       </section>
 
-      {/* How it Works Grid */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-none shadow-md bg-muted/30">
-          <CardHeader className="pb-2">
-            <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center mb-2"><TrendingUp className="h-6 w-6 text-accent" /></div>
-            <CardTitle className="text-xl">Dados e Factos</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Aceda a estatísticas reais e visualizações dinâmicas. Sem ruído, apenas informação bruta transformada em conhecimento.
-          </CardContent>
+      {/* Quick Access Tools */}
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
+          <Link href="/budget">
+            <CardHeader className="p-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><TrendingUp className="h-6 w-6 text-primary" /></div>
+              <CardTitle className="text-base">{t('nav.budget')}</CardTitle>
+              <CardDescription className="text-xs line-clamp-2">Impacto no seu bolso.</CardDescription>
+            </CardHeader>
+          </Link>
         </Card>
-        <Card className="border-none shadow-md bg-muted/30">
-          <CardHeader className="pb-2">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2"><Lightbulb className="h-6 w-6 text-primary" /></div>
-            <CardTitle className="text-xl">Simulações IA</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Teste o impacto de políticas antes de as propor. A nossa IA projeta efeitos económicos baseando-se em modelos científicos.
-          </CardContent>
+        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
+          <Link href="/scenarios">
+            <CardHeader className="p-4">
+              <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><Lightbulb className="h-6 w-6 text-accent" /></div>
+              <CardTitle className="text-base">{t('nav.scenarios')}</CardTitle>
+              <CardDescription className="text-xs line-clamp-2">Teste políticas nacionais.</CardDescription>
+            </CardHeader>
+          </Link>
         </Card>
-        <Card className="border-none shadow-md bg-muted/30">
-          <CardHeader className="pb-2">
-            <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2"><ShieldCheck className="h-6 w-6 text-green-600" /></div>
-            <CardTitle className="text-xl">Rigor e Isenção</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            O nosso compromisso é com a verdade. Todas as análises são baseadas em fontes oficiais e partilhadas de forma transparente.
-          </CardContent>
+        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
+          <Link href="/fact-check">
+            <CardHeader className="p-4">
+              <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><ShieldCheck className="h-6 w-6 text-green-600" /></div>
+              <CardTitle className="text-base">{t('nav.factCheck')}</CardTitle>
+              <CardDescription className="text-xs line-clamp-2">Verifique a verdade.</CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
+          <Link href="/legislation">
+            <CardHeader className="p-4">
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><Scale className="h-6 w-6 text-blue-600" /></div>
+              <CardTitle className="text-base">{t('nav.legislation')}</CardTitle>
+              <CardDescription className="text-xs line-clamp-2">Descomplique a lei.</CardDescription>
+            </CardHeader>
+          </Link>
         </Card>
       </div>
 
@@ -243,9 +253,8 @@ export default function HomePage() {
         </div>
         <div className="space-y-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">{t('home.loadingText')}</p>
+            <div className="grid gap-6">
+              {[1,2,3].map(i => <Card key={i} className="h-32 animate-pulse bg-muted/20" />)}
             </div>
           ) : error ? (
             <Card><CardHeader><CardTitle>{t('home.error')}</CardTitle></CardHeader></Card>
