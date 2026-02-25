@@ -1,10 +1,11 @@
+
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, query, orderBy, addDoc, getDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, addDoc, getDoc, doc, setDoc, where, limit, getDocs } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { getPublicStatistic, getChartFromRequest } from '@/lib/actions';
+import { getPublicStatistic, getChartFromRequest, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
@@ -24,6 +25,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { safeDecode } from '@/lib/safe-decode';
 import Link from 'next/link';
+
+const MAX_CACHE_LENGTH = 1000;
 
 interface DataPoint {
   label: string | number;
@@ -50,15 +53,11 @@ function generateSlug(text: string): string {
     .substring(0, 150);
 }
 
-function convertToCsv(data: any[]): string {
-  if (!data || data.length === 0) return '';
+function downloadCsv(data: any[], filename: string) {
+  if (!data || data.length === 0) return;
   const headers = Object.keys(data[0] || {});
   const rows = data.map(obj => headers.map(h => `"${String(obj[h] || '').replace(/"/g, '""')}"`).join(','));
-  return [headers.join(','), ...rows].join('\n');
-}
-
-function downloadCsv(data: any[], filename: string) {
-  const csv = convertToCsv(data);
+  const csv = [headers.join(','), ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -68,30 +67,18 @@ function downloadCsv(data: any[], filename: string) {
   document.body.removeChild(link);
 }
 
-/**
- * Intelligent helper to transform any array of objects into chart-friendly data points.
- * Guesses labels and values based on key names.
- */
 function transformToChartData(rawData: any[]): DataPoint[] {
   if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return [];
-  
   const first = rawData[0];
   const keys = Object.keys(first);
-  
-  // If already has label and value keys, trust it
   if (keys.includes('label') && keys.includes('value')) {
     return rawData as DataPoint[];
   }
-
-  // Identify label key (look for Year, Date, Name, Category terms)
   const labelKey = keys.find(k => /ano|date|year|mês|mes|month|categoria|category|país|country|tipo|type|entidade|label|nome|name/i.test(k)) || keys[0];
-  
-  // Identify value key (look for Valor, Total, rate, currency symbols, or numeric type)
   const valueKey = keys.find(k => /valor|value|total|taxa|rate|quantidade|amount|€|%|pib|gdp|índice|indice/i.test(k)) 
     || keys.find(k => typeof first[k] === 'number') 
     || keys[1] 
     || keys[0];
-
   return rawData.map(item => ({
     ...item,
     label: String(item[labelKey] || 'N/A'),
@@ -103,13 +90,10 @@ function transformToChartData(rawData: any[]): DataPoint[] {
 
 function ChartRenderer({ data, chartType, unit, height = 250 }: { data: DataPoint[], chartType: 'bar' | 'line', unit: string, height?: number }) {
   const chartData = useMemo(() => transformToChartData(data), [data]);
-  
   const chartConfig: ChartConfig = {
     value: { label: unit || 'Valor', color: 'hsl(var(--primary))' }
   };
-
   if (chartData.length === 0) return null;
-
   return (
     <ChartContainer config={chartConfig} className="w-full" style={{ height: `${height}px` }}>
       {chartType === 'line' ? (
@@ -143,15 +127,63 @@ function UniversalDataCard({
   showSave = false,
   onSave = () => {}
 }: UniversalData & { showSave?: boolean, onSave?: () => void }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const firestore = useFirestore();
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
   
+  const [isTranslating, startTransition] = useTransition();
+  const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
+  useEffect(() => {
+    if (language === 'en' && (title || description)) {
+      const checkCache = async () => {
+        const cacheRef = collection(firestore, 'translations_cache');
+        const fetchCached = async (text: string) => {
+          if (!text || text.length > MAX_CACHE_LENGTH) return null;
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+          const snap = await getDocs(q);
+          return !snap.empty ? snap.docs[0].data().translatedText : null;
+        };
+        const [tTitle, tDesc] = await Promise.all([
+          fetchCached(title),
+          fetchCached(description)
+        ]);
+        if (tTitle || tDesc) {
+          setTranslated({ title: tTitle || title, desc: tDesc || description });
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslated(null);
+      setShowOriginal(true);
+    }
+  }, [language, title, description, firestore]);
+
+  const handleTranslate = () => {
+    startTransition(async () => {
+      const resTitle = await getTranslation(title, language);
+      const resDesc = await getTranslation(description, language);
+      setTranslated({ title: resTitle, desc: resDesc });
+      setShowOriginal(false);
+      
+      const cacheRef = collection(firestore, 'translations_cache');
+      const saveToCache = (orig: string, trans: string) => {
+        if (!orig || orig.length > MAX_CACHE_LENGTH) return;
+        addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
+      };
+      saveToCache(title, resTitle);
+      saveToCache(description, resDesc);
+    });
+  };
+
   if (!data || !Array.isArray(data) || data.length === 0) {
-    return (
-      <Card className="border-dashed"><CardContent className="py-8 text-center text-muted-foreground italic">Sem dados para visualizar.</CardContent></Card>
-    );
+    return <Card className="border-dashed"><CardContent className="py-8 text-center text-muted-foreground italic">Sem dados para visualizar.</CardContent></Card>;
   }
 
+  const currentTitle = !showOriginal && translated ? translated.title : title;
+  const currentDescription = !showOriginal && translated ? translated.desc : description;
   const headers = data?.[0] ? Object.keys(data[0]) : [];
 
   return (
@@ -159,94 +191,53 @@ function UniversalDataCard({
       <CardHeader className="bg-muted/30 pb-4">
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
-            <CardTitle className="text-lg leading-tight">{title}</CardTitle>
-            <CardDescription className="mt-1 text-xs line-clamp-2">{description}</CardDescription>
+            <CardTitle className="text-lg leading-tight">{currentTitle}</CardTitle>
+            <CardDescription className="mt-1 text-xs line-clamp-2">{currentDescription}</CardDescription>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {language !== 'pt' && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                disabled={isTranslating} 
+                className="h-8 text-[9px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+              >
+                {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : translated ? <RefreshCw className="h-3.5 w-3.5" /> : <Languages className="h-3.5 w-3.5" />}
+              </Button>
+            )}
             <Button variant={viewMode === 'chart' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('chart')}><BarChart3 className="h-4 w-4" /></Button>
             <Button variant={viewMode === 'table' ? 'default' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setViewMode('table')}><TableIcon className="h-4 w-4" /></Button>
-            
             <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Maximize2 className="h-4 w-4" /></Button>
-              </DialogTrigger>
+              <DialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Maximize2 className="h-4 w-4" /></Button></DialogTrigger>
               <DialogContent className="max-w-5xl w-[95vw] h-[80vh] flex flex-col">
-                <DialogHeader>
-                  <DialogTitle>{title}</DialogTitle>
-                  <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
+                <DialogHeader><DialogTitle>{currentTitle}</DialogTitle><DialogDescription>{currentDescription}</DialogDescription></DialogHeader>
                 <div className="flex-1 min-h-0 py-6">
-                  {viewMode === 'chart' ? (
-                    <ChartRenderer data={data} chartType={chartType} unit={unit} height={450} />
-                  ) : (
+                  {viewMode === 'chart' ? <ChartRenderer data={data} chartType={chartType} unit={unit} height={450} /> : (
                     <div className="h-full overflow-auto rounded-md border">
-                      <Table>
-                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                          <TableRow>
-                            {headers.map(h => <TableHead key={h} className="uppercase font-bold">{h}</TableHead>)}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {data.map((row, i) => (
-                            <TableRow key={i}>
-                              {headers.map((h, j) => (
-                                <TableCell key={j} className="text-base py-3">
-                                  {String(row[h] !== undefined ? row[h] : '')}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
+                      <Table><TableHeader className="bg-muted/50 sticky top-0 z-10"><TableRow>{headers.map(h => <TableHead key={h} className="uppercase font-bold">{h}</TableHead>)}</TableRow></TableHeader>
+                        <TableBody>{data.map((row, i) => (<TableRow key={i}>{headers.map((h, j) => (<TableCell key={j} className="text-base py-3">{String(row[h] !== undefined ? row[h] : '')}</TableCell>))}</TableRow>))}</TableBody>
                       </Table>
                     </div>
                   )}
                 </div>
-                <DialogFooter className="flex justify-between items-center sm:justify-between">
-                  <p className="text-xs text-muted-foreground italic">Fonte: {source}</p>
-                  <Button variant="outline" size="sm" onClick={() => downloadCsv(data, title)}><Download className="h-4 w-4 mr-2" /> Exportar CSV</Button>
-                </DialogFooter>
+                <DialogFooter className="flex justify-between items-center sm:justify-between"><p className="text-xs text-muted-foreground italic">Fonte: {source}</p><Button variant="outline" size="sm" onClick={() => downloadCsv(data, currentTitle)}><Download className="h-4 w-4 mr-2" /> Exportar CSV</Button></DialogFooter>
               </DialogContent>
             </Dialog>
-
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, title)}><Download className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, currentTitle)}><Download className="h-4 w-4" /></Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        {viewMode === 'chart' ? (
-          <div className="cursor-zoom-in" title="Clique para expandir">
-            <ChartRenderer data={data} chartType={chartType} unit={unit} />
-          </div>
-        ) : (
+        {viewMode === 'chart' ? <div className="cursor-zoom-in" title="Clique para expandir"><ChartRenderer data={data} chartType={chartType} unit={unit} /></div> : (
           <div className="overflow-x-auto rounded-md border max-h-[250px]">
-            <Table>
-              <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                <TableRow>
-                  {headers.map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.map((row, i) => (
-                  <TableRow key={i}>
-                    {headers.map((h, j) => (
-                      <TableCell key={j} className="text-sm py-2">
-                        {String(row[h] !== undefined ? row[h] : '')}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
+            <Table><TableHeader className="bg-muted/50 sticky top-0 z-10"><TableRow>{headers.map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}</TableRow></TableHeader>
+              <TableBody>{data.map((row, i) => (<TableRow key={i}>{headers.map((h, j) => (<TableCell key={j} className="text-sm py-2">{String(row[h] !== undefined ? row[h] : '')}</TableCell>))}</TableRow>))}</TableBody>
             </Table>
           </div>
         )}
       </CardContent>
-      <CardFooter className="bg-muted/10 border-t py-2 flex justify-between items-center">
-        <p className="text-[10px] text-muted-foreground italic">Fonte: {source}</p>
-        <div className="flex gap-2">
-          {showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />{t('common.save')}</Button>}
-          <RefutationDialog contentId={`data-${title}`} />
-        </div>
-      </CardFooter>
+      <CardFooter className="bg-muted/10 border-t py-2 flex justify-between items-center"><p className="text-[10px] text-muted-foreground italic">Fonte: {source}</p><div className="flex gap-2">{showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />{t('common.save')}</Button>}<RefutationDialog contentId={`data-${title}`} /></div></CardFooter>
     </Card>
   );
 }
@@ -267,7 +258,6 @@ export default function ExplorerPage() {
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveNameDesc] = useState('');
 
-  // Sugestão de Fonte
   const [isSuggestDialogOpen, setSuggestDialogOpen] = useState(false);
   const [suggestName, setSuggestName] = useState('');
   const [suggestUrl, setSuggestUrl] = useState('');
@@ -297,7 +287,6 @@ export default function ExplorerPage() {
         }
       }
 
-      // Try focused chart generation first
       const res = await getChartFromRequest({ request: humanText });
       let finalResult: UniversalData | null = null;
 
@@ -311,12 +300,10 @@ export default function ExplorerPage() {
           chartType: res.chartType
         };
       } else {
-        // Fallback to broader statistic search
         const statRes = await getPublicStatistic({ request: humanText });
         if (statRes.isFound && statRes.data) {
           const parsed = JSON.parse(statRes.data);
           const rawDataArray = Array.isArray(parsed) ? parsed : [parsed];
-          
           finalResult = {
             title: humanText,
             description: statRes.explanation,
@@ -419,62 +406,23 @@ export default function ExplorerPage() {
         </div>
         <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mt-2">
           <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t('explorer.howItWorks')}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t('explorer.howItWorks')}</p>
         </div>
       </div>
 
       <Card className="border-primary/20 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Bot className="text-accent" />{t('explorer.aiCardTitle')}</CardTitle>
-          <CardDescription>{t('explorer.aiCardDesc')}</CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Bot className="text-accent" />{t('explorer.aiCardTitle')}</CardTitle><CardDescription>{t('explorer.aiCardDesc')}</CardDescription></CardHeader>
         <CardContent className="space-y-4">
-          <Textarea 
-            placeholder={t('explorer.textareaPlaceholder')}
-            value={request} 
-            onChange={(e) => setRequest(e.target.value)} 
-            disabled={isAiLoading}
-            className="text-lg"
-          />
+          <Textarea placeholder={t('explorer.textareaPlaceholder')} value={request} onChange={(e) => setRequest(e.target.value)} disabled={isAiLoading} className="text-lg" />
           <div>
             {isAiLoading && <div className="space-y-4 pt-4"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-[300px] w-full" /></div>}
-            
             {noResults && !isAiLoading && (
-              <div className="pt-4">
-                <Card className="border-amber-200 bg-amber-50/50">
-                  <CardContent className="py-6 flex flex-col items-center gap-4 text-center">
-                    <p className="text-amber-800 font-medium">Não foram encontrados dados estatísticos brutos para esta pesquisa.</p>
-                    <p className="text-sm text-amber-700">Se procura o impacto económico ou social de uma medida, tente o nosso <strong>Simulador Político</strong>.</p>
-                    <Button asChild variant="outline" className="border-amber-300 bg-white hover:bg-amber-100">
-                      <Link href={`/simulations?policy=${encodeURIComponent(request)}`}>
-                        <Zap className="mr-2 h-4 w-4" /> Ir para o Simulador
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+              <div className="pt-4"><Card className="border-amber-200 bg-amber-50/50"><CardContent className="py-6 flex flex-col items-center gap-4 text-center"><p className="text-amber-800 font-medium">Não foram encontrados dados estatísticos brutos para esta pesquisa.</p><p className="text-sm text-amber-700">Se procura o impacto económico ou social de uma medida, tente o nosso <strong>Simulador Político</strong>.</p><Button asChild variant="outline" className="border-amber-300 bg-white hover:bg-amber-100"><Link href={`/simulations?policy=${encodeURIComponent(request)}`}><Zap className="mr-2 h-4 w-4" /> Ir para o Simulador</Link></Button></CardContent></Card></div>
             )}
-
-            {aiResponse && !isAiLoading && (
-              <div className="mt-6 space-y-4">
-                <UniversalDataCard 
-                  {...aiResponse} 
-                  showSave={!!user} 
-                  onSave={() => { setSaveName(aiResponse.title); setSaveDialogOpen(true); }} 
-                />
-              </div>
-            )}
+            {aiResponse && !isAiLoading && <div className="mt-6 space-y-4"><UniversalDataCard {...aiResponse} showSave={!!user} onSave={() => { setSaveName(aiResponse.title); setSaveDialogOpen(true); }} /></div>}
           </div>
         </CardContent>
-        <CardFooter className="bg-muted/30 py-4 flex justify-between">
-          <p className="text-xs text-muted-foreground italic max-w-[60%]">Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.</p>
-          <Button onClick={() => performSearch(request)} disabled={isAiLoading || !request.trim()} size="lg" className="px-8">
-            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-            {t('explorer.searchBtn')}
-          </Button>
-        </CardFooter>
+        <CardFooter className="bg-muted/30 py-4 flex justify-between"><p className="text-xs text-muted-foreground italic max-w-[60%]">Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.</p><Button onClick={() => performSearch(request)} disabled={isAiLoading || !request.trim()} size="lg" className="px-8">{isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{t('explorer.searchBtn')}</Button></CardFooter>
       </Card>
 
       <AdBanner />
@@ -484,10 +432,7 @@ export default function ExplorerPage() {
           <h2 className="text-2xl font-bold flex items-center gap-2"><NotebookText className="h-6 w-6 text-accent" />{t('dashboard.savedTitle')}</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {savedViews.map(view => {
-              try {
-                const config = JSON.parse(view.viewConfiguration);
-                return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />;
-              } catch(e) { return null; }
+              try { const config = JSON.parse(view.viewConfiguration); return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />; } catch(e) { return null; }
             })}
           </div>
         </div>
@@ -508,16 +453,7 @@ export default function ExplorerPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {ds.map((d: any) => {
                     const parsedData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
-                    return (
-                      <UniversalDataCard 
-                        key={d.id}
-                        title={d.title}
-                        description={d.description}
-                        source={d.source}
-                        unit={d.title.includes('%') ? '%' : (d.title.includes('Ganho') ? '€' : '')}
-                        data={parsedData}
-                      />
-                    );
+                    return <UniversalDataCard key={d.id} title={d.title} description={d.description} source={d.source} unit={d.title.includes('%') ? '%' : (d.title.includes('Ganho') ? '€' : '')} data={parsedData} />;
                   })}
                 </div>
               </div>
@@ -527,42 +463,13 @@ export default function ExplorerPage() {
       </div>
 
       <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2"><Label>{t('dashboard.viewName')}</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div>
-            <div className="space-y-2"><Label>{t('dashboard.viewDescription')}</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div>
-          </div>
-          <DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></DialogFooter>
-        </DialogContent>
+        <DialogContent><div className="space-y-4 py-4"><div className="space-y-2"><Label>{t('dashboard.viewName')}</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div><div className="space-y-2"><Label>{t('dashboard.viewDescription')}</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div></div><DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></DialogFooter></DialogContent>
       </Dialog>
 
       <Dialog open={isSuggestDialogOpen} onOpenChange={setSuggestDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('explorer.suggestSource')}</DialogTitle>
-            <DialogDescription>{t('explorer.suggestSourceDesc')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>{t('explorer.sourceName')}</Label>
-              <Input placeholder="Ex: Pordata, INE, Banco de Portugal" value={suggestName} onChange={(e) => setSuggestName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('explorer.sourceUrl')}</Label>
-              <Input placeholder="https://..." value={suggestUrl} onChange={(e) => setSuggestUrl(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('explorer.sourcePurpose')}</Label>
-              <Textarea placeholder="Explique que tipo de dados factuais esta fonte fornece..." value={suggestPurpose} onChange={(e) => setSuggestPurpose(e.target.value)} />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose>
-            <Button onClick={handleSuggestSource} disabled={isSuggesting || !suggestName.trim() || !suggestUrl.trim()}>
-              {isSuggesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('explorer.suggestBtn')}
-            </Button>
-          </DialogFooter>
+        <DialogContent><DialogHeader><DialogTitle>{t('explorer.suggestSource')}</DialogTitle><DialogDescription>{t('explorer.suggestSourceDesc')}</DialogDescription></DialogHeader>
+          <div className="space-y-4 py-4"><div className="space-y-2"><Label>{t('explorer.sourceName')}</Label><Input placeholder="Ex: Pordata, INE, Banco de Portugal" value={suggestName} onChange={(e) => setSuggestName(e.target.value)} /></div><div className="space-y-2"><Label>{t('explorer.sourceUrl')}</Label><Input placeholder="https://..." value={suggestUrl} onChange={(e) => setSuggestUrl(e.target.value)} /></div><div className="space-y-2"><Label>{t('explorer.sourcePurpose')}</Label><Textarea placeholder="Explique que tipo de dados factuais esta fonte fornece..." value={suggestPurpose} onChange={(e) => setSuggestPurpose(e.target.value)} /></div></div>
+          <DialogFooter><DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose><Button onClick={handleSuggestSource} disabled={isSuggesting || !suggestName.trim() || !suggestUrl.trim()}>{isSuggesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{t('explorer.suggestBtn')}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

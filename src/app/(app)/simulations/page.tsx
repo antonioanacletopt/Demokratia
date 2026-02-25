@@ -3,12 +3,12 @@
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle, Share2, Check } from 'lucide-react';
+import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle, Share2, Check, Languages, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { getEconomicSimulation } from '@/lib/actions';
+import { getEconomicSimulation, getTranslation } from '@/lib/actions';
 import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc, addDoc, where, getDocs } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
+const MAX_CACHE_LENGTH = 1000;
 
 interface UserSimulationRun {
   id: string;
@@ -59,10 +61,58 @@ function generateSlug(text: string): string {
 }
 
 function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const { toast } = useToast();
+    const firestore = useFirestore();
     const router = useRouter();
     const [copied, setCopied] = useState(false);
+    
+    const [isTranslating, startTransition] = useTransition();
+    const [translated, setTranslated] = useState<{ impact: string, reasoning: string } | null>(null);
+    const [showOriginal, setShowOriginal] = useState(true);
+
+    useEffect(() => {
+        if (language === 'en' && simulation) {
+            const checkCache = async () => {
+                const cacheRef = collection(firestore, 'translations_cache');
+                const fetchCached = async (text: string) => {
+                    if (!text || text.length > MAX_CACHE_LENGTH) return null;
+                    const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
+                    const snap = await getDocs(q);
+                    return !snap.empty ? snap.docs[0].data().translatedText : null;
+                };
+                const [tImpact, tReasoning] = await Promise.all([
+                    fetchCached(simulation.simulatedImpact),
+                    fetchCached(simulation.reasoning)
+                ]);
+                if (tImpact && tReasoning) {
+                    setTranslated({ impact: tImpact, reasoning: tReasoning });
+                    setShowOriginal(false);
+                }
+            };
+            checkCache();
+        } else {
+            setTranslated(null);
+            setShowOriginal(true);
+        }
+    }, [language, simulation, firestore]);
+
+    const handleTranslate = () => {
+        startTransition(async () => {
+            const resImpact = await getTranslation(simulation.simulatedImpact, language);
+            const resReasoning = await getTranslation(simulation.reasoning, language);
+            setTranslated({ impact: resImpact, reasoning: resReasoning });
+            setShowOriginal(false);
+            
+            const cacheRef = collection(firestore, 'translations_cache');
+            const saveToCache = (orig: string, trans: string) => {
+                if (orig.length > MAX_CACHE_LENGTH) return;
+                addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
+            };
+            saveToCache(simulation.simulatedImpact, resImpact);
+            saveToCache(simulation.reasoning, resReasoning);
+        });
+    };
 
     const handleConvertToProposal = () => {
         const params = new URLSearchParams();
@@ -80,6 +130,9 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const currentImpact = !showOriginal && translated ? translated.impact : simulation.simulatedImpact;
+    const currentReasoning = !showOriginal && translated ? translated.reasoning : simulation.reasoning;
+
     return (
         <div className="space-y-6">
              <div className="flex flex-wrap justify-end gap-2">
@@ -91,6 +144,18 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                       <MessageSquarePlus className="h-4 w-4" />
                       {t('simulations.convertToProposal')}
                   </Button>
+                  {language !== 'pt' && (
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                        disabled={isTranslating} 
+                        className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+                    >
+                        {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1.5 h-3 w-3" /> : <Languages className="mr-1.5 h-3 w-3" />}
+                        {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                    </Button>
+                  )}
                   <RefutationDialog contentId={`simulation-${generateSlug(policyText)}`} />
              </div>
 
@@ -116,7 +181,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">{simulation.simulatedImpact}</p>
+                    <p className="text-muted-foreground">{currentImpact}</p>
                 </CardContent>
             </Card>
 
@@ -125,24 +190,26 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                     <CardTitle>{t('simulations.indicatorsTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('simulations.indicator')}</TableHead>
-                                <TableHead className="text-right">{t('simulations.currentValue')}</TableHead>
-                                <TableHead className="text-right">{t('simulations.projectedValue')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {simulation.keyIndicators.map((indicator) => (
-                                <TableRow key={indicator.name}>
-                                    <TableCell className="font-medium">{indicator.name}</TableCell>
-                                    <TableCell className="text-right">{indicator.currentValue.toFixed(2)}{indicator.unit}</TableCell>
-                                    <TableCell className="text-right font-semibold text-primary">{indicator.projectedValue.toFixed(2)}{indicator.unit}</TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>{t('simulations.indicator')}</TableHead>
+                                    <TableHead className="text-right">{t('simulations.currentValue')}</TableHead>
+                                    <TableHead className="text-right">{t('simulations.projectedValue')}</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {simulation.keyIndicators.map((indicator) => (
+                                    <TableRow key={indicator.name}>
+                                        <TableCell className="font-medium">{indicator.name}</TableCell>
+                                        <TableCell className="text-right">{indicator.currentValue.toFixed(2)}{indicator.unit}</TableCell>
+                                        <TableCell className="text-right font-semibold text-primary">{indicator.projectedValue.toFixed(2)}{indicator.unit}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -151,7 +218,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
                     <CardTitle>{t('simulations.aiReasoning')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">{simulation.reasoning}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{currentReasoning}</p>
                 </CardContent>
             </Card>
         </div>
@@ -169,7 +236,6 @@ export default function SimulationsPage() {
   const [simulationNotes, setSimulationNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sugestão de Variável
   const [isVarDialogOpen, setVarDialogOpen] = useState(false);
   const [varName, setVarName] = useState('');
   const [varReason, setVarReason] = useState('');

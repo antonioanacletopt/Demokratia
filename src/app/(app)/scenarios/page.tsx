@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, addDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { getScenarioAnalysis } from '@/lib/actions';
+import { getScenarioAnalysis, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,33 +23,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, Info, Save, RefreshCcw, Share2, TrendingUp, Briefcase, Activity, 
   Landmark, Sparkles, Loader2, Check, Target, PlusCircle, Scale, Wallet, Coins,
-  HeartPulse, GraduationCap, Shield, Construction, Landmark as GovBuilding
+  HeartPulse, GraduationCap, Shield, Construction, Landmark as GovBuilding,
+  Languages, RefreshCw
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { cn } from '@/lib/utils';
 
-// --- Economic Engine Constants (Reality 2026) ---
+const MAX_CACHE_LENGTH = 1000;
+
 const REALITY_2026 = {
-  irs: 25, // Taxa média
-  iva: 23, // Taxa standard
-  irc: 21, // Taxa IRC base
-  investment: 2.5, // % PIB
-  smn: 870, // Salário Mínimo projetado 2026
-  gdp: 2.4, // Crescimento base
-  unemployment: 6.1, // Taxa base
-  inflation: 2.0, // IHPC base
-  debt: 88.5, // % PIB base
-  balance: 0.2 // % PIB base (Superávit)
+  irs: 25, 
+  iva: 23, 
+  irc: 21, 
+  investment: 2.5, 
+  smn: 870, 
+  gdp: 2.4, 
+  unemployment: 6.1, 
+  inflation: 2.0, 
+  debt: 88.5, 
+  balance: 0.2 
 };
 
-// --- State Budget Estimates (OE2026 - Billions €) ---
 const BUDGET_2026 = {
   health: 15.2,
   education: 9.8,
   social: 24.5,
   defense: 2.8,
   infra: 5.4,
-  revenue: 72.5 // Estimated total revenue for context
+  revenue: 72.5 
 };
 
 export default function ScenariosPage() {
@@ -58,7 +60,6 @@ export default function ScenariosPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
-  // --- UI State - Fiscal ---
   const [params, setParams] = useState({ 
     irs: REALITY_2026.irs, 
     iva: REALITY_2026.iva, 
@@ -67,7 +68,6 @@ export default function ScenariosPage() {
     smn: REALITY_2026.smn
   });
 
-  // --- UI State - Budget ---
   const [budget, setBudget] = useState({
     health: BUDGET_2026.health,
     education: BUDGET_2026.education,
@@ -91,21 +91,54 @@ export default function ScenariosPage() {
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // --- Suggestion State ---
+  const [isTranslating, startTransition] = useTransition();
+  const [translatedAnalysis, setTranslatedAnalysis] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(true);
+
+  useEffect(() => {
+    if (language === 'en' && aiAnalysis) {
+      const checkCache = async () => {
+        if (aiAnalysis.length > MAX_CACHE_LENGTH) return;
+        const cacheRef = collection(firestore, 'translations_cache');
+        const q = query(cacheRef, where('originalText', '==', aiAnalysis), where('targetLanguage', '==', 'English'), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          setTranslatedAnalysis(snap.docs[0].data().translatedText);
+          setShowOriginal(false);
+        }
+      };
+      checkCache();
+    } else {
+      setTranslatedAnalysis(null);
+      setShowOriginal(true);
+    }
+  }, [language, aiAnalysis, firestore]);
+
+  const handleTranslate = () => {
+    if (!aiAnalysis) return;
+    startTransition(async () => {
+      const res = await getTranslation(aiAnalysis, language);
+      setTranslatedAnalysis(res);
+      setShowOriginal(false);
+      
+      if (aiAnalysis.length <= MAX_CACHE_LENGTH) {
+        const cacheRef = collection(firestore, 'translations_cache');
+        addDoc(cacheRef, { originalText: aiAnalysis, translatedText: res, targetLanguage: 'English', createdAt: serverTimestamp() });
+      }
+    });
+  };
+
   const [isSuggestDialogOpen, setSuggestDialogOpen] = useState(false);
   const [suggestText, setSuggestText] = useState('');
   const [isSuggesting, setIsSuggesting] = useState(false);
 
-  // --- Economic Engine Logic ---
   useEffect(() => {
-    // 1. Fiscal Deviations
     const dIrs = params.irs - REALITY_2026.irs;
     const dIva = params.iva - REALITY_2026.iva;
     const dIrc = params.irc - REALITY_2026.irc;
     const dInvest = params.investment - REALITY_2026.investment;
     const dSmn = (params.smn - REALITY_2026.smn) / 10; 
 
-    // 2. Budget Deviations
     const dHealth = budget.health - BUDGET_2026.health;
     const dEdu = budget.education - BUDGET_2026.education;
     const dSocial = budget.social - BUDGET_2026.social;
@@ -113,27 +146,22 @@ export default function ScenariosPage() {
     const dInfra = budget.infra - BUDGET_2026.infra;
     const totalBudgetDeviation = dHealth + dEdu + dSocial + dDef + dInfra;
 
-    // --- GDP Calculation ---
     const budgetGdpImpact = (0.08 * dInfra) + (0.05 * dEdu) + (0.02 * dHealth);
     const fiscalGdpImpact = ((-0.1 * dIrs) + (-0.12 * dIva) + (-0.08 * dIrc) + (0.35 * dInvest) + (0.02 * dSmn));
     const newGdp = Math.max(-5, REALITY_2026.gdp + fiscalGdpImpact + budgetGdpImpact);
 
-    // --- Unemployment (Okun's Law) ---
     const growthGap = newGdp - 2.0;
     const unempShift = (-0.35 * growthGap) + (0.01 * dSmn); 
     const newUnemp = Math.max(3, REALITY_2026.unemployment + unempShift);
 
-    // --- Inflation ---
     const inflShift = (0.2 * growthGap) + (0.25 * dIva) + (0.05 * dSmn);
     const newInfl = Math.max(-1, REALITY_2026.inflation + inflShift);
 
-    // --- Budget Balance ---
     const revenueImpact = (0.4 * dIrs) + (0.5 * dIva) + (0.2 * dIrc);
     const budgetBalanceImpact = -(totalBudgetDeviation / 265) * 100;
     const spendingImpact = (1.0 * dInvest) + (0.05 * dSmn);
     const newBalance = REALITY_2026.balance + revenueImpact - spendingImpact + budgetBalanceImpact;
 
-    // --- Public Debt ---
     const debtShift = (-0.8 * growthGap) - (1.2 * newBalance);
     const newDebt = Math.max(50, REALITY_2026.debt + debtShift);
 
@@ -146,7 +174,6 @@ export default function ScenariosPage() {
     });
   }, [params, budget]);
 
-  // --- Actions ---
   const handleReset = () => {
     setParams({ 
       irs: REALITY_2026.irs, iva: REALITY_2026.iva, irc: REALITY_2026.irc, 
@@ -157,16 +184,18 @@ export default function ScenariosPage() {
       social: BUDGET_2026.social, defense: BUDGET_2026.defense, infra: BUDGET_2026.infra
     });
     setAiAnalysis(null);
+    setTranslatedAnalysis(null);
   };
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      // Properly formatting the analysis request
       const res = await getScenarioAnalysis({ 
         parameters: { ...params, budget }, 
         results 
       }, language);
       setAiAnalysis(res.feedback);
+      setTranslatedAnalysis(null);
+      setShowOriginal(true);
     });
   };
 
@@ -231,6 +260,8 @@ export default function ScenariosPage() {
 
   const publicScenariosQuery = useMemoFirebase(() => query(collection(firestore, 'publicScenarios'), orderBy('createdAt', 'desc'), limit(6)), [firestore]);
   const { data: publicScenarios } = useCollection<any>(publicScenariosQuery);
+
+  const displayAnalysis = !showOriginal && translatedAnalysis ? translatedAnalysis : aiAnalysis;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
@@ -396,7 +427,7 @@ export default function ScenariosPage() {
                 <Progress value={50 + results.balance * 10} className="h-1.5" />
               </div>
             </CardContent>
-            <CardFooter className="bg-muted/30 py-4 flex justify-between">
+            <CardFooter className="bg-muted/30 py-4 flex justify-between items-center">
               <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="default" className="gap-2" disabled={!user}>
@@ -409,17 +440,35 @@ export default function ScenariosPage() {
                   <DialogFooter><DialogClose asChild><Button variant="ghost">{t('common.cancel')}</Button></DialogClose><Button onClick={handleSave} disabled={isSaving || !scenarioTitle.trim()}>{isSaving && <Loader2 className="mr-2 animate-spin h-4 w-4" />} {t('common.save')}</Button></DialogFooter>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" onClick={handleGetAnalysis} disabled={isAnalysing}>
-                {isAnalysing ? <Loader2 className="mr-2 animate-spin h-4 w-4" /> : <Sparkles className="mr-2 h-4 w-4 text-accent fill-accent" />}
+              <Button variant="outline" onClick={handleGetAnalysis} disabled={isAnalysing} className="border-accent/50 text-accent hover:bg-accent/10">
+                {isAnalysing ? <Loader2 className="mr-2 animate-spin h-4 w-4" /> : <Sparkles className="mr-2 h-4 w-4 fill-accent" />}
                 Parecer IA
               </Button>
             </CardFooter>
           </Card>
 
           {aiAnalysis && (
-            <Card className="border-accent bg-accent/5 border-dashed">
-              <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest flex items-center gap-2 text-accent"><Sparkles className="h-3.5 w-3.5" /> {t('scenarios.aiAnalysis')}</CardTitle></CardHeader>
-              <CardContent><p className="text-xs leading-relaxed whitespace-pre-wrap">{aiAnalysis}</p></CardContent>
+            <Card className="border-accent bg-accent/5 border-dashed overflow-hidden">
+              <CardHeader className="pb-2 bg-accent/10 flex flex-row items-center justify-between">
+                <CardTitle className="text-xs uppercase tracking-widest flex items-center gap-2 text-accent">
+                  <Sparkles className="h-3.5 w-3.5" /> {t('scenarios.aiAnalysis')}
+                </CardTitle>
+                {language !== 'pt' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={translatedAnalysis ? () => setShowOriginal(!showOriginal) : handleTranslate} 
+                    disabled={isTranslating} 
+                    className="h-7 text-[9px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+                  >
+                    {isTranslating ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : translatedAnalysis ? <RefreshCw className="mr-1 h-3 w-3" /> : <Languages className="mr-1 h-3 w-3" />}
+                    {isTranslating ? t('common.translating') : (translatedAnalysis ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="pt-4">
+                <p className="text-xs leading-relaxed whitespace-pre-wrap">{displayAnalysis}</p>
+              </CardContent>
             </Card>
           )}
         </div>
@@ -436,6 +485,7 @@ export default function ScenariosPage() {
             <Card key={s.id} className="hover:shadow-lg transition-all cursor-pointer group" onClick={() => {
               if(s.parameters.fiscal) setParams(s.parameters.fiscal);
               if(s.parameters.budget) setBudget(s.parameters.budget);
+              if(s.aiFeedback) setAiAnalysis(s.aiFeedback);
             }}>
               <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-sm line-clamp-1 group-hover:text-primary transition-colors">{s.title}</CardTitle>
