@@ -2,7 +2,7 @@
 'use server';
 /**
  * @fileOverview AI flow to analyze and explain a user-created macroeconomic scenario.
- * Updated to handle new parameters: IRC, SMN, Public Debt and Budget Balance.
+ * Updated to handle new parameters: IRC, SMN, and detailed Budget allocation.
  */
 
 import { ai } from '@/ai/genkit';
@@ -15,6 +15,13 @@ const AnalyzeScenarioInputSchema = z.object({
     irc: z.number(),
     investment: z.number(),
     smn: z.number(),
+    budget: z.object({
+      health: z.number(),
+      education: z.number(),
+      social: z.number(),
+      defense: z.number(),
+      infra: z.number(),
+    }).optional(),
   }),
   results: z.object({
     gdp: z.number(),
@@ -50,19 +57,29 @@ Sua tarefa é analisar criticamente um cenário macroeconómico hipotético cria
 - Investimento Público: {{parameters.investment}}% do PIB
 - Salário Mínimo Nacional (SMN): {{parameters.smn}}€
 
+{{#if parameters.budget}}
+**ALOCAÇÃO ORÇAMENTAL (B€):**
+- Saúde: {{parameters.budget.health}}B€
+- Educação: {{parameters.budget.education}}B€
+- Segurança Social: {{parameters.budget.social}}B€
+- Defesa: {{parameters.budget.defense}}B€
+- Infraestruturas: {{parameters.budget.infra}}B€
+{{/if}}
+
 **PROJEÇÕES DE RESULTADO:**
 - Crescimento PIB: {{results.gdp}}%
 - Desemprego: {{results.unemployment}}%
 - Inflação: {{results.inflation}}%
 - Dívida Pública: {{results.debt}}% do PIB
-- Saldo Orçamental: {{results.balance}}% do PIB (Positivo = Superávit, Negativo = Défice)
+- Saldo Orçamental: {{results.balance}}% do PIB
 
 **INSTRUÇÕES DE ANÁLISE:**
-1. Avalie a **Consistência Orçamental**: Baixar impostos (IRS/IVA/IRC) e subir o SMN/Investimento simultaneamente gera um défice perigoso?
+1. Avalie a **Consistência Orçamental**: Como é que a redistribuição orçamental e a alteração de impostos afetam o saldo final?
 2. Avalie a **Competitividade**: Como é que a alteração do IRC e SMN afeta a atração de empresas e o emprego.
-3. Explique os mecanismos (ex: Curva de Laffer se os impostos baixarem muito, ou efeito multiplicador do investimento).
-4. Use um tom profissional, pedagógico e neutro.
-5. Escreva obrigatoriamente em {{language}}.
+3. Analise o impacto social: O investimento em Saúde e Educação parece adequado ao cenário macro?
+4. Explique os mecanismos (ex: efeito multiplicador do investimento em infraestruturas).
+5. Use um tom profissional, pedagógico e neutro.
+6. Escreva obrigatoriamente em {{language}}.
 
 **ANÁLISE:**`,
 });

@@ -115,7 +115,6 @@ export default function ScenariosPage() {
     const totalBudgetDeviation = dHealth + dEdu + dSocial + dDef + dInfra;
 
     // --- GDP Calculation ---
-    // Multipliers: Infra (0.8), Education (0.5), Health (0.3), Def (-0.1)
     const budgetGdpImpact = (0.08 * dInfra) + (0.05 * dEdu) + (0.02 * dHealth);
     const fiscalGdpImpact = ((-0.1 * dIrs) + (-0.12 * dIva) + (-0.08 * dIrc) + (0.35 * dInvest) + (0.02 * dSmn));
     const newGdp = Math.max(-5, REALITY_2026.gdp + fiscalGdpImpact + budgetGdpImpact);
@@ -131,7 +130,6 @@ export default function ScenariosPage() {
 
     // --- Budget Balance ---
     const revenueImpact = (0.4 * dIrs) + (0.5 * dIva) + (0.2 * dIrc);
-    // Convert budget deviations (B€) to % of GDP (approx 265B€ in 2026)
     const budgetBalanceImpact = -(totalBudgetDeviation / 265) * 100;
     const spendingImpact = (1.0 * dInvest) + (0.05 * dSmn);
     const newBalance = REALITY_2026.balance + revenueImpact - spendingImpact + budgetBalanceImpact;
@@ -164,7 +162,11 @@ export default function ScenariosPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      const res = await getScenarioAnalysis({ parameters: { ...params, budget }, results }, language);
+      // Correctly passing parameters including the new budget object
+      const res = await getScenarioAnalysis({ 
+        parameters: { ...params, budget: budget }, 
+        results 
+      }, language);
       setAiAnalysis(res.feedback);
     });
   };
@@ -258,7 +260,6 @@ export default function ScenariosPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* --- Inputs Column with Tabs --- */}
         <div className="space-y-6">
           <Tabs defaultValue="fiscal" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -322,37 +323,33 @@ export default function ScenariosPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-8 pt-4">
-                  {/* Health */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-red-500" /> {t('scenarios.budget.health')}</Label>
                       <Badge variant={budget.health > BUDGET_2026.health ? "default" : "secondary"}>{budget.health.toFixed(1)}B€</Badge>
                     </div>
-                    <Slider value={[budget.health]} onValueChange={([v]) => setBudget(b => ({ ...p, health: v }))} min={10} max={25} step={0.1} />
+                    <Slider value={[budget.health]} onValueChange={([v]) => setBudget(b => ({ ...b, health: v }))} min={10} max={25} step={0.1} />
                   </div>
-                  {/* Education */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-500" /> {t('scenarios.budget.education')}</Label>
                       <Badge variant={budget.education > BUDGET_2026.education ? "default" : "secondary"}>{budget.education.toFixed(1)}B€</Badge>
                     </div>
-                    <Slider value={[budget.education]} onValueChange={([v]) => setBudget(b => ({ ...p, education: v }))} min={5} max={15} step={0.1} />
+                    <Slider value={[budget.education]} onValueChange={([v]) => setBudget(b => ({ ...b, education: v }))} min={5} max={15} step={0.1} />
                   </div>
-                  {/* Social Security */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <Label className="flex items-center gap-2"><Shield className="h-4 w-4 text-green-500" /> {t('scenarios.budget.social')}</Label>
                       <Badge variant={budget.social > BUDGET_2026.social ? "default" : "secondary"}>{budget.social.toFixed(1)}B€</Badge>
                     </div>
-                    <Slider value={[budget.social]} onValueChange={([v]) => setBudget(b => ({ ...p, social: v }))} min={15} max={35} step={0.1} />
+                    <Slider value={[budget.social]} onValueChange={([v]) => setBudget(b => ({ ...b, social: v }))} min={15} max={35} step={0.1} />
                   </div>
-                  {/* Infra */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <Label className="flex items-center gap-2"><Construction className="h-4 w-4 text-amber-500" /> {t('scenarios.budget.infra')}</Label>
                       <Badge variant={budget.infra > BUDGET_2026.infra ? "default" : "secondary"}>{budget.infra.toFixed(1)}B€</Badge>
                     </div>
-                    <Slider value={[budget.infra]} onValueChange={([v]) => setBudget(b => ({ ...p, infra: v }))} min={2} max={12} step={0.1} />
+                    <Slider value={[budget.infra]} onValueChange={([v]) => setBudget(b => ({ ...b, infra: v }))} min={2} max={12} step={0.1} />
                   </div>
                 </CardContent>
               </Card>
@@ -364,7 +361,6 @@ export default function ScenariosPage() {
           </Button>
         </div>
 
-        {/* --- Outputs Column --- */}
         <div className="space-y-6">
           <Card className="border-accent/20 shadow-md">
             <CardHeader className="pb-2">
@@ -432,7 +428,6 @@ export default function ScenariosPage() {
 
       <AdBanner />
 
-      {/* --- Public Scenarios --- */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Target className="h-6 w-6 text-primary" /> {t('scenarios.publicScenarios')}
