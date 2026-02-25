@@ -42,35 +42,18 @@
       },
       "required": ["id", "userId", "aiContentIdentifier", "refutationText", "status", "submissionDate"]
     },
-    "VisitorSession": {
+    "TranslationCache": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "VisitorSession",
+      "title": "TranslationCache",
       "type": "object",
-      "description": "Logs an individual access session to the app for analytics.",
+      "description": "Caches AI-generated translations to save costs and improve performance.",
       "properties": {
-        "id": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "isAnonymous": { "type": "boolean" },
-        "userId": { "type": "string" }
-      },
-      "required": ["id", "timestamp", "isAnonymous"]
-    },
-    "MacroScenario": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MacroScenario",
-      "type": "object",
-      "description": "A user-created economic scenario with custom parameters and AI feedback.",
-      "properties": {
-        "id": { "type": "string" },
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "title": { "type": "string" },
-        "parameters": { "type": "object" },
-        "results": { "type": "object" },
-        "aiFeedback": { "type": "string" },
+        "originalText": { "type": "string" },
+        "translatedText": { "type": "string" },
+        "targetLanguage": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "userId", "parameters", "createdAt"]
+      "required": ["originalText", "translatedText", "targetLanguage", "createdAt"]
     }
   },
   "auth": {
@@ -93,38 +76,10 @@
         }
       },
       {
-        "path": "/analytics_sessions/{sessionId}",
+        "path": "/translations_cache/{id}",
         "definition": {
-          "entityName": "VisitorSession",
-          "description": "Anonymous and registered user access logs."
-        }
-      },
-      {
-        "path": "/publicSimulations/{simId}",
-        "definition": {
-          "entityName": "SimulationCache",
-          "description": "Publicly cached economic simulations."
-        }
-      },
-      {
-        "path": "/publicFactChecks/{checkId}",
-        "definition": {
-          "entityName": "FactCheckCache",
-          "description": "Publicly cached fact verification results."
-        }
-      },
-      {
-        "path": "/publicLegislationQueries/{queryId}",
-        "definition": {
-          "entityName": "LegislationCache",
-          "description": "Publicly cached legal queries and analysis."
-        }
-      },
-      {
-        "path": "/publicScenarios/{scenarioId}",
-        "definition": {
-          "entityName": "MacroScenario",
-          "description": "Publicly shared macroeconomic policy exercises."
+          "entityName": "TranslationCache",
+          "description": "Global cache for AI translations."
         }
       }
     ]

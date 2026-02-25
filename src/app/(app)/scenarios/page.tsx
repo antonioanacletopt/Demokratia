@@ -95,6 +95,7 @@ export default function ScenariosPage() {
   const [translatedAnalysis, setTranslatedAnalysis] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
+  // AUTO CACHE CHECK: Se o idioma for inglês, procura se este feedback já foi traduzido antes
   useEffect(() => {
     if (language === 'en' && aiAnalysis) {
       const checkCache = async () => {
@@ -189,6 +190,7 @@ export default function ScenariosPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
+      // O fluxo Genkit agora aceita parameters.budget
       const res = await getScenarioAnalysis({ 
         parameters: { ...params, budget }, 
         results 
