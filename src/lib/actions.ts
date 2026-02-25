@@ -38,6 +38,11 @@ import {
   AnalyzeScenarioInput,
   AnalyzeScenarioOutput,
 } from '@/ai/flows/explain-scenario-impact';
+import {
+  analyzeFamilyBudget,
+  AnalyzeBudgetInput,
+  AnalyzeBudgetOutput,
+} from '@/ai/flows/analyze-family-budget';
 
 import type { Language } from './i18n';
 
@@ -87,6 +92,14 @@ export async function getScenarioAnalysis(
 ): Promise<AnalyzeScenarioOutput> {
   const language = lang === 'en' ? 'English' : 'Portuguese';
   return await analyzeScenario({ ...input, language });
+}
+
+export async function getFamilyBudgetAnalysis(
+  input: Omit<AnalyzeBudgetInput, 'language'>,
+  lang: Language
+): Promise<AnalyzeBudgetOutput> {
+  const language = lang === 'en' ? 'English' : 'Portuguese';
+  return await analyzeFamilyBudget({ ...input, language });
 }
 
 /**

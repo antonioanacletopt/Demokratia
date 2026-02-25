@@ -2,86 +2,62 @@
 {
   "entities": {
     "UserProfile": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Stores basic information and settings for a user within the Demokratia Portugal application.",
+      "description": "Stores basic information and settings for a user.",
       "properties": {
         "id": { "type": "string" },
         "displayName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "preferredLanguage": { "type": "string" },
-        "notificationPreferences": {
-          "type": "object",
-          "properties": {
-            "emailNotifications": { "type": "boolean" },
-            "weeklyNewsletter": { "type": "boolean" }
-          }
-        },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "displayName", "email", "createdAt", "updatedAt"]
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     },
     "Refutation": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Refutation",
       "type": "object",
-      "description": "Represents a user-submitted claim to refute specific AI-generated information.",
+      "description": "User-submitted corrections to AI content.",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
-        "userName": { "type": "string" },
         "aiContentIdentifier": { "type": "string" },
         "refutationText": { "type": "string" },
-        "evidenceLinks": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
-        "submissionDate": { "type": "string", "format": "date-time" },
-        "adminReviewDate": { "type": "string", "format": "date-time" },
-        "adminNotes": { "type": "string" }
-      },
-      "required": ["id", "userId", "aiContentIdentifier", "refutationText", "status", "submissionDate"]
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      }
     },
     "TranslationCache": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "TranslationCache",
       "type": "object",
-      "description": "Caches AI-generated translations to save costs and improve performance.",
+      "description": "Caches AI translations.",
       "properties": {
         "originalText": { "type": "string" },
         "translatedText": { "type": "string" },
-        "targetLanguage": { "type": "string" },
+        "targetLanguage": { "type": "string" }
+      }
+    },
+    "FamilyBudget": {
+      "title": "FamilyBudget",
+      "type": "object",
+      "description": "A user's saved family budget scenario.",
+      "properties": {
+        "userId": { "type": "string" },
+        "profile": { "type": "object" },
+        "expenses": { "type": "object" },
+        "aiAnalysis": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["originalText", "translatedText", "targetLanguage", "createdAt"]
+      }
     }
   },
   "auth": {
-    "providers": ["password", "anonymous", "google"]
+    "providers": ["google", "password"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "description": "Individual user profiles and settings."
-        }
-      },
-      {
-        "path": "/refutations/{refutationId}",
-        "definition": {
-          "entityName": "Refutation",
-          "description": "User-submitted corrections to AI content."
-        }
-      },
-      {
-        "path": "/translations_cache/{id}",
-        "definition": {
-          "entityName": "TranslationCache",
-          "description": "Global cache for AI translations."
-        }
-      }
-    ]
+    "/users/{userId}": { "schema": "UserProfile", "description": "User profile data." },
+    "/refutations/{id}": { "schema": "Refutation", "description": "Global refutations." },
+    "/translations_cache/{id}": { "schema": "TranslationCache", "description": "Translation memory." },
+    "/publicScenarios/{id}": { "schema": "object", "description": "Public macro scenarios." },
+    "/publicSimulations/{id}": { "schema": "object", "description": "Public policy simulations." },
+    "/publicFactChecks/{id}": { "schema": "object", "description": "Public verified claims." },
+    "/publicLegislationQueries/{id}": { "schema": "object", "description": "Public legal queries." }
   }
 }

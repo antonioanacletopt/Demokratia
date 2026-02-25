@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -10,7 +11,7 @@ export const translations = {
       home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
-      scenarios: 'Laboratório Macro'
+      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -25,6 +26,34 @@ export const translations = {
       savedTitle: 'Vistas Guardadas',
       viewName: 'Nome da Vista',
       viewDescription: 'Descrição da Vista'
+    },
+    budget: {
+      title: 'Simulador de Carteira',
+      description: 'Como as políticas de 2026 impactam o seu orçamento familiar.',
+      howItWorks: 'Configure o seu perfil familiar e as despesas médias. Veja quanto sobra ao fim do mês e receba dicas personalizadas da nossa IA.',
+      profileTitle: 'Perfil Familiar',
+      adults: 'Adultos',
+      children: 'Dependentes',
+      income: 'Rendimento Líquido Total',
+      expensesTitle: 'Despesas Mensais (Estimativas 2026)',
+      housing: 'Habitação (Renda/Crédito)',
+      food: 'Supermercado e Alimentação',
+      utilities: 'Energia, Água e Net',
+      transport: 'Transportes e Combustível',
+      health: 'Saúde',
+      leisure: 'Lazer e Outros',
+      summaryTitle: 'Resumo Mensal',
+      totalIncome: 'Rendimento Total',
+      totalExpenses: 'Despesa Total',
+      balance: 'Saldo Final',
+      savingsRate: 'Taxa de Poupança',
+      aiAnalysis: 'Análise Financeira IA',
+      aiTips: 'Dicas de Poupança',
+      getAnalysisBtn: 'Analisar com IA',
+      defaultsInfo: 'Os valores iniciais baseiam-se no custo de vida médio em Portugal previsto para 2026.',
+      lowSavings: 'Taxa de poupança crítica.',
+      healthyBudget: 'Orçamento equilibrado.',
+      surplus: 'Excelente capacidade de poupança.'
     },
     home: {
       title: 'Feed de Atualizações', description: 'Acompanhe as últimas notícias e análises de 2026.',
@@ -71,14 +100,14 @@ export const translations = {
       tooltips: {
         irs: 'Alterar o IRS afeta o rendimento disponível. Menos imposto costuma estimular o consumo, mas reduz a receita fiscal.',
         iva: 'Impacta diretamente os preços. Subidas de IVA aumentam a inflação e podem reduzir o consumo das famílias.',
-        irc: 'Afeta a competitividade das empresas. Um IRC baixo pode atrair mais investimento estrangeiro.',
-        invest: 'Investimento em infraestruturas gera emprego e PIB, mas requer financiamento orçamental.',
-        smn: 'Aumentar o SMN sobe o poder de compra dos mais baixos salários, mas pode pressionar os custos das empresas.',
-        gdp: 'Reflete a saúde da economia. Alvos acima de 2% são desejáveis para Portugal.',
-        unemployment: 'Inversamente ligado ao PIB. Se a economia cresce, o desemprego tende a cair.',
-        inflation: 'Objetivo do BCE é 2%. Valores altos retiram poder de compra.',
-        debt: 'Peso da dívida sobre o PIB. Portugal procura manter a trajetória de descida.',
-        balance: 'Diferença entre o que o Estado recebe e gasta. Positivo é Superávit, negativo é Défice.'
+        irc: 'Impacta a competitividade fiscal.',
+        invest: 'Gera PIB mas custa dinheiro.',
+        smn: 'Afeta o consumo e custos das empresas.',
+        gdp: 'Saúde económica.',
+        unemployment: 'Emprego.',
+        inflation: 'Preços.',
+        debt: 'Sustentabilidade.',
+        balance: 'Equilíbrio.'
       },
       saveTitle: 'Guardar Exercício',
       saveDesc: 'Dê um nome ao seu cenário para o partilhar.',
@@ -211,7 +240,7 @@ export const translations = {
       home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
-      scenarios: 'Macro Lab'
+      scenarios: 'Macro Lab', budget: 'Wallet Simulator'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -226,6 +255,34 @@ export const translations = {
       savedTitle: 'Saved Views',
       viewName: 'View Name',
       viewDescription: 'View Description'
+    },
+    budget: {
+      title: 'Wallet Simulator',
+      description: 'How 2026 policies impact your family budget.',
+      howItWorks: 'Set up your family profile and average expenses. See what\'s left at the end of the month and receive personalized tips from our AI.',
+      profileTitle: 'Family Profile',
+      adults: 'Adults',
+      children: 'Dependents',
+      income: 'Total Net Income',
+      expensesTitle: 'Monthly Expenses (2026 Estimates)',
+      housing: 'Housing (Rent/Mortgage)',
+      food: 'Supermarket & Food',
+      utilities: 'Utilities, Water & Net',
+      transport: 'Transport & Fuel',
+      health: 'Health',
+      leisure: 'Leisure & Others',
+      summaryTitle: 'Monthly Summary',
+      totalIncome: 'Total Income',
+      totalExpenses: 'Total Expenses',
+      balance: 'Final Balance',
+      savingsRate: 'Savings Rate',
+      aiAnalysis: 'AI Financial Health Check',
+      aiTips: 'Saving Tips',
+      getAnalysisBtn: 'Analyze with AI',
+      defaultsInfo: 'Initial values are based on the average cost of living in Portugal projected for 2026.',
+      lowSavings: 'Critical savings rate.',
+      healthyBudget: 'Balanced budget.',
+      surplus: 'Excellent saving capacity.'
     },
     home: {
       title: 'Updates Feed', description: 'Follow the latest news and analyses in 2026.',
@@ -269,16 +326,16 @@ export const translations = {
         allocation: 'Resource Allocation'
       },
       tooltips: {
-        irs: 'Changing IRS affects disposable income. Lower taxes usually stimulate consumption but reduce fiscal revenue.',
-        iva: 'Directly impacts prices. VAT hikes increase inflation and can reduce household consumption.',
-        irc: 'Affects business competitiveness. Low IRC can attract more foreign investment.',
-        invest: 'Investment in infrastructure generates jobs and GDP but requires budget funding.',
-        smn: 'Increasing SMN raises purchasing power but can pressure business costs.',
-        gdp: 'Reflects economic health. Targets above 2% are desirable for Portugal.',
-        unemployment: 'Inversely linked to GDP. If economy grows, unemployment tends to fall.',
-        inflation: 'ECB target is 2%. High values erode purchasing power.',
-        debt: 'Weight of debt over GDP. Portugal seeks to maintain a downward trajectory.',
-        balance: 'Difference between what State receives and spends. Positive is Surplus, negative is Deficit.'
+        irs: 'IRS affects income.',
+        iva: 'VAT affects prices.',
+        irc: 'Corporate tax affects competition.',
+        invest: 'Infrastructure builds future.',
+        smn: 'Min wage affects consumption.',
+        gdp: 'Economic health.',
+        unemployment: 'Jobs.',
+        inflation: 'Prices.',
+        debt: 'Sustainability.',
+        balance: 'Balance.'
       },
       saveTitle: 'Save Exercise',
       saveDesc: 'Name your scenario to share it.',
