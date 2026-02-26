@@ -121,7 +121,7 @@ export default function MethodologyPage() {
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Vídeo Recomendado</p>
                 <p className="text-sm font-medium">Como funciona o Orçamento do Estado?</p>
                 <Button variant="link" className="mt-2 text-primary" asChild>
-                  <Link href="https://www.youtube.com/results?search_query=como+funciona+or%C3%A7amento+do+estado+portugal" target="_blank">
+                  <Link href="https://www.youtube.com/results?search_query=como+funciona+orcamento+do+estado+portugal" target="_blank">
                     Pesquisar no YouTube <ExternalLink className="h-3 w-3 ml-1" />
                   </Link>
                 </Button>
