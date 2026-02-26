@@ -2,15 +2,21 @@
 "use client";
 
 import { useTranslation } from '@/lib/i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, LineChart, Cpu, GraduationCap, ExternalLink, Youtube, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { BookOpen, LineChart, Cpu, GraduationCap, ExternalLink, Youtube, Info, ShieldCheck, Globe, Database, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 
 export default function MethodologyPage() {
   const { t } = useTranslation();
+  const firestore = useFirestore();
   const vizImg = PlaceHolderImages.find(img => img.id === 'data-viz');
+
+  const sourcesRef = useMemoFirebase(() => query(collection(firestore, 'dataSources'), where('isSystemSource', '==', true)), [firestore]);
+  const { data: officialSources } = useCollection<any>(sourcesRef);
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 py-8">
@@ -121,6 +127,52 @@ export default function MethodologyPage() {
           </div>
         </section>
       </div>
+
+      <Separator />
+
+      <section className="space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold font-headline flex items-center justify-center gap-3">
+            <ShieldCheck className="text-primary h-8 w-8" /> {t('methodology.transparencyTitle')}
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            {t('methodology.transparencyDesc')}
+          </p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {officialSources?.map((source: any) => (
+            <Card key={source.id} className="hover:shadow-lg transition-all border-primary/10">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Database className="h-4 w-4 text-accent" />
+                  {source.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="min-h-[100px]">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {source.description}
+                </p>
+              </CardContent>
+              <CardFooter className="bg-muted/30 py-3">
+                <Button asChild variant="link" size="sm" className="p-0 h-auto font-bold">
+                  <Link href={source.url} target="_blank">
+                    Consultar Portal Oficial <ExternalLink className="ml-1.5 h-3 w-3" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex justify-center pt-4">
+          <Button asChild size="lg" className="px-10 shadow-xl group">
+            <Link href="/explorer">
+              Explorar Dados destas Fontes <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </div>
+      </section>
 
       <section className="bg-primary/5 p-10 rounded-3xl border border-primary/10 space-y-6">
         <h2 className="text-2xl font-bold text-center">{t('methodology.linksTitle')}</h2>

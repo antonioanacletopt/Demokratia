@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw, ExternalLink, Globe, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
@@ -341,6 +341,9 @@ export default function ExplorerPage() {
   const datasetsRef = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
   const { data: datasets, isLoading } = useCollection<any>(datasetsRef);
 
+  const sourcesRef = useMemoFirebase(() => query(collection(firestore, 'dataSources'), where('isSystemSource', '==', true)), [firestore]);
+  const { data: officialSources } = useCollection<any>(sourcesRef);
+
   const savedViewsRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'savedDataViews'), orderBy('createdAt', 'desc'));
@@ -461,6 +464,39 @@ export default function ExplorerPage() {
           </div>
         )}
       </div>
+
+      <Separator />
+
+      <section className="space-y-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold flex items-center gap-2 text-primary">
+            <Globe className="h-6 w-6" /> {t('explorer.officialSourcesTitle')}
+          </h2>
+          <p className="text-muted-foreground">{t('explorer.officialSourcesDesc')}</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {officialSources?.map((source: any) => (
+            <Card key={source.id} className="hover:shadow-md transition-all flex flex-col border-primary/5">
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-sm font-bold flex items-center justify-between">
+                  {source.name}
+                  <Link href={source.url} target="_blank" className="text-muted-foreground hover:text-primary"><ExternalLink className="h-3.5 w-3.5" /></Link>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 flex-1">
+                <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-3">
+                  {source.description}
+                </p>
+              </CardContent>
+              <CardFooter className="p-2 bg-muted/30 flex justify-center">
+                <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-primary">
+                  <Link href={source.url} target="_blank">Visitar Portal <ExternalLink className="ml-1 h-2.5 w-2.5" /></Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent><div className="space-y-4 py-4"><div className="space-y-2"><Label>{t('dashboard.viewName')}</Label><Input value={saveName} onChange={(e) => setSaveName(e.target.value)} /></div><div className="space-y-2"><Label>{t('dashboard.viewDescription')}</Label><Textarea value={saveDesc} onChange={(e) => setSaveNameDesc(e.target.value)} /></div></div><DialogFooter><Button variant="ghost" onClick={() => setSaveDialogOpen(false)}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></DialogFooter></DialogContent>

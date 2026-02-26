@@ -37,7 +37,9 @@ export const translations = {
       aiTitle: 'Inteligência Artificial e Contexto 2026',
       aiDesc: 'A nossa IA (Genkit/Gemini) é alimentada com o Orçamento de Estado 2026 e a legislação consolidada. O sistema utiliza uma técnica chamada RAG (Retrieval-Augmented Generation) para garantir que as respostas não são alucinações, mas sim baseadas em parágrafos reais das leis portuguesas.',
       videoTitle: 'Recursos Educativos',
-      linksTitle: 'Fontes de Referência para Estudo'
+      linksTitle: 'Fontes de Referência para Estudo',
+      transparencyTitle: 'Transparência: Redes de Informação Oficial',
+      transparencyDesc: 'Para garantir a isenção, a plataforma consome dados exclusivamente de entidades públicas e reguladores independentes.'
     },
     about: {
       title: 'Sobre a Demokratia',
@@ -156,7 +158,9 @@ export const translations = {
       noRecentTitle: 'Sem pesquisas', noRecentDesc: 'Seja o primeiro!', existingDataTitle: 'Dados Disponíveis',
       searchPlaceholder: 'Filtrar por título...', noResultsTitle: 'Sem resultados', source: 'Fonte', category: 'Categoria',
       suggestSource: 'Sugerir Nova Fonte', suggestSourceDesc: 'Conhece um portal oficial ou API relevante? Ajude-nos a crescer.',
-      sourceName: 'Nome da Entidade', sourceUrl: 'URL Oficial', sourcePurpose: 'O que contém?', suggestBtn: 'Enviar Sugestão'
+      sourceName: 'Nome da Entidade', sourceUrl: 'URL Oficial', sourcePurpose: 'O que contém?', suggestBtn: 'Enviar Sugestão',
+      officialSourcesTitle: 'Rede de Transparência: Fontes Oficiais',
+      officialSourcesDesc: 'O sistema consulta estas bases de dados para garantir o rigor factual.'
     },
     simulations: {
       title: 'Simulações Políticas', 
@@ -203,7 +207,7 @@ export const translations = {
     contact: {
       title: 'Contacto e Apoio', description: 'Estamos aqui para ajudar e ouvir as suas sugestões.',
       newTitle: 'Nova Mensagem', newDesc: 'Envie-nos as suas dúvidas ou feedback.',
-      subject: 'Assunto', message: 'Mensagem', sendBtn: 'Enviar Mensagem',
+      subject: 'Assunto', message: 'Message', sendBtn: 'Enviar Mensagem',
       historyTitle: 'Histórico de Contactos', noMessagesTitle: 'Ainda não enviou mensagens.',
       status: { title: 'Estado', new: 'Nova', read: 'Lida', archived: 'Arquivada' }
     },
@@ -297,7 +301,9 @@ export const translations = {
       aiTitle: 'Artificial Intelligence & 2026 Context',
       aiDesc: 'Our AI (Genkit/Gemini) is fed with the 2026 State Budget and consolidated legislation. The system uses a technique called RAG (Retrieval-Augmented Generation) to ensure that answers are not hallucinations, but based on actual paragraphs of Portuguese laws.',
       videoTitle: 'Educational Resources',
-      linksTitle: 'Reference Sources for Study'
+      linksTitle: 'Reference Sources for Study',
+      transparencyTitle: 'Transparency: Official Information Networks',
+      transparencyDesc: 'To ensure impartiality, the platform consumes data exclusively from public entities and independent regulators.'
     },
     dashboard: {
       savedTitle: 'Saved Views',
@@ -401,18 +407,6 @@ export const translations = {
         total: 'Simulated Total Spend',
         allocation: 'Resource Allocation'
       },
-      tooltips: {
-        irs: 'IRS affects income.',
-        iva: 'VAT affects prices.',
-        irc: 'Corporate tax affects competition.',
-        invest: 'Infrastructure builds future.',
-        smn: 'Min wage affects consumption.',
-        gdp: 'Economic health.',
-        unemployment: 'Jobs.',
-        inflation: 'Prices.',
-        debt: 'Sustainability.',
-        balance: 'Balance.'
-      },
       saveTitle: 'Save Exercise',
       saveDesc: 'Name your scenario to share it.',
       myScenarios: 'My Saved Scenarios',
@@ -432,7 +426,9 @@ export const translations = {
       noRecentTitle: 'No searches', noRecentDesc: 'Be the first!', existingDataTitle: 'Available Data',
       searchPlaceholder: 'Filter by title...', noResultsTitle: 'No results', source: 'Source', category: 'Category',
       suggestSource: 'Suggest Data Source', suggestSourceDesc: 'Know an official portal or relevant API? Help us grow.',
-      sourceName: 'Source Name', sourceUrl: 'Official URL', sourcePurpose: 'What does it contain?', suggestBtn: 'Send Suggestion'
+      sourceName: 'Source Name', sourceUrl: 'Official URL', sourcePurpose: 'What does it contain?', suggestBtn: 'Send Suggestion',
+      officialSourcesTitle: 'Transparency Network: Official Sources',
+      officialSourcesDesc: 'The system consults these databases to ensure factual accuracy.'
     },
     simulations: {
       title: 'Policy Simulations', 
