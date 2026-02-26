@@ -261,7 +261,10 @@ export const translations = {
       title: 'Termos de Utilização', intro: 'Ao usar aceita os termos.', aiTitle: 'Aviso sobre IA', aiDesc: 'A IA pode errar.',
       usageTitle: 'Uso Ético', usageDesc: 'Use para fins cívicos e legais.', ipTitle: 'Propriedade', ipDesc: 'O design pertence à plataforma.'
     },
-    cookies: { title: 'Privacidade', desc: 'Usamos cookies para melhorar a experiência. Leia a nossa' }
+    cookies: { 
+      title: 'Privacidade e Cookies', 
+      desc: 'Utilizamos cookies para personalizar conteúdos e anúncios, fornecer funcionalidades de redes sociais e analisar o nosso tráfego.' 
+    }
   },
   en: {
     nav: {
@@ -534,7 +537,10 @@ export const translations = {
       title: 'Terms of Use', intro: 'Using accept terms.', aiTitle: 'AI Notice', aiDesc: 'AI can make mistakes.',
       usageTitle: 'Ethical Use', usageDesc: 'Use for civic and legal purposes.', ipTitle: 'Property', ipDesc: 'Design belongs to the platform.'
     },
-    cookies: { title: 'Privacy', desc: 'We use cookies to improve experience. Read our' }
+    cookies: { 
+      title: 'Privacy and Cookies', 
+      desc: 'We use cookies to personalize content and ads, provide social media features and analyze our traffic.' 
+    }
   }
 };
 
@@ -557,7 +563,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       finalLang = saved;
     } else {
       const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'pt';
-      // Se não for português, assume inglês como língua franca internacional
       if (browserLang !== 'pt') {
         finalLang = 'en';
       }

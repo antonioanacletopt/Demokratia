@@ -1,14 +1,13 @@
+
 'use client';
 import AppLayout from '@/components/app-layout';
 import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
+import { CookieConsent } from '@/components/CookieConsent';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isUserLoading } = useUser();
 
-  // The layout is now public, but we can show a loading screen while
-  // Firebase checks the initial authentication state. This layout does NOT
-  // redirect unauthenticated users, allowing for public pages within this group.
   if (isUserLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -17,5 +16,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <AppLayout>{children}</AppLayout>;
+  return (
+    <AppLayout>
+      {children}
+      <CookieConsent />
+    </AppLayout>
+  );
 }
