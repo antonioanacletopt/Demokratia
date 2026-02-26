@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -59,6 +59,8 @@ function AppSidebarContent() {
     { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
     { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
     { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },
+    { href: "/about", icon: Info, label: t('nav.about'), public: true },
+    { href: "/faq", icon: HelpCircle, label: t('nav.faq'), public: true },
     { href: "/contact", icon: Mail, label: t('nav.contact'), public: true },
     { href: "/profile", icon: User, label: t('nav.profile'), public: false },
     { href: "/admin", icon: Wrench, label: t('nav.admin'), public: false, adminOnly: true },
@@ -219,17 +221,46 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         <div className="flex-1 flex flex-col">
           <div className="flex-1 p-4 sm:p-6">{children}</div>
-          <footer className="border-t py-8 px-4 sm:px-6 bg-muted/30">
-            <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Logo className="size-4 opacity-50 grayscale" /><span>© {new Date().getFullYear()} Demokratia Portugal</span></div>
-                <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-                  <Link href="/terms" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1.5 font-medium"><FileText className="h-3 w-3" />{t('nav.terms')}</Link>
-                  <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1.5 font-medium"><ShieldCheck className="h-3 w-3" />{t('nav.privacy')}</Link>
-                  <Link href="/contact" className="text-xs text-muted-foreground hover:text-primary font-medium">{t('nav.contact')}</Link>
+          <footer className="border-t py-12 px-4 sm:px-6 bg-muted/30">
+            <div className="flex flex-col gap-10 max-w-7xl mx-auto">
+              <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Logo className="size-6" />
+                    <span className="text-lg font-bold font-headline text-primary">Demokratia</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    A plataforma líder em transparência de dados públicos e literacia cívica em Portugal para 2026.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Recursos</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><Link href="/explorer" className="hover:text-primary">Explorador de Dados</Link></li>
+                    <li><Link href="/simulations" className="hover:text-primary">Simulador de Políticas</Link></li>
+                    <li><Link href="/fact-check" className="hover:text-primary">Verificação de Factos</Link></li>
+                  </ul>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Empresa</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><Link href="/about" className="hover:text-primary">{t('nav.about')}</Link></li>
+                    <li><Link href="/faq" className="hover:text-primary">{t('nav.faq')}</Link></li>
+                    <li><Link href="/contact" className="hover:text-primary">{t('nav.contact')}</Link></li>
+                  </ul>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Legal</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><Link href="/terms" className="hover:text-primary">{t('nav.terms')}</Link></li>
+                    <li><Link href="/privacy" className="hover:text-primary">{t('nav.privacy')}</Link></li>
+                  </ul>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground/60 text-center sm:text-left leading-relaxed">Aviso: A informação gerada por IA é meramente indicativa e deve ser validada junto de fontes oficiais.</p>
+              <div className="pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>© {new Date().getFullYear()} Demokratia Portugal</span></div>
+                <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-w-lg">Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.</p>
+              </div>
             </div>
           </footer>
         </div>

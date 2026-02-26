@@ -11,7 +11,7 @@ export const translations = {
       home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
-      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira'
+      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', about: 'Quem Somos', faq: 'FAQ'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -26,6 +26,47 @@ export const translations = {
       savedTitle: 'Vistas Guardadas',
       viewName: 'Nome da Vista',
       viewDescription: 'Descrição da Vista'
+    },
+    about: {
+      title: 'Sobre a Demokratia',
+      subtitle: 'Dados Abertos para uma Cidadania Ativa',
+      missionTitle: 'A Nossa Missão',
+      missionDesc: 'A Demokratia Portugal nasceu da necessidade de tornar a informação económica e política complexa em algo acessível, neutro e factual para todos os cidadãos. Acreditamos que uma democracia forte depende de cidadãos bem informados.',
+      valuesTitle: 'Os Nossos Valores',
+      neutrality: 'Neutralidade Total',
+      neutralityDesc: 'Não temos cor partidária. O nosso compromisso é com o dado bruto e a análise científica.',
+      transparency: 'Transparência de Fontes',
+      transparencyDesc: 'Todas as informações geradas pela nossa IA citam obrigatoriamente fontes oficiais como o INE, Pordata e o Diário da República.',
+      innovation: 'Inovação Cívica',
+      innovationDesc: 'Utilizamos inteligência artificial de última geração para processar milhares de páginas de legislação e estatística, entregando o essencial em segundos.',
+      teamTitle: 'A Nossa Equipa',
+      teamDesc: 'Liderada pelo António Anacleto, a plataforma é mantida por uma rede de colaboradores focados na literacia financeira e cívica nacional.'
+    },
+    faq: {
+      title: 'Perguntas Frequentes',
+      q1: 'O que é a Demokratia?',
+      a1: 'É uma plataforma de tecnologia cívica que utiliza IA para simplificar o acesso a dados públicos portugueses.',
+      q2: 'De onde vêm os dados?',
+      a2: 'Trabalhamos exclusivamente com fontes primárias: INE, Banco de Portugal, Pordata, Diário da República e o Portal da Transparência.',
+      q3: 'A IA pode cometer erros?',
+      a3: 'Sim. Embora utilizemos modelos avançados e contextos atualizados a 2026, a informação da IA deve ser sempre validada junto das fontes oficiais que disponibilizamos.',
+      q4: 'Como é garantida a neutralidade?',
+      a4: 'A nossa IA é programada com instruções rigorosas para não emitir opiniões políticas, focando-se apenas em correlações económicas e factos legislativos.'
+    },
+    home: {
+      title: 'Feed de Atualizações', description: 'Acompanhe as últimas notícias e análises de 2026.',
+      welcomeTitle: 'Bem-vindo à Demokratia',
+      welcomeSubtitle: 'Ciência de dados ao serviço da cidadania.',
+      welcomeIntro: 'O nosso objetivo é fornecer análises rigorosas, neutras e baseadas em factos puros. Sem partidarismo, apenas dados oficiais e métodos científicos para ajudar a compreender Portugal.',
+      methodologyTitle: 'Rigor e Metodologia',
+      methodologyDesc: 'A nossa plataforma não gera apenas texto; ela processa indicadores reais. Ao contrário de modelos de IA genéricos, a Demokratia usa contextos específicos da realidade portuguesa de 2026, cruzando-os com o Orçamento de Estado e leis em vigor.',
+      howItWorksTitle: 'Como funciona?',
+      howItWorksDesc: 'A nossa IA consulta em tempo real bases de dados oficiais (INE, Pordata, Diário da República) para validar alegações, simular impactos económicos e simplificar a legislação para si.',
+      ctaProposals: 'Tem uma sugestão ou ideia para o país?',
+      ctaProposalsBtn: 'Criar Proposta',
+      error: 'Erro ao carregar notícias.', source: 'Fonte', date: 'Data', 
+      loadingText: 'A analisar a atualidade política de 2026...',
+      newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
     },
     budget: {
       title: 'Simulador de Carteira',
@@ -55,19 +96,6 @@ export const translations = {
       healthyBudget: 'Orçamento equilibrado.',
       surplus: 'Excelente capacidade de poupança.'
     },
-    home: {
-      title: 'Feed de Atualizações', description: 'Acompanhe as últimas notícias e análises de 2026.',
-      welcomeTitle: 'Bem-vindo à Demokratia',
-      welcomeSubtitle: 'Ciência de dados ao serviço da cidadania.',
-      welcomeIntro: 'O nosso objetivo é fornecer análises rigorosas, neutras e baseadas em factos puros. Sem partidarismo, apenas dados oficiais e métodos científicos para ajudar a compreender Portugal.',
-      howItWorksTitle: 'Como funciona?',
-      howItWorksDesc: 'A nossa IA consulta em tempo real bases de dados oficiais (INE, Pordata, Diário da República) para validar alegações, simular impactos económicos e simplificar a legislação para si.',
-      ctaProposals: 'Tem uma sugestão ou ideia para o país?',
-      ctaProposalsBtn: 'Criar Proposta',
-      error: 'Erro ao carregar notícias.', source: 'Fonte', date: 'Data', 
-      loadingText: 'A analisar a atualidade política de 2026...',
-      newsTypes: { 'Alegação': 'Alegação', 'Nova Lei': 'Nova Lei', 'Análise': 'Análise' }
-    },
     scenarios: {
       title: 'Laboratório de Cenários Macro',
       description: 'Ajuste os indicadores e veja o impacto na economia em tempo real.',
@@ -96,18 +124,6 @@ export const translations = {
         infra: 'Infraestruturas',
         total: 'Despesa Total Simulada',
         allocation: 'Alocação de Recursos'
-      },
-      tooltips: {
-        irs: 'Alterar o IRS afeta o rendimento disponível. Menos imposto costuma estimular o consumo, mas reduz a receita fiscal.',
-        iva: 'Impacta diretamente os preços. Subidas de IVA aumentam a inflação e podem reduzir o consumo das famílias.',
-        irc: 'Impacta a competitividade fiscal.',
-        invest: 'Gera PIB mas custa dinheiro.',
-        smn: 'Afeta o consumo e custos das empresas.',
-        gdp: 'Saúde económica.',
-        unemployment: 'Emprego.',
-        inflation: 'Preços.',
-        debt: 'Sustentabilidade.',
-        balance: 'Equilíbrio.'
       },
       saveTitle: 'Guardar Exercício',
       saveDesc: 'Dê um nome ao seu cenário para o partilhar.',
@@ -240,7 +256,7 @@ export const translations = {
       home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
-      scenarios: 'Macro Lab', budget: 'Wallet Simulator'
+      scenarios: 'Macro Lab', budget: 'Wallet Simulator', about: 'About Us', faq: 'FAQ'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -255,6 +271,46 @@ export const translations = {
       savedTitle: 'Saved Views',
       viewName: 'View Name',
       viewDescription: 'View Description'
+    },
+    about: {
+      title: 'About Demokratia',
+      subtitle: 'Open Data for Active Citizenship',
+      missionTitle: 'Our Mission',
+      missionDesc: 'Demokratia Portugal was born from the need to make complex economic and political information accessible, neutral, and factual for all citizens. We believe a strong democracy depends on well-informed citizens.',
+      valuesTitle: 'Our Values',
+      neutrality: 'Total Neutrality',
+      neutralityDesc: 'We have no political party colors. Our commitment is to raw data and scientific analysis.',
+      transparency: 'Source Transparency',
+      transparencyDesc: 'All information generated by our AI must cite official sources like INE, Pordata, and the Official Gazette.',
+      innovation: 'Civic Innovation',
+      innovationDesc: 'We use state-of-the-art AI to process thousands of pages of legislation and statistics, delivering the essentials in seconds.',
+      teamTitle: 'Our Team',
+      teamDesc: 'Led by António Anacleto, the platform is maintained by a network of collaborators focused on national financial and civic literacy.'
+    },
+    faq: {
+      title: 'Frequently Asked Questions',
+      q1: 'What is Demokratia?',
+      a1: 'It is a civic technology platform that uses AI to simplify access to Portuguese public data.',
+      q2: 'Where does the data come from?',
+      a2: 'We work exclusively with primary sources: INE, Banco de Portugal, Pordata, Official Gazette, and the Transparency Portal.',
+      q3: 'Can AI make mistakes?',
+      a3: 'Yes. Although we use advanced models and 2026-updated contexts, AI information should always be validated against the official sources we provide.',
+      q4: 'How is neutrality guaranteed?',
+      a4: 'Our AI is programmed with strict instructions not to emit political opinions, focusing only on economic correlations and legislative facts.'
+    },
+    home: {
+      title: 'Updates Feed', description: 'Follow the latest news and analyses in 2026.',
+      welcomeTitle: 'Welcome to Demokratia',
+      welcomeSubtitle: 'Data science for citizenship.',
+      welcomeIntro: 'Our goal is to provide rigorous, neutral, and fact-based analyses. No partisanship, just official data and scientific methods to help understand Portugal.',
+      methodologyTitle: 'Rigor and Methodology',
+      methodologyDesc: 'Our platform does not just generate text; it processes real indicators. Unlike generic AI models, Demokratia uses specific contexts of the Portuguese reality of 2026, cross-referencing them with the State Budget and laws in force.',
+      howItWorksTitle: 'How it works?',
+      howItWorksDesc: 'Our AI consults official databases (INE, Pordata, Official Gazette) in real-time to validate claims, simulate economic impacts, and simplify legislation for you.',
+      ctaProposals: 'Have a suggestion or idea for the country?',
+      ctaProposalsBtn: 'Create Proposal',
+      error: 'Error loading news.', source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
+      newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
     },
     budget: {
       title: 'Wallet Simulator',
@@ -283,18 +339,6 @@ export const translations = {
       lowSavings: 'Critical savings rate.',
       healthyBudget: 'Balanced budget.',
       surplus: 'Excellent saving capacity.'
-    },
-    home: {
-      title: 'Updates Feed', description: 'Follow the latest news and analyses in 2026.',
-      welcomeTitle: 'Welcome to Demokratia',
-      welcomeSubtitle: 'Data science for citizenship.',
-      welcomeIntro: 'Our goal is to provide rigorous, neutral, and fact-based analyses. No partisanship, just official data and scientific methods to help understand Portugal.',
-      howItWorksTitle: 'How it works?',
-      howItWorksDesc: 'Our AI consults official databases (INE, Pordata, Official Gazette) in real-time to validate claims, simulate economic impacts, and simplify legislation for you.',
-      ctaProposals: 'Have a suggestion or idea for the country?',
-      ctaProposalsBtn: 'Create Proposal',
-      error: 'Error loading news.', source: 'Source', date: 'Date', loadingText: 'Analyzing 2026 political current affairs...',
-      newsTypes: { 'Alegação': 'Claim', 'Nova Lei': 'New Law', 'Análise': 'Analysis' }
     },
     scenarios: {
       title: 'Macro Scenario Lab',

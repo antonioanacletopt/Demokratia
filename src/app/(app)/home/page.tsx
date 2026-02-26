@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
@@ -194,13 +194,50 @@ export default function HomePage() {
               <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> Explorar Dados</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
-              <Link href="/proposals"><MessageSquarePlus className="mr-2 h-5 w-5" /> Partilhar Ideia</Link>
+              <Link href="/about"><BookOpen className="mr-2 h-5 w-5" /> {t('nav.about')}</Link>
             </Button>
           </div>
         </div>
         <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-accent/20 blur-[100px]" />
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/30 blur-[80px]" />
       </section>
+
+      {/* Methodology Section (High Value Content for AdSense) */}
+      <div className="grid gap-8 lg:grid-cols-3 bg-card p-8 rounded-3xl border shadow-sm">
+        <div className="lg:col-span-2 space-y-4">
+          <h2 className="text-3xl font-bold font-headline text-primary">{t('home.methodologyTitle')}</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('home.methodologyDesc')}
+          </p>
+          <div className="flex flex-wrap gap-6 pt-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Check className="text-green-500 h-5 w-5" /> 100% Fontes Oficiais
+            </div>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Check className="text-green-500 h-5 w-5" /> Neutralidade Partidária
+            </div>
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Check className="text-green-500 h-5 w-5" /> Foco na Realidade 2026
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 justify-center">
+          <div className="p-4 rounded-2xl bg-muted/50 border flex items-center gap-4">
+            <BarChart3 className="text-primary h-8 w-8" />
+            <div>
+              <p className="font-bold text-sm">Dados do INE</p>
+              <p className="text-xs text-muted-foreground">Atualizados semanalmente.</p>
+            </div>
+          </div>
+          <div className="p-4 rounded-2xl bg-muted/50 border flex items-center gap-4">
+            <Globe className="text-primary h-8 w-8" />
+            <div>
+              <p className="font-bold text-sm">Contexto Eurostat</p>
+              <p className="text-xs text-muted-foreground">Comparação direta com a UE.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Quick Access Tools */}
       <div className="grid gap-6 md:grid-cols-4">
