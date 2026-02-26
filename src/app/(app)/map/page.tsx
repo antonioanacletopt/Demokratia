@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,8 +47,6 @@ export default function AtlasPage() {
     const min = Math.min(...values);
     const max = Math.max(...values);
     const ratio = (value - min) / (max - min);
-    
-    // Inverter escala para pobreza (mais baixo é "melhor", mas aqui mostramos intensidade)
     const intensity = Math.round(ratio * 100);
     return `hsl(var(--primary) / ${20 + intensity * 0.8}%)`;
   };
@@ -135,10 +133,10 @@ export default function AtlasPage() {
             </Badge>
           </div>
           
-          <svg viewBox="0 0 400 850" className="w-full h-full max-w-[450px] drop-shadow-2xl">
+          <svg viewBox="0 0 450 850" className="w-full h-full max-w-[450px] drop-shadow-2xl">
             {/* NORTE */}
             <path
-              d="M120,40 L280,40 L290,120 L310,200 L200,240 L140,220 L110,120 Z"
+              d="M280,40 L380,40 L410,100 L420,180 L350,220 L300,240 L250,220 L230,120 L240,60 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[0][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -147,16 +145,16 @@ export default function AtlasPage() {
             />
             {/* CENTRO */}
             <path
-              d="M140,220 L200,240 L310,200 L330,370 L250,440 L150,420 L120,320 Z"
+              d="M250,220 L300,240 L350,220 L420,180 L430,350 L380,420 L280,440 L230,420 L210,320 L220,250 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[1][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[1])}
             />
-            {/* LISBOA (AM) */}
+            {/* LISBOA (AML) */}
             <path
-              d="M120,320 L150,420 L180,470 L120,500 L100,440 L90,370 Z"
+              d="M210,320 L230,420 L260,470 L200,500 L180,440 L170,370 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[2][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -165,7 +163,7 @@ export default function AtlasPage() {
             />
             {/* ALENTEJO */}
             <path
-              d="M150,420 L250,440 L330,370 L350,570 L330,670 L180,700 L120,500 L180,470 Z"
+              d="M230,420 L280,440 L380,420 L410,570 L390,670 L260,700 L200,500 L260,470 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[3][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -174,7 +172,7 @@ export default function AtlasPage() {
             />
             {/* ALGARVE */}
             <path
-              d="M180,700 L330,670 L340,770 L180,770 Z"
+              d="M260,700 L390,670 L400,770 L260,770 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[4][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -182,22 +180,36 @@ export default function AtlasPage() {
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[4])}
             />
             
-            {/* AÇORES (Representação Esquemática) */}
+            {/* AÇORES - Inset Retângulo */}
             <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[5])}>
-              <rect x="20" y="550" width="70" height="50" rx="8" fill={getRegionColor(PORTUGAL_DATA_2026[5][selectedIndicator], selectedIndicator)} stroke="white" strokeWidth="2" className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[4]" />
-              <text x="55" y="540" textAnchor="middle" className="text-[12px] font-bold fill-muted-foreground uppercase tracking-wider">Açores</text>
+              <rect x="20" y="450" width="120" height="80" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <path 
+                d="M40,480 L60,480 L70,490 L50,500 Z M90,490 L110,490 L120,500 L100,510 Z" 
+                fill={getRegionColor(PORTUGAL_DATA_2026[5][selectedIndicator], selectedIndicator)} 
+                stroke="white" 
+                strokeWidth="1" 
+                className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[2]" 
+              />
+              <text x="80" y="520" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Açores</text>
             </g>
 
-            {/* MADEIRA (Representação Esquemática) */}
+            {/* MADEIRA - Inset Retângulo */}
             <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[6])}>
-              <rect x="20" y="650" width="70" height="50" rx="8" fill={getRegionColor(PORTUGAL_DATA_2026[6][selectedIndicator], selectedIndicator)} stroke="white" strokeWidth="2" className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[4]" />
-              <text x="55" y="640" textAnchor="middle" className="text-[12px] font-bold fill-muted-foreground uppercase tracking-wider">Madeira</text>
+              <rect x="20" y="550" width="120" height="80" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <path 
+                d="M60,580 L90,580 L100,595 L70,605 Z" 
+                fill={getRegionColor(PORTUGAL_DATA_2026[6][selectedIndicator], selectedIndicator)} 
+                stroke="white" 
+                strokeWidth="1" 
+                className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[2]" 
+              />
+              <text x="80" y="620" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Madeira</text>
             </g>
           </svg>
           
           <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground bg-white/50 px-4 py-2 rounded-full border border-primary/5 shadow-inner">
             <Info className="h-3.5 w-3.5 text-primary" />
-            Clique ou passe o rato nas regiões para comparar indicadores.
+            Passe o rato nas regiões para comparar a realidade de 2026.
           </div>
         </div>
       </div>
