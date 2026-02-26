@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -59,6 +59,7 @@ function AppSidebarContent() {
     { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
     { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
     { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },
+    { href: "/methodology", icon: BookOpen, label: t('nav.methodology'), public: true },
     { href: "/about", icon: Info, label: t('nav.about'), public: true },
     { href: "/faq", icon: HelpCircle, label: t('nav.faq'), public: true },
     { href: "/contact", icon: Mail, label: t('nav.contact'), public: true },
@@ -238,7 +239,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <ul className="space-y-2 text-sm">
                     <li><Link href="/explorer" className="hover:text-primary">Explorador de Dados</Link></li>
                     <li><Link href="/simulations" className="hover:text-primary">Simulador de Políticas</Link></li>
-                    <li><Link href="/fact-check" className="hover:text-primary">Verificação de Factos</Link></li>
+                    <li><Link href="/methodology" className="hover:text-primary">{t('nav.methodology')}</Link></li>
                   </ul>
                 </div>
                 <div className="space-y-4">

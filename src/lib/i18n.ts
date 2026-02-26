@@ -11,7 +11,8 @@ export const translations = {
       home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
-      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', about: 'Quem Somos', faq: 'FAQ'
+      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', about: 'Quem Somos', faq: 'FAQ',
+      methodology: 'Metodologia e Ciência'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -20,12 +21,23 @@ export const translations = {
       portuguese: 'Português', english: 'Inglês', language: 'Idioma', warning: 'Aviso', close: 'Fechar', accept: 'Aceitar',
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
       supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...',
-      confirm_delete: 'Tem a certeza que deseja apagar?'
+      confirm_delete: 'Tem a certeza que deseja apagar?', learnMore: 'Saber Mais'
     },
-    dashboard: {
-      savedTitle: 'Vistas Guardadas',
-      viewName: 'Nome da Vista',
-      viewDescription: 'Descrição da Vista'
+    methodology: {
+      title: 'Metodologia e Fundamentação Técnica',
+      subtitle: 'Como a Demokratia processa dados e simula a realidade portuguesa.',
+      intro: 'A nossa plataforma não é um oráculo, mas sim um motor de cálculo baseado em teorias económicas clássicas e processamento de linguagem natural avançado.',
+      modelsTitle: 'Modelos Económicos Utilizados',
+      okunTitle: 'Lei de Okun',
+      okunDesc: 'Utilizamos a correlação empírica entre o crescimento do PIB e a variação da taxa de desemprego. No nosso motor, estimamos que cada ponto percentual de crescimento acima do potencial reduz o desemprego em aproximadamente 0.35%.',
+      phillipsTitle: 'Curva de Phillips Adaptada',
+      phillipsDesc: 'A relação entre a atividade económica e a inflação é modelada considerando as pressões do mercado de trabalho e o custo das importações (energia/matérias-primas).',
+      multiplierTitle: 'Multiplicadores Orçamentais',
+      multiplierDesc: 'As simulações de investimento público em Educação e Infraestruturas aplicam coeficientes de retorno ao PIB a longo prazo, inspirados nos modelos do Conselho de Finanças Públicas.',
+      aiTitle: 'Inteligência Artificial e Contexto 2026',
+      aiDesc: 'A nossa IA (Genkit/Gemini) é alimentada com o Orçamento de Estado 2026 e a legislação consolidada. O sistema utiliza uma técnica chamada RAG (Retrieval-Augmented Generation) para garantir que as respostas não são alucinações, mas sim baseadas em parágrafos reais das leis portuguesas.',
+      videoTitle: 'Recursos Educativos',
+      linksTitle: 'Fontes de Referência para Estudo'
     },
     about: {
       title: 'Sobre a Demokratia',
@@ -256,7 +268,8 @@ export const translations = {
       home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
-      scenarios: 'Macro Lab', budget: 'Wallet Simulator', about: 'About Us', faq: 'FAQ'
+      scenarios: 'Macro Lab', budget: 'Wallet Simulator', about: 'About Us', faq: 'FAQ',
+      methodology: 'Methodology & Science'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -265,7 +278,23 @@ export const translations = {
       portuguese: 'Portuguese', english: 'English', language: 'Language', warning: 'Warning', close: 'Close', accept: 'Accept',
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
       supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...',
-      confirm_delete: 'Are you sure you want to delete?'
+      confirm_delete: 'Are you sure you want to delete?', learnMore: 'Learn More'
+    },
+    methodology: {
+      title: 'Methodology & Technical Foundation',
+      subtitle: 'How Demokratia processes data and simulates the Portuguese reality.',
+      intro: 'Our platform is not an oracle, but a calculation engine based on classic economic theories and advanced natural language processing.',
+      modelsTitle: 'Economic Models Used',
+      okunTitle: 'Okun\'s Law',
+      okunDesc: 'We use the empirical correlation between GDP growth and changes in the unemployment rate. In our engine, we estimate that each percentage point of growth above potential reduces unemployment by approximately 0.35%.',
+      phillipsTitle: 'Adapted Phillips Curve',
+      phillipsDesc: 'The relationship between economic activity and inflation is modeled considering labor market pressures and import costs (energy/raw materials).',
+      multiplierTitle: 'Budget Multipliers',
+      multiplierDesc: 'Public investment simulations in Education and Infrastructure apply return coefficients to GDP in the long term, inspired by models from the Portuguese Public Finance Council.',
+      aiTitle: 'Artificial Intelligence & 2026 Context',
+      aiDesc: 'Our AI (Genkit/Gemini) is fed with the 2026 State Budget and consolidated legislation. The system uses a technique called RAG (Retrieval-Augmented Generation) to ensure that answers are not hallucinations, but based on actual paragraphs of Portuguese laws.',
+      videoTitle: 'Educational Resources',
+      linksTitle: 'Reference Sources for Study'
     },
     dashboard: {
       savedTitle: 'Saved Views',

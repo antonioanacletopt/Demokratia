@@ -5,9 +5,12 @@ import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, Target, Users, BookOpen, Fingerprint } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
   const { t } = useTranslation();
+  const transparencyImg = PlaceHolderImages.find(img => img.id === 'transparency-concept');
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 py-8">
@@ -34,6 +37,18 @@ export default function AboutPage() {
             </p>
           </section>
 
+          {transparencyImg && (
+            <div className="relative h-[200px] w-full rounded-2xl overflow-hidden border shadow-inner">
+              <Image 
+                src={transparencyImg.imageUrl} 
+                alt={transparencyImg.description} 
+                fill 
+                className="object-cover"
+                data-ai-hint={transparencyImg.imageHint}
+              />
+            </div>
+          )}
+
           <Card className="bg-primary/5 border-primary/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -54,21 +69,21 @@ export default function AboutPage() {
           </h2>
           
           <div className="space-y-4">
-            <div className="p-4 border rounded-xl bg-card">
+            <div className="p-4 border rounded-xl bg-card hover:shadow-md transition-shadow">
               <h3 className="font-bold text-primary flex items-center gap-2">
                 <BookOpen className="h-4 w-4" /> {t('about.neutrality')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">{t('about.neutralityDesc')}</p>
             </div>
             
-            <div className="p-4 border rounded-xl bg-card">
+            <div className="p-4 border rounded-xl bg-card hover:shadow-md transition-shadow">
               <h3 className="font-bold text-primary flex items-center gap-2">
                 <Fingerprint className="h-4 w-4" /> {t('about.transparency')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">{t('about.transparencyDesc')}</p>
             </div>
             
-            <div className="p-4 border rounded-xl bg-card">
+            <div className="p-4 border rounded-xl bg-card hover:shadow-md transition-shadow">
               <h3 className="font-bold text-primary flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" /> {t('about.innovation')}
               </h3>
@@ -78,7 +93,7 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <section className="bg-muted/30 p-8 rounded-3xl border text-center space-y-4">
+      <section className="bg-muted/30 p-8 rounded-3xl border text-center space-y-4 shadow-sm">
         <h2 className="text-2xl font-bold">Compromisso com o Futuro</h2>
         <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           Portugal enfrenta desafios complexos em 2026. A habitação, a demografia e a competitividade fiscal são temas que requerem dados, não ideologias. A Demokratia fornece a bússola para que cada cidadão possa navegar na atualidade política com independência crítica.

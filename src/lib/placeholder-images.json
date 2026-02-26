@@ -1,10 +1,22 @@
 {
   "placeholderImages": [
     {
-      "id": "user-avatar",
-      "description": "User avatar",
-      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzA5MzM1ODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
+      "id": "hero-portugal",
+      "description": "Vista aérea de Lisboa e do Tejo",
+      "imageUrl": "https://images.unsplash.com/photo-1527768487232-249051d95e86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsaXNib24lMjBjaXR5fGVufDB8fHx8MTc3MDkzMzU4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lisbon city"
+    },
+    {
+      "id": "data-viz",
+      "description": "Conceito de visualização de dados e estatística",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bbbda536339a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcwOTMzNTg1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "data analysis"
+    },
+    {
+      "id": "transparency-concept",
+      "description": "Conceito de transparência e democracia digital",
+      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjeWJlcnNlY3VyaXR5fGVufDB8fHx8MTc3MDkzMzU4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital security"
     }
   ]
 }

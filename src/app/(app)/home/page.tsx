@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -21,6 +22,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 import { AIResultButton } from '@/components/AIResultButton';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -144,6 +146,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const heroImg = PlaceHolderImages.find(img => img.id === 'hero-portugal');
+
   useEffect(() => {
     async function loadFeed() {
       try {
@@ -178,8 +182,22 @@ export default function HomePage() {
   return (
     <div className="space-y-12">
       {/* Intro Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-12 text-primary-foreground sm:px-12 sm:py-16 shadow-2xl">
-        <div className="relative z-10 max-w-3xl space-y-6">
+      <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-2xl">
+        <div className="absolute inset-0 z-0">
+          {heroImg && (
+            <Image 
+              src={heroImg.imageUrl} 
+              alt={heroImg.description} 
+              fill 
+              className="object-cover opacity-30 mix-blend-overlay" 
+              priority
+              data-ai-hint={heroImg.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
+        </div>
+        
+        <div className="relative z-10 max-w-3xl space-y-6 px-6 py-12 sm:px-12 sm:py-16">
           <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1 text-sm font-semibold uppercase tracking-wider">
             <Sparkles className="mr-2 h-4 w-4 fill-white animate-pulse" /> {t('home.welcomeSubtitle')}
           </Badge>
@@ -194,12 +212,10 @@ export default function HomePage() {
               <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> Explorar Dados</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
-              <Link href="/about"><BookOpen className="mr-2 h-5 w-5" /> {t('nav.about')}</Link>
+              <Link href="/methodology"><BookOpen className="mr-2 h-5 w-5" /> {t('nav.methodology')}</Link>
             </Button>
           </div>
         </div>
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-accent/20 blur-[100px]" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/30 blur-[80px]" />
       </section>
 
       {/* Methodology Section (High Value Content for AdSense) */}
@@ -209,16 +225,16 @@ export default function HomePage() {
           <p className="text-muted-foreground leading-relaxed">
             {t('home.methodologyDesc')}
           </p>
-          <div className="flex flex-wrap gap-6 pt-2">
+          <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Check className="text-green-500 h-5 w-5" /> 100% Fontes Oficiais
             </div>
             <div className="flex items-center gap-2 text-sm font-medium">
               <Check className="text-green-500 h-5 w-5" /> Neutralidade Partidária
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Check className="text-green-500 h-5 w-5" /> Foco na Realidade 2026
-            </div>
+            <Button asChild variant="link" className="text-accent p-0 h-auto font-bold">
+              <Link href="/methodology">{t('common.learnMore')} <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
           </div>
         </div>
         <div className="flex flex-col gap-4 justify-center">
@@ -241,42 +257,24 @@ export default function HomePage() {
 
       {/* Quick Access Tools */}
       <div className="grid gap-6 md:grid-cols-4">
-        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
-          <Link href="/budget">
-            <CardHeader className="p-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><TrendingUp className="h-6 w-6 text-primary" /></div>
-              <CardTitle className="text-base">{t('nav.budget')}</CardTitle>
-              <CardDescription className="text-xs line-clamp-2">Impacto no seu bolso.</CardDescription>
-            </CardHeader>
-          </Link>
-        </Card>
-        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
-          <Link href="/scenarios">
-            <CardHeader className="p-4">
-              <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><Lightbulb className="h-6 w-6 text-accent" /></div>
-              <CardTitle className="text-base">{t('nav.scenarios')}</CardTitle>
-              <CardDescription className="text-xs line-clamp-2">Teste políticas nacionais.</CardDescription>
-            </CardHeader>
-          </Link>
-        </Card>
-        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
-          <Link href="/fact-check">
-            <CardHeader className="p-4">
-              <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><ShieldCheck className="h-6 w-6 text-green-600" /></div>
-              <CardTitle className="text-base">{t('nav.factCheck')}</CardTitle>
-              <CardDescription className="text-xs line-clamp-2">Verifique a verdade.</CardDescription>
-            </CardHeader>
-          </Link>
-        </Card>
-        <Card className="bg-muted/20 border-none hover:bg-muted/30 transition-colors group">
-          <Link href="/legislation">
-            <CardHeader className="p-4">
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform"><Scale className="h-6 w-6 text-blue-600" /></div>
-              <CardTitle className="text-base">{t('nav.legislation')}</CardTitle>
-              <CardDescription className="text-xs line-clamp-2">Descomplique a lei.</CardDescription>
-            </CardHeader>
-          </Link>
-        </Card>
+        {[
+          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Impacto no seu bolso.', color: 'primary' },
+          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas nacionais.', color: 'accent' },
+          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verifique a verdade.', color: 'green-600' },
+          { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
+        ].map((tool) => (
+          <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
+            <Link href={tool.href}>
+              <CardHeader className="p-4">
+                <div className={`h-10 w-10 rounded-xl bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-inner`}>
+                  <tool.icon className={`h-6 w-6 text-${tool.color}`} />
+                </div>
+                <CardTitle className="text-base">{tool.label}</CardTitle>
+                <CardDescription className="text-xs line-clamp-2">{tool.desc}</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+        ))}
       </div>
 
       <AdBanner />
