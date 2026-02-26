@@ -3,13 +3,13 @@
     {
       "id": "hero-portugal",
       "description": "Vista panorâmica de Portugal",
-      "imageUrl": "https://images.unsplash.com/photo-1635611120089-032d40569f1a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwb3J0dWdhbCUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1645637799099-e6827af49f05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cG9ydHVnYWwlMjBsYW5kc2NhcGV8ZW58MHx8fHwxNzcyMTA1NjE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "portugal landscape"
     },
     {
       "id": "data-viz",
       "description": "Visualização de dados estatísticos",
-      "imageUrl": "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcyMDYyMjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcyMDYyMjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "data analysis"
     },
     {
@@ -21,7 +21,7 @@
     {
       "id": "porto-ribera",
       "description": "Porto e o Rio Douro",
-      "imageUrl": "https://images.unsplash.com/photo-1686914257671-0e1464f1a3f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwb3J0byUyMGNpdHl8ZW58MHx8fHwxNzcyMTA1NjE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1732192548772-edf8ce6a4712?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwb3J0byUyMGNpdHl8ZW58MHx8fHwxNzcyMTA1NjE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "porto city"
     },
     {
@@ -33,7 +33,7 @@
     {
       "id": "algarve-coast",
       "description": "Costa do Algarve",
-      "imageUrl": "https://images.unsplash.com/photo-1652092521226-3e03a716ae86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1664640214813-fcfe3a0c6653?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "algarve coast"
     }
   ]
