@@ -3,6 +3,8 @@
 
 import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { BookOpen, LineChart, Cpu, GraduationCap, ExternalLink, Youtube, Info, ShieldCheck, Globe, Database, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
