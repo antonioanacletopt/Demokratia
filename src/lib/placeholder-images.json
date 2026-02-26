@@ -3,43 +3,43 @@
     {
       "id": "hero-portugal",
       "description": "Vista aérea de Lisboa e do Tejo",
-      "imageUrl": "https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1722957864268-71a75fe82fde?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxsaXNib24lMjBjaXR5fGVufDB8fHx8MTc3MjEwNDg1OHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "lisbon city"
     },
     {
       "id": "data-viz",
       "description": "Conceito de visualização de dados e estatística",
-      "imageUrl": "https://images.unsplash.com/photo-1551288049-bbbda536339a?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1591696205602-2f950c417cb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGF0YSUyMGFuYWx5c2lzfGVufDB8fHx8MTc3MjA2MjIzOHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "data analysis"
     },
     {
       "id": "transparency-concept",
       "description": "Conceito de transparência e democracia digital",
-      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcyMDkwNDE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "digital security"
     },
     {
       "id": "porto-ribera",
       "description": "Ribeira do Porto e Ponte D. Luís I",
-      "imageUrl": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1503910027356-1d2980e2ffef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwb3J0byUyMHBvcnR1Z2FsfGVufDB8fHx8MTc3MjEwNDg1N3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "porto portugal"
     },
     {
       "id": "algarve-coast",
       "description": "Falésias e mar do Algarve",
-      "imageUrl": "https://images.unsplash.com/photo-1534258918080-909691298020?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1664640222746-ebbf58b9e0a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "algarve coast"
     },
     {
       "id": "alentejo-landscape",
       "description": "Paisagem típica do Alentejo com sobreiros",
-      "imageUrl": "https://images.unsplash.com/photo-1561571592-082906ec3030?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1726304043500-0216d8bb33c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhbGVudGVqbyUyMHBvcnR1Z2FsfGVufDB8fHx8MTc3MjEwNDg1N3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "alentejo portugal"
     },
     {
       "id": "portugal-atlas",
       "description": "Conceito de cartografia e dados regionais",
-      "imageUrl": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1713862032476-f75077d3221c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYXAlMjBjb25jZXB0fGVufDB8fHx8MTc3MjEwNDg1OHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "map concept"
     }
   ]

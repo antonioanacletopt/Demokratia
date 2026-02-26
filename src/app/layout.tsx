@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     siteName: 'Demokratia Portugal',
     images: [
       {
-        url: 'https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1200',
+        url: 'https://picsum.photos/seed/demokratia-og/1200/630',
         width: 1200,
         height: 630,
-        alt: 'Vista sobre os telhados de Lisboa, Portugal',
+        alt: 'Demokratia Portugal - Transparência de Dados',
       },
     ],
     locale: 'pt_PT',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: title,
     description: description,
-    images: ['https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1200'],
+    images: ['https://picsum.photos/seed/demokratia-og/1200/630'],
   },
   robots: {
     index: true,
