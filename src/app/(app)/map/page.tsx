@@ -47,8 +47,10 @@ export default function AtlasPage() {
     const min = Math.min(...values);
     const max = Math.max(...values);
     const ratio = (value - min) / (max - min);
-    const intensity = Math.round(ratio * 100);
-    return `hsl(var(--primary) / ${20 + intensity * 0.8}%)`;
+    // Inverter para pobreza (mais alto = cor mais "alerta")
+    const displayRatio = key === 'poverty' ? ratio : ratio;
+    const intensity = Math.round(displayRatio * 80);
+    return `hsl(var(--primary) / ${20 + intensity}%)`;
   };
 
   return (
@@ -72,24 +74,26 @@ export default function AtlasPage() {
             </CardHeader>
             <CardContent className="grid gap-2">
               {indicators.map((ind) => (
-                <Button
+                <button
                   key={ind.id}
-                  variant={selectedIndicator === ind.id ? "default" : "outline"}
                   className={cn(
-                    "justify-start gap-3 h-12 transition-all",
-                    selectedIndicator === ind.id ? "shadow-md scale-[1.02]" : "hover:bg-primary/5"
+                    "flex items-center gap-3 w-full px-4 py-3 rounded-xl border transition-all text-sm font-medium text-left",
+                    selectedIndicator === ind.id 
+                      ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.02]" 
+                      : "bg-card hover:bg-muted/50 border-border"
                   )}
                   onClick={() => setSelectedIndicator(ind.id as IndicatorKey)}
                 >
                   <ind.icon className={cn("h-4 w-4", selectedIndicator === ind.id ? "text-white" : "text-primary")} />
                   {ind.label}
-                </Button>
+                </button>
               ))}
             </CardContent>
           </Card>
 
           {hoveredRegion ? (
-            <Card className="border-primary bg-primary/5 animate-in fade-in slide-in-from-left-2 shadow-lg">
+            <Card className="border-primary bg-primary/5 animate-in fade-in slide-in-from-left-2 shadow-lg overflow-hidden">
+              <div className="h-1 bg-primary w-full" />
               <CardHeader className="pb-2">
                 <CardDescription className="text-[10px] uppercase font-bold text-primary tracking-widest">{t('map.region')}</CardDescription>
                 <CardTitle className="text-2xl">{hoveredRegion.name}</CardTitle>
@@ -109,7 +113,7 @@ export default function AtlasPage() {
           ) : (
             <Card className="border-dashed flex flex-col items-center justify-center p-12 text-center text-muted-foreground italic bg-muted/5">
               <MapIcon className="h-8 w-8 mb-3 opacity-20" />
-              <p className="text-sm">Passe o rato sobre o mapa para ver detalhes regionais.</p>
+              <p className="text-sm">Passe o rato (ou clique) no mapa para ver detalhes regionais.</p>
             </Card>
           )}
 
@@ -117,7 +121,7 @@ export default function AtlasPage() {
             <CardContent className="pt-6">
               <h4 className="text-[10px] uppercase font-bold text-muted-foreground mb-4 tracking-widest">{t('map.legend')}</h4>
               <div className="h-3 w-full rounded-full bg-gradient-to-r from-primary/10 via-primary/50 to-primary mb-2 shadow-inner" />
-              <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+              <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
                 <span>{t('map.low')}</span>
                 <span>{t('map.high')}</span>
               </div>
@@ -125,91 +129,84 @@ export default function AtlasPage() {
           </Card>
         </div>
 
-        <div className="lg:col-span-2 flex flex-col items-center justify-center bg-card rounded-3xl border shadow-xl p-8 min-h-[700px] relative overflow-hidden bg-gradient-to-br from-white to-muted/20">
-          <div className="absolute top-6 right-6">
-            <Badge variant="outline" className="bg-white/80 backdrop-blur border-primary/20 gap-2 py-1.5 px-3 shadow-sm">
+        <div className="lg:col-span-2 flex flex-col items-center justify-center bg-card rounded-3xl border shadow-xl p-8 min-h-[750px] relative overflow-hidden bg-gradient-to-br from-white to-muted/30">
+          <div className="absolute top-6 right-6 z-10">
+            <Badge variant="outline" className="bg-white/90 backdrop-blur border-primary/20 gap-2 py-1.5 px-3 shadow-sm">
               <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Previsão Março 2026</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Realidade Março 2026</span>
             </Badge>
           </div>
           
-          <svg viewBox="0 0 450 850" className="w-full h-full max-w-[450px] drop-shadow-2xl">
+          <svg viewBox="0 0 400 800" className="w-full h-full max-w-[450px] drop-shadow-2xl">
             {/* NORTE */}
             <path
-              d="M280,40 L380,40 L410,100 L420,180 L350,220 L300,240 L250,220 L230,120 L240,60 Z"
+              d="M150,50 L280,60 L295,150 L270,220 L200,240 L140,220 L125,120 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[0][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[0])}
+              onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[0])}
             />
             {/* CENTRO */}
             <path
-              d="M250,220 L300,240 L350,220 L420,180 L430,350 L380,420 L280,440 L230,420 L210,320 L220,250 Z"
+              d="M140,220 L200,240 L270,220 L300,320 L280,420 L200,440 L130,420 L115,320 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[1][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[1])}
+              onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[1])}
             />
             {/* LISBOA (AML) */}
             <path
-              d="M210,320 L230,420 L260,470 L200,500 L180,440 L170,370 Z"
+              d="M130,420 L200,440 L210,490 L150,510 L110,470 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[2][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[2])}
+              onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[2])}
             />
             {/* ALENTEJO */}
             <path
-              d="M230,420 L280,440 L380,420 L410,570 L390,670 L260,700 L200,500 L260,470 Z"
+              d="M130,420 L200,440 L280,420 L310,570 L290,670 L170,700 L150,510 L210,490 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[3][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[3])}
+              onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[3])}
             />
             {/* ALGARVE */}
             <path
-              d="M260,700 L390,670 L400,770 L260,770 Z"
+              d="M170,700 L290,670 L300,760 L170,760 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[4][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
               className="transition-all duration-300 cursor-pointer hover:stroke-accent hover:stroke-[4] hover:brightness-110"
               onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[4])}
+              onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[4])}
             />
             
-            {/* AÇORES - Inset Retângulo */}
-            <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[5])}>
-              <rect x="20" y="450" width="120" height="80" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
-              <path 
-                d="M40,480 L60,480 L70,490 L50,500 Z M90,490 L110,490 L120,500 L100,510 Z" 
-                fill={getRegionColor(PORTUGAL_DATA_2026[5][selectedIndicator], selectedIndicator)} 
-                stroke="white" 
-                strokeWidth="1" 
-                className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[2]" 
-              />
-              <text x="80" y="520" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Açores</text>
+            {/* AÇORES - Inset Lateral */}
+            <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[5])} onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[5])}>
+              <rect x="20" y="450" width="80" height="60" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <circle cx="60" cy="480" r="15" fill={getRegionColor(PORTUGAL_DATA_2026[5][selectedIndicator], selectedIndicator)} stroke="white" strokeWidth="2" className="transition-all group-hover:stroke-accent" />
+              <text x="60" y="525" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Açores</text>
             </g>
 
-            {/* MADEIRA - Inset Retângulo */}
-            <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[6])}>
-              <rect x="20" y="550" width="120" height="80" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
-              <path 
-                d="M60,580 L90,580 L100,595 L70,605 Z" 
-                fill={getRegionColor(PORTUGAL_DATA_2026[6][selectedIndicator], selectedIndicator)} 
-                stroke="white" 
-                strokeWidth="1" 
-                className="transition-all duration-300 group-hover:stroke-accent group-hover:stroke-[2]" 
-              />
-              <text x="80" y="620" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Madeira</text>
+            {/* MADEIRA - Inset Lateral */}
+            <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[6])} onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[6])}>
+              <rect x="20" y="550" width="80" height="60" rx="8" fill="white" fillOpacity="0.5" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <circle cx="60" cy="580" r="15" fill={getRegionColor(PORTUGAL_DATA_2026[6][selectedIndicator], selectedIndicator)} stroke="white" strokeWidth="2" className="transition-all group-hover:stroke-accent" />
+              <text x="60" y="625" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Madeira</text>
             </g>
           </svg>
           
           <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground bg-white/50 px-4 py-2 rounded-full border border-primary/5 shadow-inner">
             <Info className="h-3.5 w-3.5 text-primary" />
-            Passe o rato nas regiões para comparar a realidade de 2026.
+            Interaja com as regiões para comparar a realidade socioeconómica de 2026.
           </div>
         </div>
       </div>
