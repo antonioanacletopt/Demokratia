@@ -51,15 +51,12 @@ export default function MapPage() {
   const getDistrictColor = (id: string) => {
     const data = DISTRICT_DATA_2026.find(d => d.id === id);
     if (!data) return 'hsl(var(--primary))';
-    
     const values = DISTRICT_DATA_2026.map(d => d[activeIndicator]);
     const min = Math.min(...values);
     const max = Math.max(...values);
     const current = data[activeIndicator];
-    
     const ratio = (max === min) ? 0.5 : (current - min) / (max - min);
-    const opacity = 0.3 + (ratio * 0.7);
-    
+    const opacity = 0.4 + (ratio * 0.6);
     return `hsl(var(--primary) / ${opacity})`;
   };
 
@@ -81,9 +78,9 @@ export default function MapPage() {
                   <Target className="h-5 w-5 text-accent" />
                   {t(`map.${activeIndicator}`)}
                 </CardTitle>
-                <CardDescription>Mapa Administrativo Detalhado 2026.</CardDescription>
+                <CardDescription>Mapa Administrativo Organizado 2026.</CardDescription>
               </div>
-              <Badge variant="outline" className="bg-background/50">SVG V2.0</Badge>
+              <Badge variant="outline" className="bg-background/50">PRO V2.0</Badge>
             </CardHeader>
             <CardContent className="p-4 flex justify-center items-center min-h-[700px] relative">
               <svg 
@@ -91,69 +88,58 @@ export default function MapPage() {
                 className="w-full h-full transition-all duration-500 ease-in-out"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* O novo mapa utiliza centenas de caminhos para os municípios e distritos */}
-                {/* Aqui renderizamos os pontos de controle (PTXX) como gatilhos interativos para seleção de distrito */}
+                {/* Camada de Polígonos (Apenas Contornos e Fills Básicos) */}
+                <g id="layer1" className="fill-muted/20 stroke-muted-foreground/30 stroke-[0.5]">
+                  <path d="m 88.671,1070.457 1.655,-0.828 0.509,0.255 1.145,-1.145 1.273,-2.164 -0.573,-1.464 0.955,-3.309 1.145,-0.954 0.51,-0.89 1.336,-0.128 -0.828,-0.827 0.128,-1.146 -0.955,-0.763 1.273,-0.446 0.19,-0.509 -0.827,-0.445 0.064,-1.337 -1.336,0.191 h -0.7 l -0.382,-1.082 -0.89,0.319 -0.892,0.827 -0.89,0.445 -0.955,-0.954 0.063,-0.764 H 89.18 l -1.081,0.7 -0.191,1.018 -0.891,0.7 h -1.91 l -0.763,1.273 -0.19,0.89 -1.083,-0.127 -0.509,0.319 c 0,0 0.128,1.527 0.064,1.781 -0.064,0.255 -1.082,2.546 -1.082,2.546 l -1.463,1.4 -1.273,2.863 -0.455,2.747 0.645,0.018 v 0.097 c 0.127,0.021 0.232,0.078 0.353,0.118 0.097,0.04 0.203,0.064 0.3,0.092 0.155,0.064 0.302,0.15 0.457,0.197 0.225,0.07 0.473,0.073 0.701,0.133 0.09,0.03 0.144,0.072 0.254,0.072 l 0.024,0.102 a 0.892,0.892 0 0 0 0.18,0.12 l 0.024,0.024 c 0.023,0.03 0.033,0.07 0.054,0.102 0.068,0.066 0.136,0.131 0.205,0.195 l 0.028,0.151 0.151,0.021 0.076,0.074 0.024,0.152 c 0.201,0.025 0.219,0.074 0.279,0.247 l 0.025,0.024 c 0.062,0.06 0.081,0.097 0.128,0.17 0.009,0.022 0.052,0.04 0.075,0.05 l 0.022,-0.102 c 0.075,-0.127 0.59,-0.085 0.726,-0.066 v 0.102 c 0.164,0 0.339,0.08 0.504,0.115 l 0.025,0.024 0.026,0.102 0.032,0.02 0.017,0.027 h 0.05 v -0.049 l -0.033,-0.019 -0.017,-0.035 h 0.102 l 0.024,0.102 c 0.008,0 0.078,0.072 0.078,0.072 0.183,0.057 0.295,0.116 0.502,0.116 v 0.097 c 0.081,0.015 0.169,0.025 0.249,0.049 v 0.1 c 0.165,-0.013 0.384,-0.056 0.55,-0.034 0.168,0.024 0.249,0.112 0.487,0.13 l 0.019,0.03 0.15,0.025 c 0.066,0.058 0.115,0.068 0.204,0.092 0.002,0 0.152,0.151 0.152,0.151 0.122,0.04 0.213,0.062 0.303,0.145 0.212,0 0.449,-0.039 0.652,0.037 l 0.365,0.22 z" />
+                  <path d="m 129.7,1062.824 -3.408,-3.098 -3.873,-0.774 -2.168,-1.704 h -1.24 l -2.478,2.323 -1.394,0.155 -1.59,0.86 -1.042,0.824 -1.24,1.259 0.525,0.731 0.577,0.62 1.995,0.355 0.843,1.375 -0.222,2.35 1.153,2.75 1.773,0.443 0.045,1.197 -0.931,0.399 -0.266,0.399 1.108,0.754 -0.226,3.337 0.575,-0.24 c 0.074,0 0.163,-0.013 0.237,0 0.13,0.015 0.263,0.064 0.4,0.043 l 0.049,-0.055 c 0.173,0 0.345,-0.077 0.497,-0.158 0.042,-0.02 0.105,-0.063 0.149,-0.078 0.145,-0.045 0.332,-0.014 0.476,0.015 0.096,0.012 0.29,-0.043 0.341,0.066 l -0.011,-0.041 h 0.045 l 0.022,0.024 0.011,-0.045 a 0.349,0.349 0 0 1 0.168,0.092 h 0.052 l 0.024,-0.024 0.022,-0.204 c 0.06,0.012 0.14,0.037 0.2,0.024 l -0.026,-0.086 c 0.035,0 0.07,0 0.103,0.013 l 0.048,-0.201 c 0.008,-0.021 0.055,-0.043 0.077,-0.055 l 0.04,-0.15 c 0.08,-0.043 0.174,-0.08 0.25,-0.128 0.035,-0.026 0.071,-0.064 0.107,-0.088 0.097,-0.06 0.22,-0.02 0.314,-0.072 l 0.014,-0.092 -0.087,-0.054 c 0.004,-0.058 0.032,-0.166 0.073,-0.206 l 0.057,0.062 0.072,0.013 0.025,-0.026 -0.021,-0.023 -0.013,0.037 -0.055,-0.013 -0.052,-0.066 0.041,-0.031 0.066,0.055 a 0.677,0.677 0 0 1 -0.068,-0.1 l 0.017,-0.034 h 0.058 l 0.012,-0.024 c -0.025,-0.015 -0.064,-0.026 -0.088,-0.047 l 0.133,-0.028 0.078,0.084 0.06,-0.028 -0.03,-0.1 -0.06,-0.046 c 0.035,-0.133 0.402,-0.37 0.526,-0.299 a 0.123,0.123 0 0 1 0.062,-0.019 l 0.049,0.066 c 0.061,0 0.12,0.051 0.182,0.051 -0.015,-0.024 -0.056,-0.094 -0.044,-0.124 0.07,-0.02 0.146,-0.029 0.21,-0.055 0.04,-0.015 0.074,-0.045 0.115,-0.058 h 0.07 l 0.054,-0.043 h 0.03 l 0.1,-0.107 0.066,0.013 0.037,-0.049 c -0.02,-0.023 -0.072,-0.07 -0.103,-0.07 l 0.132,-0.03 -0.013,-0.11 0.079,-0.11 0.072,0.017 0.013,-0.024 -0.055,-0.055 -0.013,-0.07 0.15,-0.037 -0.042,-0.043 v -0.066 c 0.023,-0.027 0.283,-0.201 0.304,-0.201 l 0.028,-0.073 h 0.025 l 0.037,0.039 0.02,-0.04 v -0.027 c 0.123,-0.126 0.237,-0.26 0.34,-0.403 0.036,-0.058 0.073,-0.167 0.055,-0.235 l 0.022,-0.024 c 0.04,0 0.089,0.023 0.128,0.01 v -0.05 h -0.229 c 0.015,-0.144 0.03,-0.225 0.141,-0.325 0.15,-0.036 0.216,-0.058 0.321,-0.158 l 0.016,-0.111 0.26,0.133 c 0.06,-0.043 0.05,-0.138 0.05,-0.197 0.033,-0.024 0.1,-0.086 0.112,-0.124 l -0.04,-0.013 a 1.588,1.588 0 0 1 0,-0.169 c -0.044,-0.055 -0.065,-0.117 -0.03,-0.178 l 0.03,-0.015 c 0.043,-0.06 0.126,-0.188 0.138,-0.26 l -0.036,-0.046 0.019,-0.045 -0.071,-0.06 0.052,-0.02 -0.066,-0.11 c 0.03,-0.068 -0.015,-0.135 -0.015,-0.203 0,-0.126 0.093,-0.188 0.104,-0.308 l 0.044,-0.023 -0.027,-0.047 0.011,-0.129 h 0.043 v -0.03 l 0.024,-0.024 -0.025,-0.034 0.04,-0.073 c -0.035,-0.074 0.052,-0.19 0.097,-0.249 v -0.049 c 0.065,-0.072 0.15,-0.094 0.224,-0.154 0.128,-0.105 0.316,-0.593 0.34,-0.744 l 0.06,-0.024 0.022,-0.023 -0.05,-0.051 0.026,-0.043 c 0.111,-0.02 0.162,-0.16 0.294,-0.215 l 0.023,-0.04 -0.058,-0.05 c 0.015,-0.03 0.023,-0.068 0.04,-0.104 l 0.018,0.019 a 0.27,0.27 0 0 0 0.117,-0.116 c -0.02,-0.012 -0.043,-0.024 -0.054,-0.043 l -0.025,-0.012 a 0.593,0.593 0 0 1 0.05,-0.068 l 0.075,0.026 -0.024,-0.031 0.067,-0.124 -0.035,-0.041 a 0.762,0.762 0 0 1 0.157,-0.178 0.101,0.101 0 0 0 0.066,-0.028 c 0.024,-0.03 0.033,-0.064 0.063,-0.09 0.098,-0.09 0.366,-0.333 0.466,-0.37 0.037,-0.022 0.158,-0.022 0.202,-0.022 0.058,-0.074 0.23,-0.05 0.313,-0.05 0.038,0.012 0.068,-0.026 0.11,-0.016 0.023,0.035 0.111,0.065 0.142,0.081 l 0.106,-0.023 0.011,0.035 -0.073,0.057 c 0.102,-0.03 0.281,-0.082 0.306,-0.194 0.026,-0.04 0.19,-0.062 0.283,-0.161 0.098,-0.02 0.208,-0.03 0.303,-0.055 0.062,-0.017 0.074,-0.056 0.145,-0.056 h 0.305 c 0.081,-0.086 0.454,-0.273 0.546,-0.185 0.02,-0.14 0.045,-0.273 0.072,-0.406 0.079,-0.094 0.105,-0.184 0.142,-0.308 0.005,0 0.053,-0.039 0.053,-0.049 l 0.045,-0.151 c 0.002,-0.011 0.05,-0.05 0.05,-0.05 l 0.045,-0.203 0.052,-0.052 c 0.031,-0.17 0.073,-0.34 0.061,-0.513 0.028,-0.053 1.025,-1.081 1.21,-1.266 0.068,-0.075 0.176,-0.102 0.219,-0.202 0.05,-0.12 -0.053,-0.472 0.011,-0.558 l -0.086,-0.398 z" />
+                </g>
+
+                <g id="layer2" className="fill-none stroke-muted-foreground/50 stroke-[1]">
+                  <path d="m 592.663,795.373 -0.375,0.024 -0.479,-0.883 -1.204,-3.38 -0.666,-0.144 -0.854,-1.53 0.081,-0.92 0.461,-0.173 0.683,0.39 2.523,5.64 z" />
+                  <path d="m 576.715,799.194 -1.616,-1.715 0.524,-1.285 1.194,0.976 0.281,0.745 z" />
+                  <path d="m 595.57,809.113 -0.979,0.063 -1.677,-1.232 -0.03,-0.477 2.722,0.727 0.215,0.419 z" />
+                </g>
+
+                <g id="layer3" className="fill-none stroke-foreground/40 stroke-[1.5]">
+                  <rect id="frame_azores" x="20" y="18" width="342" height="509" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" strokeDasharray="4 4" />
+                  <rect id="frame_madeira" x="20" y="912" width="237" height="236" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" strokeDasharray="4 4" />
+                  <path d="M 360.752,252.117 H 17.386" stroke="currentColor" strokeOpacity="0.2" />
+                  <path d="m 132.606,251.85 v 158.734 l -116.94,-0.15" stroke="currentColor" strokeOpacity="0.2" />
+                </g>
+
+                {/* Pontos de Interatividade e Calor */}
                 <g id="label_points">
                   {DISTRICT_DATA_2026.map((dist) => {
-                    // Coordenadas aproximadas baseadas no label_points do SVG original
                     const coords: Record<string, {cx: number, cy: number}> = {
-                      "PT07": {cx: 899.9, cy: 197.6},
-                      "PT12": {cx: 902.5, cy: 164.7},
-                      "PT16": {cx: 871, cy: 39.5},
-                      "PT05": {cx: 909, cy: 131.9},
-                      "PT09": {cx: 920.7, cy: 98.2},
-                      "PT04": {cx: 930.2, cy: 57.5},
-                      "PT17": {cx: 905, cy: 56.3},
-                      "PT03": {cx: 876.8, cy: 55.7},
-                      "PT08": {cx: 894.4, cy: 259.8},
-                      "PT02": {cx: 893.7, cy: 231},
-                      "PT15": {cx: 869, cy: 213.9},
-                      "PT11": {cx: 845.5, cy: 177.2},
-                      "PT14": {cx: 870.7, cy: 162.4},
-                      "PT10": {cx: 859, cy: 143.9},
-                      "PT06": {cx: 875.3, cy: 123.3},
-                      "PT01": {cx: 872.5, cy: 101.7},
-                      "PT13": {cx: 876.1, cy: 73.1},
-                      "PT30": {cx: 565.2, cy: 458.1},
-                      "PT20": {cx: 254.8, cy: 234.3},
-                      "PT18": {cx: 894.2, cy: 93.9}
+                      "PT07": {cx: 899.9, cy: 197.6}, "PT12": {cx: 902.5, cy: 164.7},
+                      "PT16": {cx: 871, cy: 39.5}, "PT05": {cx: 909, cy: 131.9},
+                      "PT09": {cx: 920.7, cy: 98.2}, "PT04": {cx: 930.2, cy: 57.5},
+                      "PT17": {cx: 905, cy: 56.3}, "PT03": {cx: 876.8, cy: 55.7},
+                      "PT08": {cx: 894.4, cy: 259.8}, "PT02": {cx: 893.7, cy: 231},
+                      "PT15": {cx: 869, cy: 213.9}, "PT11": {cx: 845.5, cy: 177.2},
+                      "PT14": {cx: 870.7, cy: 162.4}, "PT10": {cx: 859, cy: 143.9},
+                      "PT06": {cx: 875.3, cy: 123.3}, "PT01": {cx: 872.5, cy: 101.7},
+                      "PT13": {cx: 876.1, cy: 73.1}, "PT30": {cx: 565.2, cy: 458.1},
+                      "PT20": {cx: 254.8, cy: 234.3}, "PT18": {cx: 894.2, cy: 93.9}
                     };
                     const p = coords[dist.id];
                     if (!p) return null;
                     return (
-                      <g 
-                        key={dist.id} 
-                        className="cursor-pointer group" 
-                        onClick={() => setSelectedDistrict(dist)}
-                      >
+                      <g key={dist.id} className="cursor-pointer group" onClick={() => setSelectedDistrict(dist)}>
                         <circle 
-                          cx={p.cx} 
-                          cy={p.cy} 
-                          r={selectedDistrict?.id === dist.id ? "12" : "8"}
+                          cx={p.cx} cy={p.cy} 
+                          r={selectedDistrict?.id === dist.id ? "14" : "10"}
                           style={{ fill: getDistrictColor(dist.id) }}
-                          className="transition-all duration-300 stroke-background stroke-2 group-hover:r-14"
+                          className="transition-all duration-300 stroke-background stroke-2 hover:r-16"
                         />
-                        <text 
-                          x={p.cx} 
-                          y={p.cy - 15} 
-                          textAnchor="middle" 
-                          className={cn(
-                            "text-[10px] font-bold fill-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none",
-                            selectedDistrict?.id === dist.id && "opacity-100 fill-primary"
-                          )}
-                        >
+                        <text x={p.cx} y={p.cy - 18} textAnchor="middle" className={cn("text-[12px] font-bold fill-foreground opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none", selectedDistrict?.id === dist.id && "opacity-100")}>
                           {dist.name}
                         </text>
                       </g>
                     );
                   })}
                 </g>
-                
-                {/* Representação visual simplificada das ilhas e continente seguindo o novo layout */}
-                <rect id="frame_azores" x="20" y="18" width="342" height="509" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" strokeDasharray="4 4" />
-                <rect id="frame_madeira" x="20" y="912" width="237" height="236" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.2" strokeDasharray="4 4" />
-                
-                <text x="500" y="600" textAnchor="middle" className="fill-muted-foreground/20 text-4xl font-bold uppercase tracking-[2em] pointer-events-none">Portugal</text>
+                <text x="500" y="600" textAnchor="middle" className="fill-muted-foreground/10 text-4xl font-bold uppercase tracking-[2em] pointer-events-none">Portugal</text>
               </svg>
 
               <div className="absolute bottom-6 right-6 p-4 bg-background/80 backdrop-blur-md rounded-2xl border shadow-lg space-y-3 min-w-[160px]">
@@ -172,12 +158,7 @@ export default function MapPage() {
 
         <div className="lg:col-span-4 space-y-6">
           <Card className="border-primary/10 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-accent" />
-                {t('map.indicators')}
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-xl flex items-center gap-2"><Sparkles className="h-5 w-5 text-accent" />{t('map.indicators')}</CardTitle></CardHeader>
             <CardContent className="grid gap-3">
               {[
                 { id: 'salary', label: t('map.salary'), icon: Coins },
@@ -189,10 +170,7 @@ export default function MapPage() {
                   key={ind.id}
                   variant={activeIndicator === ind.id ? "default" : "outline"}
                   className="justify-start gap-3 h-12 transition-all hover:scale-[1.02]"
-                  onClick={() => {
-                    setActiveIndicator(ind.id as IndicatorKey);
-                    setSelectedDistrict(null);
-                  }}
+                  onClick={() => { setActiveIndicator(ind.id as IndicatorKey); setSelectedDistrict(null); }}
                 >
                   <ind.icon className={cn("h-5 w-5", activeIndicator === ind.id ? "text-white" : "text-primary")} />
                   {ind.label}
@@ -202,46 +180,25 @@ export default function MapPage() {
           </Card>
 
           {selectedDistrict ? (
-            <Card className="border-accent/20 bg-accent/5 shadow-lg animate-in fade-in slide-in-from-right-4 duration-500">
+            <Card className="border-accent/20 bg-accent/5 shadow-lg animate-in fade-in slide-in-from-right-4">
               <CardHeader className="bg-accent/10 border-b">
-                <CardTitle className="text-2xl font-headline flex items-center gap-2">
-                  <ShieldCheck className="h-6 w-6 text-accent" />
-                  {selectedDistrict.name}
-                </CardTitle>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-accent" />{selectedDistrict.name}</CardTitle>
                 <CardDescription>Dados consolidados para 2026</CardDescription>
               </CardHeader>
               <CardContent className="pt-6 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-background/50 border shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.salary')}</p>
-                    <p className="text-xl font-bold font-headline text-primary">{selectedDistrict.salary}€</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-background/50 border shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.poverty')}</p>
-                    <p className="text-xl font-bold font-headline text-primary">{selectedDistrict.poverty}%</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-background/50 border shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.population')}</p>
-                    <p className="text-xl font-bold font-headline text-primary">{selectedDistrict.population}k</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-background/50 border shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.housing')}</p>
-                    <p className="text-xl font-bold font-headline text-primary">{selectedDistrict.housing}€/m²</p>
-                  </div>
+                  <div className="p-4 rounded-2xl bg-background border shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.salary')}</p><p className="text-xl font-bold font-headline text-primary">{selectedDistrict.salary}€</p></div>
+                  <div className="p-4 rounded-2xl bg-background border shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.poverty')}</p><p className="text-xl font-bold font-headline text-primary">{selectedDistrict.poverty}%</p></div>
+                  <div className="p-4 rounded-2xl bg-background border shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.population')}</p><p className="text-xl font-bold font-headline text-primary">{selectedDistrict.population}k</p></div>
+                  <div className="p-4 rounded-2xl bg-background border shadow-sm"><p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{t('map.housing')}</p><p className="text-xl font-bold font-headline text-primary">{selectedDistrict.housing}€/m²</p></div>
                 </div>
               </CardContent>
-              <CardFooter className="bg-muted/30 py-3">
-                <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-                  <Info className="h-3 w-3" /> Fonte: Estimativas INE / Pordata 2026
-                </p>
-              </CardFooter>
+              <CardFooter className="bg-muted/30 py-3"><p className="text-[10px] text-muted-foreground italic flex items-center gap-1"><Info className="h-3 w-3" /> Fonte: Estimativas INE / Pordata 2026</p></CardFooter>
             </Card>
           ) : (
             <Card className="border-dashed bg-muted/20">
               <CardContent className="py-12 text-center text-muted-foreground flex flex-col items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                  <MapIcon className="h-8 w-8 opacity-20" />
-                </div>
+                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center"><MapIcon className="h-8 w-8 opacity-20" /></div>
                 <p className="text-sm font-medium">Selecione um distrito no mapa.</p>
               </CardContent>
             </Card>
