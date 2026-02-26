@@ -16,12 +16,11 @@ import { getFamilyBudgetAnalysis, getTranslation } from '@/lib/actions';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
-  Wallet, Users, Baby, Coins, ArrowUpCircle, ArrowDownCircle, Sparkles, 
-  Loader2, Info, CheckCircle2, AlertCircle, Languages, RefreshCw,
+  Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
+  Loader2, Info, CheckCircle2, Languages, RefreshCw,
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -37,7 +36,6 @@ const DEFAULT_COSTS_2026 = {
 export default function FamilyBudgetPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
-  const budgetImg = PlaceHolderImages.find(img => img.id === 'alentejo-landscape');
 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
@@ -59,7 +57,6 @@ export default function FamilyBudgetPage() {
   const [translatedAnalysis, setTranslatedAnalysis] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // Auto Cache Check para tradução
   useEffect(() => {
     if (language === 'en' && aiResult?.analysis) {
       const checkCache = async () => {
@@ -85,14 +82,12 @@ export default function FamilyBudgetPage() {
       const res = await getTranslation(aiResult.analysis, language);
       setTranslatedAnalysis(res);
       setShowOriginal(false);
-      
       const cacheRef = collection(firestore, 'translations_cache');
       addDoc(cacheRef, { originalText: aiResult.analysis, translatedText: res, targetLanguage: 'English', createdAt: serverTimestamp() });
     });
   };
 
   useEffect(() => {
-    // Ajustar defaults baseados no agregado
     const multiplier = adults + (children * 0.5);
     setExpenses(prev => ({
       ...prev,
@@ -134,22 +129,19 @@ export default function FamilyBudgetPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* LADO ESQUERDO: INPUTS */}
         <div className="lg:col-span-2 space-y-6">
-          {budgetImg && (
-            <div className="relative h-[180px] w-full rounded-2xl overflow-hidden shadow-md border mb-6">
-              <Image 
-                src={budgetImg.imageUrl} 
-                alt={budgetImg.description} 
-                fill 
-                className="object-cover"
-                data-ai-hint={budgetImg.imageHint}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex items-center p-8">
-                <p className="text-white font-bold text-xl drop-shadow-md">Gestão de Orçamento Portugal 2026</p>
-              </div>
+          <div className="relative h-[180px] w-full rounded-2xl overflow-hidden shadow-md border mb-6">
+            <Image 
+              src="https://picsum.photos/seed/budget/800/200" 
+              alt="Orçamento Familiar" 
+              fill 
+              className="object-cover"
+              data-ai-hint="alentejo fields"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex items-center p-8">
+              <p className="text-white font-bold text-xl drop-shadow-md">Gestão de Orçamento Portugal 2026</p>
             </div>
-          )}
+          </div>
 
           <Card className="shadow-md">
             <CardHeader className="bg-muted/30">
@@ -216,7 +208,6 @@ export default function FamilyBudgetPage() {
           </Card>
         </div>
 
-        {/* LADO DIREITO: RESULTADOS & IA */}
         <div className="space-y-6">
           <Card className="border-primary/20 shadow-lg overflow-hidden">
             <CardHeader className="bg-primary text-primary-foreground">
@@ -242,9 +233,6 @@ export default function FamilyBudgetPage() {
                   <span>{savingsRate.toFixed(1)}%</span>
                 </div>
                 <Progress value={Math.max(0, savingsRate)} className={cn("h-2", savingsRate < 10 ? "bg-red-100" : "bg-green-100")} />
-                <p className="text-[10px] text-center italic">
-                  {savingsRate < 0 ? t('budget.lowSavings') : (savingsRate < 15 ? t('budget.healthyBudget') : t('budget.surplus'))}
-                </p>
               </div>
             </CardContent>
             <CardFooter className="bg-muted/30 p-4">
@@ -263,7 +251,7 @@ export default function FamilyBudgetPage() {
                 </CardTitle>
                 {language !== 'pt' && (
                   <Button variant="outline" size="sm" onClick={translatedAnalysis ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-7 text-[9px] border-accent/50 text-accent font-bold">
-                    {isTranslating ? <Loader2 className="h-3 w-3 animate-spin" /> : translatedAnalysis ? <RefreshCw className="h-3 w-3" /> : <Languages className="h-3 w-3" />}
+                    {isTranslating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                     {translatedAnalysis ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate')}
                   </Button>
                 )}

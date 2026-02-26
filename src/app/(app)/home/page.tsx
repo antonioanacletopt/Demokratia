@@ -14,15 +14,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc, orderBy } from 'firebase/firestore';
+import { collection, query, serverTimestamp, doc, getDoc, setDoc, orderBy, limit } from 'firebase/firestore';
 import { AIResultButton } from '@/components/AIResultButton';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -55,20 +54,18 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
     if (language === 'en' && item) {
       const checkCache = async () => {
         const cacheRef = collection(firestore, 'translations_cache');
-        const targetLang = 'English';
         const fetchCached = async (text: string) => {
           if (!text || text.length > MAX_CACHE_LENGTH) return null;
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', targetLang), limit(1));
+          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
           const snap = await getDocs(q);
           return !snap.empty ? snap.docs[0].data().translatedText : null;
         };
-        const [tTitle, tDesc, tAction] = await Promise.all([
+        const [tTitle, tDesc] = await Promise.all([
           fetchCached(item.title),
-          fetchCached(item.description),
-          item.actionLink ? fetchCached(item.actionLink.label) : Promise.resolve(null)
+          fetchCached(item.description)
         ]);
         if (tTitle && tDesc) {
-          setTranslated({ title: tTitle, desc: tDesc, actionLabel: tAction || undefined });
+          setTranslated({ title: tTitle, desc: tDesc });
           setShowOriginal(false);
         }
       };
@@ -86,23 +83,20 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
     startTransition(async () => {
       const resTitle = await getTranslation(item.title, language);
       const resDesc = await getTranslation(item.description, language);
-      const resAction = item.actionLink ? await getTranslation(item.actionLink.label, language) : undefined;
-      setTranslated({ title: resTitle, desc: resDesc, actionLabel: resAction });
+      setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
       const cacheRef = collection(firestore, 'translations_cache');
       const saveToCache = (orig: string, trans: string) => {
         if (orig.length > MAX_CACHE_LENGTH) return;
-        addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
+        setDoc(doc(cacheRef), { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() }, { merge: true });
       };
       saveToCache(item.title, resTitle);
       saveToCache(item.description, resDesc);
-      if (item.actionLink && resAction) saveToCache(item.actionLink.label, resAction);
     });
   };
 
   const currentTitle = !showOriginal && translated ? translated.title : item.title;
   const currentDesc = !showOriginal && translated ? translated.desc : item.description;
-  const currentActionLabel = !showOriginal && translated?.actionLabel ? translated.actionLabel : item.actionLink?.label;
 
   return (
     <Card className="overflow-hidden border-primary/10 shadow-sm hover:shadow-md transition-all">
@@ -119,7 +113,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
                     disabled={isTranslating} 
                     className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/30 text-accent hover:bg-accent/10 hover:text-accent shrink-0"
                   >
-                      {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : translated ? <RefreshCw className="mr-1.5 h-3 w-3" /> : <Languages className="mr-1.5 h-3 w-3" />}
+                      {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <Languages className="mr-1.5 h-3 w-3" />}
                       {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
                   </Button>
                 )}
@@ -132,7 +126,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
       <CardContent className="pt-4"><p className="text-muted-foreground leading-relaxed">{currentDesc}</p></CardContent>
       {item.actionLink && (
         <CardFooter className="bg-muted/5 border-t py-3">
-          <AIResultButton href={item.actionLink.href} label={currentActionLabel!} />
+          <AIResultButton href={item.actionLink.href} label={item.actionLink.label} />
         </CardFooter>
       )}
     </Card>
@@ -146,59 +140,39 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const heroImg = PlaceHolderImages.find(img => img.id === 'hero-portugal');
-  const portoImg = PlaceHolderImages.find(img => img.id === 'porto-ribera');
-
-  // Adicionando Propostas Populares para SEO e Conteúdo de Valor
   const proposalsRef = useMemoFirebase(() => query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), limit(3)), [firestore]);
   const { data: popularProposals } = useCollection<any>(proposalsRef);
 
   useEffect(() => {
     async function loadFeed() {
       try {
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v14');
+        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v15');
         const cacheSnap = await getDoc(cacheRef);
-        
-        if (cacheSnap.exists()) {
-          const cacheData = cacheSnap.data();
-          const lastUpdated = cacheData.lastUpdated?.toDate() || new Date(0);
-          const diffHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-          
-          if (diffHours < CACHE_EXPIRATION_HOURS) { 
-            setFeedItems(cacheData.feedItems); 
-            setLoading(false); 
-            return; 
-          }
+        if (cacheSnap.exists() && (new Date().getTime() - (cacheSnap.data().lastUpdated?.toDate().getTime() || 0)) / 3600000 < CACHE_EXPIRATION_HOURS) {
+          setFeedItems(cacheSnap.data().feedItems);
+          setLoading(false);
+          return;
         }
-        
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
-        setDoc(cacheRef, { feedItems: newsFeed.feedItems, lastUpdated: serverTimestamp() }).catch(e => console.warn("Failed news cache", e));
-      } catch (err) { 
-        console.error('Failed news:', err); 
-        setError(true); 
-      } finally { 
-        setLoading(false); 
-      }
+        setDoc(cacheRef, { feedItems: newsFeed.feedItems, lastUpdated: serverTimestamp() }).catch(() => {});
+      } catch (err) { setError(true); } finally { setLoading(false); }
     }
     loadFeed();
   }, [firestore]);
 
   return (
     <div className="space-y-12">
-      {/* Intro Section */}
       <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-2xl">
         <div className="absolute inset-0 z-0">
-          {heroImg && (
-            <Image 
-              src={heroImg.imageUrl} 
-              alt={heroImg.description} 
-              fill 
-              className="object-cover opacity-30 mix-blend-overlay" 
-              priority
-              data-ai-hint={heroImg.imageHint}
-            />
-          )}
+          <Image 
+            src="https://picsum.photos/seed/portugal/1200/600" 
+            alt="Portugal Hero" 
+            fill 
+            className="object-cover opacity-30 mix-blend-overlay" 
+            priority
+            data-ai-hint="portugal landscape"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
         </div>
         
@@ -223,7 +197,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Access Tools */}
       <div className="grid gap-6 md:grid-cols-5">
         {[
           { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Seu bolso.', color: 'primary' },
@@ -235,8 +208,8 @@ export default function HomePage() {
           <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
             <Link href={tool.href}>
               <CardHeader className="p-4">
-                <div className={`h-10 w-10 rounded-xl bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-inner`}>
-                  <tool.icon className={`h-6 w-6 text-${tool.color}`} />
+                <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-inner">
+                  <tool.icon className={cn("h-6 w-6", `text-${tool.color}`)} />
                 </div>
                 <CardTitle className="text-base">{tool.label}</CardTitle>
                 <CardDescription className="text-xs line-clamp-2">{tool.desc}</CardDescription>
@@ -246,7 +219,6 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* Methodology Section (High Value Content for AdSense) */}
       <div className="grid gap-8 lg:grid-cols-3 bg-card p-8 rounded-3xl border shadow-sm">
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-3xl font-bold font-headline text-primary">{t('home.methodologyTitle')}</h2>
@@ -285,7 +257,6 @@ export default function HomePage() {
 
       <AdBanner />
 
-      {/* Community Highlights Section (New High Value Section) */}
       {popularProposals && popularProposals.length > 0 && (
         <section className="space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
@@ -324,18 +295,15 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Visual Break with Porto Image */}
-      {portoImg && (
-        <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
-          <Image src={portoImg.imageUrl} alt={portoImg.description} fill className="object-cover" data-ai-hint={portoImg.imageHint} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
-            <div className="max-w-xl space-y-2">
-              <h3 className="text-2xl font-bold text-white">Transparência de Norte a Sul</h3>
-              <p className="text-white/80 text-sm">Do litoral ao interior, democratizamos o acesso à informação que importa para o futuro de Portugal.</p>
-            </div>
+      <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
+        <Image src="https://picsum.photos/seed/porto/1200/400" alt="Porto Riberia" fill className="object-cover" data-ai-hint="porto city" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
+          <div className="max-w-xl space-y-2">
+            <h3 className="text-2xl font-bold text-white">Transparência de Norte a Sul</h3>
+            <p className="text-white/80 text-sm">Do litoral ao interior, democratizamos o acesso à informação que importa para o futuro de Portugal.</p>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b pb-4">
@@ -347,7 +315,7 @@ export default function HomePage() {
         <div className="space-y-6">
           {loading ? (
             <div className="grid gap-6">
-              {[1,2,3].map(i => <Card key={i} className="h-32 animate-pulse bg-muted/20" />)}
+              {[1,2,3,4].map(i => <Card key={i} className="h-32 animate-pulse bg-muted/20" />)}
             </div>
           ) : error ? (
             <Card><CardHeader><CardTitle>{t('home.error')}</CardTitle></CardHeader></Card>

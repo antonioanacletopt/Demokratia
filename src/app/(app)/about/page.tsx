@@ -6,11 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldCheck, Target, Users, BookOpen, Fingerprint } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
   const { t } = useTranslation();
-  const transparencyImg = PlaceHolderImages.find(img => img.id === 'transparency-concept');
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 py-8">
@@ -37,17 +35,15 @@ export default function AboutPage() {
             </p>
           </section>
 
-          {transparencyImg && (
-            <div className="relative h-[200px] w-full rounded-2xl overflow-hidden border shadow-inner">
-              <Image 
-                src={transparencyImg.imageUrl} 
-                alt={transparencyImg.description} 
-                fill 
-                className="object-cover"
-                data-ai-hint={transparencyImg.imageHint}
-              />
-            </div>
-          )}
+          <div className="relative h-[200px] w-full rounded-2xl overflow-hidden border shadow-inner">
+            <Image 
+              src="https://picsum.photos/seed/transparency/600/400" 
+              alt="Transparência Digital" 
+              fill 
+              className="object-cover"
+              data-ai-hint="digital security"
+            />
+          </div>
 
           <Card className="bg-primary/5 border-primary/10">
             <CardHeader>
