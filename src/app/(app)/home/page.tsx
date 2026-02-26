@@ -22,6 +22,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, serverTimestamp, doc, getDoc, setDoc, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { AIResultButton } from '@/components/AIResultButton';
+import { cn } from '@/lib/utils';
 
 const MAX_CACHE_LENGTH = 1000;
 
