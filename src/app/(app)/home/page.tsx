@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe, ThumbsUp, Users } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
@@ -147,6 +147,7 @@ export default function HomePage() {
   const [error, setError] = useState(false);
 
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-portugal');
+  const portoImg = PlaceHolderImages.find(img => img.id === 'porto-ribera');
 
   // Adicionando Propostas Populares para SEO e Conteúdo de Valor
   const proposalsRef = useMemoFirebase(() => query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), limit(3)), [firestore]);
@@ -216,18 +217,19 @@ export default function HomePage() {
               <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> Explorar Dados</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
-              <Link href="/methodology"><BookOpen className="mr-2 h-5 w-5" /> {t('nav.methodology')}</Link>
+              <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> Ver Atlas Regional</Link>
             </Button>
           </div>
         </div>
       </section>
 
       {/* Quick Access Tools */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-5">
         {[
-          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Impacto no seu bolso.', color: 'primary' },
-          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas nacionais.', color: 'accent' },
-          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verifique a verdade.', color: 'green-600' },
+          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Seu bolso.', color: 'primary' },
+          { href: '/map', icon: MapIcon, label: t('nav.map'), desc: 'Atlas regional.', color: 'accent' },
+          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas.', color: 'accent' },
+          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verdade factual.', color: 'green-600' },
           { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
         ].map((tool) => (
           <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
@@ -320,6 +322,19 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Visual Break with Porto Image */}
+      {portoImg && (
+        <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
+          <Image src={portoImg.imageUrl} alt={portoImg.description} fill className="object-cover" data-ai-hint={portoImg.imageHint} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
+            <div className="max-w-xl space-y-2">
+              <h3 className="text-2xl font-bold text-white">Transparência de Norte a Sul</h3>
+              <p className="text-white/80 text-sm">Do litoral ao interior, democratizamos o acesso à informação que importa para o futuro de Portugal.</p>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="space-y-6">

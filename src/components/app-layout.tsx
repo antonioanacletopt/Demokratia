@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -53,6 +53,7 @@ function AppSidebarContent() {
   const allNavItems = [
     { href: "/home", icon: Home, label: t('nav.home'), public: true },
     { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
+    { href: "/map", icon: MapIcon, label: t('nav.map'), public: true },
     { href: "/budget", icon: Wallet, label: t('nav.budget'), public: true },
     { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
     { href: "/scenarios", icon: Zap, label: t('nav.scenarios'), public: true },
@@ -238,6 +239,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Recursos</h4>
                   <ul className="space-y-2 text-sm">
                     <li><Link href="/explorer" className="hover:text-primary">Explorador de Dados</Link></li>
+                    <li><Link href="/map" className="hover:text-primary">Atlas de Portugal</Link></li>
                     <li><Link href="/simulations" className="hover:text-primary">Simulador de Políticas</Link></li>
                     <li><Link href="/methodology" className="hover:text-primary">{t('nav.methodology')}</Link></li>
                   </ul>
@@ -260,7 +262,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>© {new Date().getFullYear()} Demokratia Portugal</span></div>
-                <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-w-lg">Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.</p>
+                <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-lg">Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.</p>
               </div>
             </div>
           </footer>

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import {
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const MAX_CACHE_LENGTH = 1000;
 
@@ -35,6 +37,7 @@ const DEFAULT_COSTS_2026 = {
 export default function FamilyBudgetPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
+  const budgetImg = PlaceHolderImages.find(img => img.id === 'alentejo-landscape');
 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
@@ -133,6 +136,21 @@ export default function FamilyBudgetPage() {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* LADO ESQUERDO: INPUTS */}
         <div className="lg:col-span-2 space-y-6">
+          {budgetImg && (
+            <div className="relative h-[180px] w-full rounded-2xl overflow-hidden shadow-md border mb-6">
+              <Image 
+                src={budgetImg.imageUrl} 
+                alt={budgetImg.description} 
+                fill 
+                className="object-cover"
+                data-ai-hint={budgetImg.imageHint}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex items-center p-8">
+                <p className="text-white font-bold text-xl drop-shadow-md">Gestão de Orçamento Portugal 2026</p>
+              </div>
+            </div>
+          )}
+
           <Card className="shadow-md">
             <CardHeader className="bg-muted/30">
               <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> {t('budget.profileTitle')}</CardTitle>
@@ -244,8 +262,9 @@ export default function FamilyBudgetPage() {
                   <Sparkles className="h-3.5 w-3.5" /> {t('budget.aiAnalysis')}
                 </CardTitle>
                 {language !== 'pt' && (
-                  <Button variant="outline" size="sm" onClick={translatedAnalysis ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-7 text-[9px] border-accent/50 text-accent">
+                  <Button variant="outline" size="sm" onClick={translatedAnalysis ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-7 text-[9px] border-accent/50 text-accent font-bold">
                     {isTranslating ? <Loader2 className="h-3 w-3 animate-spin" /> : translatedAnalysis ? <RefreshCw className="h-3 w-3" /> : <Languages className="h-3 w-3" />}
+                    {translatedAnalysis ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate')}
                   </Button>
                 )}
               </CardHeader>

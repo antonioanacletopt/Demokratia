@@ -12,7 +12,7 @@ export const translations = {
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
       scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', about: 'Quem Somos', faq: 'FAQ',
-      methodology: 'Metodologia e Ciência'
+      methodology: 'Metodologia e Ciência', map: 'Atlas de Portugal'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -22,6 +22,20 @@ export const translations = {
       translate: 'Traduzir com IA', showOriginal: 'Ver Original', translating: 'A traduzir...', support: 'Apoiar',
       supported: 'Apoiado', simulate: 'Simular', actions: 'Ações', translating_ai: 'IA a traduzir conteúdo...',
       confirm_delete: 'Tem a certeza que deseja apagar?', learnMore: 'Saber Mais'
+    },
+    map: {
+      title: 'Atlas Regional de Portugal',
+      description: 'Explore indicadores socioeconómicos detalhados por região para 2026.',
+      howItWorks: 'Selecione um indicador na lista lateral para ver a distribuição geográfica. As cores mais escuras indicam valores mais elevados.',
+      salary: 'Salário Médio Mensal',
+      poverty: 'Taxa de Risco de Pobreza',
+      population: 'Densidade Populacional',
+      housing: 'Preço da Habitação (m²)',
+      legend: 'Legenda de Valores',
+      high: 'Elevado',
+      low: 'Baixo',
+      region: 'Região',
+      value: 'Valor Estimado 2026'
     },
     methodology: {
       title: 'Metodologia e Fundamentação Técnica',
@@ -276,7 +290,7 @@ export const translations = {
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
       scenarios: 'Macro Lab', budget: 'Wallet Simulator', about: 'About Us', faq: 'FAQ',
-      methodology: 'Methodology & Science'
+      methodology: 'Methodology & Science', map: 'Portugal Atlas'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -286,6 +300,20 @@ export const translations = {
       translate: 'Translate with AI', showOriginal: 'Show Original', translating: 'Translating...', support: 'Support',
       supported: 'Supported', simulate: 'Simulate', actions: 'Actions', translating_ai: 'AI is translating content...',
       confirm_delete: 'Are you sure you want to delete?', learnMore: 'Learn More'
+    },
+    map: {
+      title: 'Portugal Regional Atlas',
+      description: 'Explore detailed socio-economic indicators by region for 2026.',
+      howItWorks: 'Select an indicator from the sidebar to see the geographical distribution. Darker colors indicate higher values.',
+      salary: 'Average Monthly Salary',
+      poverty: 'Poverty Risk Rate',
+      population: 'Population Density',
+      housing: 'Housing Price (m²)',
+      legend: 'Values Legend',
+      high: 'High',
+      low: 'Low',
+      region: 'Region',
+      value: '2026 Estimated Value'
     },
     methodology: {
       title: 'Methodology & Technical Foundation',

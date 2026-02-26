@@ -3,20 +3,44 @@
     {
       "id": "hero-portugal",
       "description": "Vista aérea de Lisboa e do Tejo",
-      "imageUrl": "https://images.unsplash.com/photo-1527768487232-249051d95e86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsaXNib24lMjBjaXR5fGVufDB8fHx8MTc3MDkzMzU4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1527768487232-249051d95e86?w=1080",
       "imageHint": "lisbon city"
     },
     {
       "id": "data-viz",
       "description": "Conceito de visualização de dados e estatística",
-      "imageUrl": "https://images.unsplash.com/photo-1551288049-bbbda536339a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcwOTMzNTg1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bbbda536339a?w=1080",
       "imageHint": "data analysis"
     },
     {
       "id": "transparency-concept",
       "description": "Conceito de transparência e democracia digital",
-      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjeWJlcnNlY3VyaXR5fGVufDB8fHx8MTc3MDkzMzU4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1080",
       "imageHint": "digital security"
+    },
+    {
+      "id": "porto-ribera",
+      "description": "Ribeira do Porto e Ponte D. Luís I",
+      "imageUrl": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=1080",
+      "imageHint": "porto portugal"
+    },
+    {
+      "id": "algarve-coast",
+      "description": "Falésias e mar do Algarve",
+      "imageUrl": "https://images.unsplash.com/photo-1534258918080-909691298020?w=1080",
+      "imageHint": "algarve coast"
+    },
+    {
+      "id": "alentejo-landscape",
+      "description": "Paisagem típica do Alentejo com sobreiros",
+      "imageUrl": "https://images.unsplash.com/photo-1561571592-082906ec3030?w=1080",
+      "imageHint": "alentejo portugal"
+    },
+    {
+      "id": "portugal-atlas",
+      "description": "Conceito de cartografia e dados regionais",
+      "imageUrl": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=1080",
+      "imageHint": "map concept"
     }
   ]
 }
