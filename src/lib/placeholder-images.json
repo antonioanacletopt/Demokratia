@@ -3,19 +3,19 @@
     {
       "id": "hero-portugal",
       "description": "Vista panorâmica de Portugal",
-      "imageUrl": "https://images.unsplash.com/photo-1635611120089-032d40569f1a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwb3J0dWdhbCUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1629841640919-4f4c8fc1449f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwb3J0dWdhbCUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "portugal landscape"
     },
     {
       "id": "data-viz",
       "description": "Visualização de dados estatísticos",
-      "imageUrl": "https://images.unsplash.com/photo-1599658880436-c61792e70672?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcyMDYyMjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcyMDYyMjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "data analysis"
     },
     {
       "id": "transparency-concept",
       "description": "Conceito de transparência digital",
-      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcyMTIyNzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcyMTIyNzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "digital security"
     },
     {
@@ -27,13 +27,13 @@
     {
       "id": "alentejo-landscape",
       "description": "Paisagem do Alentejo",
-      "imageUrl": "https://images.unsplash.com/photo-1718060186549-73a2e306f4b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhbGVudGVqbyUyMGZpZWxkc3xlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1725144690048-a4f7d77fe4b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhbGVudGVqbyUyMGZpZWxkc3xlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "alentejo fields"
     },
     {
       "id": "algarve-coast",
       "description": "Costa do Algarve",
-      "imageUrl": "https://images.unsplash.com/photo-1652092521226-3e03a716ae86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1664640214813-fcfe3a0c6653?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "algarve coast"
     }
   ]

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -296,7 +295,7 @@ export default function HomePage() {
       )}
 
       <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
-        <Image src="https://picsum.photos/seed/porto/1200/400" alt="Porto Riberia" fill className="object-cover" data-ai-hint="porto city" />
+        <Image src="https://picsum.photos/seed/porto/1200/600" alt="Porto Riberia" fill className="object-cover" data-ai-hint="porto city" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
           <div className="max-w-xl space-y-2">
             <h3 className="text-2xl font-bold text-white">Transparência de Norte a Sul</h3>

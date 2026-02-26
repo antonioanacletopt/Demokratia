@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useTranslation } from '@/lib/i18n';
@@ -37,7 +36,7 @@ export default function AboutPage() {
 
           <div className="relative h-[200px] w-full rounded-2xl overflow-hidden border shadow-inner">
             <Image 
-              src="https://picsum.photos/seed/transparency/600/400" 
+              src="https://picsum.photos/seed/transparency/1200/600" 
               alt="Transparência Digital" 
               fill 
               className="object-cover"

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
@@ -132,7 +131,7 @@ export default function FamilyBudgetPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="relative h-[180px] w-full rounded-2xl overflow-hidden shadow-md border mb-6">
             <Image 
-              src="https://picsum.photos/seed/budget/800/200" 
+              src="https://picsum.photos/seed/budget/1200/600" 
               alt="Orçamento Familiar" 
               fill 
               className="object-cover"
