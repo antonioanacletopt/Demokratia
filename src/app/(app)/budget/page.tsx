@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
@@ -196,7 +197,7 @@ export default function FamilyBudgetPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between"><Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4" /> {t('budget.health')}</Label><span>{expenses.health}€</span></div>
-                  <Slider value={[expenses.health]} onValueChange={([v]) => setExpenses(e => ({ ...v, health: v }))} min={0} max={500} step={5} />
+                  <Slider value={[expenses.health]} onValueChange={([v]) => setExpenses(e => ({ ...e, health: v }))} min={0} max={500} step={5} />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between"><Label className="flex items-center gap-2"><Palette className="h-4 w-4" /> {t('budget.leisure')}</Label><span>{expenses.leisure}€</span></div>
