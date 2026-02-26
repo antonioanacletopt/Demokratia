@@ -14,13 +14,13 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, MessageSquarePlus, ArrowRight, BookOpen, BarChart3, Globe, ThumbsUp, Users } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
 import { useTranslation } from '@/lib/i18n';
-import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, getDoc, setDoc, orderBy } from 'firebase/firestore';
 import { AIResultButton } from '@/components/AIResultButton';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -148,6 +148,10 @@ export default function HomePage() {
 
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-portugal');
 
+  // Adicionando Propostas Populares para SEO e Conteúdo de Valor
+  const proposalsRef = useMemoFirebase(() => query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), limit(3)), [firestore]);
+  const { data: popularProposals } = useCollection<any>(proposalsRef);
+
   useEffect(() => {
     async function loadFeed() {
       try {
@@ -218,6 +222,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Quick Access Tools */}
+      <div className="grid gap-6 md:grid-cols-4">
+        {[
+          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Impacto no seu bolso.', color: 'primary' },
+          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas nacionais.', color: 'accent' },
+          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verifique a verdade.', color: 'green-600' },
+          { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
+        ].map((tool) => (
+          <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
+            <Link href={tool.href}>
+              <CardHeader className="p-4">
+                <div className={`h-10 w-10 rounded-xl bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-inner`}>
+                  <tool.icon className={`h-6 w-6 text-${tool.color}`} />
+                </div>
+                <CardTitle className="text-base">{tool.label}</CardTitle>
+                <CardDescription className="text-xs line-clamp-2">{tool.desc}</CardDescription>
+              </CardHeader>
+            </Link>
+          </Card>
+        ))}
+      </div>
+
       {/* Methodology Section (High Value Content for AdSense) */}
       <div className="grid gap-8 lg:grid-cols-3 bg-card p-8 rounded-3xl border shadow-sm">
         <div className="lg:col-span-2 space-y-4">
@@ -255,29 +281,46 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Quick Access Tools */}
-      <div className="grid gap-6 md:grid-cols-4">
-        {[
-          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Impacto no seu bolso.', color: 'primary' },
-          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas nacionais.', color: 'accent' },
-          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verifique a verdade.', color: 'green-600' },
-          { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
-        ].map((tool) => (
-          <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
-            <Link href={tool.href}>
-              <CardHeader className="p-4">
-                <div className={`h-10 w-10 rounded-xl bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-inner`}>
-                  <tool.icon className={`h-6 w-6 text-${tool.color}`} />
-                </div>
-                <CardTitle className="text-base">{tool.label}</CardTitle>
-                <CardDescription className="text-xs line-clamp-2">{tool.desc}</CardDescription>
-              </CardHeader>
-            </Link>
-          </Card>
-        ))}
-      </div>
-
       <AdBanner />
+
+      {/* Community Highlights Section (New High Value Section) */}
+      {popularProposals && popularProposals.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b pb-4">
+            <div>
+              <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
+                <Users className="h-6 w-6 text-accent" /> {t('proposals.communityTitle')}
+              </h2>
+              <p className="text-muted-foreground text-sm">As ideias mais apoiadas pelos cidadãos portugueses.</p>
+            </div>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/proposals">Ver Todas <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {popularProposals.map((p: any) => (
+              <Card key={p.id} className="hover:shadow-md transition-all border-accent/10">
+                <CardHeader className="p-4 pb-2">
+                  <div className="flex justify-between items-start gap-2">
+                    <CardTitle className="text-sm font-bold line-clamp-2 leading-snug">{p.title}</CardTitle>
+                    <Badge variant="secondary" className="text-[10px] gap-1 px-1.5 shrink-0">
+                      <ThumbsUp className="h-3 w-3" /> {p.voteCount}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-xs text-muted-foreground line-clamp-3 italic">"{p.description}"</p>
+                </CardContent>
+                <CardFooter className="p-3 bg-muted/30 flex justify-center">
+                  <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-accent">
+                    <Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>Simular Impacto</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b pb-4">

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 
+# Instrução específica para o robô do AdSense
 User-agent: Mediapartners-Google
 Allow: /
 
