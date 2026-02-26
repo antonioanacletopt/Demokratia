@@ -135,10 +135,11 @@ export default function AtlasPage() {
             </Badge>
           </div>
           
-          <svg viewBox="0 0 450 850" className="w-full h-full max-w-[450px] drop-shadow-2xl">
+          {/* MAPA SVG COM SILHUETA REALISTA */}
+          <svg viewBox="0 0 400 800" className="w-full h-full max-w-[450px] drop-shadow-2xl">
             {/* NORTE */}
             <path
-              d="M150,20 L300,30 L320,120 L300,220 L220,240 L150,220 L130,120 Z"
+              d="M120,20 L280,30 L310,120 L290,220 L200,250 L130,230 L110,120 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[0][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -148,7 +149,7 @@ export default function AtlasPage() {
             />
             {/* CENTRO */}
             <path
-              d="M150,220 L220,240 L300,220 L340,320 L310,420 L220,440 L130,420 L120,320 Z"
+              d="M130,230 L200,250 L290,220 L330,320 L300,420 L210,440 L120,420 L110,320 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[1][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -158,7 +159,7 @@ export default function AtlasPage() {
             />
             {/* LISBOA (AML) */}
             <path
-              d="M130,420 L220,440 L235,500 L165,520 L115,480 Z"
+              d="M120,420 L210,440 L220,500 L150,520 L100,480 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[2][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -168,7 +169,7 @@ export default function AtlasPage() {
             />
             {/* ALENTEJO */}
             <path
-              d="M130,420 L220,440 L310,420 L340,580 L320,680 L180,710 L165,520 L235,500 Z"
+              d="M120,420 L210,440 L300,420 L330,580 L310,680 L170,710 L150,520 L220,500 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[3][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -178,7 +179,7 @@ export default function AtlasPage() {
             />
             {/* ALGARVE */}
             <path
-              d="M180,710 L320,680 L330,770 L180,770 Z"
+              d="M170,710 L310,680 L320,770 L170,770 Z"
               fill={getRegionColor(PORTUGAL_DATA_2026[4][selectedIndicator], selectedIndicator)}
               stroke="white"
               strokeWidth="2"
@@ -187,30 +188,30 @@ export default function AtlasPage() {
               onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[4])}
             />
             
-            {/* AÇORES - Inset Lateral (Aproximado conforme sugerido) */}
+            {/* AÇORES - Inset Aproximado */}
             <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[5])} onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[5])}>
-              <rect x="20" y="300" width="80" height="80" rx="12" fill="white" fillOpacity="0.6" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <rect x="10" y="250" width="80" height="80" rx="12" fill="white" fillOpacity="0.6" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
               <path 
-                d="M40,330 L60,325 L80,330 L75,350 L50,355 Z" 
+                d="M30,280 L50,275 L70,280 L65,300 L40,305 Z" 
                 fill={getRegionColor(PORTUGAL_DATA_2026[5][selectedIndicator], selectedIndicator)} 
                 stroke="white" 
                 strokeWidth="2" 
                 className="transition-all group-hover:stroke-accent" 
               />
-              <text x="60" y="370" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Açores</text>
+              <text x="50" y="320" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Açores</text>
             </g>
 
-            {/* MADEIRA - Inset Lateral (Aproximado conforme sugerido) */}
+            {/* MADEIRA - Inset Aproximado */}
             <g className="cursor-pointer group" onMouseEnter={() => setHoveredRegion(PORTUGAL_DATA_2026[6])} onClick={() => setHoveredRegion(PORTUGAL_DATA_2026[6])}>
-              <rect x="20" y="400" width="80" height="80" rx="12" fill="white" fillOpacity="0.6" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
+              <rect x="10" y="350" width="80" height="80" rx="12" fill="white" fillOpacity="0.6" stroke="hsl(var(--primary)/20%)" strokeWidth="1" strokeDasharray="4 2" />
               <path 
-                d="M45,430 L75,435 L70,450 L50,455 Z" 
+                d="M35,380 L65,385 L60,400 L40,405 Z" 
                 fill={getRegionColor(PORTUGAL_DATA_2026[6][selectedIndicator], selectedIndicator)} 
                 stroke="white" 
                 strokeWidth="2" 
                 className="transition-all group-hover:stroke-accent" 
               />
-              <text x="60" y="470" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Madeira</text>
+              <text x="50" y="420" textAnchor="middle" className="text-[10px] font-bold fill-muted-foreground uppercase tracking-widest">Madeira</text>
             </g>
           </svg>
           
