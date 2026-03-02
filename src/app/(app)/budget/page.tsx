@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useTranslation } from '@/lib/i18n';
-import { getFamilyBudgetAnalysis, getTranslation } from '@/lib/actions';
+import { getFamilyBudgetAnalysis, getTranslation, Language } from '@/lib/actions';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
@@ -34,7 +34,7 @@ const DEFAULT_COSTS_2026 = {
 };
 
 export default function FamilyBudgetPage() {
-  const { t, language } = useTranslation();
+  const { t, lang } = useTranslation();
   const firestore = useFirestore();
 
   const [adults, setAdults] = useState(1);
@@ -58,7 +58,7 @@ export default function FamilyBudgetPage() {
   const [showOriginal, setShowOriginal] = useState(true);
 
   useEffect(() => {
-    if (language === 'en' && aiResult?.analysis) {
+    if (lang === 'en' && aiResult?.analysis) {
       const checkCache = async () => {
         if (aiResult.analysis.length > MAX_CACHE_LENGTH) return;
         const cacheRef = collection(firestore, 'translations_cache');
@@ -74,12 +74,12 @@ export default function FamilyBudgetPage() {
       setTranslatedAnalysis(null);
       setShowOriginal(true);
     }
-  }, [language, aiResult, firestore]);
+  }, [lang, aiResult, firestore]);
 
   const handleTranslate = () => {
     if (!aiResult?.analysis) return;
     startTransition(async () => {
-      const res = await getTranslation(aiResult.analysis, language);
+      const res = await getTranslation(aiResult.analysis, lang as Language);
       setTranslatedAnalysis(res);
       setShowOriginal(false);
       const cacheRef = collection(firestore, 'translations_cache');
@@ -103,11 +103,20 @@ export default function FamilyBudgetPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      const res = await getFamilyBudgetAnalysis({
-        profile: { adults, children, totalNetIncome: income },
-        expenses
-      }, language);
-      setAiResult(res);
+      const res = await getFamilyBudgetAnalysis(
+        { 
+          budget: {
+            profile: { adults, children, totalNetIncome: income },
+            expenses
+          }
+        },
+        lang as Language
+      );
+      setAiResult({ 
+        ...res,
+        tips: res.suggestions,
+        score: 0 // Add a default score
+      });
       setTranslatedAnalysis(null);
       setShowOriginal(true);
     });
@@ -249,7 +258,7 @@ export default function FamilyBudgetPage() {
                 <CardTitle className="text-xs uppercase tracking-widest text-accent flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5" /> {t('budget.aiAnalysis')}
                 </CardTitle>
-                {language !== 'pt' && (
+                {lang !== 'pt' && (
                   <Button variant="outline" size="sm" onClick={translatedAnalysis ? () => setShowOriginal(!showOriginal) : handleTranslate} disabled={isTranslating} className="h-7 text-[9px] border-accent/50 text-accent font-bold">
                     {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                     {translatedAnalysis ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate')}
