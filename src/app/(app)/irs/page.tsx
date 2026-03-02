@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,50 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTranslation } from '@/lib/i18n';
 import { getIRSAssessment } from '@/lib/actions';
 import { 
   Calculator, UserCircle, Users, PiggyBank, Sparkles, 
   Loader2, Info, CheckCircle2, Landmark, Wallet,
   HeartPulse, GraduationCap, Home, ShoppingBag, TrendingUp, TrendingDown,
-  ExternalLink, BookOpen, FileText, Gavel
+  ExternalLink, FileText, Gavel
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdBanner } from '@/components/AdBanner';
+import { InfoPopover } from '@/components/InfoPopover';
 import Link from 'next/link';
-
-function InfoButton({ title, content, link }: { title: string, content: string, link?: string }) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-4 w-4 ml-1.5 rounded-full text-muted-foreground hover:text-primary">
-          <Info className="h-3.5 w-3.5" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4 shadow-xl border-primary/20">
-        <div className="space-y-2">
-          <h4 className="font-bold text-sm flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-primary" /> {title}
-          </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {content}
-          </p>
-          {link && (
-            <Link 
-              href={link} 
-              target="_blank" 
-              className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline pt-1"
-            >
-              Consultar no DRE/CIRS <ExternalLink className="h-2.5 w-2.5" />
-            </Link>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 export default function IRSPage() {
   const { t, language } = useTranslation();
@@ -110,10 +79,11 @@ export default function IRSPage() {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label>{t('irs.maritalStatus')}</Label>
-                    <InfoButton 
+                    <InfoPopover 
                       title="Quociente Familiar" 
                       content="O estado civil define como o rendimento é dividido para aplicação das taxas. Casados podem optar por tributação conjunta (Art. 69.º CIRS)."
                       link="https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1988-34509075-48313"
+                      linkLabel="Ver Art. 69.º no DRE"
                     />
                   </div>
                   <Select value={maritalStatus} onValueChange={(v: any) => setMaritalStatus(v)}>
@@ -130,7 +100,7 @@ export default function IRSPage() {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label>{t('irs.dependents')}</Label>
-                    <InfoButton 
+                    <InfoPopover 
                       title="Dedução por Dependente" 
                       content="Cada dependente confere uma dedução fixa à coleta (Art. 78.º-A do CIRS), que varia consoante a idade e o número de dependentes."
                     />
@@ -148,7 +118,7 @@ export default function IRSPage() {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label>{t('irs.grossIncome')}</Label>
-                    <InfoButton 
+                    <InfoPopover 
                       title="Rendimentos Categoria A" 
                       content="Valor total bruto anual recebido (salários, subsídios). Base para a determinação do escalão (Art. 2.º do CIRS)."
                       link="https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1988-34509075-48313"
@@ -162,7 +132,7 @@ export default function IRSPage() {
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <Label>{t('irs.retention')}</Label>
-                    <InfoButton 
+                    <InfoPopover 
                       title="Retenção na Fonte" 
                       content="Imposto já pago mensalmente através do empregador. Este valor é abatido ao imposto final apurado."
                       link="https://www.portaldasfinancas.gov.pt/at/html/index.html"
@@ -185,7 +155,7 @@ export default function IRSPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-red-500" /> {t('irs.health')}</Label>
-                  <InfoButton 
+                  <InfoPopover 
                     title="Despesas de Saúde" 
                     content="Dedução de 15% das despesas de saúde, com limite de €1.000 (Art. 78.º-C do CIRS)."
                     link="https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1988-34509075-48313"
@@ -196,7 +166,7 @@ export default function IRSPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-500" /> {t('irs.education')}</Label>
-                  <InfoButton 
+                  <InfoPopover 
                     title="Educação e Formação" 
                     content="Dedução de 30% das despesas de educação, até ao limite de €800 (Art. 78.º-D do CIRS)."
                   />
@@ -206,7 +176,7 @@ export default function IRSPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2"><Home className="h-4 w-4 text-amber-600" /> {t('irs.housing')}</Label>
-                  <InfoButton 
+                  <InfoPopover 
                     title="Habitação" 
                     content="Dedução de juros de crédito (contratos até 2011) ou 15% das rendas pagas até €502 (Art. 78.º-E do CIRS)."
                   />
@@ -216,7 +186,7 @@ export default function IRSPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2"><ShoppingBag className="h-4 w-4 text-emerald-600" /> {t('irs.general')}</Label>
-                  <InfoButton 
+                  <InfoPopover 
                     title="Despesas Gerais Familiares" 
                     content="35% das despesas com fatura, com limite de €250 por sujeito passivo (Art. 78.º-B do CIRS)."
                   />

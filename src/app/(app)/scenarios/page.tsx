@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, doc, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { getScenarioAnalysis, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
@@ -15,7 +15,6 @@ import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +26,7 @@ import {
   Languages, RefreshCw
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
+import { InfoPopover } from '@/components/InfoPopover';
 import { cn } from '@/lib/utils';
 
 const MAX_CACHE_LENGTH = 1000;
@@ -95,7 +95,6 @@ export default function ScenariosPage() {
   const [translatedAnalysis, setTranslatedAnalysis] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
-  // AUTO CACHE CHECK: Se o idioma for inglês, procura se este feedback já foi traduzido antes
   useEffect(() => {
     if (language === 'en' && aiAnalysis) {
       const checkCache = async () => {
@@ -190,7 +189,6 @@ export default function ScenariosPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      // O fluxo Genkit agora aceita parameters.budget
       const res = await getScenarioAnalysis({ 
         parameters: { ...params, budget }, 
         results 
@@ -310,28 +308,40 @@ export default function ScenariosPage() {
                 <CardContent className="space-y-8 pt-4">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2">{t('scenarios.irsLabel')}</Label>
+                      <Label className="flex items-center gap-1">
+                        {t('scenarios.irsLabel')}
+                        <InfoPopover title="IRS Progressivo" content="Imposto sobre o Rendimento de Pessoas Singulares. Alterar a taxa média simula uma mudança na carga fiscal sobre as famílias." link="https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs1.aspx" />
+                      </Label>
                       <Badge variant="secondary" className="font-mono">{params.irs}%</Badge>
                     </div>
                     <Slider value={[params.irs]} onValueChange={([v]) => setParams(p => ({ ...p, irs: v }))} min={10} max={45} step={0.5} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2">{t('scenarios.ivaLabel')}</Label>
+                      <Label className="flex items-center gap-1">
+                        {t('scenarios.ivaLabel')}
+                        <InfoPopover title="IVA (Consumo)" content="Imposto sobre o Valor Acrescentado. Afeta diretamente os preços e a inflação (Art. 18.º CIVA)." link="https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/civa_rep/Pages/iva18.aspx" />
+                      </Label>
                       <Badge variant="secondary" className="font-mono">{params.iva}%</Badge>
                     </div>
                     <Slider value={[params.iva]} onValueChange={([v]) => setParams(p => ({ ...p, iva: v }))} min={15} max={30} step={0.5} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2">{t('scenarios.ircLabel')}</Label>
+                      <Label className="flex items-center gap-1">
+                        {t('scenarios.ircLabel')}
+                        <InfoPopover title="IRC (Empresas)" content="Imposto sobre o Rendimento das Pessoas Coletivas. Afeta a competitividade e a atração de investimento externo." />
+                      </Label>
                       <Badge variant="secondary" className="font-mono">{params.irc}%</Badge>
                     </div>
                     <Slider value={[params.irc]} onValueChange={([v]) => setParams(p => ({ ...p, irc: v }))} min={10} max={30} step={0.5} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2">{t('scenarios.smnLabel')}</Label>
+                      <Label className="flex items-center gap-1">
+                        {t('scenarios.smnLabel')}
+                        <InfoPopover title="Salário Mínimo" content="O SMN em 2026 reflete a trajetória de valorização acordada em concertação social." />
+                      </Label>
                       <Badge variant="secondary" className="font-mono">{params.smn}€</Badge>
                     </div>
                     <Slider value={[params.smn]} onValueChange={([v]) => setParams(p => ({ ...p, smn: v }))} min={820} max={1200} step={5} />
@@ -357,28 +367,40 @@ export default function ScenariosPage() {
                 <CardContent className="space-y-8 pt-4">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4 text-red-500" /> {t('scenarios.budget.health')}</Label>
+                      <Label className="flex items-center gap-2">
+                        <HeartPulse className="h-4 w-4 text-red-500" /> {t('scenarios.budget.health')}
+                        <InfoPopover title="Saúde (SNS)" content="Investimento no Serviço Nacional de Saúde. Afeta a qualidade do serviço e os tempos de espera." />
+                      </Label>
                       <Badge variant={budget.health > BUDGET_2026.health ? "default" : "secondary"}>{budget.health.toFixed(1)}B€</Badge>
                     </div>
                     <Slider value={[budget.health]} onValueChange={([v]) => setBudget(b => ({ ...b, health: v }))} min={10} max={25} step={0.1} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-500" /> {t('scenarios.budget.education')}</Label>
+                      <Label className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-blue-500" /> {t('scenarios.budget.education')}
+                        <InfoPopover title="Educação e Ciência" content="Investimento em escolas, universidades e investigação. Tem impacto no PIB a longo prazo." />
+                      </Label>
                       <Badge variant={budget.education > BUDGET_2026.education ? "default" : "secondary"}>{budget.education.toFixed(1)}B€</Badge>
                     </div>
                     <Slider value={[budget.education]} onValueChange={([v]) => setBudget(b => ({ ...b, education: v }))} min={5} max={15} step={0.1} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2"><Shield className="h-4 w-4 text-green-500" /> {t('scenarios.budget.social')}</Label>
+                      <Label className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-green-500" /> {t('scenarios.budget.social')}
+                        <InfoPopover title="Segurança Social" content="Pensões, subsídios e apoios sociais. É a maior rubrica da despesa pública." />
+                      </Label>
                       <Badge variant={budget.social > BUDGET_2026.social ? "default" : "secondary"}>{budget.social.toFixed(1)}B€</Badge>
                     </div>
                     <Slider value={[budget.social]} onValueChange={([v]) => setBudget(b => ({ ...b, social: v }))} min={15} max={35} step={0.1} />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <Label className="flex items-center gap-2"><Construction className="h-4 w-4 text-amber-500" /> {t('scenarios.budget.infra')}</Label>
+                      <Label className="flex items-center gap-2">
+                        <Construction className="h-4 w-4 text-amber-500" /> {t('scenarios.budget.infra')}
+                        <InfoPopover title="Infraestruturas" content="Investimento em ferrovias, portos e energia. Essencial para a produtividade nacional." />
+                      </Label>
                       <Badge variant={budget.infra > BUDGET_2026.infra ? "default" : "secondary"}>{budget.infra.toFixed(1)}B€</Badge>
                     </div>
                     <Slider value={[budget.infra]} onValueChange={([v]) => setBudget(b => ({ ...b, infra: v }))} min={2} max={12} step={0.1} />

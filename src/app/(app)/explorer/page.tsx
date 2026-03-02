@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw, ExternalLink, Globe, Database } from 'lucide-react';
+import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw, ExternalLink, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { AdBanner } from '@/components/AdBanner';
@@ -24,6 +24,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'rec
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { InfoPopover } from '@/components/InfoPopover';
 import { safeDecode } from '@/lib/safe-decode';
 import Link from 'next/link';
 
@@ -202,7 +203,7 @@ function UniversalDataCard({
                 size="sm" 
                 onClick={translated ? () => setShowOriginal(!showOriginal) : handleTranslate} 
                 disabled={isTranslating} 
-                className="h-8 text-[9px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
+                className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/50 text-accent hover:bg-accent/10 hover:text-accent"
               >
                 {isTranslating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : translated ? <RefreshCw className="h-3.5 w-3.5" /> : <Languages className="h-3.5 w-3.5" />}
               </Button>
@@ -225,18 +226,19 @@ function UniversalDataCard({
                 <DialogFooter className="flex justify-between items-center sm:justify-between"><p className="text-xs text-muted-foreground italic">Fonte: {source}</p><Button variant="outline" size="sm" onClick={() => downloadCsv(data, currentTitle)}><Download className="h-4 w-4 mr-2" /> Exportar CSV</Button></DialogFooter>
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, currentTitle)}><Download className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => downloadCsv(data, currentTitle)}>
+              <Download className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        {viewMode === 'chart' ? <div className="cursor-zoom-in" title="Clique para expandir"><ChartRenderer data={data} chartType={chartType} unit={unit} /></div> : (
-          <div className="overflow-x-auto rounded-md border max-h-[250px]">
-            <Table><TableHeader className="bg-muted/50 sticky top-0 z-10"><TableRow>{headers.map(h => <TableHead key={h} className="text-[10px] uppercase font-bold">{h}</TableHead>)}</TableRow></TableHeader>
-              <TableBody>{data.map((row, i) => (<TableRow key={i}>{headers.map((h, j) => (<TableCell key={j} className="text-sm py-2">{String(row[h] !== undefined ? row[h] : '')}</TableCell>))}</TableRow>))}</TableBody>
-            </Table>
+        <div className="cursor-zoom-in relative group">
+          <ChartRenderer data={data} chartType={chartType} unit={unit} />
+          <div className="absolute inset-0 flex items-center justify-center bg-background/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <Badge variant="secondary" className="gap-1.5"><Maximize2 className="h-3 w-3" /> Clique para expandir</Badge>
           </div>
-        )}
+        </div>
       </CardContent>
       <CardFooter className="bg-muted/10 border-t py-2 flex justify-between items-center"><p className="text-[10px] text-muted-foreground italic">Fonte: {source}</p><div className="flex gap-2">{showSave && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold gap-1" onClick={onSave}><Save className="h-3 w-3" />{t('common.save')}</Button>}<RefutationDialog contentId={`data-${title}`} /></div></CardFooter>
     </Card>
