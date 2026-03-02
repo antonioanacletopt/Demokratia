@@ -1,4 +1,3 @@
-
 'use server';
 import { config } from 'dotenv';
 config();
@@ -13,3 +12,4 @@ import '@/ai/flows/generate-news-feed.ts';
 import '@/ai/flows/translate-content.ts';
 import '@/ai/flows/explain-scenario-impact.ts';
 import '@/ai/flows/analyze-family-budget.ts';
+import '@/ai/flows/calculate-irs-flow.ts';

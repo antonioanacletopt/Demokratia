@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
@@ -11,8 +10,35 @@ export const translations = {
       home: 'Início', dashboard: 'Dashboard', explorer: 'Explorador de Dados', simulations: 'Simulações', factCheck: 'Fact Check',
       legislation: 'Legislação', proposals: 'Propostas', contact: 'Contacto', profile: 'Perfil', admin: 'Admin',
       login: 'Iniciar Sessão', logout: 'Sair', terms: 'Termos de Utilização', privacy: 'Privacidade e Cookies',
-      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', about: 'Quem Somos', faq: 'FAQ',
+      scenarios: 'Laboratório Macro', budget: 'Simulador de Carteira', irs: 'Simulador de IRS', about: 'Quem Somos', faq: 'FAQ',
       methodology: 'Metodologia e Ciência', map: 'Atlas de Portugal'
+    },
+    irs: {
+      title: 'Simulador de IRS 2026',
+      description: 'Estime o seu reembolso ou pagamento de imposto baseado no Orçamento de Estado 2026.',
+      howItWorks: 'Introduza os seus rendimentos anuais e despesas dedutíveis. A nossa IA aplicará as tabelas de 2026 e os benefícios fiscais atualizados para calcular o seu saldo fiscal.',
+      personalCard: 'Agregado Familiar',
+      maritalStatus: 'Estado Civil',
+      single: 'Solteiro / Separado',
+      marriedJoint: 'Casado (Conjunto)',
+      marriedSeparate: 'Casado (Separado)',
+      dependents: 'Número de Dependentes',
+      incomeCard: 'Rendimentos e Retenção',
+      grossIncome: 'Rendimento Bruto Anual',
+      retention: 'IRS Retido na Fonte',
+      expensesCard: 'Deduções Estimadas (Despesas Anuais)',
+      health: 'Saúde',
+      education: 'Educação',
+      housing: 'Habitação',
+      general: 'Despesas Gerais',
+      resultCard: 'Resultado da Simulação',
+      estimatedTax: 'Imposto Total Apurado',
+      effectiveRate: 'Taxa Efetiva',
+      refund: 'Valor a Receber',
+      payment: 'Valor a Pagar',
+      aiAnalysis: 'Parecer do Consultor IA',
+      calculateBtn: 'Simular IRS',
+      tipsTitle: 'Otimização para 2027'
     },
     common: {
       loading: 'A carregar...', save: 'Guardar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar', search: 'Pesquisar...',
@@ -26,7 +52,7 @@ export const translations = {
     map: {
       title: 'Atlas Regional de Portugal',
       description: 'Explore indicadores socioeconómicos detalhados por região para 2026.',
-      howItWorks: 'Selecione um indicador na lista lateral para ver a distribuição geográfica. As cores mais escuras indicam valores mais elevados.',
+      howItWorks: 'Selecione um indicador na lista lateral para ver a distribution geográfica. As cores mais escuras indicam valores mais elevados.',
       salary: 'Salário Médio Mensal',
       poverty: 'Taxa de Risco de Pobreza',
       population: 'Densidade Populacional',
@@ -289,8 +315,35 @@ export const translations = {
       home: 'Home', dashboard: 'Dashboard', explorer: 'Data Explorer', simulations: 'Simulations', factCheck: 'Fact Check',
       legislation: 'Legislation', proposals: 'Proposals', contact: 'Contact', profile: 'Profile', admin: 'Admin',
       login: 'Login', logout: 'Logout', terms: 'Terms of Use', privacy: 'Privacy & Cookies',
-      scenarios: 'Macro Lab', budget: 'Wallet Simulator', about: 'About Us', faq: 'FAQ',
+      scenarios: 'Macro Lab', budget: 'Wallet Simulator', irs: 'IRS Simulator', about: 'About Us', faq: 'FAQ',
       methodology: 'Methodology & Science', map: 'Portugal Atlas'
+    },
+    irs: {
+      title: 'IRS Simulator 2026',
+      description: 'Estimate your tax refund or payment based on the 2026 State Budget.',
+      howItWorks: 'Enter your annual income and deductible expenses. Our AI will apply the 2026 brackets and updated tax benefits to calculate your tax balance.',
+      personalCard: 'Household',
+      maritalStatus: 'Marital Status',
+      single: 'Single / Separated',
+      marriedJoint: 'Married (Joint)',
+      marriedSeparate: 'Married (Separate)',
+      dependents: 'Number of Dependents',
+      incomeCard: 'Income and Withholding',
+      grossIncome: 'Gross Annual Income',
+      retention: 'Tax Withheld at Source',
+      expensesCard: 'Estimated Deductions (Annual Expenses)',
+      health: 'Health',
+      education: 'Education',
+      housing: 'Housing',
+      general: 'General Expenses',
+      resultCard: 'Simulation Result',
+      estimatedTax: 'Total Tax Assessed',
+      effectiveRate: 'Effective Rate',
+      refund: 'Amount to Receive',
+      payment: 'Amount to Pay',
+      aiAnalysis: 'AI Consultant Feedback',
+      calculateBtn: 'Simulate IRS',
+      tipsTitle: 'Optimization for 2027'
     },
     common: {
       loading: 'Loading...', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', search: 'Search...',
@@ -477,7 +530,7 @@ export const translations = {
       howItWorks: 'Submit a public statement. AI cross-references the information with official sources and analyzes the temporal context to issue an impartial verdict on its truthfulness.',
       cardTitle: 'Check Claim',
       cardDesc: 'Enter statement.', textareaPlaceholder: "e.g., 'Highest taxes in EU'", checkBtn: 'Check',
-      resultTitle: 'Result', verdict: 'Verdict', explanation: 'Explanation', sources: 'Sources', historyTitle: 'My History',
+      resultsTitle: 'Result', verdict: 'Verdict', explanation: 'Explanation', sources: 'Sources', historyTitle: 'My History',
       historyDesc: 'Your private checks.', noHistoryTitle: 'No history', noHistoryDesc: 'Make your first check.',
       recentChecks: 'Community Verifications', recentChecksDesc: 'What citizens are checking lately.'
     },

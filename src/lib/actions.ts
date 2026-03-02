@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -43,6 +42,11 @@ import {
   AnalyzeBudgetInput,
   AnalyzeBudgetOutput,
 } from '@/ai/flows/analyze-family-budget';
+import {
+  calculateIRS,
+  CalculateIRSInput,
+  CalculateIRSOutput,
+} from '@/ai/flows/calculate-irs-flow';
 
 import type { Language } from './i18n';
 
@@ -102,11 +106,14 @@ export async function getFamilyBudgetAnalysis(
   return await analyzeFamilyBudget({ ...input, language });
 }
 
-/**
- * AI-powered translation. 
- * Note: Cache logic is now handled on the client side components
- * to avoid initializing Firebase on the server.
- */
+export async function getIRSAssessment(
+  input: Omit<CalculateIRSInput, 'language'>,
+  lang: Language
+): Promise<CalculateIRSOutput> {
+  const language = lang === 'en' ? 'English' : 'Portuguese';
+  return await calculateIRS({ ...input, language });
+}
+
 export async function getTranslation(
   text: string,
   lang: Language

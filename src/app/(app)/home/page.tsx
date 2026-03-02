@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -14,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon, Calculator } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
@@ -198,11 +197,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-5">
+      <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {[
-          { href: '/budget', icon: TrendingUp, label: t('nav.budget'), desc: 'Seu bolso.', color: 'primary' },
+          { href: '/irs', icon: Calculator, label: t('nav.irs'), desc: 'Contas com o estado.', color: 'primary' },
+          { href: '/budget', icon: Wallet, label: t('nav.budget'), desc: 'Seu bolso.', color: 'primary' },
           { href: '/map', icon: MapIcon, label: t('nav.map'), desc: 'Atlas regional.', color: 'accent' },
-          { href: '/scenarios', icon: Lightbulb, label: t('nav.scenarios'), desc: 'Teste políticas.', color: 'accent' },
+          { href: '/scenarios', icon: Zap, label: t('nav.scenarios'), desc: 'Teste políticas.', color: 'accent' },
           { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verdade factual.', color: 'green-600' },
           { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
         ].map((tool) => (

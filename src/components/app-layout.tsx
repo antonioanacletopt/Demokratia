@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon, Calculator } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -54,6 +53,7 @@ function AppSidebarContent() {
     { href: "/home", icon: Home, label: t('nav.home'), public: true },
     { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
     { href: "/map", icon: MapIcon, label: t('nav.map'), public: true },
+    { href: "/irs", icon: Calculator, label: t('nav.irs'), public: true },
     { href: "/budget", icon: Wallet, label: t('nav.budget'), public: true },
     { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
     { href: "/scenarios", icon: Zap, label: t('nav.scenarios'), public: true },
