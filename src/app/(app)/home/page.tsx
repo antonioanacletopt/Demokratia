@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon, Calculator } from 'lucide-react';
+import { Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, BarChart3, Globe, ThumbsUp, Users, Map as MapIcon, Calculator, Wallet } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { getNewsFeed, getTranslation } from '@/lib/actions';
 import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
