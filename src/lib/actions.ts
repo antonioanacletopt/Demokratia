@@ -1,8 +1,8 @@
 'use server';
 /**
  * @fileOverview Server actions for Genkit AI integration.
- * Refactored to use definePrompt and defineFlow for maximum stability in Next.js.
- * This prevents "Unknown action type" errors by ensuring actions are registered during module load.
+ * Refactored to use definePrompt and defineFlow with explicit model assignment
+ * to prevent "Must supply a model" errors.
  */
 
 import { genkit, z } from 'genkit';
@@ -72,6 +72,7 @@ const IRSAssessmentOutputSchema = z.object({
 
 const irsPrompt = ai.definePrompt({
   name: 'irsPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ data: z.any(), lang: z.string() }) },
   output: { schema: IRSAssessmentOutputSchema },
   prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: {{json data}}. Provide response in {{lang}}. Ensure technical accuracy according to CIRS 2026.`,
@@ -79,6 +80,7 @@ const irsPrompt = ai.definePrompt({
 
 const simulationPrompt = ai.definePrompt({
   name: 'simulationPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ description: z.string(), lang: z.string() }) },
   output: { schema: EconomicPolicySimulationOutputSchema },
   prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: {{description}}. Language: {{lang}}. Use Okun's Law and multiplier effects for estimations.`,
@@ -86,6 +88,7 @@ const simulationPrompt = ai.definePrompt({
 
 const marketPrompt = ai.definePrompt({
   name: 'marketPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ lang: z.string() }) },
   output: { schema: MarketAnalysisOutputSchema },
   prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: {{lang}}.`,
@@ -93,6 +96,7 @@ const marketPrompt = ai.definePrompt({
 
 const factCheckPrompt = ai.definePrompt({
   name: 'factCheckPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ claim: z.string(), lang: z.string() }) },
   output: { schema: FactCheckOutputSchema },
   prompt: `Perform a rigorous fact-check on this claim regarding Portugal in 2026: {{claim}}. Language: {{lang}}. Base your verdict on official statistical data and temporal context.`,
@@ -100,6 +104,7 @@ const factCheckPrompt = ai.definePrompt({
 
 const legislationPrompt = ai.definePrompt({
   name: 'legislationPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ question: z.string(), lang: z.string() }) },
   output: { schema: ConsultLegislationOutputSchema },
   prompt: `Consult Portuguese legislation (Diário da República) to explain: {{question}}. Language: {{lang}}. Focus on 2026 regulations and new laws.`,
@@ -107,6 +112,7 @@ const legislationPrompt = ai.definePrompt({
 
 const scenarioPrompt = ai.definePrompt({
   name: 'scenarioPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ input: z.any(), lang: z.string() }) },
   output: { schema: z.object({ feedback: z.string() }) },
   prompt: `Analyze this macroeconomic scenario for Portugal 2026: {{json input}}. Act as a member of the Public Finance Council. Language: {{lang}}.`,
@@ -114,6 +120,7 @@ const scenarioPrompt = ai.definePrompt({
 
 const budgetPrompt = ai.definePrompt({
   name: 'budgetPrompt',
+  model: MODEL_ID,
   input: { schema: z.object({ input: z.any(), lang: z.string() }) },
   output: { schema: z.object({ analysis: z.string(), suggestions: z.array(z.string()) }) },
   prompt: `Provide financial coaching for this family budget in Portugal 2026: {{json input}}. Language: {{lang}}. Consider inflation and average purchasing power.`,
