@@ -40,11 +40,28 @@ const ConsultLegislationOutputSchema = z.object({
   sources: z.array(z.string()),
 });
 
+const MarketAnalysisOutputSchema = z.object({
+  sentiment: z.enum(['Bullish', 'Bearish', 'Neutral']),
+  globalContext: z.string(),
+  sectors: z.array(z.object({
+    name: z.string(),
+    context: z.string(),
+    opportunity: z.string(),
+    impact: z.string(),
+  })),
+  assets: z.array(z.object({
+    name: z.string(),
+    currentValue: z.number(),
+    trend: z.string(),
+  })),
+});
+
 // --- Exported Types ---
 
 export type EconomicPolicySimulationOutput = z.infer<typeof EconomicPolicySimulationOutputSchema>;
 export type FactCheckOutput = z.infer<typeof FactCheckOutputSchema>;
 export type ConsultLegislationOutput = z.infer<typeof ConsultLegislationOutputSchema>;
+export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
 
 // --- Internal Flow Definitions (not exported) ---
 
@@ -117,6 +134,21 @@ const consultLegislationFlow = ai.defineFlow(
     const { output } = await ai.generate({
       prompt: `Explain Portuguese legislation regarding: ${input.question}. Language: ${input.language}`,
       output: { schema: ConsultLegislationOutputSchema },
+    });
+    return output!;
+  }
+);
+
+const getMarketAnalysisFlow = ai.defineFlow(
+  {
+    name: 'getMarketAnalysisFlow',
+    inputSchema: z.object({ language: z.string() }),
+    outputSchema: MarketAnalysisOutputSchema,
+  },
+  async (input) => {
+    const { output } = await ai.generate({
+      prompt: `You are a Senior Market Analyst. Provide a strategic market analysis for 2026 focusing on global impacts (Energy, Defense, Metals, Logistics) and sectors under pressure. Use current hypothetical scenarios (e.g. military escalation, high interest rates). Language: ${input.language}`,
+      output: { schema: MarketAnalysisOutputSchema },
     });
     return output!;
   }
@@ -228,4 +260,8 @@ export async function getChartFromRequest(input: { request: string }) {
     },
   });
   return output!;
+}
+
+export async function getMarketAnalysis(lang: Language = 'pt') {
+  return getMarketAnalysisFlow({ language: lang === 'en' ? 'English' : 'Portuguese' });
 }

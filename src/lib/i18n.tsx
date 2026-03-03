@@ -12,6 +12,7 @@ const DICTIONARY = {
       map: 'Atlas Regional',
       irs: 'Simulador IRS',
       budget: 'Orçamento',
+      investor: 'Investidor',
       simulations: 'Impacto IA',
       scenarios: 'Laboratório',
       factCheck: 'Fact-Check',
@@ -50,6 +51,27 @@ const DICTIONARY = {
       noResults: 'Sem resultados.',
       warning: 'Aviso',
       confirm_delete: 'Tem a certeza que deseja apagar?'
+    },
+    investor: {
+      title: 'Apoio ao Investidor',
+      description: 'Análise estratégica e ferramentas para gestão de património.',
+      strategicAnalysis: 'Análise Estratégica: Oportunidades e Impacto',
+      marketSnapshot: 'Snapshot de Mercado',
+      pprTitle: 'Comparador de PPR',
+      pprDesc: 'Calcule o benefício fiscal e projeção do seu Plano Poupança Reforma.',
+      investmentAmount: 'Investimento Anual (€)',
+      invest: 'Simular Investimento',
+      fiscalBenefit: 'Benefício Fiscal Estimado',
+      projectedValue: 'Valor Final Projetado (20 anos)',
+      riskLevel: 'Perfil de Risco',
+      conservative: 'Conservador',
+      moderate: 'Moderado',
+      aggressive: 'Dinâmico',
+      sectorEnergy: 'Energia (Petróleo e Gás)',
+      sectorDefense: 'Defesa e Aeroespacial',
+      sectorMetals: 'Metais Preciosos',
+      sectorLogistics: 'Marítimo e Logística',
+      underPressure: 'Sectores sob Pressão'
     },
     home: {
       welcomeTitle: 'Dados, Análises e Simulações para Portugal',
@@ -314,7 +336,7 @@ const DICTIONARY = {
       editSource: 'Editar Fonte',
       deleteSourceConfirm: 'Apagar Fonte?',
       deleteSourceDesc: 'Isto pode afetar as pesquisas da IA relacionadas com esta fonte.',
-      messagesTitle: 'Caixa de Entrada',
+      messagesTitle: 'Box de Entrada',
       messagesDesc: 'Contactos recebidos via formulário.',
       from: 'De',
       subject: 'Assunto',
@@ -389,7 +411,7 @@ const DICTIONARY = {
       legend: 'Legenda de Intensidade',
       low: 'Baixo',
       high: 'Alto',
-      indicators: 'Indicadores Regionais'
+      indicators: 'Regional Indicators'
     }
   },
   en: {
@@ -399,6 +421,7 @@ const DICTIONARY = {
       map: 'Regional Atlas',
       irs: 'IRS Simulator',
       budget: 'Budget',
+      investor: 'Investor',
       simulations: 'AI Impact',
       scenarios: 'Laboratory',
       factCheck: 'Fact-Check',
@@ -437,6 +460,27 @@ const DICTIONARY = {
       noResults: 'No results.',
       warning: 'Warning',
       confirm_delete: 'Are you sure you want to delete?'
+    },
+    investor: {
+      title: 'Investor Support',
+      description: 'Strategic analysis and tools for wealth management.',
+      strategicAnalysis: 'Strategic Analysis: Opportunities and Impact',
+      marketSnapshot: 'Market Snapshot',
+      pprTitle: 'PPR Comparator',
+      pprDesc: 'Calculate the tax benefit and projection of your Retirement Savings Plan (PPR).',
+      investmentAmount: 'Annual Investment (€)',
+      invest: 'Simulate Investment',
+      fiscalBenefit: 'Estimated Tax Benefit',
+      projectedValue: 'Projected Final Value (20 years)',
+      riskLevel: 'Risk Profile',
+      conservative: 'Conservative',
+      moderate: 'Moderate',
+      aggressive: 'Dynamic',
+      sectorEnergy: 'Energy (Oil & Gas)',
+      sectorDefense: 'Defense & Aerospace',
+      sectorMetals: 'Precious Metals',
+      sectorLogistics: 'Maritime & Logistics',
+      underPressure: 'Sectors under Pressure'
     },
     home: {
       welcomeTitle: 'Data, Analysis and Simulations for Portugal',
