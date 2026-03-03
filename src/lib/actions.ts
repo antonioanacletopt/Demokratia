@@ -1,23 +1,23 @@
 'use server';
 /**
  * @fileOverview Server actions for Genkit AI integration.
- * Uses direct ai.generate calls to avoid registry sync issues in Next.js Server Actions.
+ * Utiliza o padrão Genkit v1.x para garantir o registo correto dos modelos no servidor.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Initialize Genkit instance with the Google AI plugin
+// Inicialização centralizada do Genkit
 const ai = genkit({
   plugins: [googleAI()],
 });
 
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
-// --- Types ---
+// --- Tipos ---
 export type Language = 'en' | 'pt';
 
-// --- Output Schemas ---
+// --- Schemas de Saída ---
 
 const EconomicPolicySimulationOutputSchema = z.object({
   simulatedImpact: z.string(),
@@ -67,7 +67,7 @@ const IRSAssessmentOutputSchema = z.object({
   tips: z.array(z.string()),
 });
 
-// --- Exported Server Actions ---
+// --- Server Actions ---
 
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
