@@ -2,9 +2,8 @@
 /**
  * @fileOverview Server actions for Genkit AI integration.
  * 
- * Refactored to use direct ai.generate calls to ensure maximum stability 
- * in Next.js Server Actions and avoid "Unknown action type" errors 
- * related to prompt registration.
+ * Refactored to use stable Genkit 1.x patterns with direct model references
+ * from the googleAI plugin to resolve registration errors in Next.js.
  */
 
 import { genkit, z } from 'genkit';
@@ -14,6 +13,9 @@ import { googleAI } from '@genkit-ai/google-genai';
 const ai = genkit({
   plugins: [googleAI()],
 });
+
+// Use the explicit model reference from the plugin to ensure it's always found
+const model = googleAI.model('gemini-1.5-flash');
 
 export type Language = 'en' | 'pt';
 
@@ -32,16 +34,22 @@ const EconomicPolicySimulationOutputSchema = z.object({
   })),
 });
 
+export type EconomicPolicySimulationOutput = z.infer<typeof EconomicPolicySimulationOutputSchema>;
+
 const FactCheckOutputSchema = z.object({
   verdict: z.enum(['Verdadeiro', 'Falso', 'Enganador', 'Sem Evidência']),
   explanation: z.string(),
   sources: z.array(z.string()),
 });
 
+export type FactCheckOutput = z.infer<typeof FactCheckOutputSchema>;
+
 const ConsultLegislationOutputSchema = z.object({
   answer: z.string(),
   sources: z.array(z.string()),
 });
+
+export type ConsultLegislationOutput = z.infer<typeof ConsultLegislationOutputSchema>;
 
 const MarketAnalysisOutputSchema = z.object({
   sentiment: z.enum(['Bullish', 'Bearish', 'Neutral']),
@@ -59,6 +67,8 @@ const MarketAnalysisOutputSchema = z.object({
   })),
 });
 
+export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
+
 const IRSAssessmentOutputSchema = z.object({
   estimatedTax: z.number(),
   refundOrPayment: z.number(),
@@ -72,74 +82,90 @@ const FamilyBudgetOutputSchema = z.object({
   suggestions: z.array(z.string()),
 });
 
+const StatisticOutputSchema = z.object({
+  isFound: z.boolean(),
+  data: z.string(),
+  explanation: z.string(),
+  source: z.string()
+});
+
+const ChartOutputSchema = z.object({ 
+  isChartable: z.boolean(), 
+  chartTitle: z.string(), 
+  explanation: z.string(), 
+  chartData: z.array(z.any()), 
+  chartType: z.enum(['bar', 'line']), 
+  yAxisLabel: z.string() 
+});
+
 // --- Exported Server Actions ---
 
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${languageName}. Ensure technical accuracy according to CIRS 2026.`,
+    model,
     output: { schema: IRSAssessmentOutputSchema },
+    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${langName}. Ensure technical accuracy according to CIRS 2026.`,
   });
   return output!;
 }
 
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${languageName}. Use Okun's Law and multiplier effects for estimations.`,
+    model,
     output: { schema: EconomicPolicySimulationOutputSchema },
+    prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${langName}. Use Okun's Law and multiplier effects for estimations.`,
   });
   return output!;
 }
 
 export async function getMarketAnalysis(lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${languageName}.`,
+    model,
     output: { schema: MarketAnalysisOutputSchema },
+    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${langName}.`,
   });
   return output!;
 }
 
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Perform a rigorous fact-check on this claim regarding Portugal in 2026: ${input.claim}. Language: ${languageName}. Base your verdict on official statistical data and temporal context.`,
+    model,
     output: { schema: FactCheckOutputSchema },
+    prompt: `Perform a rigorous fact-check on this claim regarding Portugal in 2026: ${input.claim}. Language: ${langName}. Base your verdict on official statistical data and temporal context.`,
   });
   return output!;
 }
 
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Consult Portuguese legislation (Diário da República) to explain: ${input.question}. Language: ${languageName}. Focus on 2026 regulations and new laws.`,
+    model,
     output: { schema: ConsultLegislationOutputSchema },
+    prompt: `Consult Portuguese legislation (Diário da República) to explain: ${input.question}. Language: ${langName}. Focus on 2026 regulations and new laws.`,
   });
   return output!;
 }
 
 export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Act as a member of the Public Finance Council. Language: ${languageName}.`,
+    model,
     output: { schema: z.object({ feedback: z.string() }) },
+    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Act as a member of the Public Finance Council. Language: ${langName}.`,
   });
   return output!;
 }
 
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
-  const languageName = lang === 'en' ? 'English' : 'Portuguese';
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `Provide financial coaching for this family budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${languageName}. Consider inflation and average purchasing power.`,
+    model,
     output: { schema: FamilyBudgetOutputSchema },
+    prompt: `Provide financial coaching for this family budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}. Consider inflation and average purchasing power.`,
   });
   return output!;
 }
@@ -148,7 +174,7 @@ export async function getTranslation(text: string, lang: Language): Promise<stri
   if (!text || lang === 'pt') return text;
   const languageName = lang === 'en' ? 'English' : 'Portuguese';
   const { text: resultText } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
+    model,
     prompt: `Translate the following text to ${languageName}. Maintain the professional tone and ensure technical democratic/economic terms are translated correctly: ${text}`,
   });
   return resultText || text;
@@ -156,7 +182,7 @@ export async function getTranslation(text: string, lang: Language): Promise<stri
 
 export async function getNewsFeed() {
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
+    model,
     prompt: 'Generate exactly 5 relevant and timely news feed items for Portugal in the year 2026. Categories: Fact-Check, New Law, Economic Analysis. Use a formal and objective tone.',
     output: {
       schema: z.object({
@@ -180,8 +206,8 @@ export async function getNewsFeed() {
 
 export async function getPublicStatistic(input: { request: string }) {
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    output: { schema: z.object({ isFound: z.boolean(), data: z.string(), explanation: z.string(), source: z.string() }) },
+    model,
+    output: { schema: StatisticOutputSchema },
     prompt: `Retrieve official factual statistical data from Portugal (INE/Pordata) for: ${input.request}.`,
   });
   return output!;
@@ -189,17 +215,8 @@ export async function getPublicStatistic(input: { request: string }) {
 
 export async function getChartFromRequest(input: { request: string }) {
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash',
-    output: { 
-      schema: z.object({ 
-        isChartable: z.boolean(), 
-        chartTitle: z.string(), 
-        explanation: z.string(), 
-        chartData: z.array(z.any()), 
-        chartType: z.enum(['bar', 'line']), 
-        yAxisLabel: z.string() 
-      }) 
-    },
+    model,
+    output: { schema: ChartOutputSchema },
     prompt: `Generate numeric series data for a chart based on this Portuguese request: ${input.request}. Period: up to 2026.`,
   });
   return output!;
