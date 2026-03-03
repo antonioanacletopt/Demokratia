@@ -2,16 +2,20 @@
 /**
  * @fileOverview Server actions for Genkit AI integration.
  * 
- * Uses direct ai.generate calls to ensure maximum stability in Next.js Server Actions,
- * avoiding "Unknown action type" errors associated with prompt registration.
+ * Fixes "Unknown action type" error by ensuring explicit plugin initialization
+ * and using stable model identification in Next.js 15.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Initialize Genkit with the Google AI plugin
+// Initialize Genkit instance with explicit configuration
 const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [
+    googleAI({
+      apiKey: process.env.GOOGLE_GENAI_API_KEY,
+    }),
+  ],
 });
 
 const MODEL_ID = 'googleai/gemini-1.5-flash';
@@ -103,7 +107,6 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
     model: MODEL_ID,
-    input: { inputData: input, langName },
     output: { schema: IRSAssessmentOutputSchema },
     prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${langName}. Ensure technical accuracy according to CIRS 2026.`,
   });
@@ -114,7 +117,6 @@ export async function getEconomicSimulation(input: { policyDescription: string }
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
     model: MODEL_ID,
-    input: { policyDescription: input.policyDescription, langName },
     output: { schema: EconomicPolicySimulationOutputSchema },
     prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${langName}. Use Okun's Law and multiplier effects for estimations.`,
   });
