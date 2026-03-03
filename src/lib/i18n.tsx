@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -92,7 +91,15 @@ const DICTIONARY = {
         'Análise': 'Económica'
       },
       methodologyTitle: 'Como funciona a Demokratia?',
-      methodologyDesc: 'Utilizamos modelos de IA (RAG) que consultam exclusivamente fontes oficiais como o INE, Pordata e o Diário da República para garantir neutralidade e rigor.'
+      methodologyDesc: 'Utilizamos modelos de IA (RAG) que consultam exclusivamente fontes oficiais como o INE, Pordata e o Diário da República para garantir neutralidade e rigor.',
+      heroTitle: 'Gestão de Orçamento Portugal 2026',
+      regionalTitle: 'Transparência de Norte a Sul',
+      regionalDesc: 'Do litoral ao interior, democratizamos o acesso à informação que importa para o futuro de Portugal.',
+      infoINE: 'Dados do INE',
+      infoINEDesc: 'Atualizados semanalmente.',
+      infoEurostat: 'Contexto Eurostat',
+      infoEurostatDesc: 'Comparação direta com a UE.',
+      simImpact: 'Simular Impacto'
     },
     explorer: {
       title: 'Explorador de Dados',
@@ -110,7 +117,8 @@ const DICTIONARY = {
       suggestBtn: 'Enviar Sugestão',
       existingDataTitle: 'Datasets Disponíveis',
       officialSourcesTitle: 'Fontes Monitorizadas',
-      officialSourcesDesc: 'Portais que a nossa IA consulta em tempo real.'
+      officialSourcesDesc: 'Portais que a nossa IA consulta em tempo real.',
+      officialFooter: 'Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.'
     },
     budget: {
       title: 'Orçamento Familiar 2026',
@@ -160,7 +168,21 @@ const DICTIONARY = {
       estimatedTax: 'Imposto Total (Coleta)',
       effectiveRate: 'Taxa Efetiva',
       aiAnalysis: 'Análise do Consultor Fiscal IA',
-      tipsTitle: 'Dicas de Otimização Fiscal'
+      tipsTitle: 'Dicas de Otimização Fiscal',
+      catA: 'Cat. A (Trabalho Dependente)',
+      catB: 'Cat. B (Trabalho Independente)',
+      propertyInc: 'Rendimentos Prediais (Rendas)',
+      capitalInc: 'Rendimentos de Capitais',
+      englobeProp: 'Englobar rendimentos prediais',
+      englobeCap: 'Englobar rendimentos de capitais',
+      incapacity: 'Incapacidade',
+      taxpayer: 'Contribuinte',
+      spouse: 'Cônjuge',
+      careHomes: 'Lares de Idosos',
+      donations: 'Donativos',
+      alimony: 'Pensão de Alimentos',
+      unionFees: 'Quot. Sindicais',
+      vatInvoices: 'IVA por Fatura'
     },
     scenarios: {
       title: 'Laboratório de Políticas',
@@ -254,7 +276,7 @@ const DICTIONARY = {
       displayNameDesc: 'Como aparecerá nas propostas e cenários.',
       language: 'Idioma de Preferência',
       langDesc: 'Altera a interface e as respostas da IA.',
-      notifications: 'Notificações',
+      notifications: 'Notifications',
       notifDesc: 'Como deseja ser informado.',
       emailNotif: 'Alertas de Verificação',
       emailNotifDesc: 'Receba email quando uma proposta sua for analisada.',
@@ -395,7 +417,15 @@ const DICTIONARY = {
         'Análise': 'Economic'
       },
       methodologyTitle: 'How does Demokratia work?',
-      methodologyDesc: 'We use AI models (RAG) that exclusively consult official sources such as INE, Pordata and the Diário da República to ensure neutrality and rigor.'
+      methodologyDesc: 'We use AI models (RAG) that exclusively consult official sources such as INE, Pordata and the Diário da República to ensure neutrality and rigor.',
+      heroTitle: 'Portugal 2026 Budget Management',
+      regionalTitle: 'Transparency from North to South',
+      regionalDesc: 'From the coast to the interior, we democratize access to the information that matters for the future of Portugal.',
+      infoINE: 'INE Data',
+      infoINEDesc: 'Updated weekly.',
+      infoEurostat: 'Eurostat Context',
+      infoEurostatDesc: 'Direct comparison with the EU.',
+      simImpact: 'Simulate Impact'
     },
     explorer: {
       title: 'Data Explorer',
@@ -413,7 +443,8 @@ const DICTIONARY = {
       suggestBtn: 'Send Suggestion',
       existingDataTitle: 'Available Datasets',
       officialSourcesTitle: 'Monitored Sources',
-      officialSourcesDesc: 'Portals that our AI consults in real-time.'
+      officialSourcesDesc: 'Portals that our AI consults in real-time.',
+      officialFooter: 'Data is extracted from official portals (INE, Pordata, DGO) via AI.'
     },
     budget: {
       title: 'Family Budget 2026',
@@ -463,7 +494,21 @@ const DICTIONARY = {
       estimatedTax: 'Total Tax (Collection)',
       effectiveRate: 'Effective Rate',
       aiAnalysis: 'AI Tax Consultant Analysis',
-      tipsTitle: 'Tax Optimization Tips'
+      tipsTitle: 'Tax Optimization Tips',
+      catA: 'Cat. A (Employment Income)',
+      catB: 'Cat. B (Self-Employment)',
+      propertyInc: 'Property Income (Rents)',
+      capitalInc: 'Capital Income',
+      englobeProp: 'Englobe property income',
+      englobeCap: 'Englobe capital income',
+      incapacity: 'Incapacity',
+      taxpayer: 'Taxpayer',
+      spouse: 'Spouse',
+      careHomes: 'Nursing Homes',
+      donations: 'Donations',
+      alimony: 'Alimony',
+      unionFees: 'Union Fees',
+      vatInvoices: 'VAT on Invoices'
     },
     scenarios: {
       title: 'Policy Laboratory',

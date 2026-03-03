@@ -193,10 +193,10 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg">
-              <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> Explorar Dados</Link>
+              <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> {t('nav.explorer')}</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
-              <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> Ver Atlas Regional</Link>
+              <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> {t('nav.map')}</Link>
             </Button>
           </div>
         </div>
@@ -247,15 +247,15 @@ export default function HomePage() {
           <div className="p-4 rounded-2xl bg-muted/50 border flex items-center gap-4">
             <BarChart3 className="text-primary h-8 w-8" />
             <div>
-              <p className="font-bold text-sm">Dados do INE</p>
-              <p className="text-xs text-muted-foreground">Atualizados semanalmente.</p>
+              <p className="font-bold text-sm">{t('home.infoINE')}</p>
+              <p className="text-xs text-muted-foreground">{t('home.infoINEDesc')}</p>
             </div>
           </div>
           <div className="p-4 rounded-2xl bg-muted/50 border flex items-center gap-4">
             <Globe className="text-primary h-8 w-8" />
             <div>
-              <p className="font-bold text-sm">Contexto Eurostat</p>
-              <p className="text-xs text-muted-foreground">Comparação direta com a UE.</p>
+              <p className="font-bold text-sm">{t('home.infoEurostat')}</p>
+              <p className="text-xs text-muted-foreground">{t('home.infoEurostatDesc')}</p>
             </div>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function HomePage() {
                 </CardContent>
                 <CardFooter className="p-3 bg-muted/30 flex justify-center">
                   <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-accent">
-                    <Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>Simular Impacto</Link>
+                    <Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('home.simImpact')}</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -305,8 +305,8 @@ export default function HomePage() {
         <Image src="https://picsum.photos/seed/porto/1200/600" alt="Porto Riberia" fill className="object-cover" data-ai-hint="porto city" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
           <div className="max-w-xl space-y-2">
-            <h3 className="text-2xl font-bold text-white">Transparência de Norte a Sul</h3>
-            <p className="text-white/80 text-sm">Do litoral ao interior, democratizamos o acesso à informação que importa para o futuro de Portugal.</p>
+            <h3 className="text-2xl font-bold text-white">{t('home.regionalTitle')}</h3>
+            <p className="text-white/80 text-sm">{t('home.regionalDesc')}</p>
           </div>
         </div>
       </div>
