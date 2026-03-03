@@ -1,4 +1,5 @@
+
 /**
- * @fileOverview Redundant entry point. All server actions are now in @/lib/actions.
+ * @fileOverview Redirects all server actions to the consolidated src/lib/actions.ts
  */
 export * from '@/lib/actions';
