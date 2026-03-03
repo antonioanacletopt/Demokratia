@@ -3,9 +3,7 @@
 /**
  * @fileOverview Server actions for Demokratia Portugal using Genkit v1.x.
  * 
- * Este ficheiro utiliza chamadas diretas a ai.generate com referências de modelos
- * baseadas em strings para garantir compatibilidade com Next.js 15 e resolver o 
- * erro "Unknown action type" recorrente em ambientes de Server Actions.
+ * Estabilização do motor de IA utilizando o identificador canónico 'googleai/gemini-1.5-flash'.
  */
 
 import { genkit, z } from 'genkit';
@@ -19,7 +17,7 @@ const ai = genkit({
   ],
 });
 
-// Identificador estável do modelo para Genkit v1.x via plugin googleai
+// Identificador canónico do modelo para o plugin googleai no Genkit 1.x
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 export type Language = 'en' | 'pt';
