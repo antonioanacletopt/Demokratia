@@ -1,7 +1,4 @@
-import { redirect } from 'next/navigation';
-
 /**
- * Redundant actions file. Use @/lib/actions instead.
- * This file is kept only to prevent build breaks from old imports.
+ * @fileOverview Redundant entry point. All server actions are now in @/lib/actions.
  */
 export * from '@/lib/actions';
