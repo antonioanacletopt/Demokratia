@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview Server actions for Genkit AI integration.
- * Using direct ai.generate calls for maximum stability in Next.js environment.
+ * Using Genkit v1.x defineFlow pattern for maximum stability in Next.js.
  */
 
 import { genkit, z } from 'genkit';
@@ -14,13 +14,12 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Constant for the model ID
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 // --- Types ---
 export type Language = 'en' | 'pt';
 
-// --- Output Schemas (Not exported to keep "use server" valid) ---
+// --- Output Schemas ---
 
 const EconomicPolicySimulationOutputSchema = z.object({
   simulatedImpact: z.string(),
@@ -70,33 +69,56 @@ const IRSAssessmentOutputSchema = z.object({
   tips: z.array(z.string()),
 });
 
-const ScenarioAnalysisOutputSchema = z.object({
-  feedback: z.string(),
-});
+// --- Flows Definitions ---
 
-const FamilyBudgetAnalysisOutputSchema = z.object({
-  analysis: z.string(),
-  suggestions: z.array(z.string()),
-});
+const irsFlow = ai.defineFlow(
+  { name: 'irsFlow', inputSchema: z.object({ input: z.any(), lang: z.string() }), outputSchema: IRSAssessmentOutputSchema },
+  async (req) => {
+    const { output } = await ai.generate({
+      model: MODEL_ID,
+      prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(req.input)}. Provide response in ${req.lang === 'en' ? 'English' : 'Portuguese'}. Ensure technical accuracy according to CIRS 2026.`,
+      output: { schema: IRSAssessmentOutputSchema }
+    });
+    return output!;
+  }
+);
+
+const simulationFlow = ai.defineFlow(
+  { name: 'simulationFlow', inputSchema: z.object({ policyDescription: z.string(), lang: z.string() }), outputSchema: EconomicPolicySimulationOutputSchema },
+  async (req) => {
+    const { output } = await ai.generate({
+      model: MODEL_ID,
+      prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${req.policyDescription}. Language: ${req.lang === 'en' ? 'English' : 'Portuguese'}. Use Okun's Law and multiplier effects for estimations.`,
+      output: { schema: EconomicPolicySimulationOutputSchema }
+    });
+    return output!;
+  }
+);
+
+const marketFlow = ai.defineFlow(
+  { name: 'marketFlow', inputSchema: z.object({ lang: z.string() }), outputSchema: MarketAnalysisOutputSchema },
+  async (req) => {
+    const { output } = await ai.generate({
+      model: MODEL_ID,
+      prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${req.lang === 'en' ? 'English' : 'Portuguese'}.`,
+      output: { schema: MarketAnalysisOutputSchema }
+    });
+    return output!;
+  }
+);
 
 // --- Exported Server Actions ---
 
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${lang === 'en' ? 'English' : 'Portuguese'}. Ensure technical accuracy according to CIRS 2026.`,
-    output: { schema: IRSAssessmentOutputSchema }
-  });
-  return output!;
+  return irsFlow({ input, lang });
 }
 
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Use Okun's Law and multiplier effects for estimations.`,
-    output: { schema: EconomicPolicySimulationOutputSchema }
-  });
-  return output!;
+  return simulationFlow({ ...input, lang });
+}
+
+export async function getMarketAnalysis(lang: Language = 'pt') {
+  return marketFlow({ lang });
 }
 
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
@@ -154,7 +176,9 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
     model: MODEL_ID,
     prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Act as a member of the Public Finance Council. Language: ${lang === 'en' ? 'English' : 'Portuguese'}.`,
-    output: { schema: ScenarioAnalysisOutputSchema }
+    output: {
+      schema: z.object({ feedback: z.string() })
+    }
   });
   return output!;
 }
@@ -163,7 +187,9 @@ export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt')
   const { output } = await ai.generate({
     model: MODEL_ID,
     prompt: `Provide financial coaching for this family budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Consider inflation and average purchasing power.`,
-    output: { schema: FamilyBudgetAnalysisOutputSchema }
+    output: {
+      schema: z.object({ analysis: z.string(), suggestions: z.array(z.string()) })
+    }
   });
   return output!;
 }
@@ -198,15 +224,6 @@ export async function getChartFromRequest(input: { request: string }) {
         yAxisLabel: z.string(),
       }),
     },
-  });
-  return output!;
-}
-
-export async function getMarketAnalysis(lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${lang === 'en' ? 'English' : 'Portuguese'}.`,
-    output: { schema: MarketAnalysisOutputSchema }
   });
   return output!;
 }
