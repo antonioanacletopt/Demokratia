@@ -3,25 +3,33 @@
  * @fileOverview Server actions for Demokratia Portugal using Genkit v1.x.
  * 
  * handles AI-driven simulations, fact-checks, and analyses using a robust
- * JSON-native approach to prevent "Unknown action type" errors in Next.js.
+ * approach to prevent "Unknown action type" errors in Next.js.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Inicialização estável do Genkit
-const ai = genkit({
+// Singleton instance to prevent "Unknown action type" errors during Next.js HMR/reloads
+// This ensures that the plugin and model registration is stable across Server Action calls.
+const ai = (globalThis as any).__genkitAi ?? genkit({
   plugins: [
-    googleAI(),
+    googleAI({
+      // Ensure the plugin picks up the correct API key from the environment
+      apiKey: process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+    }),
   ],
 });
 
-// Identificador canónico do modelo
+if (!(globalThis as any).__genkitAi) {
+  (globalThis as any).__genkitAi = ai;
+}
+
+// Canonical model ID for Genkit 1.x with googleai plugin
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 export type Language = 'en' | 'pt';
 
-// --- Data Schemas (Zod Puro para Validação Robusta) ---
+// --- Data Schemas (Zod) ---
 
 const EconomicPolicySimulationOutputSchema = z.object({
   simulatedImpact: z.string(),
@@ -120,7 +128,7 @@ const ChartOutputSchema = z.object({
 async function generateStructuredData<T>(prompt: string, schema: z.ZodSchema<T>): Promise<T> {
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `${prompt}\n\nIMPORTANT: Return ONLY a valid JSON object. Do not include markdown formatting or backticks.`,
+    prompt: `${prompt}\n\nIMPORTANT: Return ONLY a valid JSON object matching the requested schema. Do not include markdown formatting or backticks.`,
     config: {
       responseMimeType: 'application/json',
     }
@@ -132,7 +140,7 @@ async function generateStructuredData<T>(prompt: string, schema: z.ZodSchema<T>)
     return schema.parse(parsed);
   } catch (e) {
     console.error('AI JSON Parsing Error:', e);
-    throw new Error('Falha na resposta estruturada da IA.');
+    throw new Error('Falha na resposta estruturada da IA. Por favor, tente novamente.');
   }
 }
 
@@ -141,7 +149,7 @@ async function generateStructuredData<T>(prompt: string, schema: z.ZodSchema<T>)
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${langName}. Ensure technical accuracy according to CIRS 2026.`,
+    `Atue como um consultor fiscal de elite em Portugal para o ano de 2026. Calcule o IRS para os seguintes dados: ${JSON.stringify(input)}. Forneça a resposta em ${langName}. Garanta precisão técnica de acordo com o CIRS 2026.`,
     IRSAssessmentOutputSchema
   );
 }
@@ -149,7 +157,7 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${langName}. Use Okun's Law and multiplier effects for estimations.`,
+    `Simule o impacto económico detalhado desta política proposta no contexto de Portugal 2026: ${input.policyDescription}. Idioma: ${langName}. Utilize a Lei de Okun e efeitos multiplicadores para as estimativas.`,
     EconomicPolicySimulationOutputSchema
   );
 }
@@ -157,7 +165,7 @@ export async function getEconomicSimulation(input: { policyDescription: string }
 export async function getMarketAnalysis(lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${langName}.`,
+    `Como Analista de Mercado Sénior, forneça um briefing estratégico para investidores em 2026. Analise eventos globais e o seu impacto em Energia, Defesa, Logística e Tecnologia em Portugal. Idioma: ${langName}.`,
     MarketAnalysisOutputSchema
   );
 }
@@ -165,7 +173,7 @@ export async function getMarketAnalysis(lang: Language = 'pt') {
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `Perform a rigorous fact-check on this claim regarding Portugal in 2026: ${input.claim}. Language: ${langName}. Base your verdict on official statistical data and temporal context.`,
+    `Realize uma verificação de factos rigorosa sobre esta alegação relativa a Portugal em 2026: ${input.claim}. Idioma: ${langName}. Baseie o seu veredicto em dados estatísticos oficiais e no contexto temporal.`,
     FactCheckOutputSchema
   );
 }
@@ -173,7 +181,7 @@ export async function getFactCheck(input: { claim: string }, lang: Language = 'p
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `Consult Portuguese legislation (Diário da República) to explain: ${input.question}. Language: ${langName}. Focus on 2026 regulations and new laws.`,
+    `Consulte a legislação portuguesa (Diário da República) para explicar: ${input.question}. Idioma: ${langName}. Foque-se nas regulamentações de 2026 e novas leis.`,
     ConsultLegislationOutputSchema
   );
 }
@@ -182,7 +190,7 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const schema = z.object({ feedback: z.string() });
   return generateStructuredData(
-    `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Act as a member of the Public Finance Council. Language: ${langName}.`,
+    `Analise este cenário macroeconómico para Portugal 2026: ${JSON.stringify(input)}. Atue como um membro do Conselho de Finanças Públicas. Idioma: ${langName}.`,
     schema
   );
 }
@@ -190,7 +198,7 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   return generateStructuredData(
-    `Provide financial coaching for this family budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}. Consider inflation and average purchasing power.`,
+    `Forneça coaching financeiro para este orçamento familiar em Portugal 2026: ${JSON.stringify(input)}. Idioma: ${langName}. Considere a inflação e o poder de compra médio.`,
     FamilyBudgetOutputSchema
   );
 }
@@ -200,28 +208,28 @@ export async function getTranslation(text: string, lang: Language): Promise<stri
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Translate the following text to ${langName}. Maintain the professional tone and ensure technical democratic/economic terms are translated correctly: ${text}`,
+    prompt: `Traduza o seguinte texto para ${langName}. Mantenha o tom profissional e garanta que termos técnicos democráticos/económicos são traduzidos corretamente: ${text}`,
   });
   return response.text || text;
 }
 
 export async function getNewsFeed() {
   return generateStructuredData(
-    'Generate exactly 5 relevant and timely news feed items for Portugal in the year 2026. Categories: Fact-Check, New Law, Economic Analysis. Use a formal and objective tone.',
+    'Gere exatamente 5 itens de feed de notícias relevantes e oportunos para Portugal no ano de 2026. Categorias: Fact-Check, Nova Lei, Análise Económica. Use um tom formal e objetivo.',
     NewsFeedOutputSchema
   );
 }
 
 export async function getPublicStatistic(input: { request: string }) {
   return generateStructuredData(
-    `Retrieve official factual statistical data from Portugal (INE/Pordata) for: ${input.request}.`,
+    `Recupere dados estatísticos factuais oficiais de Portugal (INE/Pordata) para: ${input.request}.`,
     StatisticOutputSchema
   );
 }
 
 export async function getChartFromRequest(input: { request: string }) {
   return generateStructuredData(
-    `Generate numeric series data for a chart based on this Portuguese request: ${input.request}. Period: up to 2026.`,
+    `Gere dados de séries numéricas para um gráfico com base neste pedido português: ${input.request}. Período: até 2026.`,
     ChartOutputSchema
   );
 }
