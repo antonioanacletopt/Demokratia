@@ -3,27 +3,24 @@
  * @fileOverview Server actions for Demokratia Portugal using Genkit v1.x.
  * 
  * Handles AI-driven simulations, fact-checks, and analyses with a robust
- * singleton pattern to prevent "Unknown action type" errors in Next.js.
+ * native JSON approach to prevent "Unknown action type" errors in Next.js.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Singleton initialization for Genkit 1.x
-const ai = (globalThis as any).__genkitInstance ?? genkit({
+// Initialize Genkit instance. Using a singleton approach helps with HMR in Next.js.
+const ai = (globalThis as any)._aiInstance ?? genkit({
   plugins: [googleAI()],
 });
-
-if (!(globalThis as any).__genkitInstance) {
-  (globalThis as any).__genkitInstance = ai;
-}
+(globalThis as any)._aiInstance = ai;
 
 // Canonical model ID
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 export type Language = 'en' | 'pt';
 
-// --- Data Schemas ---
+// --- Data Schemas for Validation ---
 
 const EconomicPolicySimulationOutputSchema = z.object({
   simulatedImpact: z.string(),
@@ -107,7 +104,7 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for: ${JSON.stringify(input)}. Language: ${langName}. Ensure technical precision with CIRS 2026.`,
+    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for: ${JSON.stringify(input)}. Language: ${langName}. Ensure technical precision with CIRS 2026. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return IRSAssessmentOutputSchema.parse(JSON.parse(response.text));
@@ -117,7 +114,7 @@ export async function getEconomicSimulation(input: { policyDescription: string }
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Simulate detailed economic impact of this policy in Portugal 2026: ${input.policyDescription}. Language: ${langName}. Use Okun's Law and multipliers.`,
+    prompt: `Simulate detailed economic impact of this policy in Portugal 2026: ${input.policyDescription}. Language: ${langName}. Use Okun's Law and multipliers. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return EconomicPolicySimulationOutputSchema.parse(JSON.parse(response.text));
@@ -127,7 +124,7 @@ export async function getMarketAnalysis(lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026 regarding Portugal. Language: ${langName}.`,
+    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026 regarding Portugal. Language: ${langName}. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return MarketAnalysisOutputSchema.parse(JSON.parse(response.text));
@@ -137,7 +134,7 @@ export async function getFactCheck(input: { claim: string }, lang: Language = 'p
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Perform rigorous fact-check on this claim about Portugal 2026: ${input.claim}. Language: ${langName}. Base on official stats.`,
+    prompt: `Perform rigorous fact-check on this claim about Portugal 2026: ${input.claim}. Language: ${langName}. Base on official stats. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return FactCheckOutputSchema.parse(JSON.parse(response.text));
@@ -147,7 +144,7 @@ export async function getLegislationInfo(input: { question: string }, lang: Lang
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Explain Portuguese legislation (Diário da República) for: ${input.question}. Language: ${langName}. Focus on 2026 rules.`,
+    prompt: `Explain Portuguese legislation (Diário da República) for: ${input.question}. Language: ${langName}. Focus on 2026 rules. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return ConsultLegislationOutputSchema.parse(JSON.parse(response.text));
@@ -157,7 +154,7 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}.`,
+    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}. Return a JSON object with a 'feedback' field.`,
     config: { responseMimeType: 'application/json' }
   });
   const data = JSON.parse(response.text);
@@ -168,7 +165,7 @@ export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt')
   const langName = lang === 'en' ? 'English' : 'Portuguese';
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Provide financial coaching for this household budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}.`,
+    prompt: `Provide financial coaching for this household budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${langName}. Return as JSON.`,
     config: { responseMimeType: 'application/json' }
   });
   return FamilyBudgetOutputSchema.parse(JSON.parse(response.text));
@@ -187,7 +184,7 @@ export async function getTranslation(text: string, lang: Language): Promise<stri
 export async function getNewsFeed() {
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: 'Generate exactly 5 news feed items for Portugal in 2026. Categories: Fact-Check, New Law, Economic Analysis.',
+    prompt: 'Generate exactly 5 news feed items for Portugal in 2026. Categories: Fact-Check, New Law, Economic Analysis. Return as JSON.',
     config: { responseMimeType: 'application/json' }
   });
   return NewsFeedOutputSchema.parse(JSON.parse(response.text));
@@ -196,7 +193,7 @@ export async function getNewsFeed() {
 export async function getPublicStatistic(input: { request: string }) {
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Retrieve official factual statistical data for Portugal: ${input.request}.`,
+    prompt: `Retrieve official factual statistical data for Portugal: ${input.request}. Return a JSON object with isFound, data (stringified array), explanation, and source.`,
     config: { responseMimeType: 'application/json' }
   });
   return z.object({
@@ -210,7 +207,7 @@ export async function getPublicStatistic(input: { request: string }) {
 export async function getChartFromRequest(input: { request: string }) {
   const response = await ai.generate({
     model: MODEL_ID,
-    prompt: `Generate numeric series data for a chart based on this Portuguese request: ${input.request}. Period: up to 2026.`,
+    prompt: `Generate numeric series data for a chart based on this Portuguese request: ${input.request}. Period: up to 2026. Return a JSON object with isChartable, chartTitle, explanation, chartData (array), chartType (bar/line), and yAxisLabel.`,
     config: { responseMimeType: 'application/json' }
   });
   return z.object({ 
