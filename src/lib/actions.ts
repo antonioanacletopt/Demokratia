@@ -85,8 +85,7 @@ export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
     model,
-    input: { ...input, language: lang === 'en' ? 'English' : 'Portuguese' },
-    prompt: `You are an elite tax consultant in Portugal for 2026. Calculate IRS for: ${JSON.stringify(input)}`,
+    prompt: `You are an elite tax consultant in Portugal for 2026. Calculate IRS for: ${JSON.stringify(input)}. Provide response in ${lang === 'en' ? 'English' : 'Portuguese'}`,
     output: { schema: IRSAssessmentOutputSchema },
   });
   return output!;
@@ -95,8 +94,7 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
     model,
-    input: { ...input, language: lang === 'en' ? 'English' : 'Portuguese' },
-    prompt: `Simulate the economic impact of this policy in Portugal 2026: ${input.policyDescription}. Language: ${lang}`,
+    prompt: `Simulate the economic impact of this policy in Portugal 2026: ${input.policyDescription}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}`,
     output: { schema: EconomicPolicySimulationOutputSchema },
   });
   return output!;
@@ -105,8 +103,7 @@ export async function getEconomicSimulation(input: { policyDescription: string }
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
     model,
-    input: { ...input, language: lang === 'en' ? 'English' : 'Portuguese' },
-    prompt: `Fact-check this claim in the context of Portugal 2026: ${input.claim}. Language: ${lang}`,
+    prompt: `Fact-check this claim in the context of Portugal 2026: ${input.claim}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}`,
     output: { schema: FactCheckOutputSchema },
   });
   return output!;
@@ -115,8 +112,7 @@ export async function getFactCheck(input: { claim: string }, lang: Language = 'p
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
     model,
-    input: { ...input, language: lang === 'en' ? 'English' : 'Portuguese' },
-    prompt: `Explain Portuguese legislation regarding: ${input.question}. Language: ${lang}`,
+    prompt: `Explain Portuguese legislation regarding: ${input.question}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}`,
     output: { schema: ConsultLegislationOutputSchema },
   });
   return output!;
