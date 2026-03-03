@@ -14,7 +14,7 @@ const ai = genkit({
   model: 'googleai/gemini-1.5-flash',
 });
 
-// --- Internal Schemas (not exported) ---
+// --- Output Schemas ---
 
 const EconomicPolicySimulationOutputSchema = z.object({
   simulatedImpact: z.string(),
@@ -56,114 +56,101 @@ const MarketAnalysisOutputSchema = z.object({
   })),
 });
 
-// --- Exported Types ---
+const IRSAssessmentOutputSchema = z.object({
+  estimatedTax: z.number(),
+  refundOrPayment: z.number(),
+  effectiveRate: z.number(),
+  analysis: z.string(),
+  tips: z.array(z.string()),
+});
 
+const ScenarioAnalysisOutputSchema = z.object({
+  feedback: z.string(),
+});
+
+const FamilyBudgetAnalysisOutputSchema = z.object({
+  analysis: z.string(),
+  suggestions: z.array(z.string()),
+});
+
+// --- Prompts ---
+
+const calculateIRSPrompt = ai.definePrompt({
+  name: 'calculateIRSPrompt',
+  input: { schema: z.any() },
+  output: { schema: IRSAssessmentOutputSchema },
+  prompt: 'You are an elite tax consultant in Portugal for 2026. Calculate IRS for: {{json this}}',
+});
+
+const simulateEconomicPolicyPrompt = ai.definePrompt({
+  name: 'simulateEconomicPolicyPrompt',
+  input: { schema: z.object({ policyDescription: z.string(), language: z.string() }) },
+  output: { schema: EconomicPolicySimulationOutputSchema },
+  prompt: 'Simulate the economic impact of this policy in Portugal 2026: {{policyDescription}}. Language: {{language}}',
+});
+
+const factCheckPrompt = ai.definePrompt({
+  name: 'factCheckPrompt',
+  input: { schema: z.object({ claim: z.string(), language: z.string() }) },
+  output: { schema: FactCheckOutputSchema },
+  prompt: 'Fact-check this claim in the context of Portugal 2026: {{claim}}. Language: {{language}}',
+});
+
+const consultLegislationPrompt = ai.definePrompt({
+  name: 'consultLegislationPrompt',
+  input: { schema: z.object({ question: z.string(), language: z.string() }) },
+  output: { schema: ConsultLegislationOutputSchema },
+  prompt: 'Explain Portuguese legislation regarding: {{question}}. Language: {{language}}',
+});
+
+const getMarketAnalysisPrompt = ai.definePrompt({
+  name: 'getMarketAnalysisPrompt',
+  input: { schema: z.object({ language: z.string() }) },
+  output: { schema: MarketAnalysisOutputSchema },
+  prompt: 'You are a Senior Market Analyst. Provide a strategic market analysis for 2026 focusing on global impacts (Energy, Defense, Metals, Logistics) and sectors under pressure. Use current hypothetical scenarios (e.g. military escalation, high interest rates). Language: {{language}}',
+});
+
+// --- Flows ---
+
+const calculateIRSFlow = ai.defineFlow({ name: 'calculateIRSFlow', inputSchema: z.any(), outputSchema: IRSAssessmentOutputSchema }, async (input) => {
+  const { output } = await calculateIRSPrompt(input);
+  return output!;
+});
+
+const simulateEconomicPolicyFlow = ai.defineFlow({ name: 'simulateEconomicPolicyFlow', inputSchema: z.object({ policyDescription: z.string(), language: z.string() }), outputSchema: EconomicPolicySimulationOutputSchema }, async (input) => {
+  const { output } = await simulateEconomicPolicyPrompt(input);
+  return output!;
+});
+
+const factCheckFlow = ai.defineFlow({ name: 'factCheckFlow', inputSchema: z.object({ claim: z.string(), language: z.string() }), outputSchema: FactCheckOutputSchema }, async (input) => {
+  const { output } = await factCheckPrompt(input);
+  return output!;
+});
+
+const consultLegislationFlow = ai.defineFlow({ name: 'consultLegislationFlow', inputSchema: z.object({ question: z.string(), language: z.string() }), outputSchema: ConsultLegislationOutputSchema }, async (input) => {
+  const { output } = await consultLegislationPrompt(input);
+  return output!;
+});
+
+const getMarketAnalysisFlow = ai.defineFlow({ name: 'getMarketAnalysisFlow', inputSchema: z.object({ language: z.string() }), outputSchema: MarketAnalysisOutputSchema }, async (input) => {
+  const { output } = await getMarketAnalysisPrompt(input);
+  return output!;
+});
+
+// --- Exported Server Actions ---
+
+export type Language = 'en' | 'pt';
 export type EconomicPolicySimulationOutput = z.infer<typeof EconomicPolicySimulationOutputSchema>;
 export type FactCheckOutput = z.infer<typeof FactCheckOutputSchema>;
 export type ConsultLegislationOutput = z.infer<typeof ConsultLegislationOutputSchema>;
 export type MarketAnalysisOutput = z.infer<typeof MarketAnalysisOutputSchema>;
-
-// --- Internal Flow Definitions (not exported) ---
-
-const calculateIRSFlow = ai.defineFlow(
-  {
-    name: 'calculateIRSFlow',
-    inputSchema: z.any(),
-    outputSchema: z.object({
-      estimatedTax: z.number(),
-      refundOrPayment: z.number(),
-      effectiveRate: z.number(),
-      analysis: z.string(),
-      tips: z.array(z.string()),
-    }),
-  },
-  async (input) => {
-    const { output } = await ai.generate({
-      prompt: `You are an elite tax consultant in Portugal for 2026. Calculate IRS for: ${JSON.stringify(input)}`,
-      output: {
-        schema: z.object({
-          estimatedTax: z.number(),
-          refundOrPayment: z.number(),
-          effectiveRate: z.number(),
-          analysis: z.string(),
-          tips: z.array(z.string()),
-        }),
-      },
-    });
-    return output!;
-  }
-);
-
-const simulateEconomicPolicy = ai.defineFlow(
-  {
-    name: 'simulateEconomicPolicy',
-    inputSchema: z.object({ policyDescription: z.string(), language: z.string() }),
-    outputSchema: EconomicPolicySimulationOutputSchema,
-  },
-  async (input) => {
-    const { output } = await ai.generate({
-      prompt: `Simulate the economic impact of this policy in Portugal 2026: ${input.policyDescription}. Language: ${input.language}`,
-      output: { schema: EconomicPolicySimulationOutputSchema },
-    });
-    return output!;
-  }
-);
-
-const factCheckFlow = ai.defineFlow(
-  {
-    name: 'factCheckFlow',
-    inputSchema: z.object({ claim: z.string(), language: z.string() }),
-    outputSchema: FactCheckOutputSchema,
-  },
-  async (input) => {
-    const { output } = await ai.generate({
-      prompt: `Fact-check this claim in the context of Portugal 2026: ${input.claim}. Language: ${input.language}`,
-      output: { schema: FactCheckOutputSchema },
-    });
-    return output!;
-  }
-);
-
-const consultLegislationFlow = ai.defineFlow(
-  {
-    name: 'consultLegislationFlow',
-    inputSchema: z.object({ question: z.string(), language: z.string() }),
-    outputSchema: ConsultLegislationOutputSchema,
-  },
-  async (input) => {
-    const { output } = await ai.generate({
-      prompt: `Explain Portuguese legislation regarding: ${input.question}. Language: ${input.language}`,
-      output: { schema: ConsultLegislationOutputSchema },
-    });
-    return output!;
-  }
-);
-
-const getMarketAnalysisFlow = ai.defineFlow(
-  {
-    name: 'getMarketAnalysisFlow',
-    inputSchema: z.object({ language: z.string() }),
-    outputSchema: MarketAnalysisOutputSchema,
-  },
-  async (input) => {
-    const { output } = await ai.generate({
-      prompt: `You are a Senior Market Analyst. Provide a strategic market analysis for 2026 focusing on global impacts (Energy, Defense, Metals, Logistics) and sectors under pressure. Use current hypothetical scenarios (e.g. military escalation, high interest rates). Language: ${input.language}`,
-      output: { schema: MarketAnalysisOutputSchema },
-    });
-    return output!;
-  }
-);
-
-// --- Exported Server Actions (Only async functions) ---
-
-export type Language = 'en' | 'pt';
 
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   return calculateIRSFlow({ ...input, language: lang === 'en' ? 'English' : 'Portuguese' });
 }
 
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
-  return simulateEconomicPolicy({ ...input, language: lang === 'en' ? 'English' : 'Portuguese' });
+  return simulateEconomicPolicyFlow({ ...input, language: lang === 'en' ? 'English' : 'Portuguese' });
 }
 
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
@@ -177,14 +164,14 @@ export async function getLegislationInfo(input: { question: string }, lang: Lang
 export async function getTranslation(text: string, lang: Language): Promise<string> {
   if (!text || lang === 'pt') return text;
   const { text: translated } = await ai.generate({
-    prompt: `Translate to ${lang === 'en' ? 'English' : 'Portuguese'}: ${text}`,
+    prompt: `Translate the following text to ${lang === 'en' ? 'English' : 'Portuguese'}. Maintain the tone and technical terms accurately: ${text}`,
   });
   return translated;
 }
 
 export async function getNewsFeed() {
   const { output } = await ai.generate({
-    prompt: 'Generate 5 news feed items for Portugal 2026 about economy, laws, and claims.',
+    prompt: 'Generate 5 current and relevant news feed items for Portugal in 2026. Focus on economy, new laws, and fact-checking of public claims. Ensure the tone is neutral and professional.',
     output: {
       schema: z.object({
         feedItems: z.array(z.object({
@@ -207,32 +194,23 @@ export async function getNewsFeed() {
 
 export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    prompt: `Analyze this economic scenario for Portugal 2026: ${JSON.stringify(input)}. Language: ${lang}`,
-    output: {
-      schema: z.object({
-        feedback: z.string(),
-      }),
-    },
+    prompt: `Act as a Senior Economist at the Portuguese Public Finance Council. Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Provide a concise viability feedback in ${lang === 'en' ? 'English' : 'Portuguese'}.`,
+    output: { schema: ScenarioAnalysisOutputSchema },
   });
   return output!;
 }
 
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    prompt: `Analyze this family budget for Portugal 2026: ${JSON.stringify(input)}. Language: ${lang}`,
-    output: {
-      schema: z.object({
-        analysis: z.string(),
-        suggestions: z.array(z.string()),
-      }),
-    },
+    prompt: `Analyze this family budget simulation for Portugal in 2026: ${JSON.stringify(input)}. Focus on the impact of inflation, housing costs, and potential savings. Language: ${lang === 'en' ? 'English' : 'Portuguese'}.`,
+    output: { schema: FamilyBudgetAnalysisOutputSchema },
   });
   return output!;
 }
 
 export async function getPublicStatistic(input: { request: string }) {
   const { output } = await ai.generate({
-    prompt: `Find official Portuguese statistics for: ${input.request}`,
+    prompt: `Retrieve official Portuguese statistical data from portals like INE or Pordata for the following request: ${input.request}. If data is found, return it in a clear format. If not, explain why.`,
     output: {
       schema: z.object({
         isFound: z.boolean(),
@@ -247,7 +225,7 @@ export async function getPublicStatistic(input: { request: string }) {
 
 export async function getChartFromRequest(input: { request: string }) {
   const { output } = await ai.generate({
-    prompt: `Generate chart data for: ${input.request}`,
+    prompt: `Generate time-series or categorical chart data for the following Portuguese statistical request: ${input.request}. Ensure the data is relevant for the period around 2026.`,
     output: {
       schema: z.object({
         isChartable: z.boolean(),
