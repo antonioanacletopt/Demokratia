@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview Server actions for Genkit AI integration.
- * This version uses direct ai.generate calls to avoid registry issues in Next.js.
+ * Utilizes the definePrompt pattern for stable model registration in Next.js.
  */
 
 import { genkit, z } from 'genkit';
@@ -65,68 +65,136 @@ const IRSAssessmentOutputSchema = z.object({
   tips: z.array(z.string()),
 });
 
+// --- Prompts ---
+
+const irsPrompt = ai.definePrompt({
+  name: 'irsPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ input: z.string(), lang: z.string() }) },
+  output: { schema: IRSAssessmentOutputSchema },
+  prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: {{input}}. Provide response in {{lang}}. Ensure technical accuracy according to CIRS 2026.`,
+});
+
+const simulationPrompt = ai.definePrompt({
+  name: 'simulationPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ policyDescription: z.string(), lang: z.string() }) },
+  output: { schema: EconomicPolicySimulationOutputSchema },
+  prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: {{policyDescription}}. Language: {{lang}}. Use Okun's Law and multiplier effects for estimations.`,
+});
+
+const marketPrompt = ai.definePrompt({
+  name: 'marketPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ lang: z.string() }) },
+  output: { schema: MarketAnalysisOutputSchema },
+  prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: {{lang}}.`,
+});
+
+const factCheckPrompt = ai.definePrompt({
+  name: 'factCheckPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ claim: z.string(), lang: z.string() }) },
+  output: { schema: FactCheckOutputSchema },
+  prompt: `Perform a rigorous fact-check on this claim regarding Portugal in 2026: {{claim}}. Language: {{lang}}. Base your verdict on official statistical data and temporal context.`,
+});
+
+const legislationPrompt = ai.definePrompt({
+  name: 'legislationPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ question: z.string(), lang: z.string() }) },
+  output: { schema: ConsultLegislationOutputSchema },
+  prompt: `Consult Portuguese legislation (Diário da República) to explain: {{question}}. Language: {{lang}}. Focus on 2026 regulations and new laws.`,
+});
+
+const scenarioPrompt = ai.definePrompt({
+  name: 'scenarioPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ input: z.string(), lang: z.string() }) },
+  output: { schema: z.object({ feedback: z.string() }) },
+  prompt: `Analyze this macroeconomic scenario for Portugal 2026: {{input}}. Act as a member of the Public Finance Council. Language: {{lang}}.`,
+});
+
+const budgetPrompt = ai.definePrompt({
+  name: 'budgetPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ input: z.string(), lang: z.string() }) },
+  output: { schema: z.object({ analysis: z.string(), suggestions: z.array(z.string()) }) },
+  prompt: `Provide financial coaching for this family budget in Portugal 2026: {{input}}. Language: {{lang}}. Consider inflation and average purchasing power.`,
+});
+
+const newsFeedPrompt = ai.definePrompt({
+  name: 'newsFeedPrompt',
+  model: MODEL_ID,
+  output: {
+    schema: z.object({
+      feedItems: z.array(z.object({
+        id: z.string(),
+        title: z.string(),
+        description: z.string(),
+        type: z.enum(['Alegação', 'Nova Lei', 'Análise']),
+        source: z.string(),
+        date: z.string(),
+        actionLink: z.object({
+          label: z.string(),
+          href: z.string(),
+        }).optional(),
+      })),
+    }),
+  },
+  prompt: 'Generate exactly 5 relevant and timely news feed items for Portugal in the year 2026. Categories: Fact-Check, New Law, Economic Analysis. Use a formal and objective tone.',
+});
+
+const statisticPrompt = ai.definePrompt({
+  name: 'statisticPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ request: z.string() }) },
+  output: { schema: z.object({ isFound: z.boolean(), data: z.string(), explanation: z.string(), source: z.string() }) },
+  prompt: `Retrieve official factual statistical data from Portugal (INE/Pordata) for: {{request}}.`,
+});
+
+const chartPrompt = ai.definePrompt({
+  name: 'chartPrompt',
+  model: MODEL_ID,
+  input: { schema: z.object({ request: z.string() }) },
+  output: { schema: z.object({ isChartable: z.boolean(), chartTitle: z.string(), explanation: z.string(), chartData: z.array(z.any()), chartType: z.enum(['bar', 'line']), yAxisLabel: z.string() }) },
+  prompt: `Generate numeric series data for a chart based on this Portuguese request: {{request}}. Period: up to 2026.`,
+});
+
 // --- Server Actions ---
 
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${lang === 'en' ? 'English' : 'Portuguese'}. Ensure technical accuracy according to CIRS 2026.`,
-    output: { schema: IRSAssessmentOutputSchema },
-  });
+  const { output } = await irsPrompt({ input: JSON.stringify(input), lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Simulate the detailed economic impact of this proposed policy in the context of Portugal 2026: ${input.policyDescription}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Use Okun's Law and multiplier effects for estimations.`,
-    output: { schema: EconomicPolicySimulationOutputSchema },
-  });
+  const { output } = await simulationPrompt({ policyDescription: input.policyDescription, lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getMarketAnalysis(lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `As a Senior Market Analyst, provide a strategic briefing for investors in 2026. Analyze global events and their impact on Energy, Defense, Logistics, and Tech in Portugal. Language: ${lang === 'en' ? 'English' : 'Portuguese'}.`,
-    output: { schema: MarketAnalysisOutputSchema },
-  });
+  const { output } = await marketPrompt({ lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Perform a rigorous fact-check on this claim regarding Portugal in 2026: ${input.claim}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Base your verdict on official statistical data and temporal context.`,
-    output: { schema: FactCheckOutputSchema },
-  });
+  const { output } = await factCheckPrompt({ claim: input.claim, lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Consult Portuguese legislation (Diário da República) to explain: ${input.question}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Focus on 2026 regulations and new laws.`,
-    output: { schema: ConsultLegislationOutputSchema },
-  });
+  const { output } = await legislationPrompt({ question: input.question, lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Act as a member of the Public Finance Council. Language: ${lang === 'en' ? 'English' : 'Portuguese'}.`,
-    output: { schema: z.object({ feedback: z.string() }) },
-  });
+  const { output } = await scenarioPrompt({ input: JSON.stringify(input), lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Provide financial coaching for this family budget in Portugal 2026: ${JSON.stringify(input)}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Consider inflation and average purchasing power.`,
-    output: { schema: z.object({ analysis: z.string(), suggestions: z.array(z.string()) }) },
-  });
+  const { output } = await budgetPrompt({ input: JSON.stringify(input), lang: lang === 'en' ? 'English' : 'Portuguese' });
   return output!;
 }
 
@@ -140,43 +208,16 @@ export async function getTranslation(text: string, lang: Language): Promise<stri
 }
 
 export async function getNewsFeed() {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: 'Generate exactly 5 relevant and timely news feed items for Portugal in the year 2026. Categories: Fact-Check, New Law, Economic Analysis. Use a formal and objective tone.',
-    output: {
-      schema: z.object({
-        feedItems: z.array(z.object({
-          id: z.string(),
-          title: z.string(),
-          description: z.string(),
-          type: z.enum(['Alegação', 'Nova Lei', 'Análise']),
-          source: z.string(),
-          date: z.string(),
-          actionLink: z.object({
-            label: z.string(),
-            href: z.string(),
-          }).optional(),
-        })),
-      }),
-    },
-  });
+  const { output } = await newsFeedPrompt();
   return output!;
 }
 
 export async function getPublicStatistic(input: { request: string }) {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Retrieve official factual statistical data from Portugal (INE/Pordata) for: ${input.request}.`,
-    output: { schema: z.object({ isFound: z.boolean(), data: z.string(), explanation: z.string(), source: z.string() }) },
-  });
+  const { output } = await statisticPrompt(input);
   return output!;
 }
 
 export async function getChartFromRequest(input: { request: string }) {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Generate numeric series data for a chart based on this Portuguese request: ${input.request}. Period: up to 2026.`,
-    output: { schema: z.object({ isChartable: z.boolean(), chartTitle: z.string(), explanation: z.string(), chartData: z.array(z.any()), chartType: z.enum(['bar', 'line']), yAxisLabel: z.string() }) },
-  });
+  const { output } = await chartPrompt(input);
   return output!;
 }
