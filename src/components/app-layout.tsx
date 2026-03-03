@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -233,20 +234,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <span className="text-lg font-bold font-headline text-primary">Demokratia</span>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    A plataforma líder em transparência de dados públicos e literacia cívica em Portugal para 2026.
+                    {t('footer.desc')}
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Recursos</h4>
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t('footer.resources')}</h4>
                   <ul className="space-y-2 text-sm">
-                    <li><Link href="/explorer" className="hover:text-primary">Explorador de Dados</Link></li>
-                    <li><Link href="/map" className="hover:text-primary">Atlas de Portugal</Link></li>
-                    <li><Link href="/simulations" className="hover:text-primary">Simulador de Políticas</Link></li>
+                    <li><Link href="/explorer" className="hover:text-primary">{t('nav.explorer')}</Link></li>
+                    <li><Link href="/map" className="hover:text-primary">{t('nav.map')}</Link></li>
+                    <li><Link href="/simulations" className="hover:text-primary">{t('nav.simulations')}</Link></li>
                     <li><Link href="/methodology" className="hover:text-primary">{t('nav.methodology')}</Link></li>
                   </ul>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Empresa</h4>
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t('footer.company')}</h4>
                   <ul className="space-y-2 text-sm">
                     <li><Link href="/about" className="hover:text-primary">{t('nav.about')}</Link></li>
                     <li><Link href="/faq" className="hover:text-primary">{t('nav.faq')}</Link></li>
@@ -254,7 +255,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </ul>
                 </div>
                 <div className="space-y-4">
-                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Legal</h4>
+                  <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t('footer.legal')}</h4>
                   <ul className="space-y-2 text-sm">
                     <li><Link href="/terms" className="hover:text-primary">{t('nav.terms')}</Link></li>
                     <li><Link href="/privacy" className="hover:text-primary">{t('nav.privacy')}</Link></li>
@@ -262,8 +263,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <div className="pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>© {new Date().getFullYear()} Demokratia Portugal</span></div>
-                <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-lg">Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{t('footer.copyright').replace('{year}', new Date().getFullYear().toString())}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-w-lg">
+                  {t('footer.disclaimer')}
+                </p>
               </div>
             </div>
           </footer>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -50,7 +51,17 @@ const DICTIONARY = {
       linkCopied: 'Link copiado!',
       noResults: 'Sem resultados.',
       warning: 'Aviso',
-      confirm_delete: 'Tem a certeza que deseja apagar?'
+      confirm_delete: 'Tem a certeza que deseja apagar?',
+      accept: 'Aceitar',
+      close: 'Fechar'
+    },
+    footer: {
+      desc: 'A plataforma líder em transparência de dados públicos e literacia cívica em Portugal para 2026.',
+      resources: 'Recursos',
+      company: 'Empresa',
+      legal: 'Legal',
+      copyright: '© {year} Demokratia Portugal',
+      disclaimer: 'Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.'
     },
     investor: {
       title: 'Apoio ao Investidor',
@@ -134,7 +145,7 @@ const DICTIONARY = {
     irs: {
       title: 'Simulador de IRS 2026',
       description: 'Estime o seu acerto fiscal para o próximo ano.',
-      personalCard: 'Dados Pessoais',
+      personalCard: 'Dados Pessoal',
       maritalStatus: 'Estado Civil',
       single: 'Solteiro / Separado',
       marriedJoint: 'Casado (Conjunto)',
@@ -412,6 +423,32 @@ const DICTIONARY = {
       low: 'Baixo',
       high: 'Alto',
       indicators: 'Regional Indicators'
+    },
+    simulations: {
+      title: 'Simulador de Impacto IA',
+      description: 'Analise o impacto económico de políticas e propostas.',
+      howItWorks: 'A IA utiliza modelos económicos para prever alterações no PIB, emprego e contas públicas.',
+      newSimTitle: 'Nova Simulação',
+      newSimDesc: 'Descreva a medida política que pretende analisar.',
+      textareaPlaceholder: 'Ex: "Aumento da dedução por dependente no IRS para 1000€"',
+      simulateBtn: 'Simular Impacto',
+      simulating: 'A processar...',
+      saveBtn: 'Guardar Simulação',
+      mySimsTitle: 'As minhas Simulações',
+      publicSimsTitle: 'Simulações da Comunidade',
+      suggestVariable: 'Sugerir Variável',
+      suggestVariableDesc: 'Que outro indicador gostaria de ver no simulador?',
+      variableName: 'Nome do Indicador',
+      variableReason: 'Porquê este dado?',
+      impactSummary: 'Sumário do Impacto',
+      indicatorsTitle: 'Indicadores Chave',
+      indicator: 'Indicador',
+      currentValue: 'Valor Atual',
+      projectedValue: 'Valor Projetado',
+      aiReasoning: 'Raciocínio da IA',
+      realPolicy: 'Política Real Identificada',
+      viewOfficial: 'Ver Fonte Oficial',
+      convertToProposal: 'Converter em Proposta'
     }
   },
   en: {
@@ -459,7 +496,17 @@ const DICTIONARY = {
       linkCopied: 'Link copied!',
       noResults: 'No results.',
       warning: 'Warning',
-      confirm_delete: 'Are you sure you want to delete?'
+      confirm_delete: 'Are you sure you want to delete?',
+      accept: 'Accept',
+      close: 'Close'
+    },
+    footer: {
+      desc: 'The leading platform for public data transparency and civic literacy in Portugal for 2026.',
+      resources: 'Resources',
+      company: 'Company',
+      legal: 'Legal',
+      copyright: '© {year} Demokratia Portugal',
+      disclaimer: 'Notice: AI-generated information is purely indicative. The site contains personalized advertising to support the maintenance of open data.'
     },
     investor: {
       title: 'Investor Support',
@@ -821,6 +868,32 @@ const DICTIONARY = {
       low: 'Low',
       high: 'High',
       indicators: 'Regional Indicators'
+    },
+    simulations: {
+      title: 'AI Impact Simulator',
+      description: 'Analyze the economic impact of policies and proposals.',
+      howItWorks: 'AI uses economic models to predict changes in GDP, employment, and public accounts.',
+      newSimTitle: 'New Simulation',
+      newSimDesc: 'Describe the policy measure you want to analyze.',
+      textareaPlaceholder: 'e.g., "Increase the dependent deduction in IRS to €1000"',
+      simulateBtn: 'Simulate Impact',
+      simulating: 'Processing...',
+      saveBtn: 'Save Simulation',
+      mySimsTitle: 'My Simulations',
+      publicSimsTitle: 'Community Simulations',
+      suggestVariable: 'Suggest Variable',
+      suggestVariableDesc: 'What other indicator would you like to see in the simulator?',
+      variableName: 'Indicator Name',
+      variableReason: 'Why this data?',
+      impactSummary: 'Impact Summary',
+      indicatorsTitle: 'Key Indicators',
+      indicator: 'Indicator',
+      currentValue: 'Current Value',
+      projectedValue: 'Projected Value',
+      aiReasoning: 'AI Reasoning',
+      realPolicy: 'Real Policy Identified',
+      viewOfficial: 'View Official Source',
+      convertToProposal: 'Convert to Proposal'
     }
   }
 };
