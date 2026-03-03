@@ -1,13 +1,13 @@
 'use server';
 /**
  * @fileOverview Server actions for Genkit AI integration.
- * Optimized for Next.js 15 stability using direct generate calls to avoid registry conflicts.
+ * Fixed "Unknown action type" error by using direct model identifiers and ensuring stable initialization.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Initialize Genkit instance - not exported to comply with "use server" rules
+// Initialize Genkit instance - not exported to comply with Next.js "use server" rules
 const ai = genkit({
   plugins: [googleAI()],
 });
@@ -78,7 +78,6 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const languageName = lang === 'en' ? 'English' : 'Portuguese';
   const { output } = await ai.generate({
     model: MODEL_ID,
-    input: { inputData: JSON.stringify(input) },
     output: { schema: IRSAssessmentOutputSchema },
     prompt: `Act as an elite tax consultant in Portugal for 2026. Calculate IRS for the following data: ${JSON.stringify(input)}. Provide response in ${languageName}. Ensure technical accuracy according to CIRS 2026.`,
   });
