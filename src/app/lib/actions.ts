@@ -1,7 +1,7 @@
-'use server';
+import { redirect } from 'next/navigation';
 
 /**
- * @fileOverview Server actions proxy.
+ * Redundant actions file. Use @/lib/actions instead.
+ * This file is kept only to prevent build breaks from old imports.
  */
-
 export * from '@/lib/actions';
