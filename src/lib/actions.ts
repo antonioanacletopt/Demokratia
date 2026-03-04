@@ -2,20 +2,21 @@
 /**
  * @fileOverview Server actions for Demokratia Portugal using Genkit v1.x.
  * 
- * Handles AI-driven simulations, fact-checks, and analyses with a robust
- * native JSON approach to prevent "Unknown action type" errors in Next.js.
+ * Handles AI-driven simulations, fact-checks, and analyses using robust
+ * string identifiers and manual JSON parsing to prevent registration errors.
  */
 
 import { genkit, z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-// Initialize Genkit instance. Using a singleton approach helps with HMR in Next.js.
+// Initialize Genkit instance with singleton pattern for Next.js stability
 const ai = (globalThis as any)._aiInstance ?? genkit({
   plugins: [googleAI()],
 });
-(globalThis as any)._aiInstance = ai;
+if (!(globalThis as any)._aiInstance) {
+  (globalThis as any)._aiInstance = ai;
+}
 
-// Canonical model ID
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 export type Language = 'en' | 'pt';
