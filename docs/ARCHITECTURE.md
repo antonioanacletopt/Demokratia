@@ -27,23 +27,27 @@ graph TD
 
 ### 📂 `src/lib/` (Lógica de Negócio)
 - [`actions.ts`](../src/lib/actions.ts): **O Cérebro Único**. Contém todas as chamadas ao Genkit e lógica de simulação.
-- [`api-client.ts`](../src/lib/api-client.ts): Integração com APIs financeiras externas.
-- [`i18n.tsx`](../src/lib/i18n.tsx): Sistema de internacionalização (PT/EN).
+- [`actions-schema.ts`](../src/lib/actions-schema.ts): Definições de tipos e esquemas Zod (partilhado entre Server e Client).
+- [`server-actions.ts`](../src/lib/server-actions.ts): Ponte de compatibilidade para exportação de tipos e funções.
+- [`api-client.ts`](../src/lib/api-client.ts): Integração com APIs financeiras externas (Alpha Vantage).
 
 ### 📂 `src/firebase/` (Infraestrutura)
 - [`index.ts`](../src/firebase/index.ts): Inicialização centralizada dos SDKs.
-- [`non-blocking-updates.tsx`](../src/firebase/non-blocking-updates.tsx): Escrita otimizada no Firestore.
+- [`non-blocking-updates.tsx`](../src/firebase/non-blocking-updates.tsx): Escrita otimizada no Firestore (não aguarda resposta).
 
 ### 📂 `src/app/` (Rotas Principais)
-- `/explorer`: Consulta de dados estatísticos brutos.
-- `/simulations`: Simulador de políticas (inclui modo Comparação).
-- `/scenarios`: Laboratório macroeconómico com sliders.
-- `/map`: Atlas Regional interativo.
+- `/explorer`: Consulta de dados estatísticos brutos e consulta inteligente.
+- `/simulations`: Simulador de impacto de políticas (inclui histórico e partilha).
+- `/scenarios`: Laboratório macroeconómico com sliders interativos.
+- `/map`: Atlas Regional interativo (Portugal Continental e Ilhas).
+
+### ⚠️ AVISO DE SEGURANÇA (BACKUP)
+O ficheiro `src/app/(app)/map/page copy.tsx` é um **backup crítico** do código do mapa. **NÃO ALTERAR NEM REMOVER.** Serve como ponto de restauração em caso de corrupção do ficheiro principal do mapa.
 
 ## 4. Padrões de Desenvolvimento
 1.  **Single Source of Truth:** Lógica de servidor apenas em `src/lib/actions.ts`.
-2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones.
-3.  **Tradução:** Uso obrigatório do `DICTIONARY` em `src/lib/i18n.tsx`.
+2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones em todos os novos componentes.
+3.  **Segurança de Tipos:** Importar sempre tipos de `@/lib/server-actions` para componentes UI.
 
 ---
-*Atualizado após consolidação de ficheiros redundantes.*
+*Documento atualizado após consolidação da Tarefa 3.*
