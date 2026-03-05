@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -24,8 +25,8 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// ID qualificado do modelo para garantir resolução correta pelo plugin
-const GEMINI_MODEL = 'googleai/gemini-1.5-flash';
+// Identificador de modelo estável para o plugin Google AI
+const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**
  * Tradução de texto mantendo o tom técnico.
@@ -33,7 +34,7 @@ const GEMINI_MODEL = 'googleai/gemini-1.5-flash';
 export async function getTranslation(text: string, lang: Language) {
   const target = lang === 'en' ? 'English' : 'Portuguese';
   const { text: translated } = await ai.generate({
-    model: GEMINI_MODEL,
+    model: MODEL_ID,
     prompt: `Translate the following text to ${target}. Maintain the tone and technical terms: ${text}`,
   });
   return translated;
@@ -44,7 +45,7 @@ export async function getTranslation(text: string, lang: Language) {
  */
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
+    model: MODEL_ID,
     prompt: `Analyze the economic impact of: "${input.policyDescription}" in Portugal 2026. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: EconomicSimulationOutputSchema }
   });
@@ -56,8 +57,8 @@ export async function getEconomicSimulation(input: { policyDescription: string }
  */
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Fact-check this regarding Portugal: "${input.claim}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Use official sources. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Fact-check this regarding Portugal: "${input.claim}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Use official sources like INE and Pordata. Return as JSON.`,
     output: { schema: FactCheckOutputSchema }
   });
   return output!;
@@ -68,8 +69,8 @@ export async function getFactCheck(input: { claim: string }, lang: Language = 'p
  */
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Answer this legal question about Portugal using DRE sources: "${input.question}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Answer this legal question about Portugal using DRE (Diário da República) sources: "${input.question}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: LegislationOutputSchema }
   });
   return output!;
@@ -80,8 +81,8 @@ export async function getLegislationInfo(input: { question: string }, lang: Lang
  */
 export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Provide technical feedback on the impact on GDP and debt. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: ScenarioAnalysisOutputSchema }
   });
   return output!;
@@ -92,8 +93,8 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
  */
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `As a Portuguese tax expert, analyze these IRS parameters for 2026: ${JSON.stringify(input)}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `As a Portuguese tax expert, analyze these IRS parameters for 2026 based on official tax rules: ${JSON.stringify(input)}. Provide tips for optimization. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: IRSAssessmentOutputSchema }
   });
   return output!;
@@ -104,8 +105,8 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
  */
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Analyze this family budget for Portugal 2026: ${JSON.stringify(input)}. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Analyze this family budget for Portugal 2026 considering the economic context: ${JSON.stringify(input)}. Provide sustainability suggestions. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: FamilyBudgetOutputSchema }
   });
   return output!;
@@ -116,7 +117,7 @@ export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt')
  */
 export async function getMarketAnalysis(lang: Language = 'pt') {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
+    model: MODEL_ID,
     prompt: `Provide a strategic market briefing for investors in Portugal for 2026. Analyze sectors like Energy, Tech, and Tourism. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
     output: { schema: MarketAnalysisOutputSchema }
   });
@@ -128,8 +129,8 @@ export async function getMarketAnalysis(lang: Language = 'pt') {
  */
 export async function getNewsFeed() {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Generate 5 relevant news feed items for Portugal in 2026. Focus on Economy, Law, and Social issues. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Generate 5 relevant and realistic news feed items for Portugal in 2026. Focus on Economy, Law, and Social issues. Return as JSON.`,
     output: { schema: NewsFeedOutputSchema }
   });
   return output!;
@@ -140,8 +141,8 @@ export async function getNewsFeed() {
  */
 export async function getChartFromRequest(input: { request: string }) {
   const { output } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Extract statistical data for: "${input.request}" in Portugal. Return labels and numerical values. Return as JSON.`,
+    model: MODEL_ID,
+    prompt: `Extract statistical data for: "${input.request}" in Portugal. Return labels and numerical values suitable for a chart. Return as JSON.`,
     output: { schema: ChartOutputSchema }
   });
   return output!;
@@ -152,8 +153,8 @@ export async function getChartFromRequest(input: { request: string }) {
  */
 export async function getPublicStatistic(input: { request: string }) {
   const { text } = await ai.generate({
-    model: GEMINI_MODEL,
-    prompt: `Find raw statistical data for: "${input.request}". Return JSON with 'data' stringified and 'explanation'.`,
+    model: MODEL_ID,
+    prompt: `Find raw statistical data for: "${input.request}" regarding Portugal. Return JSON with 'data' stringified and 'explanation'.`,
     config: { responseMimeType: 'application/json' },
   });
   const parsed = JSON.parse(text);
