@@ -20,9 +20,8 @@ import {
   Calculator, Wallet, Zap 
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
-import { getNewsFeed, getTranslation } from '@/lib/actions';
-import type { FeedItem as AIFeedItem } from '@/ai/flows/generate-news-feed';
-import { useTranslation } from '@/lib/i18n';
+import { getNewsFeed, getTranslation, type NewsFeedOutput } from '@/lib/server-actions';
+import { useTranslation, Language } from '@/lib/i18n';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, serverTimestamp, doc, getDoc, setDoc, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { AIResultButton } from '@/components/AIResultButton';
@@ -47,7 +46,7 @@ const typeConfig = {
 
 const CACHE_EXPIRATION_HOURS = 6;
 
-function FeedItemCard({ item }: { item: AIFeedItem }) {
+function FeedItemCard({ item }: { item: NewsFeedOutput['feedItems'][0] }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const config = typeConfig[item.type as keyof typeof typeConfig];
@@ -86,8 +85,8 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const resTitle = await getTranslation(item.title, language);
-      const resDesc = await getTranslation(item.description, language);
+      const resTitle = await getTranslation(item.title, language as Language);
+      const resDesc = await getTranslation(item.description, language as Language);
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
       const cacheRef = collection(firestore, 'translations_cache');
@@ -141,7 +140,7 @@ function FeedItemCard({ item }: { item: AIFeedItem }) {
 export default function HomePage() {
   const { t } = useTranslation();
   const firestore = useFirestore();
-  const [feedItems, setFeedItems] = useState<AIFeedItem[]>([]);
+  const [feedItems, setFeedItems] = useState<NewsFeedOutput['feedItems']>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 

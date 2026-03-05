@@ -4,8 +4,7 @@ import { useState, useTransition, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Loader2, Zap, ArrowUp, ArrowDown, Info, Link as LinkIcon, GitCompareArrows, PlusCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { getEconomicSimulation } from '@/lib/actions';
-import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
+import { getEconomicSimulation, type EconomicSimulationOutput } from '@/lib/server-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { useTranslation } from '@/lib/i18n';
 import { safeDecode } from '@/lib/safe-decode';
 
-function SimulationResult({ simulation }: { simulation: EconomicPolicySimulationOutput }) {
+function SimulationResult({ simulation }: { simulation: EconomicSimulationOutput }) {
     return (
         <div className="space-y-6">
              {simulation.isRealPolicy && (
@@ -90,8 +89,8 @@ function SimulationResult({ simulation }: { simulation: EconomicPolicySimulation
 export default function SimulatorPage() {
   const [policy1, setPolicy1] = useState('');
   const [policy2, setPolicy2] = useState('');
-  const [simulation1, setSimulation1] = useState<EconomicPolicySimulationOutput | null>(null);
-  const [simulation2, setSimulation2] = useState<EconomicPolicySimulationOutput | null>(null);
+  const [simulation1, setSimulation1] = useState<EconomicSimulationOutput | null>(null);
+  const [simulation2, setSimulation2] = useState<EconomicSimulationOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isComparing, setIsComparing] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);

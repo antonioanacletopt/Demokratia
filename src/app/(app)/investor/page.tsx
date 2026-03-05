@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useTransition, useEffect, useMemo } from 'react';
+import { FinancialNewsFeed } from '@/components/FinancialNewsFeed';
+import StockMarketTicker from '@/components/StockMarketTicker';
+import CommoditiesWatch from '@/components/CommoditiesWatch';
+import { useState, useTransition, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from '@/lib/i18n';
-import { getMarketAnalysis, type MarketAnalysisOutput, Language } from '@/lib/actions';
+import { getMarketAnalysis, type MarketAnalysisOutput } from '@/lib/server-actions';
+import { Language } from '@/lib/i18n';
 import { 
-  TrendingUp, TrendingDown, Info, ShieldCheck, Coins, Sparkles, 
-  Loader2, Calculator, Briefcase, Activity, Landmark, 
-  ArrowRight, HeartPulse, Construction, Zap, Flame, ShieldAlert,
-  Ship, Plane, Cpu, BarChart3
+  TrendingUp, TrendingDown, Info, Sparkles, 
+  Loader2, Calculator, Landmark, 
+  ArrowRight, Zap, Flame, ShieldAlert,
+  Coins, Ship, BarChart3
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { cn } from '@/lib/utils';
 
@@ -26,8 +30,9 @@ export default function InvestorPage() {
   const [analysis, setAnalysis] = useState<MarketAnalysisOutput | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
 
-  // PPR States
+  // --- PPR States ---
   const [pprAmount, setPprAmount] = useState(2000);
+  const [pprAge, setPprAge] = useState(30);
   const [pprRisk, setPprRisk] = useState<'conservative' | 'moderate' | 'aggressive'>('moderate');
   const [pprResult, setPprResult] = useState<{ benefit: number, projected: number } | null>(null);
 
@@ -39,24 +44,23 @@ export default function InvestorPage() {
   }, [language]);
 
   const handlePprSimulation = () => {
-    // Basic calculation for Portuguese tax benefits (IRS Article 21 EBF)
-    // 20% deduction, max varies by age (we'll use 400€ max as general MVP)
-    const benefit = Math.min(pprAmount * 0.2, 400);
+    let maxBenefit;
+    if (pprAge < 35) {
+      maxBenefit = 400;
+    } else if (pprAge <= 50) {
+      maxBenefit = 350;
+    } else {
+      maxBenefit = 300;
+    }
+    const benefit = Math.min(pprAmount * 0.2, maxBenefit);
     const rates = { conservative: 0.02, moderate: 0.05, aggressive: 0.08 };
     const rate = rates[pprRisk];
     const projected = pprAmount * Math.pow(1 + rate, 20);
     setPprResult({ benefit, projected });
   };
 
-  const chartData = analysis?.assets.map(a => ({
-    name: a.name,
-    value: a.currentValue,
-    trend: a.trend
-  })) || [];
-
-  const chartConfig: ChartConfig = {
-    value: { label: 'Value', color: 'hsl(var(--primary))' }
-  };
+  const chartData = analysis?.assets.map(a => ({ name: a.name, value: a.currentValue, trend: a.trend })) || [];
+  const chartConfig: ChartConfig = { value: { label: 'Value', color: 'hsl(var(--primary))' } };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -67,9 +71,12 @@ export default function InvestorPage() {
         <p className="text-muted-foreground text-lg">{t('investor.description')}</p>
       </div>
 
+      <StockMarketTicker />
+
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Main Analysis Column */}
         <div className="lg:col-span-8 space-y-6">
+          <FinancialNewsFeed />
           <Card className="border-primary/10 shadow-lg overflow-hidden">
             <CardHeader className="bg-primary/5">
               <div className="flex justify-between items-center">
@@ -93,9 +100,8 @@ export default function InvestorPage() {
               ) : analysis ? (
                 <div className="space-y-8">
                   <div className="bg-muted/30 p-4 rounded-xl border italic text-sm leading-relaxed">
-                    "{analysis.globalContext}"
+                    &ldquo;{analysis.globalContext}&rdquo;
                   </div>
-                  
                   <div className="grid gap-6">
                     {analysis.sectors.map((sector, i) => (
                       <div key={i} className="space-y-2 group">
@@ -124,9 +130,9 @@ export default function InvestorPage() {
             </CardContent>
           </Card>
 
-          {/* PPR Section */}
+          {/* Improved PPR Section */}
           <Card className="border-accent/20 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-start justify-between space-y-0">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-primary" /> {t('investor.pprTitle')}
@@ -136,51 +142,108 @@ export default function InvestorPage() {
               <Landmark className="h-8 w-8 text-muted-foreground/20" />
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-8 pt-4">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label>{t('investor.investmentAmount')}</Label>
-                  <Input 
-                    type="number" 
-                    value={pprAmount} 
-                    onChange={(e) => setPprAmount(Number(e.target.value))} 
-                    className="text-lg font-bold"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('investor.riskLevel')}</Label>
-                  <Tabs value={pprRisk} onValueChange={(v: any) => setPprRisk(v)} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="conservative">{t('investor.conservative')}</TabsTrigger>
-                      <TabsTrigger value="moderate">{t('investor.moderate')}</TabsTrigger>
-                      <TabsTrigger value="aggressive">{t('investor.aggressive')}</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-                <Button onClick={handlePprSimulation} className="w-full gap-2">
-                  <Zap className="h-4 w-4 fill-current" /> {t('investor.invest')}
-                </Button>
-              </div>
+              <TooltipProvider>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ppr-amount">{t('investor.investmentAmount')}</Label>
+                      <Input 
+                        id="ppr-amount"
+                        type="number" 
+                        value={pprAmount} 
+                        onChange={(e) => setPprAmount(Number(e.target.value))} 
+                        className="text-lg font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="age">{t('investor.yourAge')}</Label>
+                      <Input 
+                        id="age"
+                        type="number" 
+                        value={pprAge} 
+                        onChange={(e) => setPprAge(Number(e.target.value))} 
+                        className="text-lg font-bold"
+                        placeholder="Ex: 30"
+                      />
+                    </div>
+                  </div>
 
-              {pprResult && (
-                <div className="bg-muted/20 rounded-2xl p-6 border-2 border-dashed flex flex-col justify-center gap-6 animate-in fade-in slide-in-from-right-4">
-                  <div className="text-center">
-                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{t('investor.fiscalBenefit')}</p>
-                    <p className="text-4xl font-bold font-headline text-green-600">{pprResult.benefit}€</p>
-                    <p className="text-[9px] text-muted-foreground mt-1">Dedução direta no IRS (Art. 21.º EBF)</p>
+                  <div className="space-y-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label className="flex items-center gap-1.5 cursor-help w-fit">
+                          {t('investor.riskLevel')}
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="font-bold mb-1">Define a estratégia do seu PPR:</p>
+                        <ul className="list-disc list-inside text-xs space-y-1">
+                          <li><b>Conservador:</b> Privilegia a segurança do capital. Retorno esperado baixo.</li>
+                          <li><b>Moderado:</b> Uma mistura equilibrada entre segurança e potencial de crescimento.</li>
+                          <li><b>Agressivo:</b> Foco no crescimento a longo prazo, aceitando maior volatilidade. Retorno esperado alto.</li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tabs value={pprRisk} onValueChange={(v: any) => setPprRisk(v)} className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="conservative">{t('investor.conservative')}</TabsTrigger>
+                        <TabsTrigger value="moderate">{t('investor.moderate')}</TabsTrigger>
+                        <TabsTrigger value="aggressive">{t('investor.aggressive')}</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
                   </div>
-                  <Separator />
-                  <div className="text-center">
-                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{t('investor.projectedValue')}</p>
-                    <p className="text-2xl font-bold text-primary">{Math.round(pprResult.projected).toLocaleString('pt-PT')}€</p>
-                  </div>
+                  <Button onClick={handlePprSimulation} className="w-full gap-2">
+                    <Zap className="h-4 w-4 fill-current" /> {t('investor.invest')}
+                  </Button>
                 </div>
-              )}
+
+                {pprResult && (
+                  <div className="bg-muted/30 rounded-2xl p-6 border-2 border-dashed flex flex-col justify-center gap-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger className="w-full">
+                           <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1 flex items-center justify-center gap-1.5 cursor-help">
+                            {t('investor.fiscalBenefit')}
+                            <Info className="h-3 w-3" />
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-xs">
+                          <p>Valor que pode deduzir no seu IRS, calculado como 20% do montante investido, com limites baseados na sua idade:</p>
+                          <ul className="list-disc list-inside text-xs space-y-1 mt-1">
+                            <li><b>Até 35 anos:</b> máximo de 400€</li>
+                            <li><b>Entre 35 e 50 anos:</b> máximo de 350€</li>
+                            <li><b>Acima de 50 anos:</b> máximo de 300€</li>
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                      <p className="text-4xl font-bold font-headline text-green-600">{pprResult.benefit.toFixed(2)}€</p>
+                    </div>
+                    <Separator />
+                    <div className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger className="w-full">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1 flex items-center justify-center gap-1.5 cursor-help">
+                            {t('investor.projectedValue')}
+                            <Info className="h-3 w-3" />
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-xs">
+                          <p>Esta é uma estimativa do valor futuro do seu investimento, baseada na taxa de juro anual média associada ao perfil de risco que selecionou. Este valor não é garantido e serve apenas como referência.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <p className="text-2xl font-bold text-primary">{Math.round(pprResult.projected).toLocaleString('pt-PT')}€</p>
+                    </div>
+                  </div>
+                )}
+              </TooltipProvider>
             </CardContent>
           </Card>
         </div>
 
         {/* Right Sidebar Column */}
         <div className="lg:col-span-4 space-y-6">
+          <CommoditiesWatch />
           <Card className="shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">

@@ -5,7 +5,7 @@ import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { getScenarioAnalysis, getTranslation } from '@/lib/actions';
+import { getScenarioAnalysis, getTranslation } from '@/lib/server-actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,8 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, Info, Save, RefreshCcw, Share2, TrendingUp, Briefcase, Activity, 
-  Landmark, Sparkles, Loader2, Check, Target, PlusCircle, Scale, Wallet, Coins,
-  HeartPulse, GraduationCap, Shield, Construction, Landmark as GovBuilding,
+  Landmark as GovBuilding, Sparkles, Loader2, Check, Target, PlusCircle, Scale, Wallet, Coins,
+  HeartPulse, GraduationCap, Shield, Construction,
   Languages, RefreshCw
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
@@ -193,7 +193,7 @@ export default function ScenariosPage() {
         parameters: { ...params, budget }, 
         results 
       }, language);
-      setAiAnalysis(res.feedback);
+      setAiAnalysis(res?.feedback ?? null);
       setTranslatedAnalysis(null);
       setShowOriginal(true);
     });

@@ -5,8 +5,7 @@ import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2, Zap, Info, Link as LinkIcon, Save, Trash2, MessageSquarePlus, PlusCircle, Share2, Check, Languages, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { getEconomicSimulation, getTranslation } from '@/lib/actions';
-import type { EconomicPolicySimulationOutput } from '@/ai/flows/simulate-economic-policy';
+import { getEconomicSimulation, getTranslation, type EconomicSimulationOutput } from '@/lib/server-actions';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, doc, limit, setDoc, getDoc, deleteDoc, addDoc, where, getDocs } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n';
@@ -60,7 +59,7 @@ function generateSlug(text: string): string {
     .substring(0, 150);
 }
 
-function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicPolicySimulationOutput, policyText: string }) {
+function SimulationResultDisplay({ simulation, policyText }: { simulation: EconomicSimulationOutput, policyText: string }) {
     const { t, language } = useTranslation();
     const { toast } = useToast();
     const firestore = useFirestore();
@@ -228,7 +227,7 @@ function SimulationResultDisplay({ simulation, policyText }: { simulation: Econo
 export default function SimulationsPage() {
   const { t, language } = useTranslation();
   const [policyInput, setPolicyInput] = useState('');
-  const [currentSimulation, setCurrentSimulation] = useState<EconomicPolicySimulationOutput | null>(null);
+  const [currentSimulation, setCurrentSimulation] = useState<EconomicSimulationOutput | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -371,6 +370,7 @@ export default function SimulationsPage() {
       toast({ title: t('common.success') });
     } catch (e) {
       toast({ variant: 'destructive', title: t('common.error') });
+    } finally {
     }
   };
 

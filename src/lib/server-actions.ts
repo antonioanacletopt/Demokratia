@@ -1,4 +1,16 @@
+'use server';
+import { z } from '@genkit-ai/core';
+// import { configureGenkit } from 'genkit';
+import { generate } from '@genkit-ai/ai';
+import { googleAI } from '@genkit-ai/google-genai';
 import { Language } from './i18n';
+
+// Initialize Genkit instance at the module level.
+// configureGenkit({
+//     plugins: [googleAI()],
+//     logLevel: 'debug',
+//     enableTracingAndMetrics: true,
+// });
 
 export type FactCheckOutput = {
     verdict: 'Verdadeiro' | 'Falso' | 'Enganador' | 'Sem Evidência';
@@ -66,6 +78,30 @@ export type EconomicSimulationOutput = {
     }[];
 };
 
+const democraticMemorial = {
+    name: 'democraticMemorial',
+    description: 'A tool for creating a democratic memorial.',
+    inputSchema: z.object({
+        text: z.string(),
+    }),
+    outputSchema: z.object({
+        text: z.string(),
+    }),
+};
+
+export const makeMemorial = async (input: string) => {
+    // const result = await generate({
+    //     prompt: input,
+    //     model: 'google-genai/gemini-pro',
+    //     config: {
+    //         temperature: 0.5,
+    //     },
+    // });
+
+    // return result.text();
+    return "This is a memorial.";
+};
+
 export const getTranslation = async (text: string, language: Language) => {
     return 'Translated text';
 };
@@ -80,6 +116,7 @@ export const getFamilyBudgetAnalysis = async (data: any, language: Language) => 
 };
 
 export const getChartFromRequest = async (request: any) => {
+    console.log(request)
     return {
         isChartable: true,
         chartData: [{ label: 'A', value: 10 }, { label: 'B', value: 20 }],
@@ -99,7 +136,7 @@ export const getPublicStatistic = async (request: any) => {
     };
 };
 
-export const getFactCheck = async (statement: string): Promise<FactCheckOutput> => {
+export const getFactCheck = async (statement: any, language: Language): Promise<FactCheckOutput> => {
     return {
         verdict: 'Verdadeiro',
         explanation: 'Esta afirmação é verdadeira.',

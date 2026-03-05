@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from '@/lib/i18n';
-import { getIRSAssessment } from '@/lib/actions';
+import { getIRSAssessment, type IRSAssessmentOutput } from '@/lib/server-actions';
 import { 
   Calculator, UserCircle, PiggyBank, Sparkles, 
-  Loader2, Landmark, 
+  Loader2, Landmark, CheckCircle2, 
   HeartPulse, GraduationCap, Home, ShoppingBag, TrendingUp, TrendingDown,
   Scale, Briefcase, Receipt, Rocket, Banknote
 } from 'lucide-react';
@@ -69,7 +69,7 @@ export default function IRSPage() {
   const [retention, setRetention] = useState(3000);
 
   // AI Result
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<IRSAssessmentOutput | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
 
   const handleSimulate = () => {
@@ -95,7 +95,7 @@ export default function IRSPage() {
     });
   };
 
-  const isRefund = aiResult?.refundOrPayment >= 0;
+  const isRefund = aiResult ? aiResult.refundOrPayment >= 0 : false;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">

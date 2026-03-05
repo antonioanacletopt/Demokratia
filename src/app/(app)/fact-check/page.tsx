@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { getFactCheck, getTranslation } from '@/lib/actions';
-import type { FactCheckOutput } from '@/ai/flows/fact-check-claim';
+import { getFactCheck, getTranslation, type FactCheckOutput } from '@/lib/server-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Share2, Sparkles } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, Language } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
 import { cn } from '@/lib/utils';
@@ -94,8 +93,8 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const resVerdict = await getTranslation(result.verdict, language);
-      const resExpl = await getTranslation(result.explanation, language);
+      const resVerdict = await getTranslation(result.verdict, language as Language);
+      const resExpl = await getTranslation(result.explanation, language as Language);
       setTranslated({ verdict: resVerdict, explanation: resExpl });
       setShowOriginal(false);
       const cacheRef = collection(firestore, 'translations_cache');
@@ -222,7 +221,7 @@ export default function FactCheckPage() {
         }
       }
 
-      const res = await getFactCheck({ claim: textToUse }, language);
+      const res = await getFactCheck({ claim: textToUse }, language as Language);
       setResult(res);
       
       if (firestore) {

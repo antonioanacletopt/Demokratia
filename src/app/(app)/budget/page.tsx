@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +10,8 @@ import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useTranslation } from '@/lib/i18n';
-import { getFamilyBudgetAnalysis, getTranslation, Language } from '@/lib/actions';
+import { useTranslation, Language } from '@/lib/i18n';
+import { getFamilyBudgetAnalysis, getTranslation } from '@/lib/server-actions';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
@@ -34,7 +33,7 @@ const DEFAULT_COSTS_2026 = {
 };
 
 export default function FamilyBudgetPage() {
-  const { t, lang } = useTranslation();
+  const { t, language: lang } = useTranslation();
   const firestore = useFirestore();
 
   const [adults, setAdults] = useState(1);
@@ -103,20 +102,13 @@ export default function FamilyBudgetPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      const res = await getFamilyBudgetAnalysis(
-        { 
-          budget: {
-            profile: { adults, children, totalNetIncome: income },
-            expenses
-          }
-        },
-        lang as Language
-      );
-      setAiResult({ 
-        ...res,
-        tips: res.suggestions,
-        score: 0 // Add a default score
-      });
+      const res = await getFamilyBudgetAnalysis({
+        budget: {
+          profile: { adults, children, totalNetIncome: income },
+          expenses
+        }
+      }, lang as Language);
+      setAiResult({ analysis: res.analysis, tips: res.suggestions, score: 0 });
       setTranslatedAnalysis(null);
       setShowOriginal(true);
     });
@@ -139,19 +131,6 @@ export default function FamilyBudgetPage() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <div className="relative h-[180px] w-full rounded-2xl overflow-hidden shadow-md border mb-6">
-            <Image 
-              src="https://picsum.photos/seed/budget/1200/600" 
-              alt="Orçamento Familiar" 
-              fill 
-              className="object-cover"
-              data-ai-hint="alentejo fields"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent flex items-center p-8">
-              <p className="text-white font-bold text-xl drop-shadow-md">Gestão de Orçamento Portugal 2026</p>
-            </div>
-          </div>
-
           <Card className="shadow-md">
             <CardHeader className="bg-muted/30">
               <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> {t('budget.profileTitle')}</CardTitle>

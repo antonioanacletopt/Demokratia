@@ -5,8 +5,8 @@ import { useState, useMemo, useRef, useEffect, useCallback, useTransition } from
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, query, orderBy, addDoc, getDoc, doc, setDoc, where, limit, getDocs } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { getPublicStatistic, getChartFromRequest, getTranslation } from '@/lib/actions';
-import { useTranslation } from '@/lib/i18n';
+import { getPublicStatistic, getChartFromRequest, getTranslation } from '@/lib/server-actions';
+import { useTranslation, Language } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -165,8 +165,8 @@ function UniversalDataCard({
 
   const handleTranslate = () => {
     startTransition(async () => {
-      const resTitle = await getTranslation(title, language);
-      const resDesc = await getTranslation(description, language);
+      const resTitle = await getTranslation(title, language as Language);
+      const resDesc = await getTranslation(description, language as Language);
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
       
@@ -300,7 +300,7 @@ export default function ExplorerPage() {
           source: 'Análise IA via Fontes Oficiais',
           unit: res.yAxisLabel,
           data: res.chartData,
-          chartType: res.chartType
+          chartType: res.chartType as 'bar' | 'line' | undefined
         };
       } else {
         const statRes = await getPublicStatistic({ request: humanText });
