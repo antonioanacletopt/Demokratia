@@ -23,7 +23,7 @@ graph TD
     D -->|Renderiza| A
 ```
 
-## 3. Mapa de Ficheiros Críticos (Pós-Limpeza)
+## 3. Mapa de Ficheiros Críticos
 
 ### 📂 `src/lib/` (Lógica de Negócio)
 - [`actions.ts`](../src/lib/actions.ts): **O Cérebro Único**. Contém todas as chamadas ao Genkit e lógica de simulação.
@@ -44,10 +44,15 @@ graph TD
 ### ⚠️ AVISO DE SEGURANÇA (BACKUP)
 O ficheiro `src/app/(app)/map/page copy.tsx` é um **backup crítico** do código do mapa. **NÃO ALTERAR NEM REMOVER.** Serve como ponto de restauração em caso de corrupção do ficheiro principal do mapa.
 
-## 4. Padrões de Desenvolvimento
+## 4. Roteiro de Desenvolvimento (Roadmap)
+- [ ] **Tarefa A:** Melhoria de Prompts - Refinar as instruções da IA em `src/lib/actions.ts` para citar fontes portuguesas (INE, Pordata, DRE) com mais precisão e rigor técnico.
+- [ ] **Tarefa B:** Implementação do "Comparador de Políticas" na página `/simulations`.
+- [ ] **Tarefa C:** Reforço da Resiliência da API de Cotações (Integração Yahoo Finance fallback).
+
+## 5. Padrões de Desenvolvimento
 1.  **Single Source of Truth:** Lógica de servidor apenas em `src/lib/actions.ts`.
-2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones em todos os novos componentes.
+2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones.
 3.  **Segurança de Tipos:** Importar sempre tipos de `@/lib/server-actions` para componentes UI.
 
 ---
-*Documento atualizado após consolidação da Tarefa 3.*
+*Documento atualizado para refletir a consolidação da Tarefa 1.*

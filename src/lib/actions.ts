@@ -24,8 +24,7 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Usando referência robusta do modelo para evitar erros de resolução de endpoint (404)
-// O plugin googleAI lida internamente com a versão da API e o mapeamento do nome do modelo
+// Referência robusta para o modelo Gemini 1.5 Flash
 const geminiModel = googleAI.model('gemini-1.5-flash');
 
 /**
