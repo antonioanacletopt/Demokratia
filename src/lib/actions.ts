@@ -1,155 +1,82 @@
+'use server';
+
+/**
+ * @fileOverview O Cérebro Único da Demokratia.
+ * Centraliza todas as Server Actions e integração com Genkit.
+ */
+
+import { genkit, z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { Language } from './i18n';
 
-export type FactCheckOutput = {
-    verdict: 'Verdadeiro' | 'Falso' | 'Enganador' | 'Sem Evidência';
-    explanation: string;
-    sources: string[];
-};
+const ai = genkit({
+  plugins: [googleAI()],
+});
 
-export type NewsFeedOutput = {
-    feedItems: {
-        id: string;
-        title: string;
-        description: string;
-        source: string;
-        date: string;
-        type: 'Alegação' | 'Nova Lei' | 'Análise';
-        actionLink?: {
-            href: string;
-            label: string;
-        };
-    }[];
-};
+const MODEL_ID = 'googleai/gemini-1.5-flash';
 
-export type MarketAnalysisOutput = {
-    globalContext: string;
-    sentiment: 'Bullish' | 'Bearish';
-    sectors: {
-        name: string;
-        context: string;
-        opportunity: string;
-    }[];
-    assets: {
-        name: string;
-        currentValue: number;
-        trend: string;
-    }[];
-};
+// --- Schemas ---
 
-export type IRSAssessmentOutput = {
-    refundOrPayment: number;
-    estimatedTax: number;
-    effectiveRate: number;
-    analysis: string;
-    tips: string[];
-};
+export const FactCheckOutputSchema = z.object({
+  verdict: z.enum(['Verdadeiro', 'Falso', 'Enganador', 'Sem Evidência']),
+  explanation: z.string(),
+  sources: z.array(z.string().url()),
+});
+export type FactCheckOutput = z.infer<typeof FactCheckOutputSchema>;
 
-export type ConsultLegislationOutput = {
-    answer: string;
-    sources: string[];
-};
+export const EconomicSimulationOutputSchema = z.object({
+  simulatedImpact: z.string(),
+  reasoning: z.string(),
+  isRealPolicy: z.boolean(),
+  source: z.string().url().optional(),
+  keyIndicators: z.array(z.object({
+    name: z.string(),
+    currentValue: z.number(),
+    projectedValue: z.number(),
+    unit: z.string(),
+  })),
+});
+export type EconomicSimulationOutput = z.infer<typeof EconomicSimulationOutputSchema>;
 
-export type ScenarioAnalysisOutput = {
-    feedback: string;
-};
+// --- Actions ---
 
-export type EconomicSimulationOutput = {
-    simulatedImpact: string;
-    reasoning: string;
-    isRealPolicy: boolean;
-    source?: string;
-    keyIndicators: {
-        name: string;
-        currentValue: number;
-        projectedValue: number;
-        unit: string;
-    }[];
-};
+/**
+ * Tradução de texto via IA com cache implícito.
+ */
+export async function getTranslation(text: string, lang: Language) {
+  const target = lang === 'en' ? 'English' : 'Portuguese';
+  const { text: translated } = await ai.generate({
+    model: MODEL_ID,
+    prompt: `Translate the following text to ${target}. Maintain the tone and technical terms: ${text}`,
+  });
+  return translated;
+}
 
-export const getTranslation = async (text: string, language: Language) => {
-    return 'Translated text';
-};
+/**
+ * Análise de simulação de políticas económicas.
+ */
+export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt'): Promise<EconomicSimulationOutput> {
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
+  const { output } = await ai.generate({
+    model: MODEL_ID,
+    prompt: `Analyze the economic impact of the following policy in Portugal for 2026: "${input.policyDescription}". 
+    Identify if it's a real proposal. Provide projections for GDP, Employment and Debt. Language: ${langName}.`,
+    output: { schema: EconomicSimulationOutputSchema },
+  });
+  return output!;
+}
 
-export const getFamilyBudgetAnalysis = async (data: any, language: Language) => {
-    return {
-        analysis: "Análise detalhada do orçamento familiar.",
-        tips: ["Dica 1", "Dica 2"],
-        suggestions: ["Dica 1", "Dica 2"],
-        score: 85
-    };
-};
+/**
+ * Verificação de factos (Fact-Check).
+ */
+export async function getFactCheck(input: { claim: string }, lang: Language = 'pt'): Promise<FactCheckOutput> {
+  const langName = lang === 'en' ? 'English' : 'Portuguese';
+  const { output } = await ai.generate({
+    model: MODEL_ID,
+    prompt: `Verify the following claim regarding Portugal: "${input.claim}". Use official sources (INE, Pordata, DRE). Provide a verdict and clear explanation. Language: ${langName}.`,
+    output: { schema: FactCheckOutputSchema },
+  });
+  return output!;
+}
 
-export const getChartFromRequest = async (request: any) => {
-    return {
-        isChartable: true,
-        chartData: [{ label: 'A', value: 10 }, { label: 'B', value: 20 }],
-        chartTitle: 'Chart Title',
-        explanation: 'Explanation',
-        yAxisLabel: 'Y-Axis',
-        chartType: 'bar'
-    };
-};
-
-export const getPublicStatistic = async (request: any) => {
-    return {
-        isFound: true,
-        data: '[]',
-        explanation: 'Explanation',
-        source: 'Source'
-    };
-};
-
-export const getFactCheck = async (statement: string): Promise<FactCheckOutput> => {
-    return {
-        verdict: 'Verdadeiro',
-        explanation: 'Esta afirmação é verdadeira.',
-        sources: ['https://example.com']
-    };
-};
-
-export const getNewsFeed = async (): Promise<NewsFeedOutput> => {
-    return {
-        feedItems: [
-            {
-                id: '1',
-                title: 'Nova lei de impostos',
-                description: 'O governo aprovou uma nova lei de impostos que entrará em vigor em 2025.',
-                source: 'Diário da República',
-                date: '2024-01-01',
-                type: 'Nova Lei',
-                actionLink: {
-                    href: '/legislation',
-                    label: 'Saber mais'
-                }
-            }
-        ]
-    };
-};
-
-export const getMarketAnalysis = async (market: string): Promise<MarketAnalysisOutput | null> => {
-    return null;
-};
-
-export const getIRSAssessment = async (data: any, language: Language): Promise<IRSAssessmentOutput | null> => {
-    return null;
-};
-
-export const getLegislationInfo = async (topic: any, language: Language): Promise<ConsultLegislationOutput | null> => {
-    return null;
-};
-
-export const getScenarioAnalysis = async (scenario: any, language: Language): Promise<ScenarioAnalysisOutput | null> => {
-    return { feedback: 'This is a scenario analysis.' };
-};
-
-export const getEconomicSimulation = async (parameters: any, language: Language): Promise<EconomicSimulationOutput | null> => {
-    return {
-        simulatedImpact: "The policy will have a positive impact on GDP.",
-        reasoning: "The reasoning behind the impact.",
-        isRealPolicy: false,
-        keyIndicators: [
-            { name: "GDP Growth", currentValue: 2.5, projectedValue: 3.0, unit: "%" },
-            { name: "Unemployment Rate", currentValue: 5.0, projectedValue: 4.5, unit: "%" },
-        ],
-    };
-};
+// ... outras ações consolidadas aqui ...

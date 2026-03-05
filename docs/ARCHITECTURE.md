@@ -1,6 +1,6 @@
 # 🏗️ Arquitetura Demokratia Portugal
 
-Este documento serve como a fonte única de verdade para a estrutura técnica e operacional do projeto. Deve ser consultado antes de qualquer alteração de código para garantir consistência e evitar redundâncias.
+Este documento serve como a fonte única de verdade para a estrutura técnica e operacional do projeto.
 
 ## 1. Stack Tecnológica
 - **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
@@ -23,43 +23,27 @@ graph TD
     D -->|Renderiza| A
 ```
 
-## 3. Mapa de Ficheiros Críticos
-
-### 📂 `docs/` (Configuração e Planeamento)
-- [`backend.json`](./backend.json): Blueprint das entidades e caminhos do Firestore.
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md): Este ficheiro (Mapa Técnico).
-- [`AI_COLLABORATION_GUIDELINES.md`](../AI_COLLABORATION_GUIDELINES.md): **REGRAS DE OURO** para colaboração com a IA.
-- [`proposals.md`](./proposals.md): Roadmap de funcionalidades futuras.
+## 3. Mapa de Ficheiros Críticos (Pós-Limpeza)
 
 ### 📂 `src/lib/` (Lógica de Negócio)
-- [`actions.ts`](../src/lib/actions.ts): O "Cérebro". Contém todas as Server Actions que invocam o Genkit.
-- [`api-client.ts`](../src/lib/api-client.ts): Integração com APIs externas (Alpha Vantage, etc.).
-- [`i18n.tsx`](../src/lib/i18n.tsx): Sistema de internacionalização (PT/EN). **Não usar strings fixas na UI.**
-- [`system-data-sources.ts`](../src/lib/system-data-sources.ts): Catálogo de fontes oficiais monitorizadas.
+- [`actions.ts`](../src/lib/actions.ts): **O Cérebro Único**. Contém todas as chamadas ao Genkit e lógica de simulação.
+- [`api-client.ts`](../src/lib/api-client.ts): Integração com APIs financeiras externas.
+- [`i18n.tsx`](../src/lib/i18n.tsx): Sistema de internacionalização (PT/EN).
 
 ### 📂 `src/firebase/` (Infraestrutura)
 - [`index.ts`](../src/firebase/index.ts): Inicialização centralizada dos SDKs.
-- [`non-blocking-updates.tsx`](../src/firebase/non-blocking-updates.tsx): Padrão de escrita no Firestore sem bloqueio da UI.
-- [`use-collection.tsx`](../src/firebase/firestore/use-collection.tsx) & [`use-doc.tsx`](../src/firebase/firestore/use-doc.tsx): Hooks estáveis para subscrição em tempo real.
+- [`non-blocking-updates.tsx`](../src/firebase/non-blocking-updates.tsx): Escrita otimizada no Firestore.
 
-### 📂 `src/app/` (Rotas e Páginas)
+### 📂 `src/app/` (Rotas Principais)
 - `/explorer`: Consulta de dados estatísticos brutos.
-- `/simulations`: Simulador de políticas via IA.
-- `/scenarios`: Laboratório económico com sliders.
-- `/map`: Atlas Regional interativo (SVG).
-- `/admin`: Painel de gestão de fontes e mensagens.
+- `/simulations`: Simulador de políticas (inclui modo Comparação).
+- `/scenarios`: Laboratório macroeconómico com sliders.
+- `/map`: Atlas Regional interativo.
 
 ## 4. Padrões de Desenvolvimento
-
-1.  **Mobile-First:** Todos os componentes em `src/components` devem ser testados para ecrãs pequenos.
-2.  **Singleton IA:** A instância `ai` em `actions.ts` deve ser única para evitar falhas de registo no HMR.
-3.  **Segurança:** Regras de acesso definidas em `firestore.rules` baseadas em `roles_admin`.
-4.  **Tradução:** Qualquer nova funcionalidade deve incluir chaves no `DICTIONARY` em `src/lib/i18n.tsx`.
-
-## 5. Estratégia de Resiliência de Dados
-- **Primária:** Cache Firestore (evita custos de API e latência).
-- **Secundária:** IA via Genkit (para dados dinâmicos ou não estruturados).
-- **Terciária:** Fallback para Alpha Vantage/Yahoo Finance em cotações financeiras.
+1.  **Single Source of Truth:** Lógica de servidor apenas em `src/lib/actions.ts`.
+2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones.
+3.  **Tradução:** Uso obrigatório do `DICTIONARY` em `src/lib/i18n.tsx`.
 
 ---
-*Este ficheiro deve ser mantido atualizado pelo assistente IA em cada alteração estrutural significativa.*
+*Atualizado após consolidação de ficheiros redundantes.*

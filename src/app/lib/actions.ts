@@ -1,5 +1,5 @@
-
 /**
- * @fileOverview Redirects all server actions to the consolidated src/lib/actions.ts
+ * @fileOverview Ficheiro removido por redundância arquitetural.
+ * Por favor, use @/lib/actions.
  */
-export * from '@/lib/actions';
+export {};
