@@ -26,7 +26,7 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador absoluto de modelo para Genkit 1.x
+// Identificador absoluto para evitar erros 404 de resolução de modelo
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**

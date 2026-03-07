@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -85,6 +86,7 @@ const DICTIONARY = {
       source: 'Fonte',
       title: 'Atualidade Democrática',
       description: 'Análises geradas por IA sobre as últimas decisões e factos em Portugal.',
+      error: 'Não foi possível carregar o feed de notícias neste momento.',
       newsTypes: {
         'Alegação': 'Fact-Check',
         'Nova Lei': 'Legislação',
@@ -411,6 +413,7 @@ const DICTIONARY = {
       source: 'Source',
       title: 'Democratic Current Affairs',
       description: 'AI-generated analysis of the latest decisions and facts in Portugal.',
+      error: 'Could not load the news feed at this time.',
       newsTypes: {
         'Alegação': 'Fact-Check',
         'Nova Lei': 'Legislation',
