@@ -28,6 +28,17 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
+interface Movement {
+  id: string;
+  title: string;
+  amount: number;
+  category: string;
+  type: 'income' | 'expense';
+  status: 'estimated' | 'real';
+  date: any;
+  createdAt: any;
+}
+
 const DEFAULT_COSTS_2026 = {
   housing: 750,
   food: 350,
@@ -42,20 +53,9 @@ const DEFAULT_COSTS_2026 = {
   other: 100
 };
 
-interface Movement {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  type: 'income' | 'expense';
-  status: 'estimated' | 'real';
-  date: any;
-  createdAt: any;
-}
-
 function LayeredProgressBar({ budget, real, estimated, className }: { budget: number, real: number, estimated: number, className?: string }) {
   const totalAccounted = real + estimated;
-  const maxScale = Math.max(budget, totalAccounted, 1); // Evitar divisão por zero
+  const maxScale = Math.max(budget, totalAccounted, 1);
   
   const realPerc = (real / maxScale) * 100;
   const estimatedPerc = (estimated / maxScale) * 100;
@@ -126,6 +126,7 @@ export default function FamilyBudgetPage() {
     if (!user || !movTitle || !movAmount) return;
     const colRef = collection(firestore, 'users', user.uid, 'movements');
     addDocumentNonBlocking(colRef, {
+      userId: user.uid,
       title: movTitle,
       amount: Number(movAmount),
       category: movType === 'income' ? 'income' : (movCategory || 'other'),
@@ -143,7 +144,7 @@ export default function FamilyBudgetPage() {
     updateDocumentNonBlocking(docRef, {
       title: movTitle,
       amount: Number(movAmount),
-      category: movType === 'income' ? 'income' : (movCategory || 'other'),
+      category: movType === 'income' ? 'income' : (movCategory || editingMovement.category || 'other'),
       type: movType,
       status: movStatus,
       date: new Date(movDate),
@@ -197,7 +198,7 @@ export default function FamilyBudgetPage() {
     return movements.filter(m => m.status === 'estimated' && new Date(m.date?.toDate?.() || m.date) < today);
   }, [movements]);
 
-  const totalExpenses = useMemo(() => Object.values(expenses).reduce((a, b) => a + b, 0), [expenses]);
+  const totalBudgeted = useMemo(() => Object.values(expenses).reduce((a, b) => a + b, 0), [expenses]);
   
   const executionTotals = useMemo(() => {
     if (!movements) return { real: 0, estimated: 0 };
@@ -338,22 +339,37 @@ export default function FamilyBudgetPage() {
                   <CardTitle className="text-xl flex items-center gap-2"><CheckCircle2 className="h-6 w-6" /> {t('budget.summaryTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground">{t('budget.totalIncome')}</span>
                       <span className="font-bold text-green-600">{income}€</span>
                     </div>
+                    <Separator className="opacity-50" />
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">{t('budget.totalExpenses')}</span>
-                      <div className="text-right">
-                        <span className="font-bold text-red-500">{executionTotals.real + executionTotals.estimated}€</span>
-                        <span className="text-[10px] text-muted-foreground ml-1">/ {totalExpenses}€</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-500 opacity-50" />
+                        <span className="text-muted-foreground">Orçamentado</span>
                       </div>
+                      <span className="font-bold text-blue-600">{totalBudgeted}€</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                        <span className="text-muted-foreground">Executado (Real)</span>
+                      </div>
+                      <span className="font-bold text-green-600">{executionTotals.real}€</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-orange-500" />
+                        <span className="text-muted-foreground">Previsto</span>
+                      </div>
+                      <span className="font-bold text-orange-500">{executionTotals.estimated}€</span>
                     </div>
                     
                     <div className="pt-2">
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Execução Orçamental</p>
-                      <LayeredProgressBar budget={totalExpenses} real={executionTotals.real} estimated={executionTotals.estimated} className="h-3" />
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Execução vs. Orçamento</p>
+                      <LayeredProgressBar budget={totalBudgeted} real={executionTotals.real} estimated={executionTotals.estimated} className="h-3" />
                     </div>
                   </div>
 
