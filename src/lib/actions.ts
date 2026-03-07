@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -26,7 +25,7 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador de modelo absoluto e estável para o Gemini 1.5 Flash
+// Identificador de modelo absoluto e estável para o Gemini 1.5 Flash no Genkit 1.x
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**

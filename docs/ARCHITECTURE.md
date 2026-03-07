@@ -1,4 +1,3 @@
-
 # 🏗️ Arquitetura Demokratia Portugal
 
 Este documento serve como a fonte única de verdade para a estrutura técnica e operacional do projeto.
