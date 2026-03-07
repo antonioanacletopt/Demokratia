@@ -28,6 +28,12 @@ const DICTIONARY = {
       login: 'Entrar',
       logout: 'Sair'
     },
+    login: {
+      welcome: 'Bem-vindo à Demokratia',
+      subtitle: 'Aceda à sua conta para guardar simulações e participar na comunidade.',
+      googleBtn: 'Entrar com Google',
+      errorTitle: 'Erro na Autenticação'
+    },
     common: {
       save: 'Guardar',
       cancel: 'Cancelar',
@@ -380,6 +386,12 @@ const DICTIONARY = {
       admin: 'Admin',
       login: 'Login',
       logout: 'Logout'
+    },
+    login: {
+      welcome: 'Welcome to Demokratia',
+      subtitle: 'Sign in to save simulations and participate in the community.',
+      googleBtn: 'Sign in with Google',
+      errorTitle: 'Authentication Error'
     },
     common: {
       save: 'Save',
