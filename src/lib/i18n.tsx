@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -568,7 +567,7 @@ const DICTIONARY = {
       catB: 'Cat. B (Self-Employment)',
       propertyInc: 'Property Income (Rents)',
       capitalInc: 'Capital Income',
-      englobeProp: 'Englobe property income',
+      englobeProp: 'Englobase property income',
       englobeCap: 'Englobe capital income',
       incapacity: 'Incapacity',
       taxpayer: 'Taxpayer',
