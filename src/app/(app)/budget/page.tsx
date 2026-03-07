@@ -173,6 +173,7 @@ export default function FamilyBudgetPage() {
       updatedAt: serverTimestamp()
     };
     if (newStatus === 'real') updateData.date = new Date();
+    if (mov.category) updateData.category = mov.category;
     updateDocumentNonBlocking(docRef, updateData);
   };
 

@@ -78,11 +78,11 @@ const DICTIONARY = {
       investmentAmount: 'Investimento Anual (€)',
       invest: 'Simular Investimento',
       fiscalBenefit: 'Benefício Fiscal Estimado',
-      projectedValue: 'Valor Final Projetado (20 anos)',
-      riskLevel: 'Perfil de Risco',
-      conservative: 'Conservador',
-      moderate: 'Moderado',
-      aggressive: 'Dinâmico'
+      projectedValue: 'Final Value Projected (20 years)',
+      riskLevel: 'Risk Profile',
+      conservative: 'Conservative',
+      moderate: 'Moderate',
+      aggressive: 'Dynamic'
     },
     home: {
       welcomeTitle: 'Dados, Análises e Simulações para Portugal',
@@ -158,7 +158,7 @@ const DICTIONARY = {
       aiTips: 'Sugestões de Otimização',
       tabs: {
         config: 'Configuração',
-        movements: 'Daily Movements'
+        movements: 'Movimentos Diários'
       },
       movements: {
         newTitle: 'Novo Movimento',
@@ -182,7 +182,7 @@ const DICTIONARY = {
     irs: {
       title: 'Simulador de IRS 2026',
       description: 'Estime o seu acerto fiscal para o próximo ano.',
-      personalCard: 'Dados Pessoal',
+      personalCard: 'Dados Pessoais',
       maritalStatus: 'Estado Civil',
       single: 'Solteiro / Separado',
       marriedJoint: 'Casado (Conjunto)',
@@ -320,7 +320,7 @@ const DICTIONARY = {
       deleteAccount: 'Eliminar Conta Permanentemente',
       deleteWarning: 'Esta ação é irreversível. Todos os seus cenários e histórico serão apagados.',
       deleting: 'A eliminar...',
-      deletingDesc: 'Removendo todos os seus data dos nossos sistemas.'
+      deletingDesc: 'Removendo todos os seus dados dos nossos sistemas.'
     },
     cookies: {
       title: 'Política de Cookies',
