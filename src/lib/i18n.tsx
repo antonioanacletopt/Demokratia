@@ -158,7 +158,7 @@ const DICTIONARY = {
       aiTips: 'Sugestões de Otimização',
       tabs: {
         config: 'Configuração',
-        movements: 'Movimentos Diários'
+        movements: 'Daily Movements'
       },
       movements: {
         newTitle: 'Novo Movimento',
@@ -301,7 +301,7 @@ const DICTIONARY = {
       descMinError: 'Mínimo 30 caracteres'
     },
     profile: {
-      title: 'A Miña Conta',
+      title: 'A Minha Conta',
       description: 'Gira as suas preferências e dados pessoais.',
       photoTitle: 'Foto de Perfil',
       photoDesc: 'Sincronizada via Google Login.',
@@ -336,7 +336,7 @@ const DICTIONARY = {
       legend: 'Legenda de Intensidade',
       low: 'Baixo',
       high: 'Alto',
-      indicators: 'Regional Indicators'
+      indicators: 'Indicadores Regionais'
     },
     simulations: {
       title: 'Simulador de Impacto IA',
