@@ -60,4 +60,4 @@ O ficheiro `src/app/(app)/map/page copy.tsx` é um **backup crítico** do códig
 3.  **Segurança de Tipos:** Importar sempre tipos de `@/lib/server-actions` para componentes UI.
 
 ---
-*Documento atualizado para refletir a consolidação da Tarefa 1.*
+*Documento atualizado para refletir a consolidação da Tarefa 1 e estabilização de IA.*

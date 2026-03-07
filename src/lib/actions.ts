@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -20,16 +21,16 @@ import {
   ChartOutputSchema
 } from './actions-schema';
 
-// Inicialização centralizada do Genkit
+// Inicialização do Genkit 1.x com o plugin oficial do Google AI
 const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador absoluto para o Gemini 1.5 Flash no Genkit 1.x
+// Identificador de modelo absoluto e estável para o Gemini 1.5 Flash
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**
- * Tradução de texto mantendo o tom técnico.
+ * Tradução de texto mantendo o tom técnico e contexto político/económico.
  */
 export async function getTranslation(text: string, lang: Language) {
   const target = lang === 'en' ? 'English' : 'Portuguese';
@@ -41,7 +42,7 @@ export async function getTranslation(text: string, lang: Language) {
 }
 
 /**
- * Simulação de impacto económico de propostas.
+ * Simulação de impacto económico de propostas em Portugal 2026.
  */
 export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -53,7 +54,7 @@ export async function getEconomicSimulation(input: { policyDescription: string }
 }
 
 /**
- * Verificação de factos com base em fontes oficiais.
+ * Verificação de factos com base em fontes oficiais (INE, Pordata, DGO).
  */
 export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -65,7 +66,7 @@ export async function getFactCheck(input: { claim: string }, lang: Language = 'p
 }
 
 /**
- * Consulta de legislação do Diário da República.
+ * Consulta de legislação baseada no Diário da República (DRE).
  */
 export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -77,7 +78,7 @@ export async function getLegislationInfo(input: { question: string }, lang: Lang
 }
 
 /**
- * Análise de cenários macroeconómicos do Laboratório.
+ * Análise técnica de cenários macroeconómicos para o Laboratório.
  */
 export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -89,7 +90,7 @@ export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
 }
 
 /**
- * Avaliação técnica de IRS para 2026.
+ * Avaliação de parâmetros fiscais de IRS para o ano de 2026.
  */
 export async function getIRSAssessment(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -101,7 +102,7 @@ export async function getIRSAssessment(input: any, lang: Language = 'pt') {
 }
 
 /**
- * Análise de orçamento familiar.
+ * Análise preditiva de sustentabilidade de orçamento familiar.
  */
 export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -113,7 +114,7 @@ export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt')
 }
 
 /**
- * Briefing de mercado para investidores.
+ * Briefing estratégico de mercado para o portal do investidor.
  */
 export async function getMarketAnalysis(lang: Language = 'pt') {
   const { output } = await ai.generate({
@@ -125,7 +126,7 @@ export async function getMarketAnalysis(lang: Language = 'pt') {
 }
 
 /**
- * Notícias da atualidade política/económica.
+ * Geração de feed de notícias baseado na atualidade simulada de 2026.
  */
 export async function getNewsFeed() {
   const { output } = await ai.generate({
@@ -137,7 +138,7 @@ export async function getNewsFeed() {
 }
 
 /**
- * Extração de dados para gráficos no Explorador.
+ * Processamento de linguagem natural para extração de dados estruturados (gráficos).
  */
 export async function getChartFromRequest(input: { request: string }) {
   const { output } = await ai.generate({
@@ -149,7 +150,7 @@ export async function getChartFromRequest(input: { request: string }) {
 }
 
 /**
- * Busca de estatísticas públicas brutas.
+ * Busca inteligente de estatísticas públicas brutas.
  */
 export async function getPublicStatistic(input: { request: string }) {
   const { text } = await ai.generate({
