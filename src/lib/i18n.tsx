@@ -321,7 +321,7 @@ const DICTIONARY = {
       deleteAccount: 'Eliminar Conta Permanentemente',
       deleteWarning: 'Esta ação é irreversível. Todos os seus cenários e histórico serão apagados.',
       deleting: 'A eliminar...',
-      deletingDesc: 'Removendo todos os seus dados dos nossos sistemas.'
+      deletingDesc: 'Removendo todos os seus data dos nossos sistemas.'
     },
     cookies: {
       title: 'Política de Cookies',
@@ -582,7 +582,7 @@ const DICTIONARY = {
     scenarios: {
       title: 'Policy Laboratory',
       description: 'Simulate the impact of macroeconomic changes.',
-      howItWorks: 'Adjust your income and expenses to get a financial sustainability analysis based on projected inflation.',
+      howItWorks: 'Adjust variables like taxes or public spending to see projections on GDP, Unemployment and Public Debt.',
       tabs: {
         fiscal: 'Taxation',
         budget: 'State Budget'

@@ -26,7 +26,7 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador de modelo absoluto e estável para o Gemini 1.5 Flash no Genkit 1.x
+// Identificador estável do modelo Gemini 1.5 Flash
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**
@@ -38,7 +38,7 @@ export async function getTranslation(text: string, lang: Language) {
     model: MODEL_ID,
     prompt: `Translate the following text to ${target}. Maintain the tone and technical terms: ${text}`,
   });
-  return translated;
+  return translated || text;
 }
 
 /**
