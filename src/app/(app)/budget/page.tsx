@@ -475,10 +475,10 @@ export default function FamilyBudgetPage() {
                                 {isIncome ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
                               </div>
                               <div>
-                                <p className="font-bold">{mov.title}</p>
+                                <div className="font-bold">{mov.title}</div>
                                 <div className="flex items-center gap-2">
                                   {cat && <Badge variant="secondary" className="text-[8px] h-4 uppercase">{cat.label}</Badge>}
-                                  <p className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+                                  <div className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
                                     {format(new Date(mov.date?.toDate?.() || mov.date), 'dd MMM yyyy', { locale: pt })}
                                     {mov.status === 'estimated' ? (
                                       <Badge variant="outline" className={cn("text-[8px] h-4", isOverdue && "border-destructive text-destructive")}>
@@ -489,7 +489,7 @@ export default function FamilyBudgetPage() {
                                         <Check className="h-2 w-2 mr-1" /> {t('budget.movements.real')}
                                       </Badge>
                                     )}
-                                  </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
