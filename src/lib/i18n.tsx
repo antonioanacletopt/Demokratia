@@ -301,7 +301,7 @@ const DICTIONARY = {
       descMinError: 'Mínimo 30 caracteres'
     },
     profile: {
-      title: 'A Minha Conta',
+      title: 'A Miña Conta',
       description: 'Gira as suas preferências e dados pessoais.',
       photoTitle: 'Foto de Perfil',
       photoDesc: 'Sincronizada via Google Login.',

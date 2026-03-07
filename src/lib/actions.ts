@@ -25,8 +25,8 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador do modelo ajustado para máxima estabilidade (sem prefixo manual para evitar 404)
-const MODEL_ID = 'gemini-1.5-flash';
+// Identificador do modelo absoluto para máxima estabilidade no endpoint v1beta
+const MODEL_ID = 'googleai/gemini-1.5-flash-latest';
 
 /**
  * Tradução de texto mantendo o tom técnico e contexto político/económico.
