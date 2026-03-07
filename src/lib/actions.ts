@@ -25,9 +25,8 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador do modelo absoluto para máxima estabilidade. 
-// O sufixo -latest ou a falta de prefixo podem causar erros 404 em certas regiões/versões.
-const MODEL_ID = 'googleai/gemini-1.5-flash';
+// Identificador do modelo estável para Genkit 1.x
+const MODEL_ID = 'gemini-1.5-flash';
 
 /**
  * Tradução de texto mantendo o tom técnico e contexto político/económico.

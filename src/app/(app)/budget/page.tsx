@@ -295,13 +295,11 @@ export default function FamilyBudgetPage() {
               <Card className="shadow-md">
                 <CardHeader className="bg-muted/30">
                   <CardTitle className="text-lg flex items-center gap-2"><ArrowDownCircle className="h-5 w-5 text-red-500" /> {t('budget.expensesTitle')}</CardTitle>
-                  <CardDescription asChild>
-                    <div className="flex items-center gap-4 mt-2">
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-green-500" /> <span className="text-[10px] uppercase font-bold">Real</span></div>
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-orange-500" /> <span className="text-[10px] uppercase font-bold">Previsto</span></div>
-                      <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500" /> <span className="text-[10px] uppercase font-bold">Orçamento</span></div>
-                    </div>
-                  </CardDescription>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-green-500" /> <span className="text-[10px] uppercase font-bold">Real</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-orange-500" /> <span className="text-[10px] uppercase font-bold">Previsto</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500" /> <span className="text-[10px] uppercase font-bold">Orçamento</span></div>
+                  </div>
                 </CardHeader>
                 <CardContent className="grid gap-x-12 gap-y-8 sm:grid-cols-2 pt-6">
                   {categories.map((cat) => {
