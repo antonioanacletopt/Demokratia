@@ -18,7 +18,7 @@ import {
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
   Loader2, Info, CheckCircle2, Languages, RefreshCw,
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
-  GraduationCap, Ticket, Wifi, PiggyBank, ShieldCheck, MoreHorizontal
+  GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,6 @@ const DEFAULT_COSTS_2026 = {
   health: 60,
   leisure: 100,
   education: 150,
-  entertainment: 80,
   communications: 65,
   savings: 100,
   insurance: 120,
@@ -55,7 +54,6 @@ export default function FamilyBudgetPage() {
     health: DEFAULT_COSTS_2026.health,
     leisure: DEFAULT_COSTS_2026.leisure,
     education: DEFAULT_COSTS_2026.education,
-    entertainment: DEFAULT_COSTS_2026.entertainment,
     communications: DEFAULT_COSTS_2026.communications,
     savings: DEFAULT_COSTS_2026.savings,
     insurance: DEFAULT_COSTS_2026.insurance,
@@ -101,7 +99,6 @@ export default function FamilyBudgetPage() {
 
   useEffect(() => {
     const multiplier = adults + (children * 0.5);
-    const childMultiplier = children > 0 ? children : 0;
     
     setExpenses(prev => ({
       ...prev,
@@ -210,10 +207,6 @@ export default function FamilyBudgetPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between"><Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t('budget.education')}</Label><span>{expenses.education}€</span></div>
                   <Slider value={[expenses.education]} onValueChange={([v]) => setExpenses(e => ({ ...e, education: v }))} min={0} max={1500} step={10} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between"><Label className="flex items-center gap-2"><Ticket className="h-4 w-4" /> {t('budget.entertainment')}</Label><span>{expenses.entertainment}€</span></div>
-                  <Slider value={[expenses.entertainment]} onValueChange={([v]) => setExpenses(e => ({ ...e, entertainment: v }))} min={0} max={800} step={5} />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between"><Label className="flex items-center gap-2"><Wifi className="h-4 w-4" /> {t('budget.communications')}</Label><span>{expenses.communications}€</span></div>
