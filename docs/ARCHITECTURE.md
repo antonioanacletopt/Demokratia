@@ -46,9 +46,13 @@ graph TD
 O ficheiro `src/app/(app)/map/page copy.tsx` é um **backup crítico** do código do mapa. **NÃO ALTERAR NEM REMOVER.** Serve como ponto de restauração em caso de corrupção do ficheiro principal do mapa.
 
 ## 4. Roteiro de Desenvolvimento (Roadmap)
-- [ ] **Tarefa A:** Melhoria de Prompts - Refinar as instruções da IA em `src/lib/actions.ts` para citar fontes portuguesas (INE, Pordata, DRE) com mais precisão e rigor técnico.
-- [ ] **Tarefa B:** Implementação do "Comparador de Políticas" na página `/simulations`.
-- [ ] **Tarefa C:** Reforço da Resiliência da API de Cotações (Integração Yahoo Finance fallback).
+- [ ] **Tarefa A: Refinamento de Prompts Oficiais**
+    *   **Objetivo**: Ajustar as instruções do sistema em `src/lib/actions.ts` para obrigar a IA a citar fontes portuguesas específicas (INE, Pordata, DRE) com mais rigor.
+    *   **Impacto**: Maior credibilidade e redução de alucinações legais/estatísticas.
+- [ ] **Tarefa B: Comparador de Políticas**
+    *   **Objetivo**: Implementar a vista lado-a-lado na página `/simulations`.
+- [ ] **Tarefa C: Resiliência de Cotações**
+    *   **Objetivo**: Integrar fallback para Yahoo Finance no componente `StockMarketTicker`.
 
 ## 5. Padrões de Desenvolvimento
 1.  **Single Source of Truth:** Lógica de servidor apenas em `src/lib/actions.ts`.
