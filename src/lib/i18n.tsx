@@ -64,7 +64,7 @@ const DICTIONARY = {
     footer: {
       desc: 'A plataforma líder em transparência de dados públicos e literacia cívica em Portugal para 2026.',
       resources: 'Recursos',
-      company: 'Empresa',
+      company: 'Company',
       legal: 'Legal',
       copyright: '© {year} Demokratia Portugal',
       disclaimer: 'Aviso: A informação gerada por IA é meramente indicativa. O site contém publicidade personalizada para apoiar a manutenção de dados abertos.'
