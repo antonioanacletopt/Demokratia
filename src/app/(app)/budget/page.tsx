@@ -21,7 +21,7 @@ import {
   Loader2, Info, CheckCircle2, Languages, RefreshCw,
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
   GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal,
-  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check
+  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -143,6 +143,7 @@ export default function FamilyBudgetPage() {
   const overdueMovements = useMemo(() => {
     if (!movements) return [];
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return movements.filter(m => m.status === 'estimated' && new Date(m.date?.toDate?.() || m.date) < today);
   }, [movements]);
 
@@ -174,7 +175,10 @@ export default function FamilyBudgetPage() {
         <p className="text-muted-foreground text-lg">{t('budget.description')}</p>
         
         {overdueMovements.length > 0 && (
-          <AlertTriangle className="h-5 w-5 text-destructive inline-block animate-bounce" />
+          <div className="flex items-center gap-2 text-destructive font-bold animate-pulse">
+            <AlertTriangle className="h-5 w-5" />
+            <span>{t('budget.movements.overdueAlert')}</span>
+          </div>
         )}
       </div>
 

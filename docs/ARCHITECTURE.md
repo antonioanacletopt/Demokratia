@@ -1,3 +1,4 @@
+
 # 🏗️ Arquitetura Demokratia Portugal
 
 Este documento serve como a fonte única de verdade para a estrutura técnica e operacional do projeto.
@@ -27,8 +28,8 @@ graph TD
 
 ### 📂 `src/lib/` (Lógica de Negócio)
 - [`actions.ts`](../src/lib/actions.ts): **O Cérebro Único**. Contém todas as chamadas ao Genkit e lógica de simulação.
-- [`actions-schema.ts`](../src/lib/actions-schema.ts): Definições de tipos e esquemas Zod (partilhado entre Server e Client).
-- [`server-actions.ts`](../src/lib/server-actions.ts): Ponte de compatibilidade para exportação de tipos e funções.
+- [`actions-schema.ts`](../src/actions-schema.ts): Definições de tipos e esquemas Zod (partilhado entre Server e Client).
+- [`server-actions.ts`](../src/server-actions.ts): Ponte de compatibilidade para exportação de tipos e funções.
 - [`api-client.ts`](../src/api-client.ts): Integração com APIs financeiras externas (Alpha Vantage).
 
 ### 📂 `src/firebase/` (Infraestrutura)
