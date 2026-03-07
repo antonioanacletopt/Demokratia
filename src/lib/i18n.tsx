@@ -95,7 +95,7 @@ const DICTIONARY = {
       error: 'Não foi possível carregar o feed de notícias neste momento.',
       newsTypes: {
         'Alegação': 'Fact-Check',
-        'Nova Lei': 'Legislação',
+        'Nova Lei': 'Legislation',
         'Análise': 'Económica'
       },
       methodologyTitle: 'Como funciona a Demokratia?',
@@ -316,7 +316,7 @@ const DICTIONARY = {
       emailNotifDesc: 'Receba email quando uma proposta sua for analisada.',
       newsletter: 'Newsletter Semanal',
       newsletterDesc: 'Resumo dos dados e factos mais importantes da semana.',
-      dangerZone: 'Zona de Perigo',
+      dangerZone: 'Danger Zone',
       deleteAccount: 'Apagar Conta Permanentemente',
       deleteWarning: 'Esta ação é irreversível. Todos os seus cenários e histórico serão apagados.',
       deleting: 'A apagar...',

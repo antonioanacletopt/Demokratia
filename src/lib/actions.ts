@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -26,8 +25,8 @@ const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador absoluto para evitar erros 404 de resolução de modelo
-const MODEL_ID = 'googleai/gemini-1.5-flash';
+// Identificador absoluto e resiliente para o Gemini 1.5 Flash
+const MODEL_ID = 'googleai/gemini-1.5-flash-latest';
 
 /**
  * Tradução de texto mantendo o tom técnico.
