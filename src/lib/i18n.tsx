@@ -86,16 +86,16 @@ const DICTIONARY = {
       aggressive: 'Dinâmico'
     },
     home: {
-      welcomeTitle: 'Data, Analysis and Simulations for Portugal',
-      welcomeSubtitle: 'Democratic Transparency',
-      welcomeIntro: 'Explore public data, check facts and simulate the impact of economic policies with the help of artificial intelligence based on official sources.',
+      welcomeTitle: 'Dados, Análises e Simulações para Portugal',
+      welcomeSubtitle: 'Transparência Democrática',
+      welcomeIntro: 'Explore dados públicos, verifique factos e simule o impacto de políticas económicas e sociais com ajuda de inteligência artificial baseada em fontes oficiais.',
       source: 'Fonte',
       title: 'Atualidade Democrática',
       description: 'Análises geradas por IA sobre as últimas decisões e factos em Portugal.',
       error: 'Não foi possível carregar o feed de notícias neste momento.',
       newsTypes: {
         'Alegação': 'Fact-Check',
-        'Nova Lei': 'Legislation',
+        'Nova Lei': 'Legislação',
         'Análise': 'Económica'
       },
       methodologyTitle: 'Como funciona a Demokratia?',
@@ -163,6 +163,7 @@ const DICTIONARY = {
       },
       movements: {
         newTitle: 'Novo Movimento',
+        editTitle: 'Editar Movimento',
         titleLabel: 'Descrição',
         amountLabel: 'Valor (€)',
         typeLabel: 'Tipo',
@@ -336,7 +337,7 @@ const DICTIONARY = {
       legend: 'Legenda de Intensidade',
       low: 'Baixo',
       high: 'Alto',
-      indicators: 'Indicadores Regionais'
+      indicators: 'Regional Indicators'
     },
     simulations: {
       title: 'Simulador de Impacto IA',
@@ -522,6 +523,7 @@ const DICTIONARY = {
       },
       movements: {
         newTitle: 'New Movement',
+        editTitle: 'Edit Movement',
         titleLabel: 'Description',
         amountLabel: 'Amount (€)',
         typeLabel: 'Type',

@@ -11,17 +11,18 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { useTranslation, Language } from '@/lib/i18n';
 import { getFamilyBudgetAnalysis } from '@/lib/server-actions';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, serverTimestamp, doc, updateDoc, orderBy } from 'firebase/firestore';
-import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { 
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
   Loader2, CheckCircle2, 
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
   GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal,
-  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Info
+  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Edit, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -88,6 +89,9 @@ export default function FamilyBudgetPage() {
   const [movStatus, setMovStatus] = useState<'estimated' | 'real'>('estimated');
   const [movDate, setMovDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
+  // --- Editing State ---
+  const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
+
   const [aiResult, setAiResult] = useState<{ analysis: string, tips: string[] } | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
 
@@ -131,6 +135,33 @@ export default function FamilyBudgetPage() {
       createdAt: serverTimestamp()
     });
     setMovTitle(''); setMovAmount('');
+  };
+
+  const handleUpdateMovement = () => {
+    if (!user || !editingMovement) return;
+    const docRef = doc(firestore, 'users', user.uid, 'movements', editingMovement.id);
+    updateDocumentNonBlocking(docRef, {
+      title: movTitle,
+      amount: Number(movAmount),
+      category: movType === 'income' ? 'income' : movCategory,
+      type: movType,
+      status: movStatus,
+      date: new Date(movDate),
+      updatedAt: serverTimestamp()
+    });
+    setEditingMovement(null);
+    setMovTitle(''); setMovAmount('');
+  };
+
+  const handleEditClick = (mov: Movement) => {
+    setEditingMovement(mov);
+    setMovTitle(mov.title);
+    setMovAmount(mov.amount.toString());
+    setMovCategory(mov.category);
+    setMovType(mov.type);
+    setMovStatus(mov.status);
+    const dateObj = mov.date?.toDate?.() || mov.date;
+    setMovDate(format(new Date(dateObj), 'yyyy-MM-dd'));
   };
 
   const handleToggleStatus = (mov: Movement) => {
@@ -472,6 +503,9 @@ export default function FamilyBudgetPage() {
                                     <CheckCircle2 className="h-4 w-4 text-muted-foreground hover:text-green-600" />
                                   </Button>
                                 )}
+                                <Button variant="ghost" size="icon" onClick={() => handleEditClick(mov)}>
+                                  <Edit className="h-4 w-4 text-muted-foreground" />
+                                </Button>
                                 <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteMovement(mov.id)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -488,6 +522,64 @@ export default function FamilyBudgetPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!editingMovement} onOpenChange={(o) => !o && setEditingMovement(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('budget.movements.editTitle')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{t('budget.movements.titleLabel')}</Label>
+              <Input value={movTitle} onChange={(e) => setMovTitle(e.target.value)} />
+            </div>
+            
+            {movType === 'expense' && (
+              <div className="space-y-2">
+                <Label>Categoria</Label>
+                <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movCategory} onChange={(e) => setMovCategory(e.target.value)}>
+                  {categories.map(c => (
+                    <option key={c.key} value={c.key}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('budget.movements.amountLabel')}</Label>
+                <Input type="number" value={movAmount} onChange={(e) => setMovAmount(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('budget.movements.dateLabel')}</Label>
+                <Input type="date" value={movDate} onChange={(e) => setMovDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('budget.movements.typeLabel')}</Label>
+                <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movType} onChange={(e: any) => setMovType(e.target.value)}>
+                  <option value="expense">{t('budget.movements.expense')}</option>
+                  <option value="income">{t('budget.movements.income')}</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('budget.movements.statusLabel')}</Label>
+                <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movStatus} onChange={(e: any) => setMovStatus(e.target.value)}>
+                  <option value="estimated">{t('budget.movements.estimated')}</option>
+                  <option value="real">{t('budget.movements.real')}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">{t('common.cancel')}</Button>
+            </DialogClose>
+            <Button onClick={handleUpdateMovement}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
