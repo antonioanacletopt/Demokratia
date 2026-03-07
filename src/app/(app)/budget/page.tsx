@@ -15,14 +15,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { useTranslation, Language } from '@/lib/i18n';
 import { getFamilyBudgetAnalysis } from '@/lib/server-actions';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, serverTimestamp, doc, updateDoc, orderBy } from 'firebase/firestore';
+import { collection, query, serverTimestamp, doc, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { 
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
   Loader2, CheckCircle2, 
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
   GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal,
-  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Edit, Info
+  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -53,16 +53,16 @@ interface Movement {
   createdAt: any;
 }
 
-function LayeredProgressBar({ budget, real, estimated }: { budget: number, real: number, estimated: number }) {
+function LayeredProgressBar({ budget, real, estimated, className }: { budget: number, real: number, estimated: number, className?: string }) {
   const totalAccounted = real + estimated;
-  const maxScale = Math.max(budget, totalAccounted);
+  const maxScale = Math.max(budget, totalAccounted, 1); // Evitar divisão por zero
   
   const realPerc = (real / maxScale) * 100;
   const estimatedPerc = (estimated / maxScale) * 100;
   const budgetPerc = budget > totalAccounted ? ((budget - totalAccounted) / maxScale) * 100 : 0;
 
   return (
-    <div className="h-2 w-full bg-muted rounded-full overflow-hidden flex mt-2 shadow-inner">
+    <div className={cn("h-2 w-full bg-muted rounded-full overflow-hidden flex mt-2 shadow-inner", className)}>
       <div style={{ width: `${realPerc}%` }} className="bg-green-500 h-full transition-all duration-500" title="Realizado" />
       <div style={{ width: `${estimatedPerc}%` }} className="bg-orange-500 h-full transition-all duration-500" title="Previsto" />
       <div style={{ width: `${budgetPerc}%` }} className="bg-blue-500 h-full transition-all duration-500 opacity-40" title="Orçamentado" />
@@ -128,7 +128,7 @@ export default function FamilyBudgetPage() {
     addDocumentNonBlocking(colRef, {
       title: movTitle,
       amount: Number(movAmount),
-      category: movType === 'income' ? 'income' : movCategory,
+      category: movType === 'income' ? 'income' : (movCategory || 'other'),
       type: movType,
       status: movStatus,
       date: new Date(movDate),
@@ -143,7 +143,7 @@ export default function FamilyBudgetPage() {
     updateDocumentNonBlocking(docRef, {
       title: movTitle,
       amount: Number(movAmount),
-      category: movType === 'income' ? 'income' : movCategory,
+      category: movType === 'income' ? 'income' : (movCategory || 'other'),
       type: movType,
       status: movStatus,
       date: new Date(movDate),
@@ -155,12 +155,12 @@ export default function FamilyBudgetPage() {
 
   const handleEditClick = (mov: Movement) => {
     setEditingMovement(mov);
-    setMovTitle(mov.title);
-    setMovAmount(mov.amount.toString());
-    setMovCategory(mov.category);
-    setMovType(mov.type);
-    setMovStatus(mov.status);
-    const dateObj = mov.date?.toDate?.() || mov.date;
+    setMovTitle(mov.title || '');
+    setMovAmount(mov.amount?.toString() || '0');
+    setMovCategory(mov.category || 'other');
+    setMovType(mov.type || 'expense');
+    setMovStatus(mov.status || 'estimated');
+    const dateObj = mov.date?.toDate?.() || mov.date || new Date();
     setMovDate(format(new Date(dateObj), 'yyyy-MM-dd'));
   };
 
@@ -168,9 +168,12 @@ export default function FamilyBudgetPage() {
     if (!user) return;
     const docRef = doc(firestore, 'users', user.uid, 'movements', mov.id);
     const newStatus = mov.status === 'estimated' ? 'real' : 'estimated';
-    const updateData: any = { status: newStatus };
+    const updateData: any = { 
+      status: newStatus,
+      updatedAt: serverTimestamp()
+    };
     if (newStatus === 'real') updateData.date = new Date();
-    updateDoc(docRef, updateData);
+    updateDocumentNonBlocking(docRef, updateData);
   };
 
   const handleDeleteMovement = (id: string) => {
@@ -195,8 +198,18 @@ export default function FamilyBudgetPage() {
   }, [movements]);
 
   const totalExpenses = useMemo(() => Object.values(expenses).reduce((a, b) => a + b, 0), [expenses]);
-  const balance = income - totalExpenses;
-  const savingsRate = (balance / income) * 100;
+  
+  const executionTotals = useMemo(() => {
+    if (!movements) return { real: 0, estimated: 0 };
+    const expenseMovs = movements.filter(m => m.type === 'expense');
+    return {
+      real: expenseMovs.filter(m => m.status === 'real').reduce((acc, curr) => acc + curr.amount, 0),
+      estimated: expenseMovs.filter(m => m.status === 'estimated').reduce((acc, curr) => acc + curr.amount, 0)
+    };
+  }, [movements]);
+
+  const balance = income - executionTotals.real - executionTotals.estimated;
+  const savingsRate = income > 0 ? (balance / income) * 100 : 0;
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
@@ -325,18 +338,29 @@ export default function FamilyBudgetPage() {
                   <CardTitle className="text-xl flex items-center gap-2"><CheckCircle2 className="h-6 w-6" /> {t('budget.summaryTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">{t('budget.totalIncome')}</span>
-                    <span className="font-bold text-green-600">{income}€</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">{t('budget.totalIncome')}</span>
+                      <span className="font-bold text-green-600">{income}€</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">{t('budget.totalExpenses')}</span>
+                      <div className="text-right">
+                        <span className="font-bold text-red-500">{executionTotals.real + executionTotals.estimated}€</span>
+                        <span className="text-[10px] text-muted-foreground ml-1">/ {totalExpenses}€</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Execução Orçamental</p>
+                      <LayeredProgressBar budget={totalExpenses} real={executionTotals.real} estimated={executionTotals.estimated} className="h-3" />
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">{t('budget.totalExpenses')}</span>
-                    <span className="font-bold text-red-500">{totalExpenses}€</span>
-                  </div>
+
                   <Separator />
                   <div className="text-center py-4">
                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">{t('budget.balance')}</p>
-                    <p className={cn("text-4xl font-bold font-headline", balance >= 0 ? "text-primary" : "text-destructive")}>{balance}€</p>
+                    <p className={cn("text-4xl font-bold font-headline", balance >= 0 ? "text-primary" : "text-destructive")}>{balance.toFixed(0)}€</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold uppercase">
