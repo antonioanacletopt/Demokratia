@@ -21,12 +21,12 @@ import {
   ChartOutputSchema
 } from './actions-schema';
 
-// Inicialização centralizada do Genkit com o plugin Google AI
+// Inicialização centralizada do Genkit
 const ai = genkit({
   plugins: [googleAI()],
 });
 
-// Identificador de modelo absoluto para evitar erros de resolução 404
+// Identificador absoluto de modelo para Genkit 1.x
 const MODEL_ID = 'googleai/gemini-1.5-flash';
 
 /**
