@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -86,9 +85,9 @@ const DICTIONARY = {
       aggressive: 'Dinâmico'
     },
     home: {
-      welcomeTitle: 'Dados, Análises e Simulações para Portugal',
-      welcomeSubtitle: 'Transparência Democrática',
-      welcomeIntro: 'Explore dados públicos, verifique factos e simule o impacto de políticas económicas com a ajuda de inteligência artificial baseada em fontes oficiais.',
+      welcomeTitle: 'Data, Analysis and Simulations for Portugal',
+      welcomeSubtitle: 'Democratic Transparency',
+      welcomeIntro: 'Explore public data, check facts and simulate the impact of economic policies with the help of artificial intelligence based on official sources.',
       source: 'Fonte',
       title: 'Atualidade Democrática',
       description: 'Análises geradas por IA sobre as últimas decisões e factos em Portugal.',
@@ -129,15 +128,15 @@ const DICTIONARY = {
       officialFooter: 'Os dados são extraídos de portais oficiais (INE, Pordata, DGO) via IA.'
     },
     budget: {
-      title: 'Orçamento Familiar 2026',
-      description: 'Simule o seu custo de vida no contexto económico de 2026.',
-      howItWorks: 'Ajuste os seus rendimentos e despesas para obter uma análise de sustentabilidade financeira baseada na inflação prevista.',
-      profileTitle: 'Perfil do Agregado',
+      title: 'Family Budget 2026',
+      description: 'Simulate your cost of living in the 2026 economic context.',
+      howItWorks: 'Adjust your income and expenses to get a financial sustainability analysis based on projected inflation.',
+      profileTitle: 'Household Profile',
       adults: 'Adultos',
       children: 'Dependentes',
-      income: 'Rendimento Mensal Líquido (€)',
-      expensesTitle: 'Despesas Mensais',
-      defaultsInfo: 'Valores médios estimados para 2026.',
+      income: 'Net Monthly Income (€)',
+      expensesTitle: 'Monthly Expenses',
+      defaultsInfo: 'Estimated average values for 2026.',
       housing: 'Habitação',
       food: 'Alimentação',
       utilities: 'Energia e Água',
@@ -149,34 +148,34 @@ const DICTIONARY = {
       savings: 'Poupança',
       insurance: 'Seguros',
       other: 'Outras Despesas',
-      summaryTitle: 'Resumo Mensal',
+      summaryTitle: 'Monthly Summary',
       totalIncome: 'Rendimento Total',
       totalExpenses: 'Despesa Total',
-      balance: 'Saldo Final',
-      savingsRate: 'Taxa de Poupança',
-      getAnalysisBtn: 'Analisar com IA',
-      aiAnalysis: 'Parecer Financeiro IA',
-      aiTips: 'Sugestões de Otimização',
+      balance: 'Final Balance',
+      savingsRate: 'Savings Rate',
+      getAnalysisBtn: 'Analyze with AI',
+      aiAnalysis: 'AI Financial Report',
+      aiTips: 'Optimization Suggestions',
       tabs: {
-        config: 'Configuração',
-        movements: 'Movimentos (Diário)'
+        config: 'Configuration',
+        movements: 'Daily Movements'
       },
       movements: {
-        newTitle: 'Novo Movimento',
-        titleLabel: 'Descrição',
-        amountLabel: 'Valor (€)',
-        typeLabel: 'Tipo',
-        statusLabel: 'Estado',
-        dateLabel: 'Data Prevista',
-        estimated: 'Previsto',
-        real: 'Realizado',
-        income: 'Receita',
-        expense: 'Despesa',
-        addBtn: 'Adicionar Lançamento',
-        overdueAlert: 'Tem pagamentos previstos em atraso!',
-        noMovements: 'Nenhum movimento registado.',
-        overdue: 'Atrasado',
-        changeToReal: 'Marcar como Realizado'
+        newTitle: 'New Movement',
+        titleLabel: 'Description',
+        amountLabel: 'Amount (€)',
+        typeLabel: 'Type',
+        statusLabel: 'Status',
+        dateLabel: 'Due Date',
+        estimated: 'Estimated',
+        real: 'Real',
+        income: 'Income',
+        expense: 'Expense',
+        addBtn: 'Add Entry',
+        overdueAlert: 'You have overdue estimated payments!',
+        noMovements: 'No movements recorded.',
+        overdue: 'Overdue',
+        changeToReal: 'Mark as Real'
       }
     },
     irs: {
