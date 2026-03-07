@@ -55,6 +55,7 @@
         "userId": { "type": "string" },
         "title": { "type": "string" },
         "amount": { "type": "number" },
+        "category": { "type": "string" },
         "type": { "type": "string", "enum": ["income", "expense"] },
         "status": { "type": "string", "enum": ["estimated", "real"] },
         "date": { "type": "string", "format": "date-time" },

@@ -12,22 +12,20 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation, Language } from '@/lib/i18n';
-import { getFamilyBudgetAnalysis, getTranslation } from '@/lib/server-actions';
+import { getFamilyBudgetAnalysis } from '@/lib/server-actions';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, getDocs, limit, addDoc, serverTimestamp, doc, setDoc, updateDoc, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, query, serverTimestamp, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { 
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
-  Loader2, Info, CheckCircle2, Languages, RefreshCw,
+  Loader2, CheckCircle2, 
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
   GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal,
-  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2
+  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-
-const MAX_CACHE_LENGTH = 1000;
 
 const DEFAULT_COSTS_2026 = {
   housing: 750,
@@ -43,21 +41,32 @@ const DEFAULT_COSTS_2026 = {
   other: 100
 };
 
-interface BudgetConfig {
-  adults: number;
-  children: number;
-  income: number;
-  expenses: typeof DEFAULT_COSTS_2026;
-}
-
 interface Movement {
   id: string;
   title: string;
   amount: number;
+  category: string;
   type: 'income' | 'expense';
   status: 'estimated' | 'real';
   date: any;
   createdAt: any;
+}
+
+function LayeredProgressBar({ budget, real, estimated }: { budget: number, real: number, estimated: number }) {
+  const totalAccounted = real + estimated;
+  const maxScale = Math.max(budget, totalAccounted);
+  
+  const realPerc = (real / maxScale) * 100;
+  const estimatedPerc = (estimated / maxScale) * 100;
+  const budgetPerc = budget > totalAccounted ? ((budget - totalAccounted) / maxScale) * 100 : 0;
+
+  return (
+    <div className="h-2 w-full bg-muted rounded-full overflow-hidden flex mt-2 shadow-inner">
+      <div style={{ width: `${realPerc}%` }} className="bg-green-500 h-full transition-all duration-500" title="Realizado" />
+      <div style={{ width: `${estimatedPerc}%` }} className="bg-orange-500 h-full transition-all duration-500" title="Previsto" />
+      <div style={{ width: `${budgetPerc}%` }} className="bg-blue-500 h-full transition-all duration-500 opacity-40" title="Orçamentado" />
+    </div>
+  );
 }
 
 export default function FamilyBudgetPage() {
@@ -74,16 +83,13 @@ export default function FamilyBudgetPage() {
   // --- Movements State ---
   const [movTitle, setMovTitle] = useState('');
   const [movAmount, setMovAmount] = useState('');
+  const [movCategory, setMovCategory] = useState('housing');
   const [movType, setMovType] = useState<'income' | 'expense'>('expense');
   const [movStatus, setMovStatus] = useState<'estimated' | 'real'>('estimated');
   const [movDate, setMovDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  const [aiResult, setAiResult] = useState<{ analysis: string, tips: string[], score: number } | null>(null);
+  const [aiResult, setAiResult] = useState<{ analysis: string, tips: string[] } | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
-
-  const [isTranslating, startTransition] = useTransition();
-  const [translatedAnalysis, setTranslatedAnalysis] = useState<string | null>(null);
-  const [showOriginal, setShowOriginal] = useState(true);
 
   // --- Firebase Loading ---
   const configRef = useMemoFirebase(() => user && firestore ? doc(firestore, 'users', user.uid, 'budget', 'config') : null, [user, firestore]);
@@ -118,6 +124,7 @@ export default function FamilyBudgetPage() {
     addDocumentNonBlocking(colRef, {
       title: movTitle,
       amount: Number(movAmount),
+      category: movType === 'income' ? 'income' : movCategory,
       type: movType,
       status: movStatus,
       date: new Date(movDate),
@@ -131,13 +138,22 @@ export default function FamilyBudgetPage() {
     const docRef = doc(firestore, 'users', user.uid, 'movements', mov.id);
     const newStatus = mov.status === 'estimated' ? 'real' : 'estimated';
     const updateData: any = { status: newStatus };
-    if (newStatus === 'real') updateData.date = new Date(); // Adjust to today when real
+    if (newStatus === 'real') updateData.date = new Date();
     updateDoc(docRef, updateData);
   };
 
   const handleDeleteMovement = (id: string) => {
     if (!user) return;
     deleteDocumentNonBlocking(doc(firestore, 'users', user.uid, 'movements', id));
+  };
+
+  const getCategoryTotals = (catKey: string) => {
+    if (!movements) return { real: 0, estimated: 0 };
+    const filtered = movements.filter(m => m.type === 'expense' && m.category === catKey);
+    return {
+      real: filtered.filter(m => m.status === 'real').reduce((acc, curr) => acc + curr.amount, 0),
+      estimated: filtered.filter(m => m.status === 'estimated').reduce((acc, curr) => acc + curr.amount, 0)
+    };
   };
 
   const overdueMovements = useMemo(() => {
@@ -147,7 +163,6 @@ export default function FamilyBudgetPage() {
     return movements.filter(m => m.status === 'estimated' && new Date(m.date?.toDate?.() || m.date) < today);
   }, [movements]);
 
-  // --- Calculations ---
   const totalExpenses = useMemo(() => Object.values(expenses).reduce((a, b) => a + b, 0), [expenses]);
   const balance = income - totalExpenses;
   const savingsRate = (balance / income) * 100;
@@ -160,11 +175,23 @@ export default function FamilyBudgetPage() {
           expenses
         }
       }, lang as Language);
-      setAiResult({ analysis: res.analysis, tips: res.suggestions, score: 0 });
-      setTranslatedAnalysis(null);
-      setShowOriginal(true);
+      setAiResult({ analysis: res.analysis, tips: res.suggestions });
     });
   };
+
+  const categories = [
+    { key: 'housing', icon: Home, label: t('budget.housing'), min: 200, max: 2500 },
+    { key: 'food', icon: ShoppingCart, label: t('budget.food'), min: 100, max: 1500 },
+    { key: 'utilities', icon: Zap, label: t('budget.utilities'), min: 50, max: 600 },
+    { key: 'transport', icon: Car, label: t('budget.transport'), min: 0, max: 1000 },
+    { key: 'health', icon: HeartPulse, label: t('budget.health'), min: 0, max: 500 },
+    { key: 'leisure', icon: Palette, label: t('budget.leisure'), min: 0, max: 1000 },
+    { key: 'education', icon: GraduationCap, label: t('budget.education'), min: 0, max: 1500 },
+    { key: 'communications', icon: Wifi, label: t('budget.communications'), min: 20, max: 300 },
+    { key: 'savings', icon: PiggyBank, label: t('budget.savings'), min: 0, max: 2000 },
+    { key: 'insurance', icon: ShieldCheck, label: t('budget.insurance'), min: 0, max: 1000 },
+    { key: 'other', icon: MoreHorizontal, label: t('budget.other'), min: 0, max: 1000 },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
@@ -175,7 +202,7 @@ export default function FamilyBudgetPage() {
         <p className="text-muted-foreground text-lg">{t('budget.description')}</p>
         
         {overdueMovements.length > 0 && (
-          <div className="flex items-center gap-2 text-destructive font-bold animate-pulse">
+          <div className="flex items-center gap-2 text-destructive font-bold animate-pulse bg-destructive/5 p-2 rounded-lg border border-destructive/20 w-fit">
             <AlertTriangle className="h-5 w-5" />
             <span>{t('budget.movements.overdueAlert')}</span>
           </div>
@@ -224,63 +251,45 @@ export default function FamilyBudgetPage() {
               <Card className="shadow-md">
                 <CardHeader className="bg-muted/30">
                   <CardTitle className="text-lg flex items-center gap-2"><ArrowDownCircle className="h-5 w-5 text-red-500" /> {t('budget.expensesTitle')}</CardTitle>
-                  <CardDescription>{t('budget.defaultsInfo')}</CardDescription>
+                  <CardDescription className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-green-500" /> <span className="text-[10px] uppercase font-bold">Real</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-orange-500" /> <span className="text-[10px] uppercase font-bold">Previsto</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500" /> <span className="text-[10px] uppercase font-bold">Orçamento</span></div>
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-8 sm:grid-cols-2 pt-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><Home className="h-4 w-4" /> {t('budget.housing')}</Label><span>{expenses.housing}€</span></div>
-                      <Slider value={[expenses.housing]} onValueChange={([v]) => { const ne = { ...expenses, housing: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={200} max={2500} step={10} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><ShoppingCart className="h-4 w-4" /> {t('budget.food')}</Label><span>{expenses.food}€</span></div>
-                      <Slider value={[expenses.food]} onValueChange={([v]) => { const ne = { ...expenses, food: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={100} max={1500} step={10} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><Zap className="h-4 w-4" /> {t('budget.utilities')}</Label><span>{expenses.utilities}€</span></div>
-                      <Slider value={[expenses.utilities]} onValueChange={([v]) => { const ne = { ...expenses, utilities: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={50} max={600} step={5} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><Car className="h-4 w-4" /> {t('budget.transport')}</Label><span>{expenses.transport}€</span></div>
-                      <Slider value={[expenses.transport]} onValueChange={([v]) => { const ne = { ...expenses, transport: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={1000} step={10} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><HeartPulse className="h-4 w-4" /> {t('budget.health')}</Label><span>{expenses.health}€</span></div>
-                      <Slider value={[expenses.health]} onValueChange={([v]) => { const ne = { ...expenses, health: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={500} step={5} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><Palette className="h-4 w-4" /> {t('budget.leisure')}</Label><span>{expenses.leisure}€</span></div>
-                      <Slider value={[expenses.leisure]} onValueChange={([v]) => { const ne = { ...expenses, leisure: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={1000} step={10} />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {t('budget.education')}</Label><span>{expenses.education}€</span></div>
-                      <Slider value={[expenses.education]} onValueChange={([v]) => { const ne = { ...expenses, education: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={1500} step={10} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><Wifi className="h-4 w-4" /> {t('budget.communications')}</Label><span>{expenses.communications}€</span></div>
-                      <Slider value={[expenses.communications]} onValueChange={([v]) => { const ne = { ...expenses, communications: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={20} max={300} step={1} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><PiggyBank className="h-4 w-4" /> {t('budget.savings')}</Label><span>{expenses.savings}€</span></div>
-                      <Slider value={[expenses.savings]} onValueChange={([v]) => { const ne = { ...expenses, savings: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={2000} step={10} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> {t('budget.insurance')}</Label><span>{expenses.insurance}€</span></div>
-                      <Slider value={[expenses.insurance]} onValueChange={([v]) => { const ne = { ...expenses, insurance: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={1000} step={5} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><Label className="flex items-center gap-2"><MoreHorizontal className="h-4 w-4" /> {t('budget.other')}</Label><span>{expenses.other}€</span></div>
-                      <Slider value={[expenses.other]} onValueChange={([v]) => { const ne = { ...expenses, other: v }; setExpenses(ne); saveConfig(adults, children, income, ne); }} min={0} max={1000} step={10} />
-                    </div>
-                  </div>
+                <CardContent className="grid gap-x-12 gap-y-8 sm:grid-cols-2 pt-6">
+                  {categories.map((cat) => {
+                    const totals = getCategoryTotals(cat.key);
+                    return (
+                      <div key={cat.key} className="space-y-3">
+                        <div className="flex justify-between items-end">
+                          <Label className="flex items-center gap-2 font-bold"><cat.icon className="h-4 w-4 text-primary" /> {cat.label}</Label>
+                          <div className="text-right">
+                            <span className="text-xs font-bold">{totals.real + totals.estimated}€</span>
+                            <span className="text-[10px] text-muted-foreground ml-1">/ {expenses[cat.key]}€</span>
+                          </div>
+                        </div>
+                        <LayeredProgressBar budget={expenses[cat.key]} real={totals.real} estimated={totals.estimated} />
+                        <Slider 
+                          value={[expenses[cat.key]]} 
+                          onValueChange={([v]) => { 
+                            const ne = { ...expenses, [cat.key]: v }; 
+                            setExpenses(ne); 
+                            saveConfig(adults, children, income, ne); 
+                          }} 
+                          min={cat.min} 
+                          max={cat.max} 
+                          step={5} 
+                        />
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             </div>
 
             <div className="space-y-6">
-              <Card className="border-primary/20 shadow-lg overflow-hidden">
+              <Card className="border-primary/20 shadow-lg overflow-hidden h-fit sticky top-20">
                 <CardHeader className="bg-primary text-primary-foreground">
                   <CardTitle className="text-xl flex items-center gap-2"><CheckCircle2 className="h-6 w-6" /> {t('budget.summaryTitle')}</CardTitle>
                 </CardHeader>
@@ -316,13 +325,13 @@ export default function FamilyBudgetPage() {
 
               {aiResult && (
                 <Card className="border-accent bg-accent/5 border-dashed">
-                  <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <CardHeader className="pb-2">
                     <CardTitle className="text-xs uppercase tracking-widest text-accent flex items-center gap-2">
                       <Sparkles className="h-3.5 w-3.5" /> {t('budget.aiAnalysis')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-4">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{!showOriginal && translatedAnalysis ? translatedAnalysis : aiResult.analysis}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{aiResult.analysis}</p>
                     <div className="pt-2">
                       <h4 className="text-xs font-bold uppercase text-accent mb-2">{t('budget.aiTips')}</h4>
                       <ul className="space-y-2">
@@ -354,6 +363,18 @@ export default function FamilyBudgetPage() {
                       <Label>{t('budget.movements.titleLabel')}</Label>
                       <Input value={movTitle} onChange={(e) => setMovTitle(e.target.value)} placeholder="Ex: Renda Casa, Salário..." />
                     </div>
+                    
+                    {movType === 'expense' && (
+                      <div className="space-y-2">
+                        <Label>Categoria</Label>
+                        <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movCategory} onChange={(e) => setMovCategory(e.target.value)}>
+                          {categories.map(c => (
+                            <option key={c.key} value={c.key}>{c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>{t('budget.movements.amountLabel')}</Label>
@@ -367,14 +388,14 @@ export default function FamilyBudgetPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>{t('budget.movements.typeLabel')}</Label>
-                        <select className="w-full h-10 border rounded-md px-2" value={movType} onChange={(e: any) => setMovType(e.target.value)}>
+                        <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movType} onChange={(e: any) => setMovType(e.target.value)}>
                           <option value="expense">{t('budget.movements.expense')}</option>
                           <option value="income">{t('budget.movements.income')}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
                         <Label>{t('budget.movements.statusLabel')}</Label>
-                        <select className="w-full h-10 border rounded-md px-2" value={movStatus} onChange={(e: any) => setMovStatus(e.target.value)}>
+                        <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movStatus} onChange={(e: any) => setMovStatus(e.target.value)}>
                           <option value="estimated">{t('budget.movements.estimated')}</option>
                           <option value="real">{t('budget.movements.real')}</option>
                         </select>
@@ -408,6 +429,8 @@ export default function FamilyBudgetPage() {
                       {movements.map((mov) => {
                         const isOverdue = mov.status === 'estimated' && new Date(mov.date?.toDate?.() || mov.date) < new Date();
                         const isIncome = mov.type === 'income';
+                        const cat = categories.find(c => c.key === mov.category);
+                        
                         return (
                           <div key={mov.id} className={cn(
                             "flex items-center justify-between p-4 rounded-xl border transition-all",
@@ -422,18 +445,21 @@ export default function FamilyBudgetPage() {
                               </div>
                               <div>
                                 <p className="font-bold">{mov.title}</p>
-                                <p className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                                  {format(new Date(mov.date?.toDate?.() || mov.date), 'dd MMM yyyy', { locale: pt })}
-                                  {mov.status === 'estimated' ? (
-                                    <Badge variant="outline" className={cn("text-[8px] h-4", isOverdue && "border-destructive text-destructive")}>
-                                      {isOverdue ? t('budget.movements.overdue') : t('budget.movements.estimated')}
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="secondary" className="text-[8px] h-4 text-green-600">
-                                      <Check className="h-2 w-2 mr-1" /> {t('budget.movements.real')}
-                                    </Badge>
-                                  )}
-                                </p>
+                                <div className="flex items-center gap-2">
+                                  {cat && <Badge variant="secondary" className="text-[8px] h-4 uppercase">{cat.label}</Badge>}
+                                  <p className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+                                    {format(new Date(mov.date?.toDate?.() || mov.date), 'dd MMM yyyy', { locale: pt })}
+                                    {mov.status === 'estimated' ? (
+                                      <Badge variant="outline" className={cn("text-[8px] h-4", isOverdue && "border-destructive text-destructive")}>
+                                        {isOverdue ? t('budget.movements.overdue') : t('budget.movements.estimated')}
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="secondary" className="text-[8px] h-4 text-green-600">
+                                        <Check className="h-2 w-2 mr-1" /> {t('budget.movements.real')}
+                                      </Badge>
+                                    )}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
