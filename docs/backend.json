@@ -46,6 +46,20 @@
         "aiAnalysis": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "BudgetMovement": {
+      "title": "BudgetMovement",
+      "type": "object",
+      "description": "A financial movement (income or expense).",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "status": { "type": "string", "enum": ["estimated", "real"] },
+        "date": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -58,6 +72,8 @@
     "/publicScenarios/{id}": { "schema": "object", "description": "Public macro scenarios." },
     "/publicSimulations/{id}": { "schema": "object", "description": "Public policy simulations." },
     "/publicFactChecks/{id}": { "schema": "object", "description": "Public verified claims." },
-    "/publicLegislationQueries/{id}": { "schema": "object", "description": "Public legal queries." }
+    "/publicLegislationQueries/{id}": { "schema": "object", "description": "Public legal queries." },
+    "/users/{userId}/budget/config": { "schema": "FamilyBudget", "description": "User's saved budget configuration." },
+    "/users/{userId}/movements/{id}": { "schema": "BudgetMovement", "description": "User's financial movements." }
   }
 }

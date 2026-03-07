@@ -150,7 +150,28 @@ const DICTIONARY = {
       savingsRate: 'Taxa de Poupança',
       getAnalysisBtn: 'Analisar com IA',
       aiAnalysis: 'Parecer Financeiro IA',
-      aiTips: 'Sugestões de Otimização'
+      aiTips: 'Sugestões de Otimização',
+      tabs: {
+        config: 'Configuração',
+        movements: 'Movimentos (Diário)'
+      },
+      movements: {
+        newTitle: 'Novo Movimento',
+        titleLabel: 'Descrição',
+        amountLabel: 'Valor (€)',
+        typeLabel: 'Tipo',
+        statusLabel: 'Estado',
+        dateLabel: 'Data Prevista',
+        estimated: 'Previsto',
+        real: 'Realizado',
+        income: 'Receita',
+        expense: 'Despesa',
+        addBtn: 'Adicionar Lançamento',
+        overdueAlert: 'Tem pagamentos previstos em atraso!',
+        noMovements: 'Nenhum movimento registado.',
+        overdue: 'Atrasado',
+        changeToReal: 'Marcar como Realizado'
+      }
     },
     irs: {
       title: 'Simulador de IRS 2026',
@@ -482,7 +503,28 @@ const DICTIONARY = {
       savingsRate: 'Savings Rate',
       getAnalysisBtn: 'Analyze with AI',
       aiAnalysis: 'AI Financial Report',
-      aiTips: 'Optimization Suggestions'
+      aiTips: 'Optimization Suggestions',
+      tabs: {
+        config: 'Configuration',
+        movements: 'Daily Movements'
+      },
+      movements: {
+        newTitle: 'New Movement',
+        titleLabel: 'Description',
+        amountLabel: 'Amount (€)',
+        typeLabel: 'Type',
+        statusLabel: 'Status',
+        dateLabel: 'Due Date',
+        estimated: 'Estimated',
+        real: 'Real',
+        income: 'Income',
+        expense: 'Expense',
+        addBtn: 'Add Entry',
+        overdueAlert: 'You have overdue estimated payments!',
+        noMovements: 'No movements recorded.',
+        overdue: 'Overdue',
+        changeToReal: 'Mark as Real'
+      }
     },
     irs: {
       title: 'IRS Simulator 2026',
