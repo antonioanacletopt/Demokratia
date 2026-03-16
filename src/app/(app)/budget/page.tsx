@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
@@ -11,17 +12,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation, Language } from '@/lib/i18n';
-import { getFamilyBudgetAnalysis } from '@/lib/server-actions';
+import { getFamilyBudgetAnalysis } from '@/lib/actions';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, serverTimestamp, doc, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { 
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
-  Loader2, CheckCircle2, 
+  Loader2, CheckCircle2, AlertTriangle, 
   Home, ShoppingCart, Zap, Car, HeartPulse, Palette,
   GraduationCap, Wifi, PiggyBank, ShieldCheck, MoreHorizontal,
-  Calendar, ListPlus, TrendingUp, TrendingDown, AlertTriangle, Check, Trash2, Edit
+  Calendar, ListPlus, TrendingUp, TrendingDown, Check, Trash2, Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -93,6 +95,7 @@ export default function FamilyBudgetPage() {
 
   const [aiResult, setAiResult] = useState<{ analysis: string, tips: string[] } | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   // --- Firebase Loading ---
   const configRef = useMemoFirebase(() => user && firestore ? doc(firestore, 'users', user.uid, 'budget', 'config') : null, [user, firestore]);
@@ -213,14 +216,24 @@ export default function FamilyBudgetPage() {
   const savingsRate = income > 0 ? (balance / income) * 100 : 0;
 
   const handleGetAnalysis = () => {
+    setError(null);
+    setAiResult(null);
     startAnalysis(async () => {
-      const res = await getFamilyBudgetAnalysis({
-        budget: {
-          profile: { adults, children, totalNetIncome: income },
-          expenses
+      try {
+        const res = await getFamilyBudgetAnalysis({
+          budget: {
+            profile: { adults, children, totalNetIncome: income },
+            expenses
+          }
+        }, lang as Language);
+        setAiResult({ analysis: res.analysis, tips: res.tips });
+      } catch (e: any) {
+        if (e.message && e.message.includes('503')) {
+          setError(t('common.aiUnavailableError'));
+        } else {
+          setError(t('common.genericError'));
         }
-      }, lang as Language);
-      setAiResult({ analysis: res.analysis, tips: res.suggestions });
+      }
     });
   };
 
@@ -394,6 +407,13 @@ export default function FamilyBudgetPage() {
                 </CardFooter>
               </Card>
 
+              {error && (
+                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 dark:bg-red-900/30 dark:border-red-700 dark:text-red-50 mt-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               {aiResult && (
                 <Card className="border-accent bg-accent/5 border-dashed">
                   <CardHeader className="pb-2">
@@ -519,7 +539,7 @@ export default function FamilyBudgetPage() {
                                 <div className="flex items-center gap-2">
                                   {cat && <Badge variant="secondary" className="text-[8px] h-4 uppercase">{cat.label}</Badge>}
                                   <div className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                                    {format(new Date(mov.date?.toDate?.() || mov.date), 'dd MMM yyyy', { locale: pt })}
+                                    {format(new Date(mov.date?.toDate?.() || mov.date || new Date()), 'dd MMM yyyy', { locale: pt })}
                                     {mov.status === 'estimated' ? (
                                       <Badge variant="outline" className={cn("text-[8px] h-4", isOverdue && "border-destructive text-destructive")}>
                                         {isOverdue ? t('budget.movements.overdue') : t('budget.movements.estimated')}

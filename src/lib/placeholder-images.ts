@@ -2,9 +2,9 @@ import data from './placeholder-images.json';
 
 export type ImagePlaceholder = {
   id: string;
-  description: string;
+  descriptionKey: string;
   imageUrl: string;
-  imageHint: string;
+  imageHintKey: string;
 };
 
-export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+export const PlaceHolderImages: Omit<ImagePlaceholder, 'description' | 'imageHint'>[] = data.placeholderImages;

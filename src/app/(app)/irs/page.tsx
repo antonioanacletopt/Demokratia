@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from '@/lib/i18n';
-import { getIRSAssessment, type IRSAssessmentOutput } from '@/lib/server-actions';
+import { getIRSAssessment, type IRSAssessmentOutput } from '@/lib/actions';
 import { 
-  Calculator, UserCircle, PiggyBank, Sparkles, 
+  Calculator, UserCircle, PiggyBank, Sparkles, AlertTriangle,
   Loader2, Landmark, CheckCircle2, 
   HeartPulse, GraduationCap, Home, ShoppingBag, TrendingUp, TrendingDown,
   Scale, Briefcase, Receipt, Rocket, Banknote
@@ -71,27 +72,38 @@ export default function IRSPage() {
   // AI Result
   const [aiResult, setAiResult] = useState<IRSAssessmentOutput | null>(null);
   const [isAnalysing, startAnalysis] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSimulate = () => {
+    setError(null);
+    setAiResult(null);
     startAnalysis(async () => {
-      const res = await getIRSAssessment({
-        maritalStatus,
-        dependents,
-        income,
-        capitalGains: hasCapitalGains ? capitalGains : undefined,
-        englobePropertyIncome,
-        englobeCapitalIncome,
-        irsJovemYear,
-        expenses,
-        retention,
-        disability: {
-          taxpayer: taxpayerDisability,
-          spouse: spouseDisability,
-          dependents: dependentsWithDisability,
-        },
-        ppr,
-      }, language);
-      setAiResult(res);
+      try {
+        const res = await getIRSAssessment({
+          maritalStatus,
+          dependents,
+          income,
+          capitalGains: hasCapitalGains ? capitalGains : undefined,
+          englobePropertyIncome,
+          englobeCapitalIncome,
+          irsJovemYear,
+          expenses,
+          retention,
+          disability: {
+            taxpayer: taxpayerDisability,
+            spouse: spouseDisability,
+            dependents: dependentsWithDisability,
+          },
+          ppr,
+        }, language);
+        setAiResult(res);
+      } catch (e: any) {
+        if (e.message && e.message.includes('503')) {
+          setError(t('common.aiUnavailableError'));
+        } else {
+          setError(t('common.genericError'));
+        }
+      }
     });
   };
 
@@ -125,7 +137,21 @@ export default function IRSPage() {
 
         {/* Result Column */}
         <div className="lg:col-span-4 space-y-6">
-          {aiResult ? (
+          {error && (
+            <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 dark:bg-red-900/30 dark:border-red-700 dark:text-red-50">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {isAnalysing && (
+            <Card className="border-dashed bg-muted/20 flex flex-col items-center justify-center py-20 text-center px-6">
+                <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+                <p className="text-sm text-muted-foreground">A analisar o seu perfil fiscal...</p>
+            </Card>
+          )}
+
+          {aiResult && !error && (
             <>
               <Card className={cn("border-2 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500", isRefund ? "border-green-500/30" : "border-red-500/30")}>
                 <CardHeader className={cn("text-white", isRefund ? "bg-green-600" : "bg-red-600")}>
@@ -136,7 +162,9 @@ export default function IRSPage() {
 
               <Card className="border-accent border-dashed bg-accent/5"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-widest text-accent flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" /> {t('irs.aiAnalysis')}</CardTitle></CardHeader><CardContent className="pt-2 space-y-4"><p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{aiResult.analysis}</p><div className="space-y-2 pt-2"><h4 className="text-xs font-bold uppercase text-accent">{t('irs.tipsTitle')}</h4><ul className="space-y-2">{aiResult.tips.map((tip: string, i: number) => (<li key={i} className="text-xs flex gap-2 items-start text-muted-foreground"><CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" /><span>{tip}</span></li>))}</ul></div></CardContent></Card>
             </>
-          ) : (
+          )}
+
+          {!aiResult && !isAnalysing && !error && (
             <Card className="border-dashed bg-muted/20 flex flex-col items-center justify-center py-20 text-center px-6">
               <Calculator className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <p className="text-sm text-muted-foreground">{t('irs.calculateBtn')} para ver a projeção fiscal.</p>

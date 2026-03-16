@@ -1,0 +1,648 @@
+{
+  "nav": {
+    "home": "Início",
+    "dashboard": "Painel",
+    "simulations": "Simulações",
+    "explorer": "Explorador",
+    "map": "Mapa Regional",
+    "budget": "Orçamento",
+    "investor": "Investidor",
+    "irs": "Simulador IRS",
+    "factCheck": "Fact-Check",
+    "legislation": "Legislação",
+    "scenarios": "Cenários",
+    "proposals": "Propostas",
+    "methodology": "Metodologia",
+    "about": "Sobre Nós",
+    "faq": "FAQ",
+    "contact": "Contacto",
+    "profile": "Perfil",
+    "admin": "Painel de Administração",
+    "terms": "Termos de Serviço",
+    "privacy": "Política de Privacidade",
+    "login": "Iniciar Sessão",
+    "logout": "Sair",
+    "language": "Idioma",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "home": {
+    "title": "Feed de Notícias",
+    "description": "As análises e atualizações mais recentes sobre o panorama político e económico.",
+    "welcomeSubtitle": "Análise Política & Económica com IA",
+    "welcomeTitle": "Compreender Portugal. Transformar o seu Futuro.",
+    "welcomeIntro": "Uma plataforma open-source para simular políticas, explorar dados públicos e verificar factos. A sua ferramenta para uma cidadania informada.",
+    "tooltips": {
+      "irs": "As suas contas com o estado.",
+      "budget": "O seu bolso.",
+      "map": "Atlas regional.",
+      "scenarios": "Teste políticas.",
+      "factCheck": "Verdade factual.",
+      "legislation": "Descomplique a lei."
+    },
+    "methodologyTitle": "A Nossa Metodologia",
+    "methodologyDesc": "Temos um compromisso com a isenção e a transparência. Todas as nossas análises são geradas a partir de fontes de dados públicas e oficiais, sem qualquer viés partidário, garantindo que recebe informação neutra e confiável.",
+    "methodologySources": "100% Fontes Oficiais",
+    "methodologyNeutrality": "Neutralidade Partidária",
+    "infoINE": "Dados do INE",
+    "infoINEDesc": "Instituto Nacional de Estatística",
+    "infoEurostat": "Dados do Eurostat",
+    "infoEurostatDesc": "Serviço de Estatística da União Europeia",
+    "regionalTitle": "Explore Portugal, Região a Região",
+    "regionalDesc": "Mergulhe nos dados e descubra as assimetrias económicas e sociais que definem o país.",
+    "images": {
+      "portoRibeiraAlt": "Vista da Ribeira no Porto ao entardecer"
+    },
+    "source": "Fonte",
+    "newsTypes": {
+      "claim": "Alegação",
+      "new_law": "Nova Lei",
+      "analysis": "Análise"
+    },
+    "simImpact": "Simular Impacto",
+    "error": "Falha ao carregar o feed. A nossa IA parece indisponível.",
+    "proposals": {
+      "subtitle": "As ideias mais apoiadas pelos cidadãos portugueses.",
+      "seeAll": "Ver Todas"
+    }
+  },
+  "cookies": {
+    "title": "Consentimento de Cookies",
+    "desc": "Utilizamos cookies para melhorar a sua experiência e analisar o nosso tráfego. Ao clicar em 'Aceitar', consente a nossa utilização de cookies, conforme descrito na nossa"
+  },
+  "proposals": {
+    "communityTitle": "Propostas da Comunidade"
+  },
+  "financialNews": {
+    "title": "Notícias Financeiras Globais"
+  },
+  "time": {
+    "minutesAgo_one": "há {{count}} minuto",
+    "minutesAgo_other": "há {{count}} minutos",
+    "hoursAgo_one": "há {{count}} hora",
+    "hoursAgo_other": "há {{count}} horas"
+  },
+  "footer": {
+    "desc": "Análise de políticas públicas e dados económicos com recurso a IA, promovendo a transparência e a cidadania informada.",
+    "resources": "Recursos",
+    "company": "Empresa",
+    "legal": "Legal",
+    "copyright": "© {{year}} Demokratia. Todos os direitos reservados.",
+    "disclaimer": "Aviso Legal: As análises e simulações disponibilizadas nesta plataforma são geradas por IA com base em dados públicos e devem ser consideradas apenas para fins informativos. Não constituem aconselhamento financeiro, legal ou de qualquer outra natureza profissional."
+  },
+  "verdict": {
+    "true": "VERDADEIRO",
+    "false": "FALSO",
+    "misleading": "ENGANADOR",
+    "no_evidence": "SEM EVIDÊNCIA"
+  },
+  "methodology": {
+    "title": "A Nossa Metodologia",
+    "subtitle": "Perceba como a Demokratia combina modelos económicos clássicos com Inteligência Artificial para analisar o complexo puzzle da política e economia.",
+    "intro": "Visualização de dados sobre a economia Portuguesa.",
+    "modelsTitle": "Modelos Económicos",
+    "okunTitle": "Lei de Okun",
+    "okunDesc": "Relaciona a variação na taxa de desemprego com a variação do produto interno bruto (PIB). Permite-nos estimar o impacto de políticas de crescimento económico no emprego.",
+    "phillipsTitle": "Curva de Phillips",
+    "phillipsDesc": "Descreve a relação inversa entre a inflação e o desemprego. É usada para analisar os trade-offs entre estabilidade de preços e níveis de emprego.",
+    "multiplierTitle": "Multiplicador Keynesiano",
+    "multiplierDesc": "Mede o efeito que um aumento no investimento ou nos gastos do governo tem sobre o rendimento nacional. Essencial para simular o impacto de pacotes de estímulo fiscal.",
+    "aiTitle": "Inteligência Artificial",
+    "aiDesc": "Utilizamos Modelos de Linguagem de Grande Escala (LLMs) treinados com um vasto corpo de dados económicos e legislativos. A técnica de Geração Aumentada por Recuperação (RAG) permite que a nossa IA consulte em tempo real as nossas bases de dados de fontes oficiais, garantindo respostas sempre atuais e fundamentadas.",
+    "aiQuote": "O RAG permite que a IA cite fontes como o Diário da República sem inventar vereditos legais.",
+    "videoTitle": "Aprenda Connosco",
+    "videoLabel": "Vídeo Recomendado",
+    "videoDesc": "Como funciona o Orçamento do Estado?",
+    "videoAction": "Pesquisar no YouTube",
+    "transparencyTitle": "Transparência e Fontes de Dados",
+    "transparencyDesc": "Comprometemo-nos com a total transparência. Todas as nossas análises são baseadas em dados públicos e fontes oficiais. Explore as fontes que alimentam os nossos modelos.",
+    "sourceAction": "Consultar Portal Oficial",
+    "exploreAction": "Explorar Dados destas Fontes",
+    "linksTitle": "Links Úteis",
+    "links": {
+      "cfp": "Conselho Finanças Públicas",
+      "ine": "INE - Estatísticas Oficiais",
+      "pordata": "Pordata - Base de Dados",
+      "dre": "DRE - Legislação",
+      "bportugal": "Banco de Portugal - Lab",
+      "transparency": "Portal da Transparência"
+    }
+  },
+  "commodities": {
+    "title": "Matérias-Primas",
+    "gold": "Ouro (ETF)",
+    "brent": "Petróleo Brent (ETF)",
+    "currency": "USD"
+  },
+  "infoPopover": {
+    "moreInfo": "Mais informações sobre {{title}}",
+    "officialSource": "Consultar Fonte Oficial"
+  },
+  "refutation": {
+    "refuteBtn": "Refutar / Contextualizar",
+    "title": "Contestar ou Refutar Informação",
+    "description": "Se considera que esta informação gerada por IA está incorreta, incompleta ou necessita de contexto adicional, por favor submeta a sua refutação com evidências. Todas as submissões são revistas pela nossa equipa.",
+    "loginPrompt": "Por favor, inicie sessão para submeter uma refutação.",
+    "label": "A sua refutação ou contextualização",
+    "placeholder": "Explique de forma clara e objetiva o erro ou o que falta na análise da IA...",
+    "textMinError": "A refutação deve ter no mínimo 20 caracteres.",
+    "evidence": "Links para evidências (Opcional)",
+    "evidencePlaceholder": "https://exemplo.com/fonte1, https://outrafonte.pt/artigo...",
+    "submitBtn": "Submeter Refutação",
+    "success": "A sua refutação foi submetida com sucesso e está pendente de revisão. Obrigado pela sua contribuição!",
+    "anonymous": "Anónimo"
+  },
+  "stockTicker": {
+    "title": "Mercado Nacional",
+    "currency": "EUR",
+    "assets": {
+      "edp": "EDP Renováveis",
+      "galp": "Galp Energia",
+      "jmt": "Jerónimo Martins",
+      "bcp": "BCP"
+    }
+  },
+  "simulations": {
+    "title": "Simulador de Impacto de Políticas",
+    "description": "Analise o potencial impacto de uma medida ou política pública. A nossa IA irá gerar uma análise detalhada sobre as possíveis consequências.",
+    "input_label": "Medida ou Política a Simular",
+    "input_placeholder": "Ex: Aumento do salário mínimo para 900€",
+    "button_simulate": "Simular Impacto",
+    "results_title": "Análise de Impacto da Simulação",
+    "results_summary": "Sumário Executivo",
+    "results_positive": "Impactos Positivos Potenciais",
+    "results_negative": "Impactos Negativos Potenciais",
+    "results_long_term": "Perspetiva a Longo Prazo",
+    "results_assumptions": "Pressupostos da Análise",
+    "results_confidence": "Grau de Confiança",
+    "results_confidence_desc": "Este valor representa a confiança do modelo de IA na sua própria análise, com base na qualidade dos dados e na complexidade da política.",
+    "results_sources": "Fontes e Referências",
+    "feedback_title": "O resultado foi útil?",
+    "feedback_yes": "Sim",
+    "feedback_no": "Não"
+  },
+  "irs": {
+    "title": "Simulador de IRS 2024",
+    "description": "Calcule o seu IRS para 2024 e receba uma análise fiscal detalhada e dicas de otimização personalizadas.",
+    "config_title": "Configuração da Simulação",
+    "results_title": "Resultado da Simulação",
+    "button_calculate": "Calcular e Analisar",
+    "button_new_simulation": "Nova Simulação",
+    "marital_status": "Estado Civil",
+    "marital_status_single": "Solteiro / Viúvo / Divorciado",
+    "marital_status_joint": "Casado / Unido de Facto (Tributação Conjunta)",
+    "marital_status_separate": "Casado / Unido de Facto (Tributação Separada)",
+    "dependents": "Nº de Dependentes",
+    "income_title": "Rendimentos Anuais Brutos",
+    "income_cat_a": "Trabalho Dependente (Cat. A)",
+    "income_cat_b": "Trabalho Independente (Cat. B)",
+    "income_property": "Rendimentos Prediais (Cat. F)",
+    "income_capital": "Rendimentos de Capitais (Cat. E)",
+    "options_title": "Opções e Regimes Especiais",
+    "englobe_property": "Englobar Rendimentos Prediais",
+    "englobe_capital": "Englobar Rendimentos de Capitais",
+    "irs_jovem": "IRS Jovem",
+    "irs_jovem_none": "Nenhum / Não aplicável",
+    "irs_jovem_y1": "Ano 1 (100% de isenção)",
+    "irs_jovem_y2": "Ano 2 (75% de isenção)",
+    "irs_jovem_y3": "Ano 3 (50% de isenção)",
+    "irs_jovem_y4": "Ano 4 (50% de isenção)",
+    "irs_jovem_y5": "Ano 5 (25% de isenção)",
+    "expenses_title": "Despesas Anuais Dedutíveis",
+    "expenses_health": "Saúde",
+    "expenses_education": "Educação",
+    "expenses_housing": "Habitação (Rendas ou Juros)",
+    "expenses_general": "Despesas Gerais Familiares",
+    "expenses_donations": "Donativos",
+    "expenses_alimony": "Pensões de Alimentos",
+    "expenses_union": "Quotas Sindicais",
+    "expenses_vat": "IVA (Faturas Pedidas)",
+    "expenses_care_homes": "Lares de Terceira Idade",
+    "disability_title": "Incapacidades",
+    "disability_taxpayer": "Contribuinte com incapacidade >= 60%",
+    "disability_spouse": "Cônjuge com incapacidade >= 60%",
+    "disability_dependents": "Nº Dependentes com incapacidade >= 60%",
+    "ppr": "PPR (Planos Poupança Reforma)",
+    "retention": "Retenção na Fonte Total",
+    "result_refund": "Reembolso Estimado",
+    "result_payment": "Imposto a Pagar",
+    "result_tax": "Coleta Líquida",
+    "result_rate": "Taxa Efetiva",
+    "analysis_title": "Análise Fiscal Personalizada",
+    "tips_title": "Dicas de Otimização"
+  },
+  "budget": {
+    "title": "Orçamento Familiar Inteligente",
+    "description": "Controle as suas finanças, defina metas e receba análises da nossa IA para otimizar a sua poupança.",
+    "tabs": {
+      "config": "Orçamento e Perfil",
+      "movements": "Lançamentos"
+    },
+    "profileTitle": "Perfil do Agregado",
+    "adults": "Adultos",
+    "children": "Crianças",
+    "income": "Rendimento Líquido Mensal",
+    "expensesTitle": "Orçamento de Despesas Mensais",
+    "housing": "Habitação",
+    "food": "Alimentação",
+    "utilities": "Utilities (Luz, Água, Gás)",
+    "transport": "Transportes",
+    "health": "Saúde",
+    "leisure": "Lazer e Cultura",
+    "education": "Educação",
+    "communications": "Comunicações",
+    "savings": "Poupança e Investimento",
+    "insurance": "Seguros",
+    "other": "Outras Despesas",
+    "summaryTitle": "Resumo do Orçamento",
+    "totalIncome": "Rendimento Total",
+    "totalExpenses": "Despesas Totais",
+    "balance": "Saldo Mensal",
+    "savingsRate": "Taxa de Poupança",
+    "getAnalysisBtn": "Analisar Orçamento",
+    "aiAnalysis": "Análise da IA",
+    "aiTips": "Sugestões de Otimização",
+    "movements": {
+      "overdueAlert": "Existem lançamentos previstos em atraso!",
+      "newTitle": "Novo Lançamento",
+      "titleLabel": "Título",
+      "amountLabel": "Valor",
+      "dateLabel": "Data",
+      "typeLabel": "Tipo",
+      "statusLabel": "Estado",
+      "expense": "Despesa",
+      "income": "Receita",
+      "estimated": "Previsto",
+      "real": "Realizado",
+      "addBtn": "Adicionar Lançamento",
+      "noMovements": "Ainda não existem lançamentos.",
+      "overdue": "Em Atraso",
+      "changeToReal": "Marcar como Realizado",
+      "editTitle": "Editar Lançamento"
+    }
+  },
+  "investor": {
+    "title": "Assistente de Investidor",
+    "description": "Obtenha análises de mercado e sugestões de investimento baseadas no seu perfil e em dados atuais.",
+    "strategicAnalysis": "Análise Estratégica",
+    "assetLabel": "Ativo ou Setor",
+    "assetPlaceholder": "Ex: S&P 500, Ouro, Imobiliário...",
+    "timeHorizonLabel": "Horizonte Temporal",
+    "selectTimeHorizon": "Selecione o horizonte...",
+    "timeHorizons": {
+      "short": "Curto Prazo (até 1 ano)",
+      "medium": "Médio Prazo (1-5 anos)",
+      "long": "Longo Prazo (5+ anos)"
+    },
+    "riskProfileLabel": "Perfil de Risco",
+    "selectRiskProfile": "Selecione o perfil...",
+    "riskProfiles": {
+      "conservative": "Conservador",
+      "moderate": "Moderado",
+      "aggressive": "Agressivo"
+    },
+    "analyzeBtn": "Analisar Mercado",
+    "waiting": {
+      "title": "Aguardando Análise",
+      "description": "Preencha os campos à esquerda e clique em \"Analisar Mercado\" para obter uma análise estratégica gerada por IA."
+    },
+    "analyzing": {
+      "title": "A analisar o mercado...",
+      "description": "A nossa IA está a processar os dados. Por favor, aguarde um momento."
+    },
+    "analysisFor": "Análise para: {{asset}}",
+    "analysisMeta": "{{timeHorizon}} / Perfil {{riskProfile}}",
+    "confidenceMeter": "Confiança da Análise: {{label}} ({{percentage}}%)",
+    "confidenceLabels": {
+      "high": "Alta",
+      "medium": "Moderada",
+      "low": "Baixa",
+      "neutral": "Neutra"
+    },
+    "outlookLabels": {
+      "bullish": "Bullish",
+      "bearish": "Bearish",
+      "neutral": "Neutra"
+    },
+    "keyFactors": "Fatores Chave",
+    "suggestedAction": "Ação Sugerida"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "accept": "Aceitar",
+    "close": "Fechar",
+    "portuguese": "Português",
+    "english": "Inglês",
+    "view": "Ver",
+    "simulate": "Simular",
+    "aiUnavailableError": "Os nossos modelos de IA estão de momento com uma elevada procura. Por favor, tente novamente dentro de alguns momentos.",
+    "genericError": "Ocorreu um erro inesperado. Por favor, tente novamente.",
+    "learnMore": "Saber Mais",
+    "translating": "A traduzir...",
+    "translate": "Traduzir",
+    "showOriginal": "Mostrar Original",
+    "success": "Sucesso!",
+    "na": "N/D"
+  },
+    "explorer": {
+    "title": "Explorador de Dados",
+    "description": "Pesquise estatísticas públicas ou explore os nossos conjuntos de dados.",
+    "howItWorks": "Esta ferramenta utiliza IA generativa para interpretar pedidos em linguagem natural, pesquisar em fontes de dados oficiais e apresentar os resultados em formato de gráfico ou tabela. Os dados pré-carregados são fictícios e servem apenas como exemplo.",
+    "aiCardTitle": "Assistente de Dados IA",
+    "aiCardDesc": "Peça um dado estatístico e a IA irá tentar encontrá-lo.",
+    "textareaPlaceholder": "Exemplo: Taxa de desemprego em Portugal nos últimos 5 anos",
+    "noDataFound": "Não foram encontrados dados para o seu pedido.",
+    "trySimulator": "A sua questão pode ser mais adequada para uma simulação.",
+    "goToSimulator": "Ir para o Simulador",
+    "officialFooter": "A IA pesquisa em tempo real em fontes como o INE, Pordata, Eurostat, Banco de Portugal e outros. A fonte original é sempre citada.",
+    "searchBtn": "Pesquisar",
+    "mySavedViews": "As Minhas Vistas Guardadas",
+    "existingDataTitle": "Explorar Conjuntos de Dados Existentes",
+    "officialSourcesTitle": "Fontes de Dados Oficiais",
+    "officialSourcesDesc": "Fontes de dados governamentais e estatísticas que alimentam a nossa plataforma.",
+    "visitPortal": "Visitar Portal",
+    "saveViewTitle": "Guardar Vista de Dados",
+    "saveViewDesc": "Guarde a configuração atual para referência futura.",
+    "viewName": "Nome da Vista",
+    "viewDescription": "Descrição (opcional)",
+    "suggestSource": "Sugerir Fonte",
+    "suggestSourceDesc": "Encontrou uma fonte de dados útil? Partilhe-a connosco.",
+    "sourceName": "Nome da Fonte de Dados",
+    "sourceNamePlaceholder": "Ex: Pordata, INE, Banco de Portugal",
+    "sourceUrl": "URL da Fonte de Dados",
+    "sourcePurpose": "Propósito da Fonte (que dados fornece?)",
+    "sourcePurposePlaceholder": "Explique que tipo de dados factuais esta fonte fornece...",
+    "suggestBtn": "Sugerir Fonte",
+    "suggestionSuccess": "Sugestão enviada para validação administrativa.",
+    "sourceLabel": "Fonte",
+    "exportCsv": "Exportar CSV",
+    "expandHint": "Clique para expandir",
+    "aiSource": "Análise IA via Fontes Oficiais",
+    "officialSource": "Fontes Oficiais"
+  },
+  "dataSources": {
+    "pordata": {
+      "name": "Pordata",
+      "description": "Base de Dados de Portugal Contemporâneo, mantida pela Fundação Francisco Manuel dos Santos."
+    },
+    "ine": {
+      "name": "Instituto Nacional de Estatística (INE)",
+      "description": "Principal produtor de estatísticas oficiais em Portugal."
+    },
+    "dgo": {
+      "name": "Direção-Geral do Orçamento (DGO)",
+      "description": "Responsável pela elaboração, execução e controlo do Orçamento do Estado."
+    },
+    "bportugal": {
+      "name": "Banco de Portugal",
+      "description": "Banco central da República Portuguesa."
+    },
+    "eurostat": {
+      "name": "Eurostat",
+      "description": "Gabinete de estatísticas da União Europeia."
+    },
+    "worldbank": {
+      "name": "World Bank Open Data",
+      "description": "Dados de desenvolvimento global gratuitos e de acesso aberto."
+    },
+    "dbnomics": {
+      "name": "DBnomics",
+      "description": "Agregador de dados económicos e financeiros de várias fontes públicas."
+    },
+    "rtp": {
+      "name": "RTP Notícias",
+      "description": "Serviço público de notícias de rádio e televisão."
+    },
+    "lusa": {
+      "name": "Agência Lusa",
+      "description": "Agência de notícias estatal de Portugal."
+    },
+    "sic": {
+      "name": "SIC Notícias",
+      "description": "Canal de notícias de referência."
+    },
+    "cnn": {
+      "name": "CNN Portugal",
+      "description": "Canal de notícias internacional adaptado a Portugal."
+    },
+    "publico": {
+      "name": "Público",
+      "description": "Jornal diário de referência."
+    },
+    "expresso": {
+      "name": "Expresso",
+      "description": "Semanário de referência em Portugal."
+    },
+    "observador": {
+      "name": "Observador",
+      "description": "Jornal digital focado em opinião e análise."
+    },
+    "tsf": {
+      "name": "TSF Rádio Notícias",
+      "description": "Rádio nacional de notícias."
+    },
+    "alpha-vantage": {
+      "name": "Alpha Vantage",
+      "description": "API para dados em tempo real e históricos sobre ações, forex e criptomoedas."
+    },
+    "financial-modeling-prep": {
+      "name": "Financial Modeling Prep",
+      "description": "API para dados financeiros em tempo real e históricos, incluindo ações, forex e criptomoedas."
+    }
+  },
+  "categories": {
+    "official_statistics": "Estatísticas Oficiais",
+    "demographic_data": "Dados Demográficos",
+    "social_data": "Dados Sociais",
+    "macroeconomic_data": "Dados Macroeconómicos",
+    "censuses": "Censos",
+    "public_finances": "Finanças Públicas",
+    "state_budget": "Orçamento de Estado",
+    "monetary_statistics": "Estatísticas Monetárias",
+    "financial_system": "Sistema Financeiro",
+    "european_statistics": "Estatísticas Europeias",
+    "international_data": "Dados Internacionais",
+    "economic_development": "Desenvolvimento Económico",
+    "time_series": "Séries Temporais",
+    "news": "Notícias",
+    "opinion": "Opinião",
+    "analysis": "Análise",
+    "stock_quotes": "Cotações de Ações",
+    "financial_data": "Dados Financeiros",
+    "company_profiles": "Perfis de Empresas",
+    "historical_data": "Dados Históricos"
+  },
+  "placeholders": {
+    "heroPortugal": {
+      "description": "Vista panorâmica de Portugal",
+      "imageHint": "paisagem de portugal"
+    },
+    "dataViz": {
+      "description": "Visualização de dados estatísticos",
+      "imageHint": "análise de dados"
+    },
+    "transparencyConcept": {
+      "description": "Conceito de transparência digital",
+      "imageHint": "segurança digital"
+    },
+    "portoRibera": {
+      "description": "Porto e o Rio Douro",
+      "imageHint": "cidade do porto"
+    },
+    "alentejoLandscape": {
+      "description": "Paisagem do Alentejo",
+      "imageHint": "campos do alentejo"
+    },
+    "algarveCoast": {
+      "description": "Costa do Algarve",
+      "imageHint": "costa do algarve"
+    }
+  },
+  "actions": {
+    "prompts": {
+      "expertInLaw": "Você é um especialista em direito português.",
+      "factChecker": "Você é um verificador de factos de classe mundial, especializado em alegações políticas e económicas portuguesas.",
+      "analyst": "Você é um economista e analista político de classe mundial, especializado na economia portuguesa.",
+      "newsAnalyst": "Você é um analista de notícias políticas e económicas portuguesas.",
+      "translator": "Você é um tradutor profissional.",
+      "taxExpert": "Você é um especialista de classe mundial em direito fiscal português.",
+      "dataRetriever": "Você é um especialista em recuperação de dados para estatísticas públicas portuguesas.",
+      "dataVisualizer": "Você é um especialista em visualização de dados.",
+      "financialAdvisor": "Você é um consultor financeiro de classe mundial, especializado em orçamentos familiares portugueses.",
+      "investmentAnalyst": "Você é um analista financeiro de classe mundial que fornece aconselhamento de investimento para o mercado português."
+    },
+    "instructions": {
+      "analysisLang": "A sua análise deve ser em {{lang}}.",
+      "userQuestion": "Pergunta do utilizador: \"{{question}}\".",
+      "claimToVerify": "A alegação submetida pelo utilizador para verificação é: \"{{claim}}\".",
+      "todayIs": "A data de hoje é {{date}}. A sua análise deve basear-se na informação disponível até esta data.",
+      "scenarioToAnalyze": "Cenário a analisar: {{scenario}}",
+      "policyToAnalyze": "Política a analisar: \"{{policy}}\".",
+      "userInput": "Input do utilizador: {{input}}",
+      "userRequest": "Pedido do utilizador: \"{{request}}\".",
+      "textToTranslate": "Texto a traduzir: \"{{text}}\".",
+      "translateTo": "Traduza o seguinte texto de Português para {{lang}}.",
+      "jsonOutput": "A sua saída DEVE ser um objeto JSON que esteja em conformidade com o seguinte esquema Zod:",
+      "jsonOnly": "IMPORTANTE: A sua resposta deve ser apenas um objeto JSON válido, sem texto extra, comentários ou formatação markdown.",
+      "textOnly": "A sua resposta deve ser APENAS o texto traduzido, sem comentários ou formatação extra.",
+      "newsFeedTask": "A sua tarefa é gerar um feed dos 5 tópicos mais importantes e recentes em Portugal.",
+      "newsFeedDate": "A data de hoje é {{date}}.",
+      "findData": "Se encontrar os dados, defina isFound como verdadeiro e forneça os dados como um array de objetos JSON.stringified.",
+      "dataNotFound": "Se não conseguir encontrar os dados específicos, defina isFound como falso.",
+      "chartable": "Se for possível criar um gráfico, defina isChartable como verdadeiro e formate os dados.",
+      "notChartable": "Se não for possível criar um gráfico, defina isChartable como falso."
+    },
+    "errors": {
+      "jsonParseFail": "Falha ao fazer o parse do JSON: {{json}}",
+      "invalidJSON": "Resposta da IA com JSON inválido.",
+      "zodValidationFailed": "A validação Zod falhou: {{error}}",
+      "noResponse": "A IA não retornou uma resposta.",
+      "noResponseFor": "A IA não retornou uma resposta para {{context}}.",
+      "schemaMismatch": "A resposta da IA não corresponde ao esquema exigido.",
+      "schemaMismatchFor": "A resposta da IA para {{context}} não corresponde ao esquema exigido.",
+      "translationFailed": "A IA não retornou uma tradução."
+    },
+    "context": {
+        "legislation": "consulta de legislação",
+        "factCheck": "verificação de factos",
+        "scenario": "análise de cenário",
+        "newsFeed": "feed de notícias",
+        "simulation": "simulação económica",
+        "irs": "cálculo de IRS",
+        "publicStats": "estatística pública",
+        "chartRequest": "pedido de gráfico",
+        "budget": "análise de orçamento familiar",
+        "market": "análise de mercado"
+    }
+  },
+  "statisticalData": {
+    "average-monthly-earnings-2026": {
+      "title": "Ganho Médio Mensal por Trabalhador",
+      "description": "Evolução do ganho médio mensal bruto dos trabalhadores por conta de outrem. Em 2026, observa-se uma convergência com a média europeia após as atualizações do SMN.",
+      "category": "Economia",
+      "source": "INE / Ministério do Trabalho 2026",
+      "headers": {
+        "year": "Ano",
+        "avg_earning": "Ganho Médio (€)",
+        "variation": "Variação"
+      }
+    },
+    "companies-by-size-2026": {
+      "title": "Empresas por Escalão de Pessoal",
+      "description": "Distribuição do tecido empresarial português por número de trabalhadores em 2026. Destaque para o crescimento das médias empresas tecnológicas.",
+      "category": "Economia",
+      "source": "INE / Banco de Portugal 2026",
+      "headers": {
+        "size": "Escalão",
+        "companies": "Nº Empresas",
+        "total_percentage": "% do Total"
+      }
+    },
+    "government-debt-2026": {
+      "title": "Dívida Pública em % do PIB (2021-2026)",
+      "description": "Trajetória da dívida pública portuguesa. Em 2026, Portugal mantém a tendência de redução abaixo da média da Zona Euro.",
+      "category": "Economia",
+      "source": "Banco de Portugal / IGCP 2026",
+      "headers": {
+        "year": "Ano",
+        "debt_gdp_percent": "Dívida (% PIB)"
+      }
+    },
+    "residence-permits-2026": {
+      "title": "Títulos de Residência Emitidos e Renovados",
+      "description": "Estatísticas sobre a emissão e renovação de títulos de residência em Portugal. Dados de 2026 refletem a agilização dos processos de integração e o reforço da capacidade de resposta da agência.",
+      "category": "Migrações",
+      "source": "AIMA - Agência para a Integração, Migrações e Asilo 2026",
+      "headers": {
+        "type": "Tipo",
+        "quantity": "Quantidade",
+        "status": "Estado"
+      }
+    },
+    "doctors-sns-2026": {
+      "title": "Médicos no Serviço Nacional de Saúde (SNS)",
+      "description": "Número de médicos nos quadros do SNS por especialidade. Reflete o reforço orçamental de 2026 para a retenção de talentos.",
+      "category": "Saúde",
+      "source": "Portal da Transparência SNS 2026",
+      "headers": {
+        "specialty": "Especialidade",
+        "doctors": "Nº Médicos",
+        "status": "Estado"
+      }
+    },
+    "early-school-leaving-2026": {
+      "title": "Taxa de Abandono Precoce de Educação e Formação",
+      "description": "Percentagem de jovens (18-24 anos) que não concluíram o ensino secundário. Portugal atinge mínimos históricos em 2026.",
+      "category": "Educação",
+      "source": "DGEEC / Eurostat 2026",
+      "headers": {
+        "year": "Ano",
+        "rate": "Taxa (%)"
+      }
+    },
+    "higher-education-enrollment-2026": {
+      "title": "Alunos Inscritos no Ensino Superior",
+      "description": "Número total de alunos inscritos em universidades e politécnicos. Crescimento impulsionado por cursos de IA e Transição Energética.",
+      "category": "Educação",
+      "source": "DGEEC / MCTES 2026",
+      "headers": {
+        "subsystem": "Subsistema",
+        "enrolled": "Inscritos"
+      }
+    },
+    "emigration-stats-2026": {
+      "title": "Fluxos de Emigração e Regresso",
+      "description": "Estatísticas de saída de cidadãos nacionais e o impacto do programa \"Regressar 2.0\" em 2026.",
+      "category": "Emigração",
+      "source": "Observatório da Emigração 2026",
+      "headers": {
+        "flow": "Fluxo",
+        "people": "Nº Pessoas",
+        "trend": "Tendência"
+      }
+    }
+  }
+}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { apiClient, Quote as ApiQuote } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface CommodityData {
   symbol: string;
@@ -12,15 +13,15 @@ interface CommodityData {
   quote: ApiQuote | null;
 }
 
-// FINAL FIX: Using correct ETF symbols compatible with the API
-const commodities = [
-  { symbol: 'GLD', name: 'Ouro (ETF)' },
-  { symbol: 'BNO', name: 'Petróleo Brent (ETF)' },
-];
-
 export default function CommoditiesWatch() {
+  const { t } = useTranslation();
   const [commoditiesData, setCommoditiesData] = useState<CommodityData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const commodities = useMemo(() => [
+    { symbol: 'GLD', name: t('commodities.gold') },
+    { symbol: 'BNO', name: t('commodities.brent') },
+  ], [t]);
 
   useEffect(() => {
     const loadQuotes = async () => {
@@ -39,12 +40,12 @@ export default function CommoditiesWatch() {
     };
 
     loadQuotes();
-  }, []);
+  }, [commodities]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Commodities</CardTitle>
+        <CardTitle>{t('commodities.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -55,7 +56,6 @@ export default function CommoditiesWatch() {
           <div className="space-y-4">
             {commoditiesData.map((commodity) => {
               const quoteData = commodity.quote?.['Global Quote'];
-              // Graceful handling of API failures or empty responses
               const price = quoteData ? parseFloat(quoteData['05. price']).toFixed(2) : 'N/A';
               const change = quoteData ? parseFloat(quoteData['10. change percent']) : 0;
               const isPositive = change >= 0;
@@ -70,7 +70,7 @@ export default function CommoditiesWatch() {
                     'text-right',
                     { 'text-green-500': isPositive, 'text-red-500': !isPositive }
                   )}>
-                    <p className="font-bold">{price} USD</p>
+                    <p className="font-bold">{price} {t('commodities.currency')}</p>
                     <div className="flex items-center justify-end">
                       {isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
                       <span>{change.toFixed(2)}%</span>

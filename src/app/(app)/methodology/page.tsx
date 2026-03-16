@@ -1,24 +1,38 @@
+'use client';
 
-"use client";
-
+import { useMemo } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { BookOpen, LineChart, Cpu, GraduationCap, ExternalLink, Youtube, Info, ShieldCheck, Globe, Database, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { PlaceHolderImages, ImagePlaceholder } from '@/lib/placeholder-images';
+import { getSystemDataSources, DataSource } from '@/lib/system-data-sources';
 
 export default function MethodologyPage() {
   const { t } = useTranslation();
-  const firestore = useFirestore();
-  const vizImg = PlaceHolderImages.find(img => img.id === 'data-viz');
+  
+  const vizImg = useMemo(() => {
+    const img = PlaceHolderImages.find(img => img.id === 'data-viz');
+    if (!img) return null;
+    return {
+      ...img,
+      description: t(img.descriptionKey as any),
+      imageHint: t(img.imageHintKey as any),
+    };
+  }, [t]);
 
-  const sourcesRef = useMemoFirebase(() => query(collection(firestore, 'dataSources'), where('isSystemSource', '==', true)), [firestore]);
-  const { data: officialSources } = useCollection<any>(sourcesRef);
+  const officialSources = useMemo(() => {
+    return getSystemDataSources().map(source => ({
+      ...source,
+      name: t(source.nameKey as any),
+      description: t(source.descriptionKey as any),
+      categories: source.categoryKeys.map(key => t(key as any))
+    }));
+  }, [t]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 py-8">
@@ -107,7 +121,7 @@ export default function MethodologyPage() {
               </p>
               <div className="bg-background/50 p-4 rounded-xl border flex items-center gap-4">
                 <Info className="h-8 w-8 text-primary shrink-0" />
-                <p className="text-xs italic">"O RAG permite que a IA cite fontes como o Diário da República sem inventar vereditos legais."</p>
+                <p className="text-xs italic">{t('methodology.aiQuote')}</p>
               </div>
             </CardContent>
           </Card>
@@ -118,11 +132,11 @@ export default function MethodologyPage() {
           <div className="aspect-video w-full rounded-2xl bg-muted flex items-center justify-center border-2 border-dashed relative group">
              <div className="text-center p-6">
                 <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Vídeo Recomendado</p>
-                <p className="text-sm font-medium">Como funciona o Orçamento do Estado?</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('methodology.videoLabel')}</p>
+                <p className="text-sm font-medium">{t('methodology.videoDesc')}</p>
                 <Button variant="link" className="mt-2 text-primary" asChild>
                   <Link href="https://www.youtube.com/results?search_query=como+funciona+orcamento+do+estado+portugal" target="_blank">
-                    Pesquisar no YouTube <ExternalLink className="h-3 w-3 ml-1" />
+                    {t('methodology.videoAction')} <ExternalLink className="h-3 w-3 ml-1" />
                   </Link>
                 </Button>
              </div>
@@ -143,25 +157,28 @@ export default function MethodologyPage() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {officialSources?.map((source: any) => (
-            <Card key={source.id} className="hover:shadow-lg transition-all border-primary/10">
+          {officialSources.map((source: any) => (
+            <Card key={source.id} className="flex flex-col hover:shadow-lg transition-all border-primary/10">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <Database className="h-4 w-4 text-accent" />
                   {source.name}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="min-h-[100px]">
+              <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {source.description}
                 </p>
               </CardContent>
-              <CardFooter className="bg-muted/30 py-3">
-                <Button asChild variant="link" size="sm" className="p-0 h-auto font-bold">
+              <CardFooter className="bg-muted/30 py-3 flex-col items-start gap-3">
+                <Button asChild variant="link" size="sm" className="p-0 h-auto font-bold text-xs">
                   <Link href={source.url} target="_blank">
-                    Consultar Portal Oficial <ExternalLink className="ml-1.5 h-3 w-3" />
+                    {t('methodology.sourceAction')} <ExternalLink className="ml-1.5 h-3 w-3" />
                   </Link>
                 </Button>
+                <div className="flex flex-wrap gap-1.5">
+                  {source.categories.map((cat: string) => <Badge key={cat} variant="secondary" className="text-[10px]">{cat}</Badge>)}
+                </div>
               </CardFooter>
             </Card>
           ))}
@@ -170,7 +187,7 @@ export default function MethodologyPage() {
         <div className="flex justify-center pt-4">
           <Button asChild size="lg" className="px-10 shadow-xl group">
             <Link href="/explorer">
-              Explorar Dados destas Fontes <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              {t('methodology.exploreAction')} <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
         </div>
@@ -180,12 +197,12 @@ export default function MethodologyPage() {
         <h2 className="text-2xl font-bold text-center">{t('methodology.linksTitle')}</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { name: 'Conselho Finanças Públicas', url: 'https://www.cfp.pt' },
-            { name: 'INE - Estatísticas Oficiais', url: 'https://www.ine.pt' },
-            { name: 'Pordata - Base de Dados', url: 'https://www.pordata.pt' },
-            { name: 'DRE - Legislação', url: 'https://dre.pt' },
-            { name: 'Banco de Portugal - Lab', url: 'https://www.bportugal.pt' },
-            { name: 'Portal da Transparência', url: 'https://www.transparencia.gov.pt' }
+            { name: t('methodology.links.cfp'), url: 'https://www.cfp.pt' },
+            { name: t('methodology.links.ine'), url: 'https://www.ine.pt' },
+            { name: t('methodology.links.pordata'), url: 'https://www.pordata.pt' },
+            { name: t('methodology.links.dre'), url: 'https://dre.pt' },
+            { name: t('methodology.links.bportugal'), url: 'https://www.bportugal.pt' },
+            { name: t('methodology.links.transparency'), url: 'https://www.transparencia.gov.pt' }
           ].map(link => (
             <Link key={link.name} href={link.url} target="_blank" className="p-4 bg-card border rounded-xl flex justify-between items-center hover:shadow-md transition-all group">
               <span className="font-medium text-sm group-hover:text-primary">{link.name}</span>

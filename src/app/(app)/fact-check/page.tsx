@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, doc, setDoc, query, where, limit, getDocs, orderBy, getDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { getFactCheck, getTranslation, type FactCheckOutput } from '@/lib/server-actions';
+import { getFactCheck, getTranslation, type FactCheckOutput } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';

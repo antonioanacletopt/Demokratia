@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Info, BookOpen, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface InfoPopoverProps {
   title: string;
@@ -17,6 +18,8 @@ interface InfoPopoverProps {
 }
 
 export function InfoPopover({ title, content, link, linkLabel, className }: InfoPopoverProps) {
+  const { t } = useTranslation();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -26,7 +29,7 @@ export function InfoPopover({ title, content, link, linkLabel, className }: Info
           className={cn("h-4 w-4 ml-1.5 rounded-full text-muted-foreground hover:text-primary shrink-0", className)}
         >
           <Info className="h-3.5 w-3.5" />
-          <span className="sr-only">Mais informações sobre {title}</span>
+          <span className="sr-only">{t('infoPopover.moreInfo', { title })}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-4 shadow-xl border-primary/20 z-[110]">
@@ -43,7 +46,7 @@ export function InfoPopover({ title, content, link, linkLabel, className }: Info
               target="_blank" 
               className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline pt-1"
             >
-              {linkLabel || 'Consultar Fonte Oficial'} <ExternalLink className="h-2.5 w-2.5" />
+              {linkLabel || t('infoPopover.officialSource')} <ExternalLink className="h-2.5 w-2.5" />
             </Link>
           )}
         </div>

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,52 +24,71 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [authError, setAuthError] = useState<{title: string, description: string, isDomainError?: boolean} | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(true); 
 
   useEffect(() => {
-    if (!isUserLoading && user && !isSyncing) {
+    const processRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          const loggedUser = result.user;
+          const userRef = doc(firestore, 'users', loggedUser.uid);
+          await setDoc(userRef, {
+            id: loggedUser.uid,
+            displayName: loggedUser.displayName,
+            email: loggedUser.email,
+            photoURL: loggedUser.photoURL,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+
+          toast({ title: t('common.success') });
+          router.push('/home');
+        } else {
+          setIsAuthenticating(false);
+        }
+      } catch (error: any) {
+        handleAuthError(error);
+        setIsAuthenticating(false);
+      }
+    };
+
+    processRedirectResult();
+  }, [auth, firestore, router, t, toast]);
+
+  useEffect(() => {
+    if (!isUserLoading && !isAuthenticating && user) {
       router.push('/home');
     }
-  }, [user, isUserLoading, router, isSyncing]);
+  }, [user, isUserLoading, isAuthenticating, router]);
+
+  const handleAuthError = (error: any) => {
+    let title = t('login.errorTitle');
+    let description = error.message;
+    let isDomainError = false;
+
+    if (error.code === 'auth/popup-blocked') {
+        description = "O seu browser bloqueou a janela de autenticação. Por favor, autorize os pop-ups para este site e tente novamente.";
+    } else if (error.code === 'auth/unauthorized-domain') {
+        isDomainError = true;
+        description = "O domínio atual não está autorizado para autenticação. Por favor, contacte o suporte.";
+    }
+    
+    setAuthError({ title, description, isDomainError });
+  };
 
   const handleSignIn = async () => {
     setAuthError(null);
+    setIsAuthenticating(true);
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const loggedUser = result.user;
-      
-      // Garantir que o utilizador é registado na base de dados imediatamente
-      if (loggedUser) {
-        setIsSyncing(true);
-        const userRef = doc(firestore, 'users', loggedUser.uid);
-        await setDoc(userRef, {
-          id: loggedUser.uid,
-          displayName: loggedUser.displayName,
-          email: loggedUser.email,
-          photoURL: loggedUser.photoURL,
-          updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp(), // O merge evita sobrescrever se já existir
-        }, { merge: true });
-      }
-
-      toast({ title: t('common.success') });
+      await signInWithRedirect(auth, provider);
     } catch (error: any) {
-      let title = t('login.errorTitle');
-      let description = error.message;
-      let isDomainError = false;
-
-      if (error.code === 'auth/unauthorized-domain') {
-        isDomainError = true;
-        description = "O domínio 'demokratia.pt' ainda não foi autorizado na sua consola Firebase. Por favor, adicione-o em Authentication > Settings > Authorized domains.";
-      }
-      setAuthError({ title, description, isDomainError });
-    } finally {
-      setIsSyncing(false);
+      handleAuthError(error);
+      setIsAuthenticating(false);
     }
   };
 
-  if (isUserLoading || (user && !isSyncing)) {
+  if (isUserLoading || isAuthenticating) {
     return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
   }
 
@@ -104,8 +123,8 @@ export default function LoginPage() {
             </AlertDescription>
           </Alert>
         )}
-        <Button className="w-full" onClick={handleSignIn} disabled={isSyncing}>
-          {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+        <Button className="w-full gap-2" onClick={handleSignIn} disabled={isAuthenticating}>
+          {isAuthenticating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
           {t('login.googleBtn')}
         </Button>
       </CardContent>

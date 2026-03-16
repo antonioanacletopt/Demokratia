@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { collection, doc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { systemDataSources, type DataSource } from '@/lib/system-data-sources';
+import { getSystemDataSources, type DataSource } from '@/lib/system-data-sources';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { formatDistanceToNow } from 'date-fns';
@@ -190,6 +190,8 @@ export default function AdminPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { t } = useTranslation();
+  
+  const systemDataSources = getSystemDataSources();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

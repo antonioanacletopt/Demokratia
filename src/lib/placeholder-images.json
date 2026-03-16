@@ -2,39 +2,39 @@
   "placeholderImages": [
     {
       "id": "hero-portugal",
-      "description": "Vista panorâmica de Portugal",
+      "descriptionKey": "placeholders.heroPortugal.description",
       "imageUrl": "https://images.unsplash.com/photo-1629841640919-4f4c8fc1449f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwb3J0dWdhbCUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "portugal landscape"
+      "imageHintKey": "placeholders.heroPortugal.imageHint"
     },
     {
       "id": "data-viz",
-      "description": "Visualização de dados estatísticos",
+      "descriptionKey": "placeholders.dataViz.description",
       "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkYXRhJTIwYW5hbHlzaXN8ZW58MHx8fHwxNzcyMDYyMjM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "data analysis"
+      "imageHintKey": "placeholders.dataViz.imageHint"
     },
     {
       "id": "transparency-concept",
-      "description": "Conceito de transparência digital",
+      "descriptionKey": "placeholders.transparencyConcept.description",
       "imageUrl": "https://images.unsplash.com/photo-1617228679684-890412dc57a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwc2VjdXJpdHl8ZW58MHx8fHwxNzcyMTIyNzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "digital security"
+      "imageHintKey": "placeholders.transparencyConcept.imageHint"
     },
     {
       "id": "porto-ribera",
-      "description": "Porto e o Rio Douro",
+      "descriptionKey": "placeholders.portoRibera.description",
       "imageUrl": "https://images.unsplash.com/photo-1724185078722-3b274b2a9a66?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwb3J0byUyMGNpdHl8ZW58MHx8fHwxNzcyMTA1NjE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "porto city"
+      "imageHintKey": "placeholders.portoRibera.imageHint"
     },
     {
       "id": "alentejo-landscape",
-      "description": "Paisagem do Alentejo",
+      "descriptionKey": "placeholders.alentejoLandscape.description",
       "imageUrl": "https://images.unsplash.com/photo-1725144690048-a4f7d77fe4b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhbGVudGVqbyUyMGZpZWxkc3xlbnwwfHx8fDE3NzIxMDU2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "alentejo fields"
+      "imageHintKey": "placeholders.alentejoLandscape.imageHint"
     },
     {
       "id": "algarve-coast",
-      "description": "Costa do Algarve",
+      "descriptionKey": "placeholders.algarveCoast.description",
       "imageUrl": "https://images.unsplash.com/photo-1664640214813-fcfe3a0c6653?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhbGdhcnZlJTIwY29hc3R8ZW58MHx8fHwxNzcyMTA0ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "algarve coast"
+      "imageHintKey": "placeholders.algarveCoast.imageHint"
     }
   ]
 }

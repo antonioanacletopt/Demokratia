@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, serverTimestamp, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { getScenarioAnalysis, getTranslation } from '@/lib/server-actions';
+import { getScenarioAnalysis, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 
@@ -189,13 +188,30 @@ export default function ScenariosPage() {
 
   const handleGetAnalysis = () => {
     startAnalysis(async () => {
-      const res = await getScenarioAnalysis({ 
-        parameters: { ...params, budget }, 
-        results 
-      }, language);
-      setAiAnalysis(res?.feedback ?? null);
+      setAiAnalysis(null);
       setTranslatedAnalysis(null);
       setShowOriginal(true);
+      try {
+        const res = await getScenarioAnalysis({ 
+          parameters: { ...params, budget }, 
+          results 
+        }, language);
+        if (!res?.feedback) {
+          throw new Error("AI response was empty or invalid.");
+        }
+        setAiAnalysis(res.feedback);
+      } catch (error) {
+        console.error("AI Analysis Failed:", error);
+        const isOverloaded = error instanceof Error && (error.message.includes('429') || error.message.includes('overloaded') || error.message.toLowerCase().includes('rate limit'));
+        const description = isOverloaded
+          ? 'O nosso motor de IA parece estar sobrecarregado. Por favor, tente novamente mais tarde.'
+          : 'Ocorreu um erro ao processar a análise. A nossa equipa foi notificada.';
+        toast({
+          variant: 'destructive',
+          title: 'Erro na Análise da IA',
+          description: description
+        });
+      }
     });
   };
 

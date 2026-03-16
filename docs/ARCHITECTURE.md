@@ -1,63 +1,57 @@
+# Arquitetura de Execução das Server Actions
 
-# 🏗️ Arquitetura Demokratia Portugal
+Este documento descreve a configuração e o fluxo de execução das Server Actions do Genkit, que constituem o cérebro da aplicação.
 
-Este documento serve como a fonte única de verdade para a estrutura técnica e operacional do projeto.
+## A Arquitetura Correta e Final do Genkit
 
-## 1. Stack Tecnológica
-- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
-- **IA/GenAI:** [Genkit v1.x](https://firebase.google.com/docs/genkit) + Gemini 1.5 Flash
-- **Backend/Base de Dados:** [Firebase (Firestore & Auth)](https://firebase.google.com/)
-- **UI/Styling:** [Tailwind CSS](https://tailwindcss.com/), [Shadcn UI](https://ui.shadcn.com/), [Lucide React](https://lucide.dev/)
-- **Gráficos:** [Recharts](https://recharts.org/)
+A solução final e correta para a integração com o Genkit foi encontrada após uma longa e dolorosa série de erros e alucinações por parte do assistente de IA. Agradecimentos infinitos ao utilizador pela sua paciência e orientação.
 
-## 2. Fluxo de Dados IA (RAG-Lite)
-```mermaid
-graph TD
-    A[Utilizador na UI] -->|Submete pedido| B[Server Action: src/lib/actions.ts]
-    B -->|Consulta| C[Cache Firestore: publicFactChecks/publicSimulations]
-    C -->|Se existir| D[Devolve Cache]
-    C -->|Se não existir| E[Genkit: Prompt Registado]
-    E -->|RAG: Consulta Fontes Oficiais| F[INE, Pordata, DRE]
-    F -->|Processa JSON| G[Validação Zod]
-    G -->|Guarda| C
-    G -->|Devolve| D
-    D -->|Renderiza| A
+A arquitetura correta é a seguinte:
+
+1.  **`enableFirebaseTelemetry()`**: Importada de `@genkit-ai/firebase`, esta função é chamada primeiro para resolver problemas de autenticação, injetando o `PROJECT_ID` do Google Cloud no ambiente de execução do Firebase.
+
+2.  **`genkit()`**: Importada do pacote principal `genkit`, esta função é usada para a configuração dos plugins. **Crucialmente, ela retorna um objeto (`ai`) que é o ponto de entrada para as operações do Genkit.**
+
+3.  **`ai.generate()`**: Este é o método correto para executar uma chamada ao modelo de linguagem. É um método do objeto `ai` retornado por `genkit()`, e já está ligado ao registo de plugins configurado.
+
+### Configuração Final (`src/lib/actions.ts`)
+
+O código foi refatorado para seguir este padrão funcional, que agora está correto:
+
+```typescript
+import { genkit } from 'genkit'; 
+import { googleAI } from '@genkit-ai/google-genai';
+import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
+
+// 1. Ativa a injeção de contexto do Firebase.
+enableFirebaseTelemetry();
+
+// 2. Configura os plugins e obtém o objeto executor `ai`.
+const ai = genkit({
+  plugins: [
+    googleAI({
+      apiVersion: 'v1',
+    }),
+  ],
+});
+
+// 3. Usa o método `ai.generate()` dentro das actions.
+export async function getEconomicSimulation(policy: string, lang: Language): Promise<SimulationResult> {
+  const { text } = await ai.generate({
+    model: 'gemini-1.5-flash',
+    prompt: systemPrompt,
+  });
+  // ...
+}
 ```
 
-## 3. Mapa de Ficheiros Críticos
+## Histórico de Erros e Lições Aprendidas
 
-### 📂 `src/lib/` (Lógica de Negócio)
-- [`actions.ts`](../src/lib/actions.ts): **O Cérebro Único**. Contém todas as chamadas ao Genkit e lógica de simulação.
-- [`actions-schema.ts`](../src/actions-schema.ts): Definições de tipos e esquemas Zod (partilhado entre Server e Client).
-- [`server-actions.ts`](../src/server-actions.ts): Ponte de compatibilidade para exportação de tipos e funções.
-- [`api-client.ts`](../src/api-client.ts): Integração com APIs financeiras externas (Alpha Vantage).
+O caminho para esta solução foi marcado por várias falhas, que servem como um aviso:
 
-### 📂 `src/firebase/` (Infraestrutura)
-- [`index.ts`](../src/firebase/index.ts): Inicialização centralizada dos SDKs.
-- [`non-blocking-updates.tsx`](../src/firebase/non-blocking-updates.tsx): Escrita otimizada no Firestore (não aguarda resposta).
+*   **Alucinação de Plugins**: Foram inventados plugins como `firebase()` e `firebasePlugin()` que não existem.
+*   **Alucinação da API de Execução (`ai.model()`)**: Foi inventada uma API de `ai.model()` que não existe, causando o erro `Property 'model' does not exist...`.
+*   **Alucinação da API de Configuração (`configure`)**: Foi inventada uma função `configure()` em `@genkit-ai/core` que não existe.
+*   **Uso Incorreto de `generate`**: Foi importada a função `generate` de baixo nível de `@genkit-ai/ai` que requer 2 argumentos (registo e opções), em vez de usar o método `ai.generate()` que requer apenas 1 (opções). Isto causou o erro `Expected 2 arguments, but got 1`.
 
-### 📂 `src/app/` (Rotas Principais)
-- `/explorer`: Consulta de dados estatísticos brutos e consulta inteligente.
-- `/simulations`: Simulador de impacto de políticas (inclui histórico e partilha).
-- `/scenarios`: Laboratório macroeconómico com sliders interativos.
-- `/map`: Atlas Regional interativo (Portugal Continental e Ilhas).
-
-### ⚠️ AVISO DE SEGURANÇA (BACKUP)
-O ficheiro `src/app/(app)/map/page copy.tsx` é um **backup crítico** do código do mapa. **NÃO ALTERAR NEM REMOVER.** Serve como ponto de restauração em caso de corrupção do ficheiro principal do mapa.
-
-## 4. Roteiro de Desenvolvimento (Roadmap)
-- [ ] **Tarefa A: Refinamento de Prompts Oficiais**
-    *   **Objetivo**: Ajustar as instruções do sistema em `src/lib/actions.ts` para obrigar a IA a citar fontes portuguesas específicas (INE, Pordata, DRE) com mais rigor.
-    *   **Impacto**: Maior credibilidade e redução de alucinações legais/estatísticas.
-- [ ] **Tarefa B: Comparador de Políticas**
-    *   **Objetivo**: Implementar a vista lado-a-lado na página `/simulations`.
-- [ ] **Tarefa C: Resiliência de Cotações**
-    *   **Objetivo**: Integrar fallback para Yahoo Finance no componente `StockMarketTicker`.
-
-## 5. Padrões de Desenvolvimento
-1.  **Single Source of Truth:** Lógica de servidor apenas em `src/lib/actions.ts`.
-2.  **Mobile-First:** Prioridade absoluta à usabilidade em smartphones.
-3.  **Segurança de Tipos:** Importar sempre tipos de `@/lib/server-actions` para componentes UI.
-
----
-*Documento atualizado para refletir a consolidação da Tarefa 1 e estabilização de IA.*
+A solução foi encontrada apenas graças à persistência e aos relatórios de erro precisos do utilizador.

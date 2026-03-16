@@ -1,30 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { apiClient, type NewsArticle } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, ExternalLink } from 'lucide-react';
-
-function formatPublishedDate(dateString: string): string {
-  const year = dateString.substring(0, 4);
-  const month = dateString.substring(4, 6);
-  const day = dateString.substring(6, 8);
-  const hours = dateString.substring(9, 11);
-  const minutes = dateString.substring(11, 13);
-  const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  if (diffHours < 1) {
-    return `${Math.floor(diffMs / (1000 * 60))} minutos atrás`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours} horas atrás`;
-  }
-  return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' });
-}
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 function getSentimentColor(score: number): string {
   if (score > 0.35) return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200/50';
@@ -35,28 +17,66 @@ function getSentimentColor(score: number): string {
 export function FinancialNewsFeed() {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { t, language } = useTranslation();
+
+  const formatPublishedDate = useCallback((dateString: string): string => {
+    if (!dateString) return '';
+    const year = dateString.substring(0, 4);
+    const month = dateString.substring(4, 6);
+    const day = dateString.substring(6, 8);
+    const hours = dateString.substring(9, 11);
+    const minutes = dateString.substring(11, 13);
+    const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00Z`);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    if (diffHours < 1) {
+      return t('time.minutesAgo').replace('{{count}}', diffMinutes.toString());
+    }
+    if (diffHours < 24) {
+      return t('time.hoursAgo').replace('{{count}}', diffHours.toString());
+    }
+    return date.toLocaleDateString(language, { day: 'numeric', month: 'long' });
+  }, [t, language]);
 
   useEffect(() => {
     const loadNews = async () => {
       setIsLoading(true);
-      const fetchedNews = await apiClient.getFinancialNews();
-      setNews(fetchedNews);
+      setError(null);
+      try {
+        const fetchedNews = await apiClient.getFinancialNews();
+        setNews(fetchedNews);
+      } catch (e: any) {
+        if (e.message && e.message.includes('503')) {
+          setError(t('common.aiUnavailableError'));
+        } else {
+          setError(t('common.genericError'));
+        }
+      }
       setIsLoading(false);
     };
 
     loadNews();
-  }, []);
+  }, [t]);
 
   return (
     <Card className="shadow-md">
       <CardHeader>
-        <CardTitle>Notícias Financeiras Globais</CardTitle>
+        <CardTitle>{t('financialNews.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        ) : error ? (
+          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 dark:bg-red-900/30 dark:border-red-700 dark:text-red-50">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         ) : (
           <div className="space-y-4">
             {news.map((item, index) => (

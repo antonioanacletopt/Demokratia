@@ -1,167 +1,335 @@
-'use server';
 
-/**
- * @fileOverview O Cérebro Único da Demokratia.
- * Centraliza todas as Server Actions e integração com Genkit v1.x.
- */
+'use server';
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
+import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
+import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Language } from './i18n';
-import { 
-  FactCheckOutputSchema, 
-  EconomicSimulationOutputSchema,
-  LegislationOutputSchema,
-  ScenarioAnalysisOutputSchema,
-  IRSAssessmentOutputSchema,
-  FamilyBudgetOutputSchema,
-  MarketAnalysisOutputSchema,
-  NewsFeedOutputSchema,
-  ChartOutputSchema
-} from './actions-schema';
+import pt from './i18n/pt.json';
+import en from './i18n/en.json';
 
-// Inicialização do Genkit 1.x com o plugin oficial do Google AI
+import * as schema from './actions-schema';
+
+// Tipos de tradução para acesso seguro
+type TranslationObject = typeof pt.actions;
+
+const translations = {
+  pt: pt.actions as TranslationObject,
+  en: en.actions as TranslationObject,
+};
+
+// Função para obter a tradução correta
+function getT(lang: Language) {
+  const langKey = lang in translations ? lang : 'pt';
+  const t = translations[langKey];
+
+  return function translate(key: string, replacements?: { [key: string]: string }): string {
+    const keyParts = key.split('.');
+    let value: any = t;
+    for (const part of keyParts) {
+      if (value && typeof value === 'object' && part in value) {
+        value = value[part];
+      } else {
+        return key; // Retorna a chave se não encontrar a tradução
+      }
+    }
+
+    if (typeof value === 'string' && replacements) {
+      return Object.entries(replacements).reduce((acc, [k, v]) => acc.replace(`{{${k}}}`, v), value);
+    }
+
+    return typeof value === 'string' ? value : key;
+  };
+}
+
+export type ConsultLegislationInput = z.infer<typeof schema.consultLegislationInputSchema>;
+export type ConsultLegislationOutput = z.infer<typeof schema.consultLegislationOutputSchema>;
+export type SimulationResult = z.infer<typeof schema.simulationResultSchema>;
+export type DataExplorerResult = z.infer<typeof schema.dataExplorerResultSchema>;
+export type ScenarioInput = z.infer<typeof schema.scenarioInputSchema>;
+export type ScenarioAnalysisResult = z.infer<typeof schema.scenarioAnalysisResultSchema>;
+export type IRSAssessmentInput = z.infer<typeof schema.irsAssessmentInputSchema>;
+export type IRSAssessmentOutput = z.infer<typeof schema.irsAssessmentOutputSchema>;
+export type NewsFeedItem = z.infer<typeof schema.newsFeedItemSchema>;
+export type NewsFeedOutput = z.infer<typeof schema.newsFeedOutputSchema>;
+export type PublicStatisticOutput = z.infer<typeof schema.publicStatisticSchema>;
+export type ChartOutput = z.infer<typeof schema.chartOutputSchema>;
+export type FamilyBudgetInput = z.infer<typeof schema.familyBudgetInputSchema>;
+export type FamilyBudgetAnalysis = z.infer<typeof schema.familyBudgetAnalysisSchema>;
+export type MarketAnalysisInput = z.infer<typeof schema.marketAnalysisInputSchema>;
+export type MarketAnalysisOutput = z.infer<typeof schema.marketAnalysisOutputSchema>;
+export type FactCheckInput = z.infer<typeof schema.factCheckInputSchema>;
+export type FactCheckOutput = z.infer<typeof schema.factCheckOutputSchema>;
+
+enableFirebaseTelemetry();
+
+// 1. Ativação de telemetria e injeção de contexto do Firebase.
 const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [
+    googleAI(),
+  ],
 });
 
-// Identificador do modelo estável para Genkit 1.x com o plugin googleAI
-const MODEL_ID = 'googleai/gemini-1.5-flash';
+// 2. Instanciação OBRIGATÓRIA via função auxiliar (Golden Rule de docs/AI_COLLABORATION_GUIDELINES.md)
+// Modelos 2.5 conforme TASK_LOG.md. ESTA SINTAXE É IMUTÁVEL.
+const capableModel = googleAI.model('gemini-2.5-pro');
+const fastModel = googleAI.model('gemini-2.5-flash');
 
-/**
- * Tradução de texto mantendo o tom técnico e contexto político/económico.
- */
-export async function getTranslation(text: string, lang: Language) {
-  const target = lang === 'en' ? 'English' : 'Portuguese';
-  const { text: translated } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Translate the following text to ${target}. Maintain the tone and technical terms: ${text}`,
-  });
-  return translated || text;
+function cleanAndParseJson<T>(jsonString: string, t: Function): T {
+  const cleanedString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
+  try {
+    return JSON.parse(cleanedString) as T;
+  } catch (error) {
+    console.error(t('errors.jsonParseFail', { json: cleanedString }));
+    throw new Error(t('errors.invalidJSON'));
+  }
 }
 
-/**
- * Simulação de impacto económico de propostas em Portugal 2026.
- */
-export async function getEconomicSimulation(input: { policyDescription: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Analyze the economic impact of: "${input.policyDescription}" in Portugal 2026. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: EconomicSimulationOutputSchema }
-  });
-  return output!;
+export async function getLegislationInfo(input: ConsultLegislationInput, lang: Language): Promise<ConsultLegislationOutput> {
+    const t = getT(lang);
+    const systemPrompt = `
+      ${t('prompts.expertInLaw')}
+      ${t('instructions.analysisLang', { lang })}
+      ${t('instructions.userQuestion', { question: input.question })}
+      ${t('instructions.jsonOutput')}
+      \`\`\`json
+      ${JSON.stringify(zodToJsonSchema(schema.consultLegislationOutputSchema))}
+      \`\`\`
+      ${t('instructions.jsonOnly')}
+    `;
+    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.legislation') }));
+    const result = cleanAndParseJson<ConsultLegislationOutput>(text, t);
+    const validation = schema.consultLegislationOutputSchema.safeParse(result);
+    if (!validation.success) {
+      console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+      throw new Error(t('errors.schemaMismatchFor', { context: t('context.legislation') }));
+    }
+    return validation.data;
 }
 
-/**
- * Verificação de factos com base em fontes oficiais (INE, Pordata, DGO).
- */
-export async function getFactCheck(input: { claim: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Fact-check this regarding Portugal: "${input.claim}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Use official sources like INE and Pordata. Return as JSON.`,
-    output: { schema: FactCheckOutputSchema }
-  });
-  return output!;
+export async function getFactCheck(input: FactCheckInput, lang: Language): Promise<FactCheckOutput> {
+    const t = getT(lang);
+    const systemPrompt = `
+      ${t('prompts.factChecker')}
+      ${t('instructions.analysisLang', { lang })}
+      ${t('instructions.claimToVerify', { claim: input.claim })}
+      ${t('instructions.todayIs', { date: new Date().toLocaleDateString(lang) })}
+      ${t('instructions.jsonOutput')}
+      \`\`\`json
+      ${JSON.stringify(zodToJsonSchema(schema.factCheckOutputSchema))}
+      \`\`\`
+      ${t('instructions.jsonOnly')}
+    `;
+    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.factCheck') }));
+    const result = cleanAndParseJson<FactCheckOutput>(text, t);
+    const validation = schema.factCheckOutputSchema.safeParse(result);
+    if (!validation.success) {
+      console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+      throw new Error(t('errors.schemaMismatchFor', { context: t('context.factCheck') }));
+    }
+    return validation.data;
 }
 
-/**
- * Consulta de legislação baseada no Diário da República (DRE).
- */
-export async function getLegislationInfo(input: { question: string }, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Answer this legal question about Portugal using DRE (Diário da República) sources: "${input.question}". Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: LegislationOutputSchema }
-  });
-  return output!;
+export async function getScenarioAnalysis(input: ScenarioInput, lang: Language): Promise<ScenarioAnalysisResult> {
+    const t = getT(lang);
+    const systemPrompt = `
+      ${t('prompts.analyst')}
+      ${t('instructions.analysisLang', { lang })}
+      ${t('instructions.scenarioToAnalyze', { scenario: JSON.stringify(input, null, 2) })}
+      ${t('instructions.jsonOutput')}
+      \`\`\`json
+      ${JSON.stringify(zodToJsonSchema(schema.scenarioAnalysisResultSchema))}
+      \`\`\`
+      ${t('instructions.jsonOnly')}
+    `;
+    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.scenario') }));
+    const result = cleanAndParseJson<ScenarioAnalysisResult>(text, t);
+    const validation = schema.scenarioAnalysisResultSchema.safeParse(result);
+    if (!validation.success) {
+      console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+      throw new Error(t('errors.schemaMismatchFor', { context: t('context.scenario') }));
+    }
+    return validation.data;
 }
 
-/**
- * Análise técnica de cenários macroeconómicos para o Laboratório.
- */
-export async function getScenarioAnalysis(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Analyze this macroeconomic scenario for Portugal 2026: ${JSON.stringify(input)}. Provide technical feedback on the impact on GDP and debt. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: ScenarioAnalysisOutputSchema }
-  });
-  return output!;
+export async function getNewsFeed(): Promise<NewsFeedOutput> {
+  const t = getT('pt');
+  const systemPrompt = `
+    ${t('prompts.newsAnalyst')}
+    ${t('instructions.newsFeedTask')}
+    ${t('instructions.newsFeedDate', { date: new Date().toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' }) })}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.newsFeedOutputSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.newsFeed') }));
+  const result = cleanAndParseJson<NewsFeedOutput>(text, t);
+  const validation = schema.newsFeedOutputSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.newsFeed') }));
+  }
+  return validation.data;
 }
 
-/**
- * Avaliação de parâmetros fiscais de IRS para o ano de 2026.
- */
-export async function getIRSAssessment(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `As a Portuguese tax expert, analyze these IRS parameters for 2026 based on official tax rules: ${JSON.stringify(input)}. Provide tips for optimization. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: IRSAssessmentOutputSchema }
-  });
-  return output!;
+export async function getTranslation(text: string, targetLanguage: Language): Promise<string> {
+  if (targetLanguage === 'pt') return text;
+  const t = getT(targetLanguage);
+  const systemPrompt = `
+    ${t('prompts.translator')}
+    ${t('instructions.translateTo', { lang: targetLanguage })}
+    ${t('instructions.textOnly')}
+    ${t('instructions.textToTranslate', { text })}
+  `;
+  const { text: translatedText } = await ai.generate({ model: fastModel, prompt: systemPrompt, output: { format: 'text' } });
+  if (!translatedText) throw new Error(t('errors.translationFailed'));
+  return translatedText.trim();
 }
 
-/**
- * Análise preditiva de sustentabilidade de orçamento familiar.
- */
-export async function getFamilyBudgetAnalysis(input: any, lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Analyze this family budget for Portugal 2026 considering the economic context: ${JSON.stringify(input)}. Provide sustainability suggestions. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: FamilyBudgetOutputSchema }
-  });
-  return output!;
+export async function getEconomicSimulation(policy: string, lang: Language): Promise<SimulationResult> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.analyst')}
+    ${t('instructions.analysisLang', { lang })}
+    ${t('instructions.policyToAnalyze', { policy })}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.simulationResultSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.simulation') }));
+  const result = cleanAndParseJson<SimulationResult>(text, t);
+  const validation = schema.simulationResultSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.simulation') }));
+  }
+  return validation.data;
 }
 
-/**
- * Briefing estratégico de mercado para o portal do investidor.
- */
-export async function getMarketAnalysis(lang: Language = 'pt') {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Provide a strategic market briefing for investors in Portugal for 2026. Analyze sectors like Energy, Tech, and Tourism. Language: ${lang === 'en' ? 'English' : 'Portuguese'}. Return as JSON.`,
-    output: { schema: MarketAnalysisOutputSchema }
-  });
-  return output!;
+export async function getIRSAssessment(input: IRSAssessmentInput, lang: Language): Promise<IRSAssessmentOutput> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.taxExpert')}
+    ${t('instructions.analysisLang', { lang })}
+    ${t('instructions.userInput', { input: JSON.stringify(input, null, 2) })}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.irsAssessmentOutputSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.irs') }));
+  const result = cleanAndParseJson<IRSAssessmentOutput>(text, t);
+  const validation = schema.irsAssessmentOutputSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.irs') }));
+  }
+  return validation.data;
 }
 
-/**
- * Geração de feed de notícias baseado na atualidade simulada de 2026.
- */
-export async function getNewsFeed() {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Generate 5 relevant and realistic news feed items for Portugal in 2026. Focus on Economy, Law, and Social issues. Return as JSON.`,
-    output: { schema: NewsFeedOutputSchema }
-  });
-  return output!;
+export async function getPublicStatistic(input: { request: string }, lang: Language): Promise<PublicStatisticOutput> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.dataRetriever')}
+    ${t('instructions.userRequest', { request: input.request })}
+    ${t('instructions.findData')}
+    ${t('instructions.dataNotFound')}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.publicStatisticSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.publicStats') }));
+  const result = cleanAndParseJson<PublicStatisticOutput>(text, t);
+  const validation = schema.publicStatisticSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.publicStats') }));
+  }
+  return validation.data;
 }
 
-/**
- * Processamento de linguagem natural para extração de dados estruturados (gráficos).
- */
-export async function getChartFromRequest(input: { request: string }) {
-  const { output } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Extract statistical data for: "${input.request}" in Portugal. Return labels and numerical values suitable for a chart. Return as JSON.`,
-    output: { schema: ChartOutputSchema }
-  });
-  return output!;
+export async function getChartFromRequest(input: { request: string }, lang: Language): Promise<ChartOutput> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.dataVisualizer')}
+    ${t('instructions.userRequest', { request: input.request })}
+    ${t('instructions.chartable')}
+    ${t('instructions.notChartable')}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.chartOutputSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.chartRequest') }));
+  const result = cleanAndParseJson<ChartOutput>(text, t);
+  const validation = schema.chartOutputSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.chartRequest') }));
+  }
+  return validation.data;
 }
 
-/**
- * Busca inteligente de estatísticas públicas brutas.
- */
-export async function getPublicStatistic(input: { request: string }) {
-  const { text } = await ai.generate({
-    model: MODEL_ID,
-    prompt: `Find raw statistical data for: "${input.request}" regarding Portugal. Return JSON with 'data' stringified and 'explanation'.`,
-    config: { responseMimeType: 'application/json' },
-  });
-  const parsed = JSON.parse(text);
-  return {
-    isFound: !!parsed.data,
-    data: typeof parsed.data === 'string' ? parsed.data : JSON.stringify(parsed.data),
-    explanation: parsed.explanation || '',
-    source: parsed.source || 'Fontes Oficiais',
-  };
+export async function getFamilyBudgetAnalysis(input: FamilyBudgetInput, lang: Language): Promise<FamilyBudgetAnalysis> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.financialAdvisor')}
+    ${t('instructions.analysisLang', { lang })}
+    ${t('instructions.userInput', { input: JSON.stringify(input, null, 2) })}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.familyBudgetAnalysisSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.budget') }));
+  const result = cleanAndParseJson<FamilyBudgetAnalysis>(text, t);
+  const validation = schema.familyBudgetAnalysisSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.budget') }));
+  }
+  return validation.data;
+}
+
+export async function getMarketAnalysis(input: MarketAnalysisInput, lang: Language): Promise<MarketAnalysisOutput> {
+  const t = getT(lang);
+  const systemPrompt = `
+    ${t('prompts.investmentAnalyst')}
+    ${t('instructions.analysisLang', { lang })}
+    ${t('instructions.userInput', { input: JSON.stringify(input, null, 2) })}
+    ${t('instructions.jsonOutput')}
+    \`\`\`json
+    ${JSON.stringify(zodToJsonSchema(schema.marketAnalysisOutputSchema))}
+    \`\`\`
+    ${t('instructions.jsonOnly')}
+  `;
+  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.market') }));
+  const result = cleanAndParseJson<MarketAnalysisOutput>(text, t);
+  const validation = schema.marketAnalysisOutputSchema.safeParse(result);
+  if (!validation.success) {
+    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+    throw new Error(t('errors.schemaMismatchFor', { context: t('context.market') }));
+  }
+  return validation.data;
 }

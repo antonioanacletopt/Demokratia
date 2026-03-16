@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -20,25 +20,27 @@ import {
   Calculator, Wallet, Zap 
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
-import { getNewsFeed, getTranslation, type NewsFeedOutput } from '@/lib/server-actions';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+import { getNewsFeed, getTranslation, type NewsFeedOutput, type NewsFeedItem } from '@/lib/actions';
 import { useTranslation, Language } from '@/lib/i18n';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, serverTimestamp, doc, getDoc, setDoc, orderBy, limit, where, getDocs } from 'firebase/firestore';
-import { AIResultButton } from '@/components/AIResultButton';
+import AIResultButton from '@/components/AIResultButton';
 import { cn } from '@/lib/utils';
 
 const MAX_CACHE_LENGTH = 1000;
 
 const typeConfig = {
-  Alegação: {
+  claim: {
     icon: Check,
     color: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800',
   },
-  'Nova Lei': {
+  new_law: {
     icon: Scale,
     color: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800',
   },
-  Análise: {
+  analysis: {
     icon: TrendingUp,
     color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-amber-800',
   },
@@ -46,7 +48,7 @@ const typeConfig = {
 
 const CACHE_EXPIRATION_HOURS = 6;
 
-function FeedItemCard({ item }: { item: NewsFeedOutput['feedItems'][0] }) {
+function FeedItemCard({ item }: { item: NewsFeedItem }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const config = typeConfig[item.type as keyof typeof typeConfig];
@@ -118,19 +120,19 @@ function FeedItemCard({ item }: { item: NewsFeedOutput['feedItems'][0] }) {
                     className="h-8 text-[10px] uppercase font-bold tracking-wider border-accent/30 text-accent hover:bg-accent/10 hover:text-accent shrink-0"
                   >
                       {isTranslating ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <Languages className="mr-1.5 h-3 w-3" />}
-                      {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.translate') : t('common.showOriginal')) : t('common.translate'))}
+                      {isTranslating ? t('common.translating') : (translated ? (showOriginal ? t('common.showOriginal') : t('common.translate')) : t('common.translate'))}
                   </Button>
                 )}
             </div>
             <CardDescription className="text-xs">{t('home.source')}: {item.source} &middot; {item.date}</CardDescription>
           </div>
-          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3.5 w-3.5" />{t(`home.newsTypes.${item.type as any}`)}</Badge>
+          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3.5 w-3.5" />{t(`home.newsTypes.${item.type}` as any)}</Badge>
         </div>
       </CardHeader>
       <CardContent className="pt-4"><p className="text-muted-foreground leading-relaxed">{currentDesc}</p></CardContent>
       {item.actionLink && (
         <CardFooter className="bg-muted/5 border-t py-3">
-          <AIResultButton href={item.actionLink.href} label={item.actionLink.label} />
+          <AIResultButton href={item.actionLink.href} label={t('home.simImpact')} />
         </CardFooter>
       )}
     </Card>
@@ -140,9 +142,29 @@ function FeedItemCard({ item }: { item: NewsFeedOutput['feedItems'][0] }) {
 export default function HomePage() {
   const { t } = useTranslation();
   const firestore = useFirestore();
-  const [feedItems, setFeedItems] = useState<NewsFeedOutput['feedItems']>([]);
+  const [feedItems, setFeedItems] = useState<NewsFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const heroImg = useMemo(() => {
+    const img = PlaceHolderImages.find(img => img.id === 'hero-portugal');
+    if (!img) return null;
+    return {
+      ...img,
+      description: t(img.descriptionKey as any),
+      imageHint: t(img.imageHintKey as any),
+    };
+  }, [t]);
+
+  const regionalImg = useMemo(() => {
+    const img = PlaceHolderImages.find(img => img.id === 'porto-ribera');
+    if (!img) return null;
+    return {
+      ...img,
+      description: t(img.descriptionKey as any),
+      imageHint: t(img.imageHintKey as any),
+    };
+  }, [t]);
 
   const proposalsRef = useMemoFirebase(() => query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), limit(3)), [firestore]);
   const { data: popularProposals } = useCollection<any>(proposalsRef);
@@ -167,48 +189,50 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-2xl">
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src="https://picsum.photos/seed/portugal/1200/600" 
-            alt="Portugal Hero" 
-            fill 
-            className="object-cover opacity-30 mix-blend-overlay" 
-            priority
-            data-ai-hint="portugal landscape"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
-        </div>
-        
-        <div className="relative z-10 max-w-3xl space-y-6 px-6 py-12 sm:px-12 sm:py-16">
-          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1 text-sm font-semibold uppercase tracking-wider">
-            <Sparkles className="mr-2 h-4 w-4 fill-white animate-pulse" /> {t('home.welcomeSubtitle')}
-          </Badge>
-          <h1 className="text-4xl font-bold font-headline leading-tight sm:text-5xl lg:text-6xl tracking-tight">
-            {t('home.welcomeTitle')}
-          </h1>
-          <p className="text-lg opacity-90 leading-relaxed max-w-2xl font-medium">
-            {t('home.welcomeIntro')}
-          </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg">
-              <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> {t('nav.explorer')}</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
-              <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> {t('nav.map')}</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        {heroImg && (
+            <section className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground shadow-2xl">
+                <div className="absolute inset-0 z-0">
+                <Image 
+                    src={heroImg.imageUrl} 
+                    alt={heroImg.description} 
+                    fill 
+                    className="object-cover opacity-30 mix-blend-overlay" 
+                    priority
+                    data-ai-hint={heroImg.imageHint}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
+                </div>
+                
+                <div className="relative z-10 max-w-3xl space-y-6 px-6 py-12 sm:px-12 sm:py-16">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1 text-sm font-semibold uppercase tracking-wider">
+                    <Sparkles className="mr-2 h-4 w-4 fill-white animate-pulse" /> {t('home.welcomeSubtitle')}
+                </Badge>
+                <h1 className="text-4xl font-bold font-headline leading-tight sm:text-5xl lg:text-6xl tracking-tight">
+                    {t('home.welcomeTitle')}
+                </h1>
+                <p className="text-lg opacity-90 leading-relaxed max-w-2xl font-medium">
+                    {t('home.welcomeIntro')}
+                </p>
+                <div className="flex flex-wrap gap-4 pt-4">
+                    <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg">
+                    <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> {t('nav.explorer')}</Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
+                    <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> {t('nav.map')}</Link>
+                    </Button>
+                </div>
+                </div>
+            </section>
+        )}
 
       <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {[
-          { href: '/irs', icon: Calculator, label: t('nav.irs'), desc: 'Contas com o estado.', color: 'primary' },
-          { href: '/budget', icon: Wallet, label: t('nav.budget'), desc: 'Seu bolso.', color: 'primary' },
-          { href: '/map', icon: MapIcon, label: t('nav.map'), desc: 'Atlas regional.', color: 'accent' },
-          { href: '/scenarios', icon: Zap, label: t('nav.scenarios'), desc: 'Teste políticas.', color: 'accent' },
-          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: 'Verdade factual.', color: 'green-600' },
-          { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: 'Descomplique a lei.', color: 'blue-600' }
+          { href: '/irs', icon: Calculator, label: t('nav.irs'), desc: t('home.tooltips.irs'), color: 'primary' },
+          { href: '/budget', icon: Wallet, label: t('nav.budget'), desc: t('home.tooltips.budget'), color: 'primary' },
+          { href: '/map', icon: MapIcon, label: t('nav.map'), desc: t('home.tooltips.map'), color: 'accent' },
+          { href: '/scenarios', icon: Zap, label: t('nav.scenarios'), desc: t('home.tooltips.scenarios'), color: 'accent' },
+          { href: '/fact-check', icon: ShieldCheck, label: t('nav.factCheck'), desc: t('home.tooltips.factCheck'), color: 'green-600' },
+          { href: '/legislation', icon: Scale, label: t('nav.legislation'), desc: t('home.tooltips.legislation'), color: 'blue-600' }
         ].map((tool) => (
           <Card key={tool.href} className="bg-muted/20 border-none hover:bg-muted/30 transition-all group shadow-sm hover:shadow-md">
             <Link href={tool.href}>
@@ -232,10 +256,10 @@ export default function HomePage() {
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Check className="text-green-500 h-5 w-5" /> 100% Fontes Oficiais
+              <Check className="text-green-500 h-5 w-5" /> {t('home.methodologySources')}
             </div>
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Check className="text-green-500 h-5 w-5" /> Neutralidade Partidária
+              <Check className="text-green-500 h-5 w-5" /> {t('home.methodologyNeutrality')}
             </div>
             <Button asChild variant="link" className="text-accent p-0 h-auto font-bold">
               <Link href="/methodology">{t('common.learnMore')} <ArrowRight className="ml-1 h-4 w-4" /></Link>
@@ -269,10 +293,10 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
                 <Users className="h-6 w-6 text-accent" /> {t('proposals.communityTitle')}
               </h2>
-              <p className="text-muted-foreground text-sm">As ideias mais apoiadas pelos cidadãos portugueses.</p>
+              <p className="text-muted-foreground text-sm">{t('home.proposals.subtitle')}</p>
             </div>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/proposals">Ver Todas <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/proposals">{t('home.proposals.seeAll')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -287,7 +311,7 @@ export default function HomePage() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <p className="text-xs text-muted-foreground line-clamp-3 italic">"{p.description}"</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3 italic">\"{p.description}\"</p>
                 </CardContent>
                 <CardFooter className="p-3 bg-muted/30 flex justify-center">
                   <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-accent">
@@ -300,15 +324,17 @@ export default function HomePage() {
         </section>
       )}
 
-      <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
-        <Image src="https://picsum.photos/seed/porto/1200/600" alt="Porto Riberia" fill className="object-cover" data-ai-hint="porto city" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
-          <div className="max-w-xl space-y-2">
-            <h3 className="text-2xl font-bold text-white">{t('home.regionalTitle')}</h3>
-            <p className="text-white/80 text-sm">{t('home.regionalDesc')}</p>
-          </div>
-        </div>
-      </div>
+        {regionalImg && (
+            <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
+                <Image src={regionalImg.imageUrl} alt={regionalImg.description} fill className="object-cover" data-ai-hint={regionalImg.imageHint} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
+                <div className="max-w-xl space-y-2">
+                    <h3 className="text-2xl font-bold text-white">{t('home.regionalTitle')}</h3>
+                    <p className="text-white/80 text-sm">{t('home.regionalDesc')}</p>
+                </div>
+                </div>
+            </div>
+        )}
 
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b pb-4">

@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, MessageSquareWarning, ShieldAlert } from 'lucide-react';
 
 const refutationSchema = (t: any) => z.object({
-  refutationText: z.string().min(20, t('proposals.descMinError')),
+  refutationText: z.string().min(20, t('refutation.textMinError')),
   evidenceLinks: z.string().optional(),
 });
 
@@ -48,7 +48,7 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
     const refutationsCollection = collection(firestore, 'refutations');
     const data = {
       userId: user.uid,
-      userName: user.displayName || 'Anon',
+      userName: user.displayName || t('refutation.anonymous'),
       aiContentIdentifier: contentId,
       refutationText: values.refutationText,
       evidenceLinks: values.evidenceLinks,
@@ -86,7 +86,7 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
 
         {!user ? (
           <div className="py-6 text-center">
-            <p className="text-muted-foreground">{t('nav.login')}</p>
+            <p className="text-muted-foreground">{t('refutation.loginPrompt')}</p>
           </div>
         ) : (
           <Form {...form}>

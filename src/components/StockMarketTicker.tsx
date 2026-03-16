@@ -5,6 +5,7 @@ import { apiClient, Quote as ApiQuote } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface TickerData {
   symbol: string;
@@ -12,17 +13,17 @@ interface TickerData {
   quote: ApiQuote | null;
 }
 
-// FINAL FIX: Using a list of reliable, major Portuguese stocks
-const portugueseAssets = [
-  { symbol: 'EDP.LS', name: 'EDP Renováveis' },
-  { symbol: 'GALP.LS', name: 'Galp Energia' },
-  { symbol: 'JMT.LS', name: 'Jerónimo Martins' },
-  { symbol: 'BCP.LS', name: 'BCP' },
-];
-
 export default function StockMarketTicker() {
+  const { t } = useTranslation();
   const [tickerData, setTickerData] = useState<TickerData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const portugueseAssets = [
+    { symbol: 'EDP.LS', name: t('stockTicker.assets.edp') },
+    { symbol: 'GALP.LS', name: t('stockTicker.assets.galp') },
+    { symbol: 'JMT.LS', name: t('stockTicker.assets.jmt') },
+    { symbol: 'BCP.LS', name: t('stockTicker.assets.bcp') },
+  ];
 
   useEffect(() => {
     const loadQuotes = async () => {
@@ -41,12 +42,13 @@ export default function StockMarketTicker() {
     };
 
     loadQuotes();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mercado Nacional</CardTitle>
+        <CardTitle>{t('stockTicker.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -57,8 +59,7 @@ export default function StockMarketTicker() {
           <div className="space-y-4">
             {tickerData.map((ticker) => {
               const quoteData = ticker.quote?.['Global Quote'];
-              // Graceful handling of API failures or empty responses
-              const price = quoteData ? parseFloat(quoteData['05. price']).toFixed(2) : 'N/A';
+              const price = quoteData ? parseFloat(quoteData['05. price']).toFixed(2) : t('common.na');
               const change = quoteData ? parseFloat(quoteData['10. change percent']) : 0;
               const isPositive = change >= 0;
 
@@ -72,7 +73,7 @@ export default function StockMarketTicker() {
                     'text-right',
                     { 'text-green-500': isPositive, 'text-red-500': !isPositive }
                   )}>
-                    <p className="font-bold">{price} EUR</p>
+                    <p className="font-bold">{price} {t('stockTicker.currency')}</p>
                     <div className="flex items-center justify-end">
                       {isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
                       <span>{change.toFixed(2)}%</span>
