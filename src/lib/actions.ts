@@ -68,21 +68,21 @@ enableFirebaseTelemetry();
 // 1. Ativação de telemetria e injeção de contexto do Firebase.
 const ai = genkit({
   plugins: [
-    googleAI(),
+    googleAI({ apiKey: process.env.GEMINI_API_KEY }),
   ],
 });
 
 // Tier definitions based on capability and speed
 const MODELS = {
   capable: [
-    googleAI.model('gemini-2.0-flash'), // Newer and highly capable
-    googleAI.model('gemini-1.5-pro'),   // Pro fallback
-    googleAI.model('gemini-1.5-flash'), // Fast fallback
+    googleAI.model('gemini-2.5-pro'),         // Most capable (March 2026)
+    googleAI.model('gemini-2.0-flash-001'),    // Stable versioned flash
+    googleAI.model('gemini-1.5-pro-002'),      // Legacy pro fallback
   ],
   fast: [
-    googleAI.model('gemini-2.0-flash'), // Default for fast
-    googleAI.model('gemini-1.5-flash'), // 1.5 fallback
-    googleAI.model('gemini-1.0-pro'),   // Ultra-stable legacy fallback
+    googleAI.model('gemini-2.5-flash'),        // Fast + smart (March 2026)
+    googleAI.model('gemini-2.0-flash-001'),    // Stable versioned flash
+    googleAI.model('gemini-1.5-flash-002'),    // Legacy flash fallback
   ]
 };
 
@@ -131,7 +131,8 @@ async function safeGenerate(tier: 'capable' | 'fast', prompt: string, t: Functio
     }
   }
 
-  console.error(`AI Generation failed after exhausting tier ${tier}:`, lastError);
+  const errMsg = lastError?.message || String(lastError);
+  console.error(`AI Generation failed after exhausting tier ${tier}. Last error: ${errMsg}`, lastError);
   throw new Error(t('common.aiUnavailableError'));
 }
 
@@ -226,7 +227,20 @@ export async function getNewsFeed(): Promise<NewsFeedOutput> {
     console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
     throw new Error(t('errors.schemaMismatchFor', { context: t('context.newsFeed') }));
   }
-  return validation.data;
+  // Sanitize actionLink hrefs: only allow known internal routes to prevent 404s
+  const ALLOWED_HREF_PREFIXES = ['/simulations?', '/fact-check?'];
+  const sanitizedData = {
+    ...validation.data,
+    feedItems: validation.data.feedItems.map(item => {
+      if (item.actionLink && !ALLOWED_HREF_PREFIXES.some(prefix => item.actionLink!.href.startsWith(prefix))) {
+        console.warn(`[getNewsFeed] Stripped invalid actionLink href: ${item.actionLink.href}`);
+        const { actionLink: _, ...rest } = item;
+        return rest;
+      }
+      return item;
+    }),
+  };
+  return sanitizedData;
 }
 
 export async function getTranslation(text: string, targetLanguage: Language): Promise<string> {

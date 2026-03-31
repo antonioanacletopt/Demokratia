@@ -121,7 +121,7 @@ export const newsFeedItemSchema = z.object({
   date: z.string().describe('A data da publicação no formato "DD de MMMM de YYYY".'),
   type: z.enum(['claim', 'new_law', 'analysis']).describe('O tipo de item do feed.'),
   actionLink: z.object({
-    href: z.string().describe('O URL para a ação (ex: "/simulations?policy=...").'),
+    href: z.string().describe('O URL INTERNO para a ação. APENAS são válidos os seguintes formatos: "/simulations?policy=<texto_da_politica_url_encoded>" ou "/fact-check?claim=<texto_da_alegacao_url_encoded>". NÃO usar outras rotas como /resources, /explorer, /budget, etc.'),
     label: z.string().describe('O texto para o botão de ação (ex: "Simular Impacto").'),
   }).optional(),
 });
