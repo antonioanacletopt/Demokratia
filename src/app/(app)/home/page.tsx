@@ -64,8 +64,6 @@ const typeConfig = {
   },
 };
 
-const CACHE_EXPIRATION_HOURS = 6;
-
 function FeedItemCard({ item }: { item: NewsFeedItem }) {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
@@ -195,20 +193,12 @@ export default function HomePage() {
   useEffect(() => {
     async function loadFeed() {
       try {
-        const cacheRef = doc(firestore, 'news_feed_cache', 'latest-v15');
-        const cacheSnap = await getDoc(cacheRef);
-        if (cacheSnap.exists() && (new Date().getTime() - (cacheSnap.data().lastUpdated?.toDate().getTime() || 0)) / 3600000 < CACHE_EXPIRATION_HOURS) {
-          setFeedItems(cacheSnap.data().feedItems);
-          setLoading(false);
-          return;
-        }
         const newsFeed = await getNewsFeed();
         setFeedItems(newsFeed.feedItems);
-        setDoc(cacheRef, { feedItems: newsFeed.feedItems, lastUpdated: serverTimestamp() }).catch(() => {});
-      } catch (err) { setError(true); } finally { setLoading(false); }
+      } catch (err) { console.error('[HomePage] Failed to load feed:', err); setError(true); } finally { setLoading(false); }
     }
     loadFeed();
-  }, [firestore]);
+  }, []);
 
   return (
     <div className="space-y-12">

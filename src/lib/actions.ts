@@ -4,6 +4,7 @@
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
+import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Language } from './i18n';
@@ -207,9 +208,12 @@ export async function getScenarioAnalysis(input: ScenarioInput, lang: Language):
     return validation.data;
 }
 
-export async function getNewsFeed(): Promise<NewsFeedOutput> {
-  const t = getT('pt');
-  const systemPrompt = `
+// Cache de servidor: gerado 1x e reutilizado por todos os utilizadores durante 6 horas.
+// Evita chamadas repetidas à IA a cada visita.
+const getCachedNewsFeed = unstable_cache(
+  async (): Promise<NewsFeedOutput> => {
+    const t = getT('pt');
+    const systemPrompt = `
     ${t('prompts.newsAnalyst')}
     ${t('instructions.newsFeedTask')}
     ${t('instructions.newsFeedDate', { date: new Date().toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' }) })}
@@ -219,28 +223,35 @@ export async function getNewsFeed(): Promise<NewsFeedOutput> {
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await safeGenerate('fast', systemPrompt, t);
-  if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.newsFeed') }));
-  const result = cleanAndParseJson<NewsFeedOutput>(text, t);
-  const validation = schema.newsFeedOutputSchema.safeParse(result);
-  if (!validation.success) {
-    console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
-    throw new Error(t('errors.schemaMismatchFor', { context: t('context.newsFeed') }));
-  }
-  // Sanitize actionLink hrefs: only allow known internal routes to prevent 404s
-  const ALLOWED_HREF_PREFIXES = ['/simulations?', '/fact-check?'];
-  const sanitizedData = {
-    ...validation.data,
-    feedItems: validation.data.feedItems.map(item => {
-      if (item.actionLink && !ALLOWED_HREF_PREFIXES.some(prefix => item.actionLink!.href.startsWith(prefix))) {
-        console.warn(`[getNewsFeed] Stripped invalid actionLink href: ${item.actionLink.href}`);
-        const { actionLink: _, ...rest } = item;
-        return rest;
-      }
-      return item;
-    }),
-  };
-  return sanitizedData;
+    const { text } = await safeGenerate('fast', systemPrompt, t);
+    if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.newsFeed') }));
+    const result = cleanAndParseJson<NewsFeedOutput>(text, t);
+    const validation = schema.newsFeedOutputSchema.safeParse(result);
+    if (!validation.success) {
+      console.error(t('errors.zodValidationFailed', { error: validation.error.toString() }));
+      throw new Error(t('errors.schemaMismatchFor', { context: t('context.newsFeed') }));
+    }
+    // Sanitize actionLink hrefs: only allow known internal routes to prevent 404s
+    const ALLOWED_HREF_PREFIXES = ['/simulations?', '/fact-check?'];
+    const sanitizedData = {
+      ...validation.data,
+      feedItems: validation.data.feedItems.map(item => {
+        if (item.actionLink && !ALLOWED_HREF_PREFIXES.some(prefix => item.actionLink!.href.startsWith(prefix))) {
+          console.warn(`[getNewsFeed] Stripped invalid actionLink href: ${item.actionLink.href}`);
+          const { actionLink: _, ...rest } = item;
+          return rest;
+        }
+        return item;
+      }),
+    };
+    return sanitizedData;
+  },
+  ['news-feed'],
+  { revalidate: 6 * 60 * 60 } // 6 horas — partilhado entre todos os utilizadores
+);
+
+export async function getNewsFeed(): Promise<NewsFeedOutput> {
+  return getCachedNewsFeed();
 }
 
 export async function getTranslation(text: string, targetLanguage: Language): Promise<string> {
