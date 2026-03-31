@@ -367,7 +367,8 @@
     "my_simulations_title": "My Simulations",
     "admin_view_title": "User Simulations",
     "no_simulations_title": "No simulations found",
-    "no_simulations_desc": "You haven't run any simulations yet. Use the form above to get started."
+    "no_simulations_desc": "You haven't run any simulations yet. Use the form above to get started.",
+    "loginRequired": "You need to sign in to run a simulation."
   },
   "factCheck": {
     "title": "AI-Powered Fact-Check",

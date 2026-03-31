@@ -368,7 +368,8 @@
     "my_simulations_title": "As Minhas Simulações",
     "admin_view_title": "Simulações de Utilizadores",
     "no_simulations_title": "Nenhuma simulação encontrada",
-    "no_simulations_desc": "Ainda não realizou nenhuma simulação. Use o formulário acima para começar."
+    "no_simulations_desc": "Ainda não realizou nenhuma simulação. Use o formulário acima para começar.",
+    "loginRequired": "Precisa de iniciar sessão para executar uma simulação."
   },
   "factCheck": {
     "title": "Fact-Check com IA",

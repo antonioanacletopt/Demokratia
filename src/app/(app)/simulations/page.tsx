@@ -165,7 +165,7 @@ function SimulationList({ simulations, isLoading, isAdmin, t }: any) {
 
 export default function SimulationsPage() {
   const { t, language } = useTranslation();
-  const { user, isAdmin } = useUser();
+  const { user, isAdmin, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
 
@@ -192,7 +192,7 @@ export default function SimulationsPage() {
   const handleSimulation = useCallback((overridePolicy?: string) => {
     const policyToUse = overridePolicy ?? policy;
     if (!user || !firestore) {
-        toast({ variant: 'destructive', title: t('common.error'), description: t('refutation.loginPrompt') });
+        toast({ variant: 'destructive', title: t('common.error'), description: t('simulations.loginRequired') });
         return;
     }
     if (!policyToUse.trim()) return;
@@ -228,17 +228,28 @@ export default function SimulationsPage() {
     });
   }, [policy, user, firestore, language, t, toast]);
 
-  // Auto-preenche e dispara simulação se vier ?policy= na URL
+  // Passo 1: pré-preenche o textarea a partir do URL imediatamente (sem esperar auth)
   useEffect(() => {
     const urlPolicy = searchParams.get('policy');
     if (urlPolicy && !autoTriggered) {
-      const decoded = decodeURIComponent(urlPolicy);
+      // Descodifica slug para texto legível (ex: "Orcamento_Estado_2026" → "Orcamento Estado 2026")
+      const decoded = decodeURIComponent(urlPolicy).replace(/[_-]/g, ' ');
       setPolicy(decoded);
-      setAutoTriggered(true);
-      // Aguarda um tick para o estado ser aplicado antes de disparar
-      setTimeout(() => handleSimulation(decoded), 0);
     }
-  }, [searchParams, autoTriggered, handleSimulation]);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Passo 2: dispara a simulação só depois do auth resolver E se o utilizador estiver logado
+  useEffect(() => {
+    if (isUserLoading || autoTriggered) return;
+    const urlPolicy = searchParams.get('policy');
+    if (!urlPolicy) return;
+    setAutoTriggered(true);
+    if (user) {
+      const decoded = decodeURIComponent(urlPolicy).replace(/[_-]/g, ' ');
+      handleSimulation(decoded);
+    }
+    // Se não estiver logado, não faz nada — textarea está preenchido e o botão fica visível
+  }, [isUserLoading, user, autoTriggered, searchParams, handleSimulation]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-12">
