@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, query, orderBy, where, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -168,10 +169,12 @@ export default function SimulationsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
+  const searchParams = useSearchParams();
   const [policy, setPolicy] = useState('');
   const [isSimulating, startSimulation] = useTransition();
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
   // LÓGICA PARA BUSCAR SIMULAÇÕES EXISTENTES
   const simulationsQuery = useMemoFirebase(() => {
@@ -186,17 +189,19 @@ export default function SimulationsPage() {
 
   const { data: simulations, isLoading } = useCollection(simulationsQuery);
 
-  const handleSimulation = () => {
+  const handleSimulation = useCallback((overridePolicy?: string) => {
+    const policyToUse = overridePolicy ?? policy;
     if (!user || !firestore) {
         toast({ variant: 'destructive', title: t('common.error'), description: t('refutation.loginPrompt') });
         return;
     }
+    if (!policyToUse.trim()) return;
 
     setError(null);
     setSimulationResult(null);
     startSimulation(async () => {
       try {
-        const result = await getEconomicSimulation(policy, language as Language);
+        const result = await getEconomicSimulation(policyToUse, language as Language);
         setSimulationResult(result);
 
         // Guarda a simulação no Firestore
@@ -204,7 +209,7 @@ export default function SimulationsPage() {
         await addDoc(simulationsCollection, {
             userId: user.uid,
             userName: user.displayName,
-            policy: policy,
+            policy: policyToUse,
             resultSummary: result.summary, // Guardar um resumo
             confidenceScore: result.confidenceScore,
             createdAt: serverTimestamp()
@@ -221,7 +226,19 @@ export default function SimulationsPage() {
         }
       }
     });
-  };
+  }, [policy, user, firestore, language, t, toast]);
+
+  // Auto-preenche e dispara simulação se vier ?policy= na URL
+  useEffect(() => {
+    const urlPolicy = searchParams.get('policy');
+    if (urlPolicy && !autoTriggered) {
+      const decoded = decodeURIComponent(urlPolicy);
+      setPolicy(decoded);
+      setAutoTriggered(true);
+      // Aguarda um tick para o estado ser aplicado antes de disparar
+      setTimeout(() => handleSimulation(decoded), 0);
+    }
+  }, [searchParams, autoTriggered, handleSimulation]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-12">
