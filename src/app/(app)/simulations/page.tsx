@@ -153,7 +153,7 @@ function SimulationList({ simulations, isLoading, isAdmin, t }: any) {
                 </>
               )}
               <Clock className="h-3 w-3" />
-              <span>{new Date(sim.createdAt.seconds * 1000).toLocaleDateString()}</span>
+              <span>{sim.createdAt?.seconds ? new Date(sim.createdAt.seconds * 1000).toLocaleDateString() : '—'}</span>
             </div>
             {/* Adicionar um botão para ver detalhes se necessário */}
           </CardFooter>
