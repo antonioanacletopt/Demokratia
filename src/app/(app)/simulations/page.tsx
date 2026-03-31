@@ -265,7 +265,7 @@ export default function SimulationsPage() {
             </div>
           </CardContent>
           <CardFooter className="border-t p-4">
-            <Button onClick={handleSimulation} disabled={isSimulating || !policy.trim()} className="w-full md:w-auto ml-auto gap-2">
+            <Button onClick={() => handleSimulation()} disabled={isSimulating || !policy.trim()} className="w-full md:w-auto ml-auto gap-2">
               {isSimulating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 fill-current" />}
               {t('simulations.button_simulate')}
             </Button>
