@@ -1,5 +1,6 @@
 
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Demokratia Portugal',
     images: [
       {
-        url: 'https://picsum.photos/seed/demokratia-og/1200/630',
+        url: 'https://demokratia.pt/marketing_post_final.png',
         width: 1200,
         height: 630,
         alt: 'Demokratia Portugal - Transparência de Dados',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: title,
     description: description,
-    images: ['https://picsum.photos/seed/demokratia-og/1200/630'],
+    images: ['https://demokratia.pt/marketing_post_final.png'],
   },
   robots: {
     index: true,
@@ -51,28 +52,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="pt-PT" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        {/* AdSense script injection bypassing Next.js attribute handler */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var script = document.createElement('script');
-                script.async = true;
-                script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9018474620860214";
-                script.crossOrigin = "anonymous";
-                document.head.appendChild(script);
-              })();
-            `,
-          }}
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9018474620860214"
+          crossOrigin="anonymous"
         />
       </head>
       <body className="font-body antialiased">

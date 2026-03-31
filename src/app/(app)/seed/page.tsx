@@ -7,6 +7,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { getSystemDataSources } from '@/lib/system-data-sources';
+import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import { Loader2, ShieldCheck, Database, Server, Sparkles } from 'lucide-react';
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
 export default function SeedPage() {
+  const { t } = useTranslation();
   const [isSeedingPublic, setIsSeedingPublic] = useState(false);
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
@@ -25,7 +27,7 @@ export default function SeedPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
-  const systemDataSources = getSystemDataSources();
+  const systemDataSources = getSystemDataSources(t);
 
   useEffect(() => {
     if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
@@ -62,9 +64,10 @@ export default function SeedPage() {
     setIsSeedingPublic(true);
     toast({ title: 'A carregar indicadores...' });
     try {
-      const dataKeys = Object.keys(publicDataToSeed) as DataSetKey[];
+      const dataToSeed = publicDataToSeed(t);
+      const dataKeys = Object.keys(dataToSeed) as DataSetKey[];
       for (const key of dataKeys) {
-        const dataSet = publicDataToSeed[key];
+        const dataSet = dataToSeed[key];
         const docRef = doc(firestore, 'publicData', key);
         await setDoc(docRef, dataSet);
       }
@@ -78,7 +81,8 @@ export default function SeedPage() {
     setIsSeedingStats(true);
     toast({ title: 'A carregar estatísticas...' });
     try {
-      for (const dataSet of statisticalDataToSeed) {
+      const dataToSeed = statisticalDataToSeed(t);
+      for (const dataSet of dataToSeed) {
         const docData = { ...dataSet, data: JSON.stringify(dataSet.data) };
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
         await setDoc(docRef, docData);
@@ -94,9 +98,8 @@ export default function SeedPage() {
     toast({ title: 'A carregar fontes...' });
     try {
       for (const source of systemDataSources) {
-        const id = source.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        const docRef = doc(firestore, 'dataSources', id);
-        await setDoc(docRef, { ...source, id }, { merge: true });
+        const docRef = doc(firestore, 'dataSources', source.id);
+        await setDoc(docRef, source, { merge: true });
       }
       toast({ title: 'Fontes carregadas!' });
     } catch (error: any) {

@@ -1,14 +1,14 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Demokratia Portugal: Security Rules v1.5
-     * Gestão administrativa completa de cache pública e novos cenários macro.
-     */
+      * Demokratia Portugal: Security Rules v4.0
+      * - Adiciona regras abrangentes para todas as coleções, incluindo `analytics_sessions` e `publicData`.
+      * - Corrige as permissões da coleção `users` para permitir a leitura por parte dos administradores.
+      */
 
-    // --- 1. Global Helper Functions ---
+    // --- 1. Funções Auxiliares Globais ---
 
     function isSignedIn() {
       return request.auth != null;
@@ -25,100 +25,144 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))
       );
     }
+    
+    function isCreatingOwn() {
+      return request.auth.uid == request.resource.data.userId;
+    }
 
-    // --- 2. Public Content (Read Access for ALL, Manage for Admin) ---
+    // --- 2. Dados de Utilizador --- //
+    
+    match /users/{userId} {
+      allow read, list: if isAdmin();
+      allow write: if isOwner(userId);
+    }
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
 
+    // --- 3. Coleções com Dados de Utilizador (Padrão de Segurança) --- //
+
+    match /simulations/{id} {
+      allow list, read: if true;
+      allow create: if isSignedIn() && isCreatingOwn();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    match /fact-checks/{id} {
+      allow list, read: if true;
+      allow create: if isSignedIn() && isCreatingOwn();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    match /legislation-queries/{id} {
+      allow list, read: if true;
+      allow create: if isSignedIn() && isCreatingOwn();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    match /communityProposals/{id} {
+      allow list: if true;
+      allow read: if true;
+      allow create: if isSignedIn() && isCreatingOwn();
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    match /refutations/{id} {
+        allow list: if isAdmin();
+        allow create: if isSignedIn() && isCreatingOwn();
+        allow read, update, delete: if isAdmin();
+    }
+
+    match /contactMessages/{id} {
+        allow list, read, delete, update: if isAdmin();
+        allow create: if isSignedIn();
+    }
+
+    // --- 4. Dados Públicos e Caches do Sistema --- //
+
+    match /publicData/{id} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    match /publicSimulations {
+      allow list: if true;
+    }
     match /publicSimulations/{id} {
       allow read: if true;
-      allow create: if isSignedIn();
+      allow create: if isSignedIn(); 
       allow update, delete: if isAdmin();
     }
 
-    match /publicFactChecks/{id} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
+    match /publicScenarios {
+      allow list: if true;
     }
-
-    match /publicLegislationQueries/{id} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
-    }
-
-    match /publicStatisticQueries/{id} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
-    }
-
     match /publicScenarios/{id} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
+    match /publicFactChecks {
+      allow list: if true;
+    }
+    match /publicFactChecks/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /statisticalData {
+      allow list: if true;
+    }
     match /statisticalData/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
     }
 
+    match /dataSources {
+      allow list: if true;
+    }
     match /dataSources/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update, delete: if isAdmin();
+    }
+    
+    match /publicStatisticQueries {
+      allow list: if true;
+    }
+    match /publicStatisticQueries/{id} {
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
     }
 
-    match /communityProposals/{proposalId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    match /publicLegislationQueries {
+      allow list: if true;
     }
-
-    // --- 3. User Profiles & Private Data ---
-
-    match /users/{userId} {
-      allow get, list: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
-      
-      match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
+    match /publicLegislationQueries/{id} {
+        allow read: if true;
+        allow create, update, delete: if isAdmin();
     }
+    
+    // --- 5. Coleções Internas e de Sistema --- //
 
-    // --- 4. System & Analytics ---
-
-    match /analytics_sessions/{sessionId} {
-      allow create: if true;
-      allow read: if isAdmin();
-    }
-
-    match /contactMessages/{messageId} {
-      allow create: if isSignedIn();
-      allow read, update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow list: if isAdmin();
-    }
-
-    match /refutations/{refutationId} {
-      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
+    match /analytics_sessions/{id} {
+        allow create: if true; // Qualquer pessoa pode criar uma sessão
+        allow list, read: if isAdmin(); // Apenas admins podem ler os dados
     }
 
     match /translations_cache/{id} {
-      allow read: if true;
-      allow create: if isSignedIn();
+        allow read: if true;
+        allow write: if isSignedIn();
     }
 
     match /news_feed_cache/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
+        allow read: if true;
+        allow write: if isSignedIn();
     }
-
-    match /roles_admin/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
+    
+    match /roles_admin/{uid} {
+      allow read: if true;
       allow write: if isAdmin();
     }
   }

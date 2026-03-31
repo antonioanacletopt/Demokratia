@@ -128,7 +128,7 @@ export default function MapPage() {
                 <Target className="h-5 w-5 text-accent" />
                 {t(`map.${activeIndicator}`)}
               </CardTitle>
-              <Badge variant="outline" className="bg-background/50 uppercase tracking-tighter">Atlas 2026</Badge>
+              <Badge variant="outline" className="bg-background/50 uppercase tracking-tighter">{t('map.atlas')}</Badge>
             </CardHeader>
             <CardContent className="p-4 flex justify-center items-center min-h-[700px]">
               <div ref={mapContainerRef} className="w-full h-full" />
@@ -189,7 +189,7 @@ export default function MapPage() {
                   <ShieldCheck className="h-6 w-6 text-accent" />
                   {selectedDistrict.name}
                 </CardTitle>
-                <CardDescription>Dados consolidados para 2026</CardDescription>
+                <CardDescription>{t('map.dataFor')}</CardDescription>
               </CardHeader>
               <CardContent className="pt-6 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -213,7 +213,7 @@ export default function MapPage() {
               </CardContent>
               <CardFooter className="bg-muted/30 py-3">
                 <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-                  <Info className="h-3 w-3" /> Fonte: Estimativas INE / Pordata 2026
+                  <Info className="h-3 w-3" /> {t('map.source')}
                 </p>
               </CardFooter>
             </Card>
@@ -223,7 +223,7 @@ export default function MapPage() {
                 <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
                   <MapIcon className="h-8 w-8 opacity-20" />
                 </div>
-                <p className="text-sm font-medium">Selecione um distrito no mapa.</p>
+                <p className="text-sm font-medium">{t('map.selectDistrict')}</p>
               </CardContent>
             </Card>
           )}

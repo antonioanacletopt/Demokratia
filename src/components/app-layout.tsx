@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon, Calculator, TrendingUp } from "lucide-react";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon, Calculator, TrendingUp, Library, Landmark, Users, LayoutDashboard } from "lucide-react";
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/Logo";
 import { CookieConsent } from "@/components/CookieConsent";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -62,6 +62,9 @@ function AppSidebarContent() {
     { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
     { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
     { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },
+    { href: "/library", icon: Library, label: t('nav.library'), public: true },
+    { id: 'partidos', icon: Users, label: t('nav.partidos'), href: '/partidos' },
+    { id: 'instituicoes', icon: Landmark, label: t('nav.instituicoes'), href: '/instituicoes' },
     { href: "/methodology", icon: BookOpen, label: t('nav.methodology'), public: true },
     { href: "/about", icon: Info, label: t('nav.about'), public: true },
     { href: "/faq", icon: HelpCircle, label: t('nav.faq'), public: true },
@@ -224,7 +227,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
         </header>
         <div className="flex-1 flex flex-col">
-          <div className="flex-1 p-4 sm:p-6">{children}</div>
+          <div className="flex-1 p-4 sm:p-6">
+            <Breadcrumbs />
+            {children}
+          </div>
           <footer className="border-t py-12 px-4 sm:px-6 bg-muted/30">
             <div className="flex flex-col gap-10 max-w-7xl mx-auto">
               <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
@@ -259,6 +265,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <ul className="space-y-2 text-sm">
                     <li><Link href="/terms" className="hover:text-primary">{t('nav.terms')}</Link></li>
                     <li><Link href="/privacy" className="hover:text-primary">{t('nav.privacy')}</Link></li>
+                    <li><Link href="/cookies" className="hover:text-primary">{t('nav.cookies')}</Link></li>
+                    <li>
+                      <button
+                        onClick={() => { localStorage.removeItem('cookie-consent-v2'); window.dispatchEvent(new Event('openCookieConsent')); }}
+                        className="hover:text-primary text-left text-muted-foreground"
+                      >
+                        {t('cookies.managePreferences')}
+                      </button>
+                    </li>
                   </ul>
                 </div>
               </div>

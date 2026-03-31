@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -13,7 +12,7 @@ import { getSystemDataSources, type DataSource } from '@/lib/system-data-sources
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { formatDistanceToNow } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { pt, enUS } from 'date-fns/locale';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -35,11 +34,11 @@ import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCh
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
-const dataSourceSchema = z.object({
+const dataSourceSchema = (t: any) => z.object({
   id: z.string().optional(),
-  name: z.string().min(3, "Min 3 chars."),
-  url: z.string().url("Invalid URL."),
-  description: z.string().min(10, "Min 10 chars."),
+  name: z.string().min(3, t('admin.dataSourceNameError')),
+  url: z.string().url(t('admin.dataSourceUrlError')),
+  description: z.string().min(10, t('admin.dataSourceDescError')),
   type: z.enum(['API', 'Website']),
   requiresAuth: z.boolean().default(false),
   authMethod: z.enum(['None', 'API Key', 'Bearer Token']).default('None'),
@@ -47,7 +46,7 @@ const dataSourceSchema = z.object({
   isSystemSource: z.boolean().optional().default(false),
 });
 
-type DataSourceFormValues = z.infer<typeof dataSourceSchema>;
+type DataSourceFormValues = z.infer<ReturnType<typeof dataSourceSchema>>;
 
 interface ContactMessage {
   id: string;
@@ -131,7 +130,7 @@ function generateSlug(text: string): string {
 function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: DataSourceFormValues, onSave: (data: DataSourceFormValues) => void, onFinished: () => void, isSaving: boolean }) {
   const { t } = useTranslation();
   const form = useForm<DataSourceFormValues>({
-    resolver: zodResolver(dataSourceSchema),
+    resolver: zodResolver(dataSourceSchema(t)),
     defaultValues: source || {
       name: '', url: '', description: '', type: 'Website',
       requiresAuth: false, authMethod: 'None', credentials: '', isSystemSource: false,
@@ -154,24 +153,24 @@ function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: Dat
         )} />
         <FormField control={form.control} name="type" render={({ field }) => (
           <FormItem><FormLabel>{t('admin.sourceType')}</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Website" /></FormControl><FormLabel className="font-normal">Website</FormLabel></FormItem>
-            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="API" /></FormControl><FormLabel className="font-normal">API</FormLabel></FormItem>
+            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Website" /></FormControl><FormLabel className="font-normal">{t('admin.website')}</FormLabel></FormItem>
+            <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="API" /></FormControl><FormLabel className="font-normal">{t('admin.api')}</FormLabel></FormItem>
           </RadioGroup></FormControl><FormMessage /></FormItem>
         )} />
         <FormField control={form.control} name="requiresAuth" render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-            <FormLabel>Auth Required</FormLabel>
+            <FormLabel>{t('admin.authRequired')}</FormLabel>
             <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
           </FormItem>
         )} />
         {requiresAuth && (
           <>
             <FormField control={form.control} name="authMethod" render={({ field }) => (
-              <FormItem><FormLabel>Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                <SelectContent><SelectItem value="API Key">API Key</SelectItem><SelectItem value="Bearer Token">Bearer Token</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+              <FormItem><FormLabel>{t('admin.authMethod')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                <SelectContent><SelectItem value="API Key">{t('admin.apiKey')}</SelectItem><SelectItem value="Bearer Token">{t('admin.bearer')}</SelectItem></SelectContent></Select><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="credentials" render={({ field }) => (
-              <FormItem><FormLabel>Credentials</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>{t('admin.credentials')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
           </>
         )}
@@ -189,9 +188,10 @@ export default function AdminPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   
-  const systemDataSources = getSystemDataSources();
+  const systemDataSources = getSystemDataSources(t);
+  const dateLocale = language === 'pt' ? pt : enUS;
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -275,10 +275,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
-      toast({ variant: 'destructive', title: 'Access Denied' });
+      toast({ variant: 'destructive', title: t('admin.accessDenied') });
       router.replace('/home');
     }
-  }, [user, isUserLoading, router, toast]);
+  }, [user, isUserLoading, router, toast, t]);
 
   const handleMakeAdmin = async () => {
     if (!user) return;
@@ -291,7 +291,7 @@ export default function AdminPage() {
         assignedAt: serverTimestamp(),
         grantedBy: 'admin-panel'
       });
-      toast({ title: 'Perfil de administrador ativado!' });
+      toast({ title: t('admin.adminProfileActivated') });
     } finally {
       setIsSettingAdmin(false);
     }
@@ -319,7 +319,7 @@ export default function AdminPage() {
     setIsSeedingPublic(true);
     try {
       for (const key in publicDataToSeed) {
-        const dataSet = publicDataToSeed[key as DataSetKey];
+        const dataSet = publicDataToSeed(t)[key as DataSetKey];
         const docRef = doc(firestore, 'publicData', key);
         setDocumentNonBlocking(docRef, dataSet, { merge: true });
       }
@@ -331,7 +331,7 @@ export default function AdminPage() {
   const handleSeedStatisticalData = async () => {
     setIsSeedingStats(true);
     try {
-      for (const dataSet of statisticalDataToSeed) {
+      for (const dataSet of statisticalDataToSeed(t)) {
         const docRef = doc(firestore, 'statisticalData', dataSet.id);
         setDocumentNonBlocking(docRef, { ...dataSet, data: JSON.stringify(dataSet.data) }, { merge: true });
       }
@@ -404,8 +404,8 @@ export default function AdminPage() {
         <TabsList className="bg-muted/50 p-1 flex flex-wrap h-auto">
           <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" />{t('admin.tabs.users')}</TabsTrigger>
           <TabsTrigger value="simulations" className="gap-2"><Zap className="h-4 w-4" />{t('admin.tabs.simulations')}</TabsTrigger>
-          <TabsTrigger value="factchecks" className="gap-2"><ShieldAlert className="h-4 w-4" />Fact-Checks</TabsTrigger>
-          <TabsTrigger value="legislation" className="gap-2"><Scale className="h-4 w-4" />Legislação</TabsTrigger>
+          <TabsTrigger value="factchecks" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.factchecks')}</TabsTrigger>
+          <TabsTrigger value="legislation" className="gap-2"><Scale className="h-4 w-4" />{t('admin.tabs.legislation')}</TabsTrigger>
           <TabsTrigger value="refutations" className="gap-2"><ShieldAlert className="h-4 w-4" />{t('admin.tabs.refutations')}</TabsTrigger>
           <TabsTrigger value="sources" className="gap-2"><Database className="h-4 w-4" />{t('admin.tabs.sources')}</TabsTrigger>
           <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
@@ -462,11 +462,11 @@ export default function AdminPage() {
                         <TableCell className="font-medium">{u.displayName || 'Anon'}</TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell className="text-xs">
-                          {u.createdAt ? formatDistanceToNow(u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt), { addSuffix: true, locale: pt }) : 'N/A'}
+                          {u.createdAt ? formatDistanceToNow(u.createdAt.toDate ? u.createdAt.toDate() : new Date(u.createdAt), { addSuffix: true, locale: dateLocale }) : t('common.na')}
                         </TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">Nenhum utilizador registado ainda.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">{t('admin.noUsers')}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -478,7 +478,7 @@ export default function AdminPage() {
         <TabsContent value="simulations" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Zap className="h-5 w-5" />Gestão de Simulações Públicas</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Zap className="h-5 w-5" />{t('admin.simulationsTitle')}</CardTitle>
               <CardDescription>{t('admin.simulationsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -486,9 +486,9 @@ export default function AdminPage() {
                 <Table>
                   <TableHeader className="bg-muted/30">
                     <TableRow>
-                      <TableHead>Título / Input</TableHead>
-                      <TableHead>Cidadão</TableHead>
-                      <TableHead>Data</TableHead>
+                      <TableHead>{t('admin.simTitleInput')}</TableHead>
+                      <TableHead>{t('scenarios.citizen')}</TableHead>
+                      <TableHead>{t('common.date')}</TableHead>
                       <TableHead className="text-right">{t('common.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -504,7 +504,7 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell className="text-sm">{sim.userName}</TableCell>
                         <TableCell className="text-xs">
-                          {sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                          {sim.runTimestamp ? formatDistanceToNow(sim.runTimestamp.toDate(), { addSuffix: true, locale: dateLocale }) : t('common.na')}
                         </TableCell>
                         <TableCell className="text-right">
                           <AlertDialog>
@@ -527,7 +527,7 @@ export default function AdminPage() {
                         </TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Nenhuma simulação pública registada.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">{t('admin.noPublicSimulations')}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -539,17 +539,17 @@ export default function AdminPage() {
         <TabsContent value="factchecks" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5" />Gestão de Fact-Checks Públicos</CardTitle>
-              <CardDescription>Limpeza de verificações de factos com IDs técnicos ou obsoletos.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5" />{t('admin.factchecksTitle')}</CardTitle>
+              <CardDescription>{t('admin.factchecksDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader className="bg-muted/30">
                     <TableRow>
-                      <TableHead>Alegação</TableHead>
-                      <TableHead>Veredicto</TableHead>
-                      <TableHead>Data</TableHead>
+                      <TableHead>{t('factCheck.claim')}</TableHead>
+                      <TableHead>{t('factCheck.verdict')}</TableHead>
+                      <TableHead>{t('common.date')}</TableHead>
                       <TableHead className="text-right">{t('common.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -565,7 +565,7 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell><Badge variant="outline">{fc.verdict}</Badge></TableCell>
                         <TableCell className="text-xs">
-                          {fc.createdAt ? formatDistanceToNow(fc.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                          {fc.createdAt ? formatDistanceToNow(fc.createdAt.toDate(), { addSuffix: true, locale: dateLocale }) : t('common.na')}
                         </TableCell>
                         <TableCell className="text-right">
                           <AlertDialog>
@@ -588,7 +588,7 @@ export default function AdminPage() {
                         </TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">Nenhum fact-check público registado.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">{t('admin.noPublicFactChecks')}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -600,16 +600,16 @@ export default function AdminPage() {
         <TabsContent value="legislation" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Scale className="h-5 w-5" />Gestão de Consultas Legislativas</CardTitle>
-              <CardDescription>Gestão de respostas legais públicas.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Scale className="h-5 w-5" />{t('admin.legislationTitle')}</CardTitle>
+              <CardDescription>{t('admin.legislationDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader className="bg-muted/30">
                     <TableRow>
-                      <TableHead>Pergunta</TableHead>
-                      <TableHead>Data</TableHead>
+                      <TableHead>{t('legislation.question')}</TableHead>
+                      <TableHead>{t('common.date')}</TableHead>
                       <TableHead className="text-right">{t('common.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -624,7 +624,7 @@ export default function AdminPage() {
                           <code className="text-[10px] bg-muted px-1 rounded text-muted-foreground">{l.id}</code>
                         </TableCell>
                         <TableCell className="text-xs">
-                          {l.createdAt ? formatDistanceToNow(l.createdAt.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}
+                          {l.createdAt ? formatDistanceToNow(l.createdAt.toDate(), { addSuffix: true, locale: dateLocale }) : t('common.na')}
                         </TableCell>
                         <TableCell className="text-right">
                           <AlertDialog>
@@ -647,7 +647,7 @@ export default function AdminPage() {
                         </TableCell>
                       </TableRow>
                     )) : (
-                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">Nenhuma consulta legislativa pública.</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={3} className="text-center py-12 text-muted-foreground italic">{t('admin.noPublicLegislation')}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -665,7 +665,7 @@ export default function AdminPage() {
                   <TableHeader className="bg-muted/30"><TableRow>
                     <TableHead>{t('refutation.user')}</TableHead>
                     <TableHead>{t('refutation.targetContent')}</TableHead>
-                    <TableHead>{t('contact.status.title') || 'Status'}</TableHead>
+                    <TableHead>{t('admin.status')}</TableHead>
                     <TableHead>{t('refutation.submission')}</TableHead>
                     <TableHead className="text-right">{t('common.actions')}</TableHead>
                   </TableRow></TableHeader>
@@ -675,12 +675,12 @@ export default function AdminPage() {
                         <TableCell className="font-medium">{ref.userName}</TableCell>
                         <TableCell className="max-w-[200px] truncate italic text-muted-foreground">"{ref.aiContentIdentifier}"</TableCell>
                         <TableCell><Badge variant={ref.status === 'approved' ? 'default' : ref.status === 'rejected' ? 'destructive' : 'secondary'}>{t(`refutation.status.${ref.status}`)}</Badge></TableCell>
-                        <TableCell className="text-xs">{ref.submissionDate ? formatDistanceToNow(ref.submissionDate.toDate(), { addSuffix: true, locale: pt }) : 'N/A'}</TableCell>
+                        <TableCell className="text-xs">{ref.submissionDate ? formatDistanceToNow(ref.submissionDate.toDate(), { addSuffix: true, locale: dateLocale }) : t('common.na')}</TableCell>
                         <TableCell className="text-right">
                           <Dialog open={viewingRefutation?.id === ref.id} onOpenChange={(o) => !o && setViewingRefutation(null)}>
                             <DialogTrigger asChild><Button variant="ghost" size="sm" onClick={() => setViewingRefutation(ref)}>{t('common.view')}</Button></DialogTrigger>
                             <DialogContent className="max-w-2xl">
-                              <DialogHeader><DialogTitle>{t('admin.reviewTitle')}</DialogTitle><DialogDescription>{t('admin.reviewBy')} {ref.userName} para "{ref.aiContentIdentifier}"</DialogDescription></DialogHeader>
+                              <DialogHeader><DialogTitle>{t('admin.reviewTitle')}</DialogTitle><DialogDescription>{t('admin.reviewBy')} {ref.userName} {t('admin.for')} "{ref.aiContentIdentifier}"</DialogDescription></DialogHeader>
                               <div className="space-y-4 my-4">
                                 <div className="rounded-md border bg-muted/30 p-4 text-sm"><h4 className="font-semibold mb-2">{t('admin.userExplanation')}</h4><p className="whitespace-pre-wrap leading-relaxed">{ref.refutationText}</p></div>
                                 {ref.evidenceLinks && <div className="rounded-md border border-accent/20 bg-accent/5 p-4 text-sm">
@@ -703,7 +703,7 @@ export default function AdminPage() {
                           </Dialog>
                         </TableCell>
                       </TableRow>
-                    )) : !isLoadingRefutations && <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground italic">{t('refutation.noRefutations')}</TableCell></TableRow>}
+                    )) : !isLoadingRefutations && <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground italic">{t('admin.noRefutations')}</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>
@@ -724,7 +724,7 @@ export default function AdminPage() {
                     <TableRow>
                       <TableHead>{t('admin.sourceName')}</TableHead>
                       <TableHead>{t('admin.sourceType')}</TableHead>
-                      <TableHead>Origem</TableHead>
+                      <TableHead>{t('admin.origin')}</TableHead>
                       <TableHead className="text-right">{t('common.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -733,20 +733,20 @@ export default function AdminPage() {
                       <TableRow key={s.id}>
                         <TableCell className="font-medium">
                           {s.name}
-                          {s.status === 'pending' && <Badge variant="destructive" className="ml-2">Sugestão</Badge>}
+                          {s.status === 'pending' && <Badge variant="destructive" className="ml-2">{t('admin.suggestion')}</Badge>}
                         </TableCell>
                         <TableCell><Badge variant="outline" className="gap-1.5">{s.type === 'API' ? <Server className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}{s.type}</Badge></TableCell>
                         <TableCell>
-                          {s.isSystemSource ? <Badge variant="secondary">Sistema</Badge> : (
+                          {s.isSystemSource ? <Badge variant="secondary">{t('admin.system')}</Badge> : (
                             <div className="flex flex-col">
-                              <span className="text-xs flex items-center gap-1"><User className="h-3 w-3" /> {s.submittedByName || 'User'}</span>
+                              <span className="text-xs flex items-center gap-1"><User className="h-3 w-3" /> {s.submittedByName || t('refutation.user')}</span>
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="text-right space-x-2">
                           {s.status === 'pending' && (
                             <Button variant="outline" size="sm" className="h-8 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveSource(s.id)}>
-                              <CheckCircle2 className="h-4 w-4 mr-1" /> Aprovar
+                              <CheckCircle2 className="h-4 w-4 mr-1" /> {t('admin.approve')}
                             </Button>
                           )}
                           <Button variant="ghost" size="icon" onClick={() => { setEditingSource(s); setIsFormOpen(true); }}><Edit className="h-4 w-4" /></Button>
@@ -772,15 +772,15 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('admin.tabs.data')}</CardTitle>
-              <CardDescription>Gira os itens individuais de dados estatísticos. Identifica duplicados pelo ID técnico.</CardDescription>
+              <CardDescription>{t('admin.dataDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border overflow-hidden">
                 <Table>
                   <TableHeader className="bg-muted/30"><TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead className="flex items-center gap-1"><Fingerprint className="h-3 w-3" /> ID Técnico</TableHead>
-                    <TableHead>Categoria</TableHead>
+                    <TableHead>{t('proposals.titleLabel')}</TableHead>
+                    <TableHead className="flex items-center gap-1"><Fingerprint className="h-3 w-3" /> {t('admin.technicalId')}</TableHead>
+                    <TableHead>{t('budget.movements.categoryLabel')}</TableHead>
                     <TableHead className="text-right">{t('common.actions')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
@@ -795,14 +795,14 @@ export default function AdminPage() {
                             <DialogContent className="max-w-2xl">
                                 <DialogHeader><DialogTitle>{d.title}</DialogTitle><DialogDescription>ID: {d.id}</DialogDescription></DialogHeader>
                                 <div className="space-y-4 my-4">
-                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">Descrição</h4><p className="text-sm">{d.description}</p></div>
-                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">Fonte</h4><p className="text-sm">{d.source}</p></div>
+                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">{t('proposals.descLabel')}</h4><p className="text-sm">{d.description}</p></div>
+                                    <div className="p-4 rounded-md bg-muted/30 border"><h4 className="font-bold text-xs uppercase mb-2">{t('home.source')}</h4><p className="text-sm">{d.source}</p></div>
                                 </div>
                             </DialogContent>
                           </Dialog>
                           <AlertDialog>
                             <AlertDialogTrigger asChild><Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
-                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>Deseja apagar este conjunto de dados? Use isto para remover duplicados com o mesmo título mas IDs técnicos diferentes (ex: letras aleatórias).</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStatisticalData(d.id)} className="bg-destructive">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t('common.warning')}</AlertDialogTitle><AlertDialogDescription>{t('admin.deleteDataConfirm')}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteStatisticalData(d.id)} className="bg-destructive">{t('common.delete')}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                           </AlertDialog>
                         </TableCell>
                       </TableRow>
@@ -845,8 +845,8 @@ export default function AdminPage() {
 
         <TabsContent value="seed" className="space-y-6">
           <Card className="border-primary padding-4 bg-primary/5">
-            <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" />Ativação de Admin</CardTitle><CardDescription>Regista permanentemente o teu acesso nas regras de segurança.</CardDescription></CardHeader>
-            <CardContent><Button onClick={handleMakeAdmin} disabled={isSettingAdmin}>{isSettingAdmin ? <Loader2 className="mr-2 animate-spin" /> : <ShieldCheck className="mr-2" />}Ativar Perfil de Administrador Oficial</Button></CardContent>
+            <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" />{t('admin.adminActivation')}</CardTitle><CardDescription>{t('admin.adminActivationDesc')}</CardDescription></CardHeader>
+            <CardContent><Button onClick={handleMakeAdmin} disabled={isSettingAdmin}>{isSettingAdmin ? <Loader2 className="mr-2 animate-spin" /> : <ShieldCheck className="mr-2" />}{t('admin.activateAdmin')}</Button></CardContent>
           </Card>
 
           <Card className="border-accent/20 bg-accent/5">

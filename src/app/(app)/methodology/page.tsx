@@ -1,216 +1,106 @@
 'use client';
 
-import { useMemo } from 'react';
+import { getSystemDataSources } from '@/lib/system-data-sources';
 import { useTranslation } from '@/lib/i18n';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, LineChart, Cpu, GraduationCap, ExternalLink, Youtube, Info, ShieldCheck, Globe, Database, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
-import { PlaceHolderImages, ImagePlaceholder } from '@/lib/placeholder-images';
-import { getSystemDataSources, DataSource } from '@/lib/system-data-sources';
+import { Globe, Bot, Database, Workflow, ShieldCheck, Scale, Info } from 'lucide-react';
 
 export default function MethodologyPage() {
   const { t } = useTranslation();
-  
-  const vizImg = useMemo(() => {
-    const img = PlaceHolderImages.find(img => img.id === 'data-viz');
-    if (!img) return null;
-    return {
-      ...img,
-      description: t(img.descriptionKey as any),
-      imageHint: t(img.imageHintKey as any),
-    };
-  }, [t]);
 
-  const officialSources = useMemo(() => {
-    return getSystemDataSources().map(source => ({
-      ...source,
-      name: t(source.nameKey as any),
-      description: t(source.descriptionKey as any),
-      categories: source.categoryKeys.map(key => t(key as any))
-    }));
-  }, [t]);
+  // Follow the pattern from legislation/page.tsx: define data with keys, translate in JSX.
+  const methodologySections = [
+    { 
+      id: 'data-sourcing', 
+      titleKey: 'methodology.sourcing.title',
+      contentKey: 'methodology.sourcing.content',
+      icon: <Globe className="h-5 w-5" />
+    },
+    { 
+      id: 'ai-integration', 
+      titleKey: 'methodology.ai.title',
+      contentKey: 'methodology.ai.content',
+      icon: <Bot className="h-5 w-5" />
+    },
+    { 
+      id: 'data-processing', 
+      titleKey: 'methodology.processing.title',
+      contentKey: 'methodology.processing.content',
+      icon: <Workflow className="h-5 w-5" />
+    },
+    { 
+      id: 'validation-and-quality', 
+      titleKey: 'methodology.validation.title',
+      contentKey: 'methodology.validation.content',
+      icon: <ShieldCheck className="h-5 w-5" />
+    },
+    { 
+      id: 'ethical-considerations', 
+      titleKey: 'methodology.ethics.title',
+      contentKey: 'methodology.ethics.content',
+      icon: <Scale className="h-5 w-5" />
+    }
+  ];
+
+  // The function getSystemDataSources returns already translated data.
+  const officialSources = getSystemDataSources(t);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 py-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">
-          {t('methodology.title')}
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('methodology.subtitle')}
+    <div className="max-w-4xl mx-auto pb-12">
+      <div className="flex flex-col gap-2 mb-8">
+        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary">{t('nav.methodology')}</h1>
+        <p className="text-muted-foreground text-lg">{t('methodology.description')}</p>
+      </div>
+
+      <Card className="mb-8 border-primary/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="text-accent"/>
+            {t('methodology.officialSources')}
+          </CardTitle>
+          <CardDescription>{t('methodology.sourcesDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {officialSources.map(source => (
+              <li key={source.name} className="border rounded-lg p-4 bg-muted/30 hover:bg-muted/50 transition-colors">
+                <Link href={source.url} target="_blank" className="font-bold text-primary hover:underline">
+                  {source.name}
+                </Link>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{source.description}</p>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      <div className="bg-muted/30 p-4 rounded-xl border border-muted flex gap-3 items-start mb-8">
+        <Info className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {t('methodology.disclaimer')} <Link href="/terms" className="underline hover:text-primary">{t('methodology.termsLink')}</Link>.
         </p>
       </div>
 
-      {vizImg && (
-        <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
-          <Image 
-            src={vizImg.imageUrl} 
-            alt={vizImg.description} 
-            fill 
-            className="object-cover"
-            data-ai-hint={vizImg.imageHint}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-            <p className="text-white text-sm font-medium italic opacity-90">{t('methodology.intro')}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-8 md:grid-cols-2">
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <LineChart className="text-accent" /> {t('methodology.modelsTitle')}
-          </h2>
-          
-          <div className="space-y-4">
-            <Card className="border-l-4 border-l-primary">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex justify-between items-center">
-                  {t('methodology.okunTitle')}
-                  <Link href="https://pt.wikipedia.org/wiki/Lei_de_Okun" target="_blank" className="text-muted-foreground hover:text-primary"><ExternalLink className="h-4 w-4" /></Link>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t('methodology.okunDesc')}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-primary">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex justify-between items-center">
-                  {t('methodology.phillipsTitle')}
-                  <Link href="https://pt.wikipedia.org/wiki/Curva_de_Phillips" target="_blank" className="text-muted-foreground hover:text-primary"><ExternalLink className="h-4 w-4" /></Link>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t('methodology.phillipsDesc')}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-primary">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">
-                  {t('methodology.multiplierTitle')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t('methodology.multiplierDesc')}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Cpu className="text-accent" /> {t('methodology.aiTitle')}
-          </h2>
-          <Card className="bg-accent/5 border-dashed border-accent/20">
-            <CardContent className="pt-6 space-y-4">
-              <p className="text-sm leading-relaxed">
-                {t('methodology.aiDesc')}
-              </p>
-              <div className="bg-background/50 p-4 rounded-xl border flex items-center gap-4">
-                <Info className="h-8 w-8 text-primary shrink-0" />
-                <p className="text-xs italic">{t('methodology.aiQuote')}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <h2 className="text-2xl font-bold flex items-center gap-2 pt-4">
-            <Youtube className="text-red-600" /> {t('methodology.videoTitle')}
-          </h2>
-          <div className="aspect-video w-full rounded-2xl bg-muted flex items-center justify-center border-2 border-dashed relative group">
-             <div className="text-center p-6">
-                <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('methodology.videoLabel')}</p>
-                <p className="text-sm font-medium">{t('methodology.videoDesc')}</p>
-                <Button variant="link" className="mt-2 text-primary" asChild>
-                  <Link href="https://www.youtube.com/results?search_query=como+funciona+orcamento+do+estado+portugal" target="_blank">
-                    {t('methodology.videoAction')} <ExternalLink className="h-3 w-3 ml-1" />
-                  </Link>
-                </Button>
-             </div>
-          </div>
-        </section>
-      </div>
-
-      <Separator />
-
-      <section className="space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold font-headline flex items-center justify-center gap-3">
-            <ShieldCheck className="text-primary h-8 w-8" /> {t('methodology.transparencyTitle')}
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('methodology.transparencyDesc')}
-          </p>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {officialSources.map((source: any) => (
-            <Card key={source.id} className="flex flex-col hover:shadow-lg transition-all border-primary/10">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Database className="h-4 w-4 text-accent" />
-                  {source.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {source.description}
-                </p>
-              </CardContent>
-              <CardFooter className="bg-muted/30 py-3 flex-col items-start gap-3">
-                <Button asChild variant="link" size="sm" className="p-0 h-auto font-bold text-xs">
-                  <Link href={source.url} target="_blank">
-                    {t('methodology.sourceAction')} <ExternalLink className="ml-1.5 h-3 w-3" />
-                  </Link>
-                </Button>
-                <div className="flex flex-wrap gap-1.5">
-                  {source.categories.map((cat: string) => <Badge key={cat} variant="secondary" className="text-[10px]">{cat}</Badge>)}
+      <div>
+        <h2 className="text-2xl font-bold mb-4">{t('methodology.detailedProcess')}</h2>
+        <Accordion type="single" collapsible defaultValue="data-sourcing">
+          {methodologySections.map(section => (
+            <AccordionItem key={section.id} value={section.id}>
+              <AccordionTrigger className="text-base font-semibold">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-md text-primary">{section.icon}</div>
+                  {t(section.titleKey)}
                 </div>
-              </CardFooter>
-            </Card>
+              </AccordionTrigger>
+              <AccordionContent className="text-base prose prose-neutral dark:prose-invert max-w-none px-4 text-muted-foreground leading-relaxed">
+                {t(section.contentKey)}
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
-
-        <div className="flex justify-center pt-4">
-          <Button asChild size="lg" className="px-10 shadow-xl group">
-            <Link href="/explorer">
-              {t('methodology.exploreAction')} <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      <section className="bg-primary/5 p-10 rounded-3xl border border-primary/10 space-y-6">
-        <h2 className="text-2xl font-bold text-center">{t('methodology.linksTitle')}</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            { name: t('methodology.links.cfp'), url: 'https://www.cfp.pt' },
-            { name: t('methodology.links.ine'), url: 'https://www.ine.pt' },
-            { name: t('methodology.links.pordata'), url: 'https://www.pordata.pt' },
-            { name: t('methodology.links.dre'), url: 'https://dre.pt' },
-            { name: t('methodology.links.bportugal'), url: 'https://www.bportugal.pt' },
-            { name: t('methodology.links.transparency'), url: 'https://www.transparencia.gov.pt' }
-          ].map(link => (
-            <Link key={link.name} href={link.url} target="_blank" className="p-4 bg-card border rounded-xl flex justify-between items-center hover:shadow-md transition-all group">
-              <span className="font-medium text-sm group-hover:text-primary">{link.name}</span>
-              <ExternalLink className="h-4 w-4 opacity-20 group-hover:opacity-100" />
-            </Link>
-          ))}
-        </div>
-      </section>
+        </Accordion>
+      </div>
     </div>
   );
 }

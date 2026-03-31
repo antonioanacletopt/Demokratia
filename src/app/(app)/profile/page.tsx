@@ -25,8 +25,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Trash2, AlertTriangle, Languages } from 'lucide-react';
 
-const profileFormSchema = z.object({
-  displayName: z.string().min(2, 'Min 2 chars.'),
+const profileFormSchema = (t: any) => z.object({
+  displayName: z.string().min(2, t('profile.displayNameError')),
   preferredLanguage: z.enum(['pt', 'en']),
   notificationPreferences: z.object({
     emailNotifications: z.boolean().default(true),
@@ -34,7 +34,7 @@ const profileFormSchema = z.object({
   }),
 });
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type ProfileFormValues = z.infer<ReturnType<typeof profileFormSchema>>;
 
 interface UserProfileData {
   id: string;
@@ -70,7 +70,7 @@ export default function ProfilePage() {
   const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfileData>(userProfileRef);
 
   const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
+    resolver: zodResolver(profileFormSchema(t)),
     defaultValues: {
       displayName: '',
       preferredLanguage: 'pt',
@@ -102,7 +102,7 @@ export default function ProfilePage() {
     };
     try {
       await updateDoc(userProfileRef, dataToUpdate);
-      setLanguage(data.preferredLanguage);
+      setLanguage(data.preferredLanguage as Language);
       toast({ title: t('common.success') });
     } catch (error) {
       const permissionError = new FirestorePermissionError({ path: userProfileRef.path, operation: 'update', requestResourceData: dataToUpdate });

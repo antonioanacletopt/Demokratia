@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+
+<!--// OPEN HTML //-->
+<html lang="pt-PT">
+
+	<!--// OPEN HEAD //-->
+	<head>
+				
+		<!--// SITE META //-->
+		<meta charset="UTF-8" />	
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				
+		<!--// PINGBACK //-->
+		<link rel="pingback" href="https://partidolivre.pt/xmlrpc.php" />
+
+		<!--// WORDPRESS HEAD HOOK //-->
+		    <script>
+        writeCookie();
+        function writeCookie()
+        {
+            the_cookie = document.cookie;
+            if( the_cookie ){
+                if( window.devicePixelRatio >= 2 ){
+                    the_cookie = "pixel_ratio="+window.devicePixelRatio+";"+the_cookie;
+                    document.cookie = the_cookie;
+                }
+            }
+        }
+    </script>
+<meta name='robots' content='noindex, follow' />
+	<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	
+	<!-- This site is optimized with the Yoast SEO plugin v27.2 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<title>Page Not Found - LIVRE</title>
+	<meta property="og:locale" content="pt_PT" />
+	<meta property="og:title" content="Page Not Found - LIVRE" />
+	<meta property="og:site_name" content="LIVRE" />
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel='dns-prefetch' href='//cdn.canvasjs.com' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel="alternate" type="application/rss+xml" title="LIVRE &raquo; Feed" href="https://partidolivre.pt/feed" />
+<link rel="alternate" type="application/rss+xml" title="LIVRE &raquo; Feed de comentários" href="https://partidolivre.pt/comments/feed" />
+<script type="text/javascript">
+/* <![CDATA[ */
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16.0.1\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16.0.1\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/partidolivre.pt\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.8.5"}};
+/*! This file is auto-generated */
+!function(s,n){var o,i,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),a=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===a[t]})}function u(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);for(var n=e.getImageData(16,16,1,1),a=0;a<n.data.length;a++)if(0!==n.data[a])return!1;return!0}function f(e,t,n,a){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!a(e,"\ud83e\udedf")}return!1}function g(e,t,n,a){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):s.createElement("canvas"),o=r.getContext("2d",{willReadFrequently:!0}),i=(o.textBaseline="top",o.font="600 32px Arial",{});return e.forEach(function(e){i[e]=t(o,e,n,a)}),i}function t(e){var t=s.createElement("script");t.src=e,t.defer=!0,s.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",i=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){s.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+g.toString()+"("+[JSON.stringify(i),f.toString(),p.toString(),u.toString()].join(",")+"));",a=new Blob([e],{type:"text/javascript"}),r=new Worker(URL.createObjectURL(a),{name:"wpTestEmojiSupports"});return void(r.onmessage=function(e){c(n=e.data),r.terminate(),t(n)})}catch(e){}c(n=g(i,f,p,u))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+/* ]]> */
+</script>
+<style type="text/css">
+.hasCountdown{text-shadow:transparent 0 1px 1px;overflow:hidden;padding:5px}
+.countdown_rtl{direction:rtl}
+.countdown_holding span{background-color:#ccc}
+.countdown_row{clear:both;width:100%;text-align:center}
+.countdown_show1 .countdown_section{width:98%}
+.countdown_show2 .countdown_section{width:48%}
+.countdown_show3 .countdown_section{width:32.5%}
+.countdown_show4 .countdown_section{width:24.5%}
+.countdown_show5 .countdown_section{width:19.5%}
+.countdown_show6 .countdown_section{width:16.25%}
+.countdown_show7 .countdown_section{width:14%}
+.countdown_section{display:block;float:left;font-size:75%;text-align:center;margin:3px 0}
+.countdown_amount{font-size:200%}
+.countdown_descr{display:block;width:100%}
+a.countdown_infolink{display:block;border-radius:10px;width:14px;height:13px;float:right;font-size:9px;line-height:13px;font-weight:700;text-align:center;position:relative;top:-15px;border:1px solid}
+#countdown-preview{padding:10px}
+</style>
+<style id='wp-emoji-styles-inline-css' type='text/css'>
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+<link rel='stylesheet' id='wp-block-library-css' href='https://partidolivre.pt/wp-includes/css/dist/block-library/style.min.css?ver=6.8.5' type='text/css' media='all' />
+<style id='classic-theme-styles-inline-css' type='text/css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='outermost-icon-block-style-inline-css' type='text/css'>
+.wp-block-outermost-icon-block{display:flex;line-height:0}.wp-block-outermost-icon-block.has-border-color{border:none}.wp-block-outermost-icon-block .has-icon-color svg,.wp-block-outermost-icon-block.has-icon-color svg{color:currentColor}.wp-block-outermost-icon-block .has-icon-color:not(.has-no-icon-fill-color) svg,.wp-block-outermost-icon-block.has-icon-color:not(.has-no-icon-fill-color) svg{fill:currentColor}.wp-block-outermost-icon-block .icon-container{box-sizing:border-box}.wp-block-outermost-icon-block a,.wp-block-outermost-icon-block svg{height:100%;transition:transform .1s ease-in-out;width:100%}.wp-block-outermost-icon-block a:hover{transform:scale(1.1)}.wp-block-outermost-icon-block svg{transform:rotate(var(--outermost--icon-block--transform-rotate,0deg)) scaleX(var(--outermost--icon-block--transform-scale-x,1)) scaleY(var(--outermost--icon-block--transform-scale-y,1))}.wp-block-outermost-icon-block .rotate-90,.wp-block-outermost-icon-block.rotate-90{--outermost--icon-block--transform-rotate:90deg}.wp-block-outermost-icon-block .rotate-180,.wp-block-outermost-icon-block.rotate-180{--outermost--icon-block--transform-rotate:180deg}.wp-block-outermost-icon-block .rotate-270,.wp-block-outermost-icon-block.rotate-270{--outermost--icon-block--transform-rotate:270deg}.wp-block-outermost-icon-block .flip-horizontal,.wp-block-outermost-icon-block.flip-horizontal{--outermost--icon-block--transform-scale-x:-1}.wp-block-outermost-icon-block .flip-vertical,.wp-block-outermost-icon-block.flip-vertical{--outermost--icon-block--transform-scale-y:-1}.wp-block-outermost-icon-block .flip-vertical.flip-horizontal,.wp-block-outermost-icon-block.flip-vertical.flip-horizontal{--outermost--icon-block--transform-scale-x:-1;--outermost--icon-block--transform-scale-y:-1}
+
+</style>
+<style id='pdfemb-pdf-embedder-viewer-style-inline-css' type='text/css'>
+.wp-block-pdfemb-pdf-embedder-viewer{max-width:none}
+
+</style>
+<style id='global-styles-inline-css' type='text/css'>
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+:root :where(.wp-block-pullquote){font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel='stylesheet' id='contact-form-7-css' href='https://partidolivre.pt/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=6.1.5' type='text/css' media='all' />
+<link rel='stylesheet' id='plyr-css-css' href='https://partidolivre.pt/wp-content/plugins/easy-video-player/lib/plyr.css?ver=6.8.5' type='text/css' media='all' />
+<link rel='stylesheet' id='rt-fontawsome-css' href='https://partidolivre.pt/wp-content/plugins/the-post-grid/assets/vendor/font-awesome/css/font-awesome.min.css?ver=7.8.9' type='text/css' media='all' />
+<link rel='stylesheet' id='rt-tpg-css' href='https://partidolivre.pt/wp-content/plugins/the-post-grid/assets/css/thepostgrid.min.css?ver=7.8.9' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css' href='https://partidolivre.pt/wp-includes/css/dashicons.min.css?ver=6.8.5' type='text/css' media='all' />
+<link rel='stylesheet' id='admin-bar-css' href='https://partidolivre.pt/wp-includes/css/admin-bar.min.css?ver=6.8.5' type='text/css' media='all' />
+<style id='admin-bar-inline-css' type='text/css'>
+
+    .canvasjs-chart-credit{
+        display: none !important;
+    }
+    #vtrtsFreeChart canvas {
+    border-radius: 6px;
+}
+
+.vtrts-free-adminbar-weekly-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 6px;
+}
+
+        #wpadminbar #wp-admin-bar-vtrts_free_top_button .ab-icon:before {
+            content: "\f185";
+            color: #1DAE22;
+            top: 3px;
+        }
+    #wp-admin-bar-vtrts_pro_top_button .ab-item {
+        min-width: 180px;
+    }
+    .vtrts-free-adminbar-dropdown {
+        min-width: 420px ;
+        padding: 18px 18px 12px 18px;
+        background: #23282d;
+        color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        margin-top: 10px;
+    }
+    .vtrts-free-adminbar-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px 18px; /* row-gap column-gap */
+        margin-bottom: 18px;
+    }
+    .vtrts-free-adminbar-card {
+        background: #2c3338;
+        border-radius: 8px;
+        padding: 18px 18px 12px 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    /* Extra margin for the right column */
+    .vtrts-free-adminbar-card:nth-child(2),
+    .vtrts-free-adminbar-card:nth-child(4) {
+        margin-left: 10px !important;
+        padding-left: 10px !important;
+                padding-top: 6px !important;
+
+        margin-right: 10px !important;
+        padding-right : 10px !important;
+        margin-top: 10px !important;
+    }
+    .vtrts-free-adminbar-card:nth-child(1),
+    .vtrts-free-adminbar-card:nth-child(3) {
+        margin-left: 10px !important;
+        padding-left: 10px !important;
+                padding-top: 6px !important;
+
+        margin-top: 10px !important;
+                padding-right : 10px !important;
+
+    }
+    /* Extra margin for the bottom row */
+    .vtrts-free-adminbar-card:nth-child(3),
+    .vtrts-free-adminbar-card:nth-child(4) {
+        margin-top: 6px !important;
+        padding-top: 6px !important;
+        margin-top: 10px !important;
+    }
+    .vtrts-free-adminbar-card-title {
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: #fff;
+    }
+    .vtrts-free-adminbar-card-value {
+        font-size: 22px;
+        font-weight: bold;
+        color: #1DAE22;
+        margin-bottom: 4px;
+    }
+    .vtrts-free-adminbar-card-sub {
+        font-size: 12px;
+        color: #aaa;
+    }
+    .vtrts-free-adminbar-btn-wrap {
+        text-align: center;
+        margin-top: 8px;
+    }
+
+    #wp-admin-bar-vtrts_free_top_button .ab-item{
+    min-width: 80px !important;
+        padding: 0px !important;
+    .vtrts-free-adminbar-btn {
+        display: inline-block;
+        background: #1DAE22;
+        color: #fff !important;
+        font-weight: bold;
+        padding: 8px 28px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 15px;
+        transition: background 0.2s;
+        margin-top: 8px;
+    }
+    .vtrts-free-adminbar-btn:hover {
+        background: #15991b;
+        color: #fff !important;
+    }
+
+    .vtrts-free-adminbar-dropdown-wrap { min-width: 0; padding: 0; }
+    #wpadminbar #wp-admin-bar-vtrts_free_top_button .vtrts-free-adminbar-dropdown { display: none; position: absolute; left: 0; top: 100%; z-index: 99999; }
+    #wpadminbar #wp-admin-bar-vtrts_free_top_button:hover .vtrts-free-adminbar-dropdown { display: block; }
+    
+        .ab-empty-item #wp-admin-bar-vtrts_free_top_button-default .ab-empty-item{
+    height:0px !important;
+    padding :0px !important;
+     }
+            #wpadminbar .quicklinks .ab-empty-item{
+        padding:0px !important;
+    }
+    .vtrts-free-adminbar-dropdown {
+    min-width: 420px;
+    padding: 18px 18px 12px 18px;
+    background: #23282d;
+    color: #fff;
+    border-radius: 12px; /* more rounded */
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); /* deeper shadow */
+    margin-top: 10px;
+}
+
+.vtrts-free-adminbar-btn-wrap {
+    text-align: center;
+    margin-top: 18px; /* more space above */
+}
+
+.vtrts-free-adminbar-btn {
+    display: inline-block;
+    background: #1DAE22;
+    color: #fff !important;
+    font-weight: bold;
+    padding: 5px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 17px;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
+    box-shadow: 0 2px 8px rgba(29,174,34,0.15);
+    text-align: center;
+    line-height: 1.6;
+    
+}
+.vtrts-free-adminbar-btn:hover {
+    background: #15991b;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(29,174,34,0.25);
+}
+    
+
+
+</style>
+<link rel='stylesheet' id='mc4wp-form-themes-css' href='https://partidolivre.pt/wp-content/plugins/mailchimp-for-wp/assets/css/form-themes.css?ver=4.12.0' type='text/css' media='all' />
+<link rel='stylesheet' id='pojo-a11y-css' href='https://partidolivre.pt/wp-content/plugins/pojo-accessibility/modules/legacy/assets/css/style.min.css?ver=1.0.0' type='text/css' media='all' />
+<link rel='stylesheet' id='dante-google-fonts-css' href='https://fonts.googleapis.com/css?family=Roboto:400|Roboto:700|Roboto:500&#038;subset=latin-ext' type='text/css' media='all' />
+<link rel='stylesheet' id='bootstrap-css' href='https://partidolivre.pt/wp-content/themes/dante/css/bootstrap.min.css' type='text/css' media='all' />
+<link rel='stylesheet' id='font-awesome-v5-css' href='https://partidolivre.pt/wp-content/themes/dante/css/font-awesome.min.css?ver=5.10.1' type='text/css' media='all' />
+<link rel='stylesheet' id='font-awesome-v4shims-css' href='https://partidolivre.pt/wp-content/themes/dante/css/v4-shims.min.css' type='text/css' media='all' />
+<link rel='stylesheet' id='ssgizmo-css' href='https://partidolivre.pt/wp-content/themes/dante/css/ss-gizmo.css' type='text/css' media='all' />
+<link rel='stylesheet' id='sf-main-css' href='https://partidolivre.pt/wp-content/themes/dante/style.css' type='text/css' media='all' />
+<link rel='stylesheet' id='sf-responsive-css' href='https://partidolivre.pt/wp-content/themes/dante/css/responsive.css' type='text/css' media='all' />
+<script type="text/javascript" id="ahc_front_js-js-extra">
+/* <![CDATA[ */
+var ahc_ajax_front = {"ajax_url":"https:\/\/partidolivre.pt\/wp-admin\/admin-ajax.php","plugin_url":"https:\/\/partidolivre.pt\/wp-content\/plugins\/visitors-traffic-real-time-statistics\/","page_id":"HOMEPAGE","page_title":"","post_type":""};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/visitors-traffic-real-time-statistics/js/front.js?ver=6.8.5" id="ahc_front_js-js"></script>
+<script type="text/javascript" id="plyr-js-js-extra">
+/* <![CDATA[ */
+var easy_video_player = {"plyr_iconUrl":"https:\/\/partidolivre.pt\/wp-content\/plugins\/easy-video-player\/lib\/plyr.svg","plyr_blankVideo":"https:\/\/partidolivre.pt\/wp-content\/plugins\/easy-video-player\/lib\/blank.mp4"};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/easy-video-player/lib/plyr.js?ver=6.8.5" id="plyr-js-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/jquery/jquery.min.js?ver=3.7.1" id="jquery-core-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js"></script>
+<link rel="https://api.w.org/" href="https://partidolivre.pt/wp-json/" /><meta name="generator" content="WordPress 6.8.5" />
+<style type='text/css'> .ae_data .elementor-editor-element-setting {
+            display:none !important;
+            }
+            </style><!-- start Simple Custom CSS and JS -->
+<style type="text/css">
+/* Add your CSS code here.
+
+For example:
+.example {
+    color: red;
+}
+
+For brushing up on your CSS knowledge, check out http://www.w3schools.com/css/css_syntax.asp
+
+End of comment */ 
+
+.primaries-checkboxes {
+  	border: 1px solid #87a54f;
+    background-color: #a3c760;
+    padding: 1em 2em;
+}
+
+.primaries-checkboxes h2 {
+	text-transform: uppercase;
+    color: white;
+    font-weight: bold;
+    font-size: 1.7em;
+    margin-bottom: 1.5em;
+    text-align: center;
+}
+
+.primaries-checkboxes .wpcf7-form-control-wrap {
+    margin-left: 1em;
+    font-size: 1.2em;
+  	margin-bottom: 1em;
+}
+
+.primaries-checkboxes a {
+    color: #ED4338;
+  	text-decoration: underline;
+}
+
+.primaries-checkboxes .wpcf7-list-item-label {
+  margin-left: 1em;
+}
+
+.circulos-eleitorais span.wpcf7-form-control-wrap {
+  display: inline-block;
+}</style>
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<style type="text/css">
+.footer-social-links {
+  font-size: 2.2em;
+  padding: 10px 0 0;
+  text-align: center;
+}
+.footer-social-links a {
+	padding: 7px;
+}</style>
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<style type="text/css">
+.menu-item-23850 {
+	font-weight: 600;
+}
+
+.legislativas2019 .link-box {
+	margin-bottom: 2em;
+}
+
+.legislativas2019 .link-box h2{
+	top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    margin-top: 0px;
+}
+
+.legislativas2019 .link-box .box-content-wrap {
+    min-height: 14rem;
+    padding: 15px;
+}
+
+.legislativas2019 .link-box a {
+	color: #FFF;
+ 	font-family: 'Montserrat', sans-serif;
+  	font-weight: 600;
+    font-size: 2.5rem;
+}
+
+.legislativas2019.circle h1, .legislativas2019.candidate h1 {
+  	font-family: 'Montserrat', sans-serif;
+  	font-weight: 600;
+	color: #8dc63f;
+  	font-size: 5rem;
+    line-height: 5rem;
+	margin-bottom: 3rem;
+}
+
+.legislativas2019.candidate h2 {
+  	font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 2.4rem;
+  	color: #777;
+}
+
+
+.legislativas2019.candidate p {
+  	font-size: 19px;
+    line-height: 28px;
+    margin-top: 27px;
+}
+.legislativas2019.circle .mandatario h1 {
+    margin-bottom: 0;
+    font-size: 2rem;
+    line-height: 2rem;
+    margin-top: 37px;
+}
+
+.legislativas2019.circle p {
+	font-size: 2rem;
+}
+
+.legislativas2019.circle h2 {
+	margin-bottom: 0px;
+}
+
+.legislativas2019.circle h3 {
+	color: #ed1c24;
+  	margin-top: 0px;
+  	font-size: 15px;
+}
+
+.legislativas2019.circle .spb_single_image {
+	margin-bottom: 10px;
+}
+
+.legislativas2019.circle .social p, .legislativas2019.candidate .social p {
+  	margin-bottom: 13px;
+    font-size: 1em;
+    font-weight: 600;
+    width: 50%;
+    float: left;
+}
+.legislativas2019.circle .social a, .legislativas2019.candidate .social a {
+	color: #666;
+}
+.legislativas2019.circle .social-line a {
+  color: #666;
+  margin-right: 20px;
+}
+.legislativas2019.circle .social i, legislativas2019.circle .social-line i, .legislativas2019.candidate .social i {
+	width: 23px;
+    display: inline-block;
+    text-align: center;
+  	font-size: 21px;
+}
+
+.legislativas2019.circle .social-line .box-content-wrap {
+	padding: 0px 15px;
+}
+
+/*LANDING*/
+.legislativas2019 .main-topics svg {
+  	width: 100%;
+    height: 30px;
+}
+.legislativas2019 .main-topics h2 {
+  	font-family: 'Montserrat', sans-serif;
+  	margin-bottom: 0px;
+    font-weight: 600;
+    font-size: 2.4rem;
+}
+.legislativas2019 .main-topics p {
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.legislativas2019 .main-topic-1 g, .legislativas2019 .main-topic-1 h2 {
+  	fill: #ed1c24;
+  	color: #ed1c24;
+}
+.legislativas2019 .main-topic-2 g, .legislativas2019 .main-topic-2 h2 {
+  	fill: #8dc63f;
+  	color: #8dc63f;
+}
+.legislativas2019 .main-topic-3 g, .legislativas2019 .main-topic-3 h2 {
+  	fill: #7da7d9;
+  	color: #7da7d9;
+}
+
+.legislativas2019 .contadores h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+  	color: rgb(68, 68, 68);
+  	font-size: 1.4em;
+  	text-transform: uppercase;
+}
+
+.legislativas2019 .section-title .spb_wrapper h1, .legislativas2019 .section-title .spb_wrapper h4 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.legislativas2019 .contadores .count-divider {
+  display: none;
+}
+
+a {
+	cursor: pointer;
+}
+
+.legislativas2019 .prog-big {
+  	background-color: red;
+  	font-family: 'Montserrat', sans-serif !important;
+    color: white;
+    text-align: center;
+    padding: 80px;
+    font-weight: 600;
+  	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/mobile-dk.jpg');
+  	background-size: cover;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    /* now centers things in X,Y axis */
+    align-items: center;
+    justify-content: center;
+}
+.legislativas2019 .prog-big .prog-title {
+    font-size: 3rem;
+    line-height: 3rem;
+}
+.legislativas2019 .prog-big .sf-button {
+	margin-top: 40px;
+    margin-bottom: 0px;
+}
+.legislativas2019 .prog-sm {
+	background-size: cover;
+  	font-family: 'Montserrat', sans-serif !important;
+    color: white;
+    text-align: center;
+    height: 150px;
+  	font-weight: 600;
+  	font-size: 2rem;
+    line-height: 2rem;
+    display: flex;
+    flex-direction: column;
+    /* now centers things in X,Y axis */
+    align-items: center;
+    justify-content: center;
+}
+.legislativas2019 .prog-sm a {
+  color: white;
+}
+
+
+.legislativas2019 .prog-1 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/1.jpg');
+}
+.legislativas2019 .prog-2 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/2.jpg');
+}
+.legislativas2019 .prog-3 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/3.jpg');
+}
+.legislativas2019 .prog-4 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/9.jpg');
+}
+.legislativas2019 .prog-5 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/7.jpg');
+}
+.legislativas2019 .prog-6 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/4.jpg');
+}
+.legislativas2019 .prog-7 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/15.jpg');
+}
+.legislativas2019 .prog-8 {
+	background-image: url('https://partidolivre.pt/wp-content/uploads/2019/04/16.jpg');
+}
+.legislativas2019 .prog-9 {
+	background-color: black;
+}
+
+@media only screen and (max-width: 767px) {
+  .legislativas2019 .prog-sm, .legislativas2019 .prog-big {
+  	margin-bottom: 0px;
+  }
+}
+
+</style>
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<style type="text/css">
+/*-General-*/
+button {
+  border-width: 0;
+}
+#logo a.mobile-menu-show {color:#000 !important;} .body-text ul {list-style:disc;padding-left:40px;} .body-text ol {padding-left:40px;} .index-black {margin-bottom:25px;margin-top:0px;} .index-black a {color:#fff;} .index-black a:hover {color:#2ea2cc;} .index-white {margin-bottom:25px;margin-top:0px;} .sf-love {display:none !important;} .body-text.clearfix a {color:#00cd8c;} .body-text.clearfix a:hover {text-decoration:underline;} ul.post-pagination-wrap.curved-bar-styling.clearfix {display:none;} #logo h1 {font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight: 300;font-size:26px;} .author-info-wrap {padding:20px;margin-top:40px;background:#f5f5f5;border:2px solid #eee;-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;} blockquote {border-left: 10px solid #eee;padding: 5px 5px 5px 10px;margin:0px 5px;} blockquote, blockquote p {font-size: inherit;line-height: inherit;font-style: normal;margin-bottom:10px;} #header-section #main-nav {border-top-color: #899e4a;} #copyright a:hover {color:#c83400;} body strong {letter-spacing:0px;} .ajax-search-wrap {background:#fff !important;color:#333 !important;text-shadow:none !important;} .ajax-search-wrap a {color:#777 !important;text-shadow:none !important;}  .red-link {color:#dd3333;} .red-link:hover {color:#00cd8c;}
+
+.program-heading {font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight: 300;font-size:32px;text-align:center;color:#DF3838;margin:45px 0px 20px 0px;} .program-accordion h2, .program-accordion .spb_accordion .spb_accordion_section > h3 a, .program-accordion h3.spb-heading.spb_accordion_heading, .program-accordion .ui-state-default a, .program-accordion .ui-state-default a:link, .program-accordion .ui-state-default a:visited {color:#000;}
+
+#tribe-events-content {margin-top:50px;}
+
+.read-more-button {background:#fff;color:#666;} .read-more-button:hover {background:#f5f5f5;color:#000;}
+/*--Fancy Headings--*/
+.alt-bg.alt-one #breadcrumbs, .alt-bg.alt-one #breadcrumbs a {color:#fff;text-shadow:none !important;}
+.alt-bg.alt-one.page-heading {text-shadow: 1px 1px #000;}
+/*--Main Blog--*/
+.terra-livre .standard-post-content {background:#fff;} .terra-livre .comments-likes, .terra-livre .blog-item-details {display:none;} .terra-livre .standard-post-content h1 {font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-size:32px;line-height:1.1;font-weight:300;;color:#000;} .terra-livre .standard-post-content .excerpt, .portfolio-item-excerpt {margin-top:25px;} .terra-livre .standard-post-content .excerpt p, .portfolio-item-excerpt p {font-size:18px;font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; line-height:1.5;font-weight:normal;color:#000;}
+/*---Full Width Post---*/
+.full-width-blog-post .article-body-wrap, .declaracao-principios {margin:0 auto;padding-bottom:50px; padding-top:25px; max-width:700px;text-align:justify !important;}
+.full-width-blog-post .fancy-heading h1, .full-width-blog-post .page-heading h3 {text-shadow:1px 1px #000;}
+.full-width-text-section {margin:0 auto;padding-bottom:50px; padding-top:25px; max-width:800px !important;background:#fff;padding-left:25px;padding-right:25px;}
+/*--Primarias--*/
+.primarias-documentos {color:#ccc; box-shadow:5px 5px 5px #ccc;background: #523f6d; margin:0 55px;padding:20px;border: 2px solid #f5f5f5;border-radius:5px;-moz-border-radius:5px;} .primarias-documentos a {color: #a3b745;} .primarias-documentos a:hover {text-decoration:underline;}
+.primarias-documentos h2, .primarias-documentos h3 {color:#fff;}
+/*--Values-Ulissee-Homepage--*/
+.values-universalismo {background: #523f6d;color: #fff;padding:20px;margin-bottom:0px !important;margin-top:0px;}
+.values-liberdade {background: #0066cc;color: #fff;padding:20px;margin-bottom:0px !important;}
+.values-igualdade {background: #00aaee;color: #fff;padding:20px;margin-bottom:0px !important;}
+.values-solidariedade {background: #298A08;color: #fff;padding:20px;margin-bottom:0px !important;}
+.values-socialismo {background: #FFFF00
+;color: #666;padding:20px;margin-bottom:0px !important;}
+.values-ecologia {background: #fe7e0c
+;color: #fff;padding:20px;margin-bottom:0px !important;}
+.values-europeismo {background: #c82400
+;color: #fff;padding:20px;margin-bottom:0px !important;}
+/*--General--*/
+.link-on-green-bg a {color: #c82400;}
+#green-background {color:#333;font-size:18px;} #green-background:hover {color: #c82400;}
+#gray-background {color:#333;font-size:18px;} #gray-background:hover {color: #c82400;}
+/*--Candidates--*/
+.candidate-main {padding:0 50px 0 25px;}
+.candidates-list {font-size:12px;background: #f5f5f5; box-shadow:5px 5px 5px #eee; color:#333; padding:20px 50px; border-radius: 10px;}
+.candidates-list a {color:#000;}
+.candidates-list a:hover {color:#00cd8c;}
+#candidates-breadcrumb, #fa-with-space {margin:0 10px;} #fa-margin {margin-right: 5px;}
+.candidates-all .wp-caption:hover {opacity:0.7;color:#c82400;}
+/*--Homepage--*/
+.homepage-holding-footer a {font-size:16px;color: #fff;}
+.homepage-holding-footer a:hover {color: #dd3333;}
+.home-menu p {text-align:center;font-size:22px;line-height:28px;vertical-align: bottom;padding:10px 5px 5px 5px;}
+.home-menu a {color: #333;}
+.home-menu a:hover {color:#dd3333;}
+/*--Sidebar--*/
+.sidebar a {color:#333;}
+.sidebar a:hover {color:#00cd8c;}
+/*--Program Europe 2014--*/
+.ui-accordion h3.ui-accordion-header .ui-icon {display: none !important}
+.programme-europe strong {letter-spacing:0px;}
+
+.accordion-economy h2, .accordion-economy .spb_accordion .spb_accordion_section > h3 a {color:#dd3333;}
+.accordion-economy .ui-state-hover a, .accordion-economy .ui-state-hover a:hover {color:#333;}
+.accordion-economy .ui-state-default a, .accordion-economy .ui-state-default a:link, .accordion-economy .ui-state-default a:visited {color:#DF3342;}
+.accordion-economy a, .accordion-economy .ui-widget-content a {color:#dd3333;}
+.accordion-economy .ui-state-default, .accordion-economy .ui-widget-content .ui-state-default, .accordion-economy .ui-widget-header .ui-state-default {color:#DF3342;}
+.accordion-economy h3.spb-heading.spb_accordion_heading {color:#dd3333;}
+
+.accordion-development h2, .accordion-development .spb_accordion .spb_accordion_section > h3 a {color:#298A08;}
+.accordion-development .ui-state-hover a, .accordion-development .ui-state-hover a:hover {color:#333;}
+.accordion-development .ui-state-default a, .accordion-development .ui-state-default a:link, .accordion-development .ui-state-default a:visited {color:#298A08;}
+.accordion-development a, .accordion-development .ui-widget-content a {color:#298A08;}
+.accordion-development .ui-state-default, .accordion-development .ui-widget-content .ui-state-default, .accordion-development .ui-widget-header .ui-state-default {color:#298A08;}
+.accordion-development h3.spb-heading.spb_accordion_heading {color:#298A08;}
+
+.accordion-rights h2, .accordion-rights .spb_accordion .spb_accordion_section > h3 a {color:#ffa200;}
+.accordion-rights .ui-state-hover a, .accordion-rights .ui-state-hover a:hover {color:#333;}
+.accordion-rights .ui-state-default a, .accordion-rights .ui-state-default a:link, .accordion-rights .ui-state-default a:visited {color:#fe7e0c;}
+.accordion-rights a, .accordion-rights .ui-widget-content a {color:#ffa200;}
+.accordion-rights .ui-state-default, .accordion-rights .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {color:#ffa800;}
+.accordion-rights h3.spb-heading.spb_accordion_heading {color:#ffa200;}
+
+.accordion-democracy h2, .accordion-democracy .spb_accordion .spb_accordion_section > h3 a {color:#06c;}
+.accordion-democracy .ui-state-hover a, .accordion-democracy .ui-state-hover a:hover {color:#00aaee}
+.accordion-democracy .ui-state-default a, .accordion-democracy .ui-state-default a:link, .accordion-democracy .ui-state-default a:visited {color:#06c;}
+.accordion-democracy a, .accordion-democracy .ui-widget-content a {color:#00aaee;}
+.accordion-democracy .ui-state-default, .accordion-democracy .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {color:#00aaee;}
+.accordion-democracy h3.spb-heading.spb_accordion_heading {color:#06c;}
+
+/*--Portfolio--*/
+#fa-space-portfolio {margin:0 10px 0 0;}
+#portfolio-download {text-decoration:none;color:#fff;background:#00cd8c;text-shadow:1px 1px #000;padding:8px 10px;font-size:16px;-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;font-family:"Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;}
+#portfolio-download:hover {background:#A3DF60;}
+/*--Content Backgrounds--*/
+.black-background #page-wrap {background:#000;}
+.black-background #copyright, .black-background #copyright p {background:#000;color:#fff;border:none}
+.black-background #copyright a {color: #00cd8c;}
+.black-background #copyright a:hover {color: #dd3333;}
+
+.green-background #page-wrap {background:#00cd8c;}
+.green-background #copyright, .green-background #copyright p {background:#dd333333;color:#555;border:none}
+.green-background #copyright a {color: #000;}
+.green-background #copyright a:hover {color: #fff;}
+
+.video-post #page-wrap {background:#333;}
+.video-post .article-body-wrap, .video-post h1, .video-post h2, .video-post h3, .video-post h4, .video-post h5, .video-post h6 {color:#f5f5f5;}
+.video-post h4.spb-heading span::before, .video-post h4.spb-heading span::after, .video-post h3.spb-heading span::before, .video-post h3.spb-heading span::after, .video-post h4.lined-heading span::before, .video-post h4.lined-heading span::after {border-color: #999;}
+.video-post .widget ul li, .video-post .widget.widget_lip_most_loved_widget li {border-color: #999;}
+.video-post .sidebar .widget-heading h4 {color:#eee;}
+.video-post .sidebar a {color:#aaa;}
+.video-post .tribe-events-list-widget ol li {margin-bottom: 10px;list-style: none;}
+.video-post .tribe-events-list-widget .duration {font-weight:normal;color:#ccc;}
+.video-post h4.entry-title.summary {font-size:14px;}
+.video-post h4.entry-title.summary a:hover {color:#00cd8c;}
+.video-post .tribe-events-widget-link:hover {color:#00cd8c;text-decoration: underline;}
+.video-post .date-start.dtstart {font-style:italic;color:#777;}
+.video-post .related-wrap h3, h3 a, .video-post .related-item h5 a {color:#999;}
+.video-post .related-item h5 a:hover {color:#fff;}
+.video-post .heading-text h1, .video-post .heading-text h2, .video-post .heading-text h3, .video-post .heading-text h4, .video-post .heading-text h5, .video-post .heading-text h6 {color:#333;}
+.video-post #copyright, .video-post #copyright p {background:#494949;color:#999;border:none}
+.video-post #copyright a {color: #fff;}
+.video-post #copyright a:hover {color: #00cd8c;}
+.video-post #copyright nav .menu li {border-left-color: #777;}
+.video-post .share-links {border-color: #666;}
+.video-post .post-info {border-color: #494949;}
+.video-post .post-info a, .video-post .tags a {color:#ccc !important;border:none;}
+/*--Naked--*/
+.index-naked a.sf-button.transparent-light {border:2px solid #fff;}
+.index-naked #top-bar, .index-naked #top-header {
+display: none;
+}
+.index-naked #logo h1 {color:#fff; font-size:34px;line-height:1em;text-shadow:1px 1px #333;}
+.index-naked #logo {
+background: transparent url('//livrept.net/wp-content/uploads/2014/04/logoeLIVRE-transparente_hor3-e1398323595441.png') no-repeat center left;
+background-size: 100px 53px;
+width: 150px;
+}
+.index-naked #logo a {
+height: 53px;
+color: #fff;
+}
+.index-naked #header-section:before {
+background: rgba(255,255,255,0.1);
+}
+.index-naked .header-wrap {
+width: 100%;
+position: absolute;
+top: 0px;
+left: 0;
+z-index: 7;
+}
+.index-naked #header-section, .index-naked #header-section:before, .index-naked #header .is-sticky .sticky-header, .index-naked .is-sticky #header.sticky-header {
+-moz-box-shadow: none!important;
+-webkit-box-shadow: none!important;
+box-shadow: none!important;
+background: rgba(255,255,255,0.1) !important;
+}
+.index-naked #header .is-sticky .sticky-header, .index-naked .is-sticky #header.sticky-header {
+background: rgba(255,255,255,0.1);
+transition: background 0.5s ease-in-out;
+-moz-transition: background 0.5s ease-in-out;
+-webkit-transition: background 0.5s ease-in-out;
+-o-transition: background 0.5s ease-in-out;
+-webkit-animation-fill-mode: both;
+-moz-animation-fill-mode: both;
+-o-animation-fill-mode: both;
+animation-fill-mode: both;
+}
+.index-naked #logo img {
+display: none !important;
+}
+.index-naked nav #menu-dante-menu-main-1 > li a, .index-naked nav.search-nav.std-menu, .index-naked nav.search-nav.std-menu a {color: #fff; font-size:18px;line-height:26px;text-shadow:1px 1px #333;}
+.index-naked nav #menu-dante-menu-main-1 > li a:hover {color: #000;text-shadow:1px 1px #999;}
+.index-naked nav #menu-dante-menu-main-1 > li.menu-item:hover > a {color:#000;text-shadow:1px 1px #999;}
+.index-naked .nav-line {display:none !important;}
+.index-naked nav .menu > li:hover span.nav-line {background: #494949 !important;}
+.index-naked .inner-page-wrap {
+padding-top: 0!important;
+margin-top: 0;
+}
+.index-naked .impact-font-large {font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:56px;line-height:64px;text-shadow:1px 1px #333;}
+.index-naked .impact-font{font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:32px;line-height:40px;text-shadow:1px 1px #333;}
+@media only screen and (max-width: 991px) {
+.index-naked #logo {
+width: 90%;
+margin: 0 5%;
+}
+}
+@media only screen and (max-width: 767px) {
+.index-naked .header-wrap {
+position: static;
+background: rgba(255,255,255,0.1);
+}
+.index-naked #logo h1 {color:#fff; font-size:26px;line-height:1em;text-shadow:1px 1px #333;}
+.index-naked .impact-font-large {font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:26px;line-height:34px;}
+.index-naked .impact-font{font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:18px;line-height:26px;}
+}
+
+.index-naked #copyright, .index-naked #copyright p {background:#494949;color:#ccc;border:none}
+.index-naked #copyright a {color: #fff;}
+.index-naked #copyright a:hover {color: #dd3333;}
+.index-naked #copyright nav .menu li {border-left-color: #777;}
+.index-naked .spb_toggle_content, .index-naked .toggle-wrap .spb_toggle {background: rgba(255,255,255,0.9);max-width:700px;margin:0 auto;padding:25px 50px;}
+.index-naked .toggle-wrap .spb_toggle {text-align:center;font-size:24px;}
+.index-naked a.sf-button {font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;}
+
+/*--Elections navbar--*/
+.elections-navmenu {margin: 8px 0; list-style-type: none;padding:0px;line-height:55px;height:55px;width:100%;background: rgba(0,0,0,0.1);font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight: 300;font-size:20px;-webkit-border-radius:0px 0px 15px 15px;-moz-border-radius:0px 0px 15px 15px;-border-radius:0px 0px 15px 5px;}
+.elections-navmenu li {display: inline; }
+.elections-navmenu li a {text-decoration:none;  margin: 0px 10px;color:#000;text-shadow:1px 1px #ccc;}
+.elections-navmenu li a:hover {color: #fff;text-shadow:1px 1px #333}
+.elections-title {padding-left:20px;float:left;}
+.elections-item {padding-right:20px;float:right;}
+@media only screen and (max-width: 991px) {
+.elections-navmenu {display:none;}
+}
+@media only screen and (max-width: 767px) {
+.elections-navmenu {display:none;}
+}
+/*-Elections Program Custom share-*/
+#accordion-twitter, #accordion-facebook, #accordion-permalink {font-size:16px;font-family:"Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;color:#00aaee;}
+#accordion-twitter:hover, #accordion-facebook:hover, #accordion-permalink:hover {color:#dd3333;}
+.top-proposals, .spb_accordion .ui-accordion .ui-accordion-header {display:inline-block;}
+/*-Terra LIVRE-*/
+.tl-title {font-family: Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, "Times New Roman", serif;font-size:56px;line-height:64px;} .tl-subtitle {font-family: "Book Antiqua", Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif;font-size:38px;line-height:46px;}
+.faux-social-button {background:#dd3333;-webkit-border-radius:5px;border-radius:5px;margin:3px;padding:5px;color:#fff;text-decoration:none;text-shadow:1px 1px #000;} .faux-social-button:hover {background:#B2192A;color:#fff;text-shadow:1px 1px #000;}
+
+.alt-bg.alt-six #breadcrumbs a:hover {color:#dd3333;}
+
+.tl-index-naked a.sf-button.transparent-light {border:2px solid #fff;}
+.tl-index-naked #top-bar, .tl-index-naked #top-header {
+display: none;
+}
+.tl-index-naked #logo h1 {color:#fff; font-size:34px;line-height:1em;text-shadow:1px 1px #333;}
+.tl-index-naked #logo {
+background: transparent url('//livrept.net/wp-content/uploads/2014/04/logoeLIVRE-transparente_hor3-e1398323595441.png') no-repeat center left;
+background-size: 100px 53px;
+width: 150px;
+}
+.tl-index-naked #logo a {
+height: 53px;
+color: #fff;
+}
+.tl-index-naked #header-section:before {
+background: rgba(255,255,255,0.1);
+}
+.tl-index-naked .header-wrap {
+width: 100%;
+position: absolute;
+top: 0px;
+left: 0;
+z-index: 7;
+}
+.tl-index-naked #header-section, .tl-index-naked #header-section:before, .tl-index-naked #header .is-sticky .sticky-header, .tl-index-naked .is-sticky #header.sticky-header {
+-moz-box-shadow: none!important;
+-webkit-box-shadow: none!important;
+box-shadow: none!important;
+background: rgba(255,255,255,0.1) !important;
+}
+.tl-index-naked #header .is-sticky .sticky-header, .tl-index-naked .is-sticky #header.sticky-header {
+background: rgba(255,255,255,0.1);
+transition: background 0.5s ease-in-out;
+-moz-transition: background 0.5s ease-in-out;
+-webkit-transition: background 0.5s ease-in-out;
+-o-transition: background 0.5s ease-in-out;
+-webkit-animation-fill-mode: both;
+-moz-animation-fill-mode: both;
+-o-animation-fill-mode: both;
+animation-fill-mode: both;
+}
+.tl-index-naked #logo img {
+display: none !important;
+}
+.tl-index-naked nav #menu-dante-menu-main-1 > li a, .tl-index-naked nav.search-nav.std-menu, .tl-index-naked nav.search-nav.std-menu a {color: #494949; font-size:18px;line-height:26px;text-shadow:1px 1px #fff;}
+.tl-index-naked nav #menu-dante-menu-main-1 > li a:hover {color: #000;text-shadow:1px 1px #999;}
+.tl-index-naked nav #menu-dante-menu-main-1 > li.menu-item:hover > a {color:#000;text-shadow:1px 1px #999;}
+.tl-index-naked .nav-line {display:none !important;}
+.tl-index-naked nav .menu > li:hover span.nav-line {background: #494949 !important;}
+.tl-index-naked .inner-page-wrap {
+padding-top: 0!important;
+margin-top: 0;
+}
+.tl-index-naked .impact-font-large {font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:56px;line-height:64px;text-shadow:1px 1px #333;}
+.tl-index-naked .impact-font{font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:32px;line-height:40px;text-shadow:1px 1px #333;}
+@media only screen and (max-width: 991px) {
+.tl-index-naked #logo {
+width: 90%;
+margin: 0 5%;
+}
+}
+@media only screen and (max-width: 767px) {
+.tl-index-naked .header-wrap {
+position: static;
+background: rgba(255,255,255,0.1);
+}
+.tl-index-naked #logo h1 {color:#fff; font-size:26px;line-height:1em;text-shadow:1px 1px #333;}
+.tl-index-naked .impact-font-large {font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:26px;line-height:34px;}
+.tl-index-naked .impact-font{font-family:'Helvetica Neue Thin', 'HelveticaNeue-Thin', 'helvetica neue', helvetica, arial, 'lucida grande', sans-serif;font-weight: 100;font-size:18px;line-height:26px;}
+}
+
+.tl-index-naked #copyright, .tl-index-naked #copyright p {background:#f5eadb;color:#777;border:none}
+.tl-index-naked #copyright a {color: #494949;}
+.tl-index-naked #copyright a:hover {color: #000;}
+.tl-index-naked #copyright nav .menu li {border-left-color: #f5f5f5;}
+.tl-index-naked .spb_toggle_content, .tl-index-naked .toggle-wrap .spb_toggle {background: rgba(255,255,255,0.9);max-width:700px;margin:0 auto;padding:25px 50px;}
+.tl-index-naked .toggle-wrap .spb_toggle {text-align:center;font-size:24px;}
+.tl-index-naked a.sf-button {font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;}
+
+
+/*André Góis*/
+.slider-wrap {
+    margin-bottom: 0px;
+}
+.tparrows {
+    opacity: 1 !important;
+    text-indent: 0px !important;
+}
+.tp-banner {visibility: hidden}
+.mentiras-ue .share-links {
+     border: solid 0px;
+}
+.mentiras-ue .social-icons {
+     background-color: white;
+}
+.mentiras-ue .share-text {
+     display: none;
+}
+.mentiras-ue .share-links ul {
+     float: left;
+}
+
+
+
+.bk-lv-green {
+     background-color: #00cd8c;
+}
+.bk-lv-green:hover {
+     border: 1px solid #00cd8c !important;
+}
+.bk-lv-subscribe:hover {
+    background-color: white !important;
+}
+
+ul.portfolio-items{
+    opacity: 1;
+}
+.portfolio-items > li{
+    min-height: 340px;
+}
+.allowed{
+   display: inline !important;
+   margin-right: 5px;
+}
+.wpcf7-mail-sent-ok {
+    background-color: white;
+    font-weight: bold;
+    padding: 23px;
+    margin: 0px;
+}
+
+.primarias-text {
+    padding-top: 0px;
+    margin-top: -50px
+}
+.lv-white-column > .spb_toggle, .lv-white-column > .spb_toggle_content{
+background-color: white !important;
+}
+
+.acores-banner-menu {
+       margin-top: -31px !important;
+       z-index: 2 !important;
+}
+
+.acores-nav {
+    background-color: #9cc365 !important ;
+    font-size: 1.5em !important;
+    margin-bottom: 0px !important;
+}
+
+.acores-header {
+    margin-top: -25px !important;
+}
+
+/*
+.acores-body-row-backup {
+           background-color: #9cc365;
+ box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.3);
+}
+*/
+
+.acores-body-row {
+    box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.3);
+   padding-top: 10px;
+}
+
+.acores-noticias .post-item-details {
+    display: none;
+}
+
+.acores-noticias .recent-post {
+    min-height: 400px !important;
+    padding-top: 20px
+}
+
+a.sf-button, input.sf-button {
+    font-size: 1em !important;
+}
+
+.just-mobile {
+    display: none;
+}
+
+.menu-item, .menu-search {
+    margin-top: 5px !important;
+}
+#logo {
+    margin-top: 2px;
+}
+.mobile-menu-show {
+    margin-top: 8px;
+}
+
+.landing-overlay {
+    top: -492px;
+}
+.sub-container.non-mega {
+    top: 63px !important;
+}
+.shadow-box {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    padding-bottom:10px;
+}
+
+
+@media only screen and (max-width: 767px) {
+    .fw-row > .container {
+        padding-left: 0px!important;
+        padding-right: 0px!important;
+    }
+    .no-mobile {
+        display:none;
+    }
+   .just-mobile {
+        display: initial;
+   }
+   .spb_slider_widget.spb_content_element.col-sm-12 {
+       margin-botom: 0px !important;
+   }
+}
+
+/* PETITION */
+.dk-speakout-petition-wrap h3, .dk-speakout-greeting, .petition-message, #dk-speakout-message-1, .dk-speakout-message {
+	display: none;
+}
+.dk-speakout-optin-wrap label {
+    display: inline;
+    margin-left: 4px;
+}
+.dk-speakout-submit-wrap {
+    text-align: center;
+}
+.dk-speakout-submit {
+    color: white;
+    background-color: #00cd8c;
+    padding: 14px;
+    width: 95% !important;
+    display: block;
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+.dk-speakout-focus {
+    color: #c02525;
+}
+.dk-speakout-half label {
+    color: #c02525;
+}
+.dk-speakout-full label {
+    color: #c02525;
+}
+.dk-speakout-progress-wrap {
+    padding: 20px;
+    font-weight: bold;
+    text-align: center;
+    width: 95%;
+    margin-bottom: 20px;
+}
+.dk-speakout-response-error {
+    padding: 26px 10px 26px;
+    text-align: center;
+    background-color: #dd3333;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.dk-speakout-response-success {
+    padding: 26px 10px 1px;
+    text-align: center;
+    background-color: #00cd8c;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.dk-speakout-share {
+     text-align: center;
+    border: 0px solid rgba(153, 153, 153, 0.22);
+    padding: 36px 0px 30px 0px;
+    border-radius: 11px;
+    width: 95%;
+    margin-top: 50px;
+}
+.dk-speakout-share p {
+    margin: 0 0 10px;
+    font-weight: bold;
+}
+.modal-social {
+    padding: 30px;
+}
+.dk-speakout-facebook, .dk-speakout-twitter, .dk-speakout-email {
+    display: inline-block;
+    background-color: #3b5998;
+    color: white;
+    width: 60%;
+    padding: 9px;
+    font-weight: bold;
+    margin: 10px;
+}
+.dk-speakout-facebook:hover, .dk-speakout-twitter:hover, .dk-speakout-email:hover {
+    color: #ddd;
+}
+.dk-speakout-facebook {
+    background-color: #3b5998;
+}
+.dk-speakout-facebook::after {
+    content: "Facebook";
+}
+.dk-speakout-twitter {
+    background-color: #4099FF;
+}
+.dk-speakout-twitter::after {
+    content: "Twitter";
+}
+.dk-speakout-email {
+    background-color: #CCC;
+}
+.dk-speakout-email::after {
+    content: "Email";
+}
+.signature-count {
+    font-size: 1.1em;
+    font-weight: bold;
+    background-color: #ffffff;
+    text-align: center;
+    width: 100%;
+    display: block;
+    padding: 0;
+    color: #c02525;
+    margin-top: 24px;
+}
+.signature-count::after {
+     content: "Assinaturas"
+}
+.signature-count br {
+     display: none
+}
+/*
+
+
+
+
+
+
+
+.dk-speakout-signature-count {
+    visibility: hidden;
+}
+.dk-speakout-signature-count span{
+    visibility: visible;
+    display: block;
+    font-size: 1.2em;
+}
+
+.dk-speakout-signature-count span::after {
+    content: " Assinaturas";
+}
+*/
+.dk-speakout-ajaxloader {
+  background: transparent url("data:image/gif;base64,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") no-repeat 50% 50%;
+  background-size: 64px 8px;
+  display: block;
+  height: 8px;
+  margin: 5px 0 10px 0;
+}
+
+/* OEIRAS */
+.oeiras-pontos {
+   background-color: white;
+    margin: 3em 0;
+}
+
+.oeiras-menu a {
+    color: #bf1a22 !important;
+    font-size: 1.2em;
+}
+
+@media only screen and (max-width: 767px) {
+    .oeiras-menu a {
+        font-size: 0.7em;
+    }
+}
+
+.oeiras-pontos .spb-text-heading{
+   text-transform: uppercase;
+    color: #9C1A1F;
+    font-size: 2em;
+    line-height: 1em !important;
+}
+.oeiras-pontos .spb-text-heading span::before, .oeiras-pontos .spb-text-heading span::after{
+   border-top: 0px !important;
+   display: none;
+}
+.oeiras-pontos .box-content-wrap{
+   background-color: white !important;
+   border: 0px  !important;
+   padding: 0px  !important;
+}
+.oeiras-pontos ul{
+   margin-bottom: 0px
+}
+.oeiras-pontos li{
+    font-weight: 400;
+    font-size: 1.2em;
+    margin-bottom: 1em;
+}
+.oeiras-pontos li b{
+    font-weight: 600;
+    color: #a0af51;
+}
+.oeiras-row {
+    box-shadow: none;
+}
+/*AUT.2017*/
+.autarquicas-2017 h1 {
+    padding: 0px 0px 30px;
+    font-size: 3em;
+    font-weight: 600;
+    color: #da303d;
+}
+
+.autarquicas-2017 .page-content {
+    background-color: #f7f7f7;
+}
+.autarquicas-2017 .spb-row- {
+    background-color: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    border-radius: 2px;
+    padding: 50px 0px 0px;
+}
+.autarquicas-2017 .inner-page-wrap {
+    margin-bottom: 0px;
+}
+
+
+@media only screen and (max-width: 767px) {
+    .autarquicas-2017 .spb_text_column {
+        padding-bottom: 0px !important;
+        padding-top: 0px !important;
+    }
+}
+/*LISBOA AUT.2017*/
+
+.autarquicas-2017-sub-page .page-content{
+   background-color: #f7f7f7;
+}
+
+.autarquicas-2017-sub-page h1 {
+    padding: 0px 0px 30px;
+    font-size: 3em;
+    font-weight: 600;
+    color: #da303d;
+}
+
+.autarquicas-2017-sub-page .transparent {
+    background-color: #f7f7f7;
+}
+
+.autarquicas-2017-sub-page .hearder-img .spb_wrapper {
+    padding: 30px 0px;
+    background-color: #fff;
+}
+
+.autarquicas-2017-sub-page .card .box-content-wrap, .autarquicas-2017-sub-page .card .spb_wrapper  {
+    background-color: #fff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    border-radius: 2px;
+}
+.autarquicas-2017-sub-page .white .spb_wrapper {
+    background-color: white;
+    padding: 0px
+}
+.autarquicas-2017-sub-page .white .box-content-wrap {
+    padding: 5px
+}
+.autarquicas-2017-sub-page .white > .spb_wrapper {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    border-radius: 2px;
+    padding: 20px;
+}
+
+.oeiras-skew h1 {
+    color: #bd0d3f;
+    font-size: 2.5em;
+    text-transform: uppercase;
+}
+.oeiras-skew {
+    padding: 30px;
+    background-color: #acd8e7;
+    padding-left: 0%;
+    padding-right: 0%;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    margin-left: -10%;
+    width: 120% !important;
+}
+@media only screen and (max-width: 767px) {
+    .oeiras-skew {
+        margin-left: 0;
+        width: 100% !important;
+    }
+}
+
+.oeiras-contact-box {
+    font-size: 1.2em;
+}
+
+.oeiras-contact-box a {
+    color: #df0d44;
+}
+
+.oeiras-contact-box ul{
+    margin-bottom: 0px;
+}
+
+/*Landing page*/
+.home-eventos .post-item-details, .home-noticias .post-item-details {
+    display: none;
+}
+
+/*.home-eventos .spb-heading::after {
+    content: "ver todos >";
+    position: absolute;
+    color: #ccc;
+    right: 15px;
+    top: 20px;
+    font-size: 13px;
+}*/
+
+/* Primavera Europeia*/
+.mc4wp-success {
+    background-color: #a3c85f;
+    padding: 20px;
+    color: white;
+}
+.mc4wp-success p {
+    font-size: 20px;
+    margin-bottom: 0px;
+}
+.shailan_CountdownWidget {
+    width: 50%;
+    margin: auto;
+}
+.shailan_CountdownWidget .countdown_amount {
+    font-size: 5em;
+    line-height: 80px;
+}
+.shailan_CountdownWidget .countdown_infolink {
+    display: none;
+}
+
+.shailan_CountdownWidget .countdown_section {
+     font-size: 1em;
+}
+@media only screen and (max-width: 767px) {
+    .shailan_CountdownWidget {
+        width: 100%;
+    }
+    .shailan_CountdownWidget .countdown_amount {
+        font-size: 3em;
+        line-height: 80px;
+   }
+}
+
+.no-shadow {
+   box-shadow: none !important;
+}
+
+.w-100 {
+    width: 100%;
+}
+.form-note {
+     font-weight: 200;
+}
+
+div#ui-datepicker-div {z-index:1000!important;}
+
+.entry-title { 
+    font-size: 20px !important;
+    text-align: center;
+}
+
+.grid-no-filters .filter-button-group { display: none; }
+
+.youtube-responsive-container {
+position:relative;
+padding-bottom:56.25%;
+padding-top:30px;
+height:0;
+overflow:hidden;
+}
+
+.youtube-responsive-container iframe, .youtube-responsive-container object, .youtube-responsive-container embed {
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+}
+
+</style>
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<link href="https://fonts.googleapis.com/css?family=Montserrat:400,900&display=swap" rel="stylesheet">
+
+<!-- end Simple Custom CSS and JS -->
+<!-- start Simple Custom CSS and JS -->
+<script type="text/javascript">
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
+
+_linkedin_data_partner_id = "68178";
+
+(function(){var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})();
+
+
+
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+ fbq('init', '408641299673736'); 
+fbq('track', 'PageView');
+</script>
+<!-- end Simple Custom CSS and JS -->
+        <style>
+            :root {
+                --tpg-primary-color: #0d6efd;
+                --tpg-secondary-color: #0654c4;
+                --tpg-primary-light: #c4d0ff
+            }
+
+                    </style>
+		<style type="text/css">
+#pojo-a11y-toolbar .pojo-a11y-toolbar-toggle a{ background-color: #28b4eb;	color: #ffffff;}
+#pojo-a11y-toolbar .pojo-a11y-toolbar-overlay, #pojo-a11y-toolbar .pojo-a11y-toolbar-overlay ul.pojo-a11y-toolbar-items.pojo-a11y-links{ border-color: #28b4eb;}
+body.pojo-a11y-focusable a:focus{ outline-style: solid !important;	outline-width: 1px !important;	outline-color: #FF0000 !important;}
+#pojo-a11y-toolbar{ top: 140px !important;}
+#pojo-a11y-toolbar .pojo-a11y-toolbar-overlay{ background-color: #ffffff;}
+#pojo-a11y-toolbar .pojo-a11y-toolbar-overlay ul.pojo-a11y-toolbar-items li.pojo-a11y-toolbar-item a, #pojo-a11y-toolbar .pojo-a11y-toolbar-overlay p.pojo-a11y-toolbar-title{ color: #333333;}
+#pojo-a11y-toolbar .pojo-a11y-toolbar-overlay ul.pojo-a11y-toolbar-items li.pojo-a11y-toolbar-item a.active{ background-color: #28b4eb;	color: #ffffff;}
+@media (max-width: 767px) { #pojo-a11y-toolbar { top: 140px !important; } }</style><meta name="generator" content="Elementor 3.35.6; features: e_font_icon_svg, additional_custom_breakpoints; settings: css_print_method-internal, google_font-enabled, font_display-auto">
+			<script type="text/javascript">
+			var ajaxurl = 'https://partidolivre.pt/wp-admin/admin-ajax.php';
+			</script>
+		<style type="text/css">
+body, p, #commentform label, .contact-form label {font-size: 18px;line-height: 22px;}h1 {font-size: 24px;line-height: 35px;}h2 {font-size: 23px;line-height: 32px;}h3, .blog-item .quote-excerpt {font-size: 23px;line-height: 32px;}h4, .body-content.quote, #respond-wrap h3, #respond h3 {font-size: 22px;line-height: 28px;}h5 {font-size: 20px;line-height: 27px;}h6 {font-size: 19px;line-height: 26px;}nav .menu li {font-size: 17px;}::selection, ::-moz-selection {background-color: #c4d600; color: #fff;}.recent-post figure, span.highlighted, span.dropcap4, .loved-item:hover .loved-count, .flickr-widget li, .portfolio-grid li, input[type="submit"], .wpcf7 input.wpcf7-submit[type="submit"], .gform_wrapper input[type="submit"], .mymail-form input[type="submit"], .woocommerce-page nav.woocommerce-pagination ul li span.current, .woocommerce nav.woocommerce-pagination ul li span.current, figcaption .product-added, .woocommerce .wc-new-badge, .yith-wcwl-wishlistexistsbrowse a, .yith-wcwl-wishlistaddedbrowse a, .woocommerce .widget_layered_nav ul li.chosen > *, .woocommerce .widget_layered_nav_filters ul li a, .sticky-post-icon, .fw-video-close:hover {background-color: #c4d600!important; color: #ffffff;}a:hover, a:focus, #sidebar a:hover, .pagination-wrap a:hover, .carousel-nav a:hover, .portfolio-pagination div:hover > i, #footer a:hover, #copyright a, .beam-me-up a:hover span, .portfolio-item .portfolio-item-permalink, .read-more-link, .blog-item .read-more, .blog-item-details a:hover, .author-link, #reply-title small a, #respond .form-submit input:hover, span.dropcap2, .spb_divider.go_to_top a, love-it-wrapper:hover .love-it, .love-it-wrapper:hover span.love-count, .love-it-wrapper .loved, .comments-likes .loved span.love-count, .comments-likes a:hover i, .comments-likes .love-it-wrapper:hover a i, .comments-likes a:hover span, .love-it-wrapper:hover a i, .item-link:hover, #header-translation p a, #swift-slider .flex-caption-large h1 a:hover, .wooslider .slide-title a:hover, .caption-details-inner .details span > a, .caption-details-inner .chart span, .caption-details-inner .chart i, #swift-slider .flex-caption-large .chart i, #breadcrumbs a:hover, .ui-widget-content a:hover, .yith-wcwl-add-button a:hover, #product-img-slider li a.zoom:hover, .woocommerce .star-rating span, .article-body-wrap .share-links a:hover, ul.member-contact li a:hover, .price ins, .bag-product a.remove:hover, .bag-product-title a:hover, #back-to-top:hover,  ul.member-contact li a:hover, .fw-video-link-image:hover i, .ajax-search-results .all-results:hover, .search-result h5 a:hover .ui-state-default a:hover {color: #bb1122;}.carousel-wrap > a:hover, #mobile-menu ul li:hover > a {color: #c4d600!important;}.comments-likes a:hover span, .comments-likes a:hover i {color: #c4d600!important;}.read-more i:before, .read-more em:before {color: #c4d600;}input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus, .bypostauthor .comment-wrap .comment-avatar,.search-form input:focus, .wpcf7 input:focus, .wpcf7 textarea:focus, .ginput_container input:focus, .ginput_container textarea:focus, .mymail-form input:focus, .mymail-form textarea:focus {border-color: #c4d600!important;}nav .menu ul li:first-child:after,.navigation a:hover > .nav-text, .returning-customer a:hover {border-bottom-color: #c4d600;}nav .menu ul ul li:first-child:after {border-right-color: #c4d600;}.spb_impact_text .spb_call_text {border-left-color: #c4d600;}.spb_impact_text .spb_button span {color: #fff;}#respond .form-submit input#submit {border-color: #e4e4e4;background-color: #ffffff;}#respond .form-submit input#submit:hover {border-color: #c4d600;background-color: #c4d600;color: #ffffff;}.woocommerce .free-badge, .my-account-login-wrap .login-wrap form.login p.form-row input[type="submit"], .woocommerce .my-account-login-wrap form input[type="submit"] {background-color: #c8d62f; color: #ffffff;}a[rel="tooltip"], ul.member-contact li a, .blog-item-details a, .post-info a, a.text-link, .tags-wrap .tags a, .logged-in-as a, .comment-meta-actions .edit-link, .comment-meta-actions .comment-reply, .read-more {border-color: #c4d600;}.super-search-go {border-color: #c4d600!important;}.super-search-go:hover {background: #c4d600!important;border-color: #c4d600!important;}body {color: #444444;}.pagination-wrap a, .search-pagination a {color: #444444;}.layout-boxed #header-search, .layout-boxed #super-search, body > .sf-super-search {background-color: #222222;}body {background-color: #222222;background-size: auto;}#main-container, .tm-toggle-button-wrap a {background-color: #ffffff;}a, .ui-widget-content a {color: #3344dd;}.pagination-wrap li a:hover, ul.bar-styling li:not(.selected) > a:hover, ul.bar-styling li > .comments-likes:hover, ul.page-numbers li > a:hover, ul.page-numbers li > span.current {color: #ffffff!important;background: #c4d600;border-color: #c4d600;}ul.bar-styling li > .comments-likes:hover * {color: #ffffff!important;}.pagination-wrap li a, .pagination-wrap li span, .pagination-wrap li span.expand, ul.bar-styling li > a, ul.bar-styling li > div, ul.page-numbers li > a, ul.page-numbers li > span, .curved-bar-styling, ul.bar-styling li > form input {border-color: #e4e4e4;}ul.bar-styling li > a, ul.bar-styling li > span, ul.bar-styling li > div, ul.bar-styling li > form input {background-color: #ffffff;}input[type="text"], input[type="password"], input[type="email"], input[type="tel"], textarea, select {border-color: #e4e4e4;background: #f7f7f7;}textarea:focus, input:focus {border-color: #999!important;}.modal-header {background: #f7f7f7;}.recent-post .post-details, .team-member .team-member-position, .portfolio-item h5.portfolio-subtitle, .mini-items .blog-item-details, .standard-post-content .blog-item-details, .masonry-items .blog-item .blog-item-details, .jobs > li .job-date, .search-item-content time, .search-item-content span, .blog-item-details a, .portfolio-details-wrap .date,  .portfolio-details-wrap .tags-link-wrap {color: #999999;}ul.bar-styling li.facebook > a:hover {color: #fff!important;background: #3b5998;border-color: #3b5998;}ul.bar-styling li.twitter > a:hover {color: #fff!important;background: #4099FF;border-color: #4099FF;}ul.bar-styling li.google-plus > a:hover {color: #fff!important;background: #d34836;border-color: #d34836;}ul.bar-styling li.pinterest > a:hover {color: #fff!important;background: #cb2027;border-color: #cb2027;}#header-search input, #header-search a, .super-search-close, #header-search i.ss-search {color: #494949;}#header-search a:hover, .super-search-close:hover {color: #c4d600;}.sf-super-search, .spb_supersearch_widget.asset-bg {background-color: #c8d62f;}.sf-super-search .search-options .ss-dropdown > span, .sf-super-search .search-options input {color: #c4d600; border-bottom-color: #c4d600;}.sf-super-search .search-options .ss-dropdown ul li .fa-check {color: #c4d600;}.sf-super-search-go:hover, .sf-super-search-close:hover { background-color: #c4d600; border-color: #c4d600; color: #ffffff;}#top-bar {background: #494949; color: #ffffff;}#top-bar .tb-welcome {border-color: #f7f7f7;}#top-bar a {color: #ffffff;}#top-bar .menu li {border-left-color: #f7f7f7; border-right-color: #f7f7f7;}#top-bar .menu > li > a, #top-bar .menu > li.parent:after {color: #ffffff;}#top-bar .menu > li > a:hover, #top-bar a:hover {color: #222222;}#top-bar .show-menu {background-color: #f7f7f7;color: #c8d62f;}#header-languages .current-language {background: #f7f7f7; color: #000000;}#header-section:before, #header .is-sticky .sticky-header, #header-section .is-sticky #main-nav.sticky-header, #header-section.header-6 .is-sticky #header.sticky-header, .ajax-search-wrap {background-color: #c4d600;background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#c4d600), to(#c4d600));background: -webkit-linear-gradient(top, #c4d600, #c4d600);background: -moz-linear-gradient(top, #c4d600, #c4d600);background: -ms-linear-gradient(top, #c4d600, #c4d600);background: -o-linear-gradient(top, #c4d600, #c4d600);}#logo img {padding-top: 0px;padding-bottom: 0px;}#logo img, #logo img.retina {width: 160px;}#logo {height: 61px!important;}#logo img {height: 61px;min-height:61px;}.header-container > .row, .header-5 header .container > .row, .header-6 header > .container > .row {height: 81px;}@media only screen and (max-width: 991px) {#logo img {max-height:61px;}}.sticky-header-resized #logo {height: 61px!important;}.sticky-header-resized #logo img {height: 61px;}.header-container.sticky-header-resized > .row, .header-5 header .container.sticky-header-resized > .row, .header-6 header > .container.sticky-header-resized > .row, .sticky-header-resized .header-container > .row {height: 81px;}.sticky-header-resized #logo img {width: 160px;}#header-section .header-menu .menu li, #mini-header .header-right nav .menu li {border-left-color: #e4e4e4;}#header-section #main-nav {border-top-color: #e4e4e4;}#top-header {border-bottom-color: #c4d600;}#top-header {border-bottom-color: #c4d600;}#top-header .th-right > nav .menu li, .ajax-search-wrap:after {border-bottom-color: #c4d600;}.ajax-search-wrap, .ajax-search-results, .search-result-pt .search-result {border-color: #e4e4e4;}.page-content {border-bottom-color: #e4e4e4;}.ajax-search-wrap input[type="text"], .search-result-pt h6, .no-search-results h6, .search-result h5 a {color: #000000;}.search-item-content time {color: #aebc12;}@media only screen and (max-width: 991px) {
+			.naked-header #header-section, .naked-header #header-section:before, .naked-header #header .is-sticky .sticky-header, .naked-header .is-sticky #header.sticky-header {background-color: #c4d600;background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#c4d600), to(#c4d600));background: -webkit-linear-gradient(top, #c4d600, #c4d600);background: -moz-linear-gradient(top, #c4d600, #c4d600);background: -ms-linear-gradient(top, #c4d600, #c4d600);background: -o-linear-gradient(top, #c4d600, #c4d600);}
+			}nav#main-navigation .menu > li > a span.nav-line {background-color: #ffffff;}.show-menu {background-color: #c8d62f;color: #ffffff;}nav .menu > li:before {background: #ffffff;}nav .menu .sub-menu .parent > a:after {border-left-color: #ffffff;}nav .menu ul.sub-menu {background-color: #c4d600;}nav .menu ul.sub-menu li {border-bottom-color: #aebc12;border-bottom-style: none;}nav.mega-menu li .mega .sub .sub-menu, nav.mega-menu li .mega .sub .sub-menu li, nav.mega-menu li .sub-container.non-mega li, nav.mega-menu li .sub li.mega-hdr {border-top-color: #aebc12;border-top-style: none;}nav.mega-menu li .sub li.mega-hdr {border-right-color: #aebc12;border-right-style: none;}nav .menu > li.menu-item > a, nav .menu > li.menu-item.indicator-disabled > a, #menubar-controls a, nav.search-nav .menu>li>a, .naked-header .is-sticky nav .menu > li a {color: #000000;}nav .menu > li.menu-item:hover > a {color: #ffffff;}nav .menu ul.sub-menu li.menu-item > a, nav .menu ul.sub-menu li > span, #top-bar nav .menu ul li > a {color: #000000;}nav .menu ul.sub-menu li.menu-item:hover > a {color: #000000!important; background: #f7f7f7;}nav .menu li.parent > a:after, nav .menu li.parent > a:after:hover {color: #aaa;}nav .menu li.current-menu-ancestor > a, nav .menu li.current-menu-item > a, #mobile-menu .menu ul li.current-menu-item > a, nav .menu li.current-scroll-item > a {color: #ffffff;}nav .menu ul li.current-menu-ancestor > a, nav .menu ul li.current-menu-item > a {color: #000000; background: #f7f7f7;}#main-nav .header-right ul.menu > li, .wishlist-item {border-left-color: #aebc12;}#nav-search, #mini-search {background: #494949;}#nav-search a, #mini-search a {color: #ffffff;}.bag-header, .bag-product, .bag-empty, .wishlist-empty {border-color: #aebc12;}.bag-buttons a.sf-button.bag-button, .bag-buttons a.sf-button.wishlist-button, .bag-buttons a.sf-button.guest-button {background-color: #e4e4e4; color: #444444!important;}.bag-buttons a.checkout-button, .bag-buttons a.create-account-button, .woocommerce input.button.alt, .woocommerce .alt-button, .woocommerce button.button.alt, .woocommerce #account_details .login form p.form-row input[type="submit"], #login-form .modal-body form.login p.form-row input[type="submit"] {background: #c8d62f; color: #ffffff;}.woocommerce .button.update-cart-button:hover, .woocommerce #account_details .login form p.form-row input[type="submit"]:hover, #login-form .modal-body form.login p.form-row input[type="submit"]:hover {background: #c4d600; color: #ffffff;}.woocommerce input.button.alt:hover, .woocommerce .alt-button:hover, .woocommerce button.button.alt:hover {background: #c4d600; color: #ffffff;}.shopping-bag:before, nav .menu ul.sub-menu li:first-child:before {border-bottom-color: #ffffff;}nav ul.menu > li.menu-item.sf-menu-item-btn > a {background-color: #ffffff;color: #000000;}nav ul.menu > li.menu-item.sf-menu-item-btn:hover > a {color: #ffffff;background-color: #000000;}#base-promo {background-color: #000000;}#base-promo > p, #base-promo.footer-promo-text > a, #base-promo.footer-promo-arrow > a {color: #ffffff;}#base-promo.footer-promo-arrow:hover, #base-promo.footer-promo-text:hover {background-color: #c4d600;color: #ffffff;}#base-promo.footer-promo-arrow:hover > *, #base-promo.footer-promo-text:hover > * {color: #ffffff;}.page-heading {background-color: #f7f7f7;border-bottom-color: #e4e4e4;}.page-heading h1, .page-heading h3 {color: #222222;}#breadcrumbs {color: #333333;}#breadcrumbs a, #breadcrumb i {color: #333333;}body, input[type="text"], input[type="password"], input[type="email"], textarea, select, .ui-state-default a {color: #444444;}h1, h1 a {color: #000000;}h2, h2 a {color: #000000;}h3, h3 a {color: #000000;}h4, h4 a, .carousel-wrap > a {color: #000000;}h5, h5 a {color: #000000;}h6, h6 a {color: #000000;}.spb_impact_text .spb_call_text, .impact-text, .impact-text-large {color: #000000;}.read-more i, .read-more em {color: transparent;}.pb-border-bottom, .pb-border-top, .read-more-button {border-color: #e4e4e4;}#swift-slider ul.slides {background: #c8d62f;}#swift-slider .flex-caption .flex-caption-headline {background: #ffffff;}#swift-slider .flex-caption .flex-caption-details .caption-details-inner {background: #ffffff; border-bottom: #e4e4e4}#swift-slider .flex-caption-large, #swift-slider .flex-caption-large h1 a {color: #ffffff;}#swift-slider .flex-caption h4 i {line-height: 28px;}#swift-slider .flex-caption-large .comment-chart i {color: #ffffff;}#swift-slider .flex-caption-large .loveit-chart span {color: #c4d600;}#swift-slider .flex-caption-large a {color: #c4d600;}#swift-slider .flex-caption .comment-chart i, #swift-slider .flex-caption .comment-chart span {color: #c8d62f;}figure.animated-overlay figcaption {background-color: #c4d600;}
+figure.animated-overlay figcaption {background-color: rgba(196,214,0, 0.75);}figure.animated-overlay figcaption .thumb-info h4, figure.animated-overlay figcaption .thumb-info h5, figcaption .thumb-info-excerpt p {color: #ffffff;}figure.animated-overlay figcaption .thumb-info i {background: #c8d62f; color: #ffffff;}figure:hover .overlay {box-shadow: inset 0 0 0 500px #c4d600;}h4.spb-heading span:before, h4.spb-heading span:after, h3.spb-heading span:before, h3.spb-heading span:after, h4.lined-heading span:before, h4.lined-heading span:after {border-color: #e4e4e4}h4.spb-heading:before, h3.spb-heading:before, h4.lined-heading:before {border-top-color: #e4e4e4}.spb_parallax_asset h4.spb-heading {border-bottom-color: #000000}.testimonials.carousel-items li .testimonial-text {background-color: #f7f7f7;}.sidebar .widget-heading h4 {color: #000000;}.widget ul li, .widget.widget_lip_most_loved_widget li {border-color: #e4e4e4;}.widget.widget_lip_most_loved_widget li {background: #ffffff; border-color: #e4e4e4;}.widget_lip_most_loved_widget .loved-item > span {color: #999999;}.widget_search form input {background: #ffffff;}.widget .wp-tag-cloud li a {background: #f7f7f7; border-color: #e4e4e4;}.widget .tagcloud a:hover, .widget ul.wp-tag-cloud li:hover > a {background-color: #c4d600; color: #ffffff;}.loved-item .loved-count > i {color: #444444;background: #e4e4e4;}.subscribers-list li > a.social-circle {color: #ffffff;background: #c8d62f;}.subscribers-list li:hover > a.social-circle {color: #fbfbfb;background: #c4d600;}.sidebar .widget_categories ul > li a, .sidebar .widget_archive ul > li a, .sidebar .widget_nav_menu ul > li a, .sidebar .widget_meta ul > li a, .sidebar .widget_recent_entries ul > li, .widget_product_categories ul > li a, .widget_layered_nav ul > li a {color: #3344dd;}.sidebar .widget_categories ul > li a:hover, .sidebar .widget_archive ul > li a:hover, .sidebar .widget_nav_menu ul > li a:hover, .widget_nav_menu ul > li.current-menu-item a, .sidebar .widget_meta ul > li a:hover, .sidebar .widget_recent_entries ul > li a:hover, .widget_product_categories ul > li a:hover, .widget_layered_nav ul > li a:hover {color: #c4d600;}#calendar_wrap caption {border-bottom-color: #c8d62f;}.sidebar .widget_calendar tbody tr > td a {color: #ffffff;background-color: #c8d62f;}.sidebar .widget_calendar tbody tr > td a:hover {background-color: #c4d600;}.sidebar .widget_calendar tfoot a {color: #c8d62f;}.sidebar .widget_calendar tfoot a:hover {color: #c4d600;}.widget_calendar #calendar_wrap, .widget_calendar th, .widget_calendar tbody tr > td, .widget_calendar tbody tr > td.pad {border-color: #e4e4e4;}.widget_sf_infocus_widget .infocus-item h5 a {color: #c8d62f;}.widget_sf_infocus_widget .infocus-item h5 a:hover {color: #c4d600;}.sidebar .widget hr {border-color: #e4e4e4;}.widget ul.flickr_images li a:after, .portfolio-grid li a:after {color: #ffffff;}.slideout-filter .select:after {background: #ffffff;}.slideout-filter ul li a {color: #ffffff;}.slideout-filter ul li a:hover {color: #c4d600;}.slideout-filter ul li.selected a {color: #ffffff;background: #c4d600;}ul.portfolio-filter-tabs li.selected a {background: #f7f7f7;}.spb_blog_widget .filter-wrap {background-color: #222;}.portfolio-item {border-bottom-color: #e4e4e4;}.masonry-items .portfolio-item-details {background: #f7f7f7;}.spb_portfolio_carousel_widget .portfolio-item {background: #ffffff;}.spb_portfolio_carousel_widget .portfolio-item h4.portfolio-item-title a > i {line-height: 28px;}.masonry-items .blog-item .blog-details-wrap:before {background-color: #f7f7f7;}.masonry-items .portfolio-item figure {border-color: #e4e4e4;}.portfolio-details-wrap span span {color: #666;}.share-links > a:hover {color: #c4d600;}.blog-aux-options li.selected a {background: #c4d600;border-color: #c4d600;color: #ffffff;}.blog-filter-wrap .aux-list li:hover {border-bottom-color: transparent;}.blog-filter-wrap .aux-list li:hover a {color: #ffffff;background: #c4d600;}.mini-blog-item-wrap, .mini-items .mini-alt-wrap, .mini-items .mini-alt-wrap .quote-excerpt, .mini-items .mini-alt-wrap .link-excerpt, .masonry-items .blog-item .quote-excerpt, .masonry-items .blog-item .link-excerpt, .standard-post-content .quote-excerpt, .standard-post-content .link-excerpt, .timeline, .post-info, .body-text .link-pages, .page-content .link-pages {border-color: #e4e4e4;}.post-info, .article-body-wrap .share-links .share-text, .article-body-wrap .share-links a {color: #999999;}.standard-post-date {background: #e4e4e4;}.standard-post-content {background: #f7f7f7;}.format-quote .standard-post-content:before, .standard-post-content.no-thumb:before {border-left-color: #f7f7f7;}.search-item-img .img-holder {background: #f7f7f7;border-color:#e4e4e4;}.masonry-items .blog-item .masonry-item-wrap {background: #f7f7f7;}.mini-items .blog-item-details, .share-links, .single-portfolio .share-links, .single .pagination-wrap, ul.portfolio-filter-tabs li a {border-color: #e4e4e4;}.related-item figure {background-color: #c8d62f; color: #ffffff}.required {color: #ee3c59;}.comments-likes a i, .comments-likes a span, .comments-likes .love-it-wrapper a i, .comments-likes span.love-count, .share-links ul.bar-styling > li > a {color: #999999;}#respond .form-submit input:hover {color: #fff!important;}.recent-post {background: #ffffff;}.recent-post .post-item-details {border-top-color: #e4e4e4;color: #e4e4e4;}.post-item-details span, .post-item-details a, .post-item-details .comments-likes a i, .post-item-details .comments-likes a span {color: #999999;}.sf-button.accent {color: #ffffff; background-color: #c4d600;}.sf-button.sf-icon-reveal.accent {color: #ffffff!important; background-color: #c4d600!important;}.sf-button.accent:hover {background-color: #c8d62f;color: #ffffff;}a.sf-button, a.sf-button:hover, #footer a.sf-button:hover {background-image: none;color: #fff!important;}a.sf-button.gold, a.sf-button.gold:hover, a.sf-button.lightgrey, a.sf-button.lightgrey:hover, a.sf-button.white, a.sf-button.white:hover {color: #222!important;}a.sf-button.transparent-dark {color: #444444!important;}a.sf-button.transparent-light:hover, a.sf-button.transparent-dark:hover {color: #c4d600!important;} input[type="submit"], .wpcf7 input.wpcf7-submit[type="submit"], .gform_wrapper input[type="submit"], .mymail-form input[type="submit"] {color: #fff;}input[type="submit"]:hover, .wpcf7 input.wpcf7-submit[type="submit"]:hover, .gform_wrapper input[type="submit"]:hover, .mymail-form input[type="submit"]:hover {background-color: #c8d62f!important;color: #ffffff;}input[type="text"], input[type="email"], input[type="password"], textarea, select, .wpcf7 input[type="text"], .wpcf7 input[type="email"], .wpcf7 textarea, .wpcf7 select, .ginput_container input[type="text"], .ginput_container input[type="email"], .ginput_container textarea, .ginput_container select, .mymail-form input[type="text"], .mymail-form input[type="email"], .mymail-form textarea, .mymail-form select {background: #f7f7f7; border-color: #e4e4e4;}.sf-icon {color: #1dc6df;}.sf-icon-cont {border-color: rgba(73,73,73,0.5);}.sf-icon-cont:hover, .sf-hover .sf-icon-cont, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont, .sf-hover .sf-icon-box-hr {background-color: #494949;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont:after {border-top-color: #494949;border-left-color: #494949;}.sf-icon-cont:hover .sf-icon, .sf-hover .sf-icon-cont .sf-icon, .sf-icon-box.sf-icon-box-boxed-one .sf-icon, .sf-icon-box.sf-icon-box-boxed-three .sf-icon {color: #ffffff;}.sf-icon-box-animated .front {background: #f7f7f7; border-color: #e4e4e4;}.sf-icon-box-animated .front h3 {color: #444444!important;}.sf-icon-box-animated .back {background: #c4d600; border-color: #c4d600;}.sf-icon-box-animated .back, .sf-icon-box-animated .back h3 {color: #ffffff!important;}.sf-icon-accent.sf-icon-cont, .sf-icon-accent > i, i.sf-icon-accent {color: #c4d600;}.sf-icon-cont.sf-icon-accent {border-color: #c4d600;}.sf-icon-cont.sf-icon-accent:hover, .sf-hover .sf-icon-cont.sf-icon-accent, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-accent, .sf-hover .sf-icon-box-hr.sf-icon-accent {background-color: #c4d600;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-accent:after {border-top-color: #c4d600;border-left-color: #c4d600;}.sf-icon-cont.sf-icon-accent:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-accent .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-accent .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-accent .sf-icon {color: #ffffff;}.sf-icon-secondary-accent.sf-icon-cont, .sf-icon-secondary-accent > i, i.sf-icon-secondary-accent {color: #c8d62f;}.sf-icon-cont.sf-icon-secondary-accent {border-color: #c8d62f;}.sf-icon-cont.sf-icon-secondary-accent:hover, .sf-hover .sf-icon-cont.sf-icon-secondary-accent, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-secondary-accent, .sf-hover .sf-icon-box-hr.sf-icon-secondary-accent {background-color: #c8d62f;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-secondary-accent:after {border-top-color: #c8d62f;border-left-color: #c8d62f;}.sf-icon-cont.sf-icon-secondary-accent:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-secondary-accent .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-secondary-accent .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-secondary-accent .sf-icon {color: #ffffff;}.sf-icon-box-animated .back.sf-icon-secondary-accent {background: #c8d62f; border-color: #c8d62f;}.sf-icon-box-animated .back.sf-icon-secondary-accent, .sf-icon-box-animated .back.sf-icon-secondary-accent h3 {color: #ffffff!important;}.sf-icon-icon-one.sf-icon-cont, .sf-icon-icon-one > i, i.sf-icon-icon-one {color: #fa4e38;}.sf-icon-cont.sf-icon-icon-one {border-color: #fa4e38;}.sf-icon-cont.sf-icon-icon-one:hover, .sf-hover .sf-icon-cont.sf-icon-icon-one, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-one, .sf-hover .sf-icon-box-hr.sf-icon-icon-one {background-color: #fa4e38;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-one:after {border-top-color: #fa4e38;border-left-color: #fa4e38;}.sf-icon-cont.sf-icon-icon-one:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-icon-one .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-icon-one .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-icon-one .sf-icon {color: #FFFFFF;}.sf-icon-box-animated .back.sf-icon-icon-one {background: #fa4e38; border-color: #fa4e38;}.sf-icon-box-animated .back.sf-icon-icon-one, .sf-icon-box-animated .back.sf-icon-icon-one h3 {color: #FFFFFF!important;}.sf-icon-icon-two.sf-icon-cont, .sf-icon-icon-two > i, i.sf-icon-icon-two {color: #c4d600;}.sf-icon-cont.sf-icon-icon-two {border-color: #c4d600;}.sf-icon-cont.sf-icon-icon-two:hover, .sf-hover .sf-icon-cont.sf-icon-icon-two, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-two, .sf-hover .sf-icon-box-hr.sf-icon-icon-two {background-color: #c4d600;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-two:after {border-top-color: #c4d600;border-left-color: #c4d600;}.sf-icon-cont.sf-icon-icon-two:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-icon-two .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-icon-two .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-icon-two .sf-icon {color: #FFFFFF;}.sf-icon-box-animated .back.sf-icon-icon-two {background: #c4d600; border-color: #c4d600;}.sf-icon-box-animated .back.sf-icon-icon-two, .sf-icon-box-animated .back.sf-icon-icon-two h3 {color: #FFFFFF!important;}.sf-icon-icon-three.sf-icon-cont, .sf-icon-icon-three > i, i.sf-icon-icon-three {color: #c36fb3;}.sf-icon-cont.sf-icon-icon-three {border-color: #c36fb3;}.sf-icon-cont.sf-icon-icon-three:hover, .sf-hover .sf-icon-cont.sf-icon-icon-three, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-three, .sf-hover .sf-icon-box-hr.sf-icon-icon-three {background-color: #c36fb3;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-three:after {border-top-color: #c36fb3;border-left-color: #c36fb3;}.sf-icon-cont.sf-icon-icon-three:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-icon-three .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-icon-three .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-icon-three .sf-icon {color: #ffffff;}.sf-icon-box-animated .back.sf-icon-icon-three {background: #c36fb3; border-color: #c36fb3;}.sf-icon-box-animated .back.sf-icon-icon-three, .sf-icon-box-animated .back.sf-icon-icon-three h3 {color: #ffffff!important;}.sf-icon-icon-four.sf-icon-cont, .sf-icon-icon-four > i, i.sf-icon-icon-four {color: #28b4eb;}.sf-icon-cont.sf-icon-icon-four {border-color: #28b4eb;}.sf-icon-cont.sf-icon-icon-four:hover, .sf-hover .sf-icon-cont.sf-icon-icon-four, .sf-icon-box[class*="icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-four, .sf-hover .sf-icon-box-hr.sf-icon-icon-four {background-color: #28b4eb;}.sf-icon-box[class*="sf-icon-box-boxed-"] .sf-icon-cont.sf-icon-icon-four:after {border-top-color: #28b4eb;border-left-color: #28b4eb;}.sf-icon-cont.sf-icon-icon-four:hover .sf-icon, .sf-hover .sf-icon-cont.sf-icon-icon-four .sf-icon, .sf-icon-box.sf-icon-box-boxed-one.sf-icon-icon-four .sf-icon, .sf-icon-box.sf-icon-box-boxed-three.sf-icon-icon-four .sf-icon {color: #FFFFFF;}.sf-icon-box-animated .back.sf-icon-icon-four {background: #28b4eb; border-color: #28b4eb;}.sf-icon-box-animated .back.sf-icon-icon-four, .sf-icon-box-animated .back.sf-icon-icon-four h3 {color: #FFFFFF!important;}span.dropcap3 {background: #000;color: #fff;}span.dropcap4 {color: #fff;}.spb_divider, .spb_divider.go_to_top_icon1, .spb_divider.go_to_top_icon2, .testimonials > li, .jobs > li, .spb_impact_text, .tm-toggle-button-wrap, .tm-toggle-button-wrap a, .portfolio-details-wrap, .spb_divider.go_to_top a, .impact-text-wrap, .widget_search form input, .asset-bg.spb_divider {border-color: #e4e4e4;}.spb_divider.go_to_top_icon1 a, .spb_divider.go_to_top_icon2 a {background: #ffffff;}.spb_tabs .ui-tabs .ui-tabs-panel, .spb_content_element .ui-tabs .ui-tabs-nav, .ui-tabs .ui-tabs-nav li {border-color: #e4e4e4;}.spb_tabs .ui-tabs .ui-tabs-panel, .ui-tabs .ui-tabs-nav li.ui-tabs-active a {background: #ffffff!important;}.spb_tabs .nav-tabs li a, .nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus, .spb_accordion .spb_accordion_section, .spb_tour .nav-tabs li a {border-color: #e4e4e4;}.spb_tabs .nav-tabs li.active a, .spb_tour .nav-tabs li.active a, .spb_accordion .spb_accordion_section > h3.ui-state-active a {background-color: #f7f7f7;}.spb_tour .ui-tabs .ui-tabs-nav li a {border-color: #e4e4e4;}.spb_tour.span3 .ui-tabs .ui-tabs-nav li {border-color: #e4e4e4!important;}.toggle-wrap .spb_toggle, .spb_toggle_content {border-color: #e4e4e4;}.toggle-wrap .spb_toggle:hover {color: #c4d600;}.ui-accordion h3.ui-accordion-header .ui-icon {color: #444444;}.ui-accordion h3.ui-accordion-header.ui-state-active:hover a, .ui-accordion h3.ui-accordion-header:hover .ui-icon {color: #c4d600;}blockquote.pullquote {border-color: #c4d600;}.borderframe img {border-color: #eeeeee;}.labelled-pricing-table .column-highlight {background-color: #fff;}.labelled-pricing-table .pricing-table-label-row, .labelled-pricing-table .pricing-table-row {background: #f7f7f7;}.labelled-pricing-table .alt-row {background: #fff;}.labelled-pricing-table .pricing-table-price {background: #e4e4e4;}.labelled-pricing-table .pricing-table-package {background: #f7f7f7;}.labelled-pricing-table .lpt-button-wrap {background: #e4e4e4;}.labelled-pricing-table .lpt-button-wrap a.accent {background: #222!important;}.labelled-pricing-table .column-highlight .lpt-button-wrap {background: transparent!important;}.labelled-pricing-table .column-highlight .lpt-button-wrap a.accent {background: #c4d600!important;}.column-highlight .pricing-table-price {color: #fff;background: #494949;border-bottom-color: #494949;}.column-highlight .pricing-table-package {background: #B4E5F8;}.column-highlight .pricing-table-details {background: #E1F3FA;}.spb_box_text.coloured .box-content-wrap {background: #fb3c2d;color: #fff;}.spb_box_text.whitestroke .box-content-wrap {background-color: #fff;border-color: #e4e4e4;}.client-item figure {border-color: #e4e4e4;}.client-item figure:hover {border-color: #333;}ul.member-contact li a:hover {color: #333;}.testimonials.carousel-items li .testimonial-text {border-color: #e4e4e4;}.testimonials.carousel-items li .testimonial-text:after {border-left-color: #e4e4e4;border-top-color: #e4e4e4;}.team-member figure figcaption {background: #f7f7f7;}.horizontal-break {background-color: #e4e4e4;}.progress .bar {background-color: #c4d600;}.progress.standard .bar {background: #c4d600;}.progress-bar-wrap .progress-value {color: #c4d600;}.asset-bg-detail {background:#ffffff;border-color:#e4e4e4;}#footer {background: #c4d600;}#footer, #footer p {color: #ffffff;}#footer h6 {color: #ffffff;}#footer a {color: #ffffff;}#footer .widget ul li, #footer .widget_categories ul, #footer .widget_archive ul, #footer .widget_nav_menu ul, #footer .widget_recent_comments ul, #footer .widget_meta ul, #footer .widget_recent_entries ul, #footer .widget_product_categories ul {border-color: #c4d600;}#copyright {background-color: #c4d600;border-top-color: #c4d600;}#copyright p {color: #333333;}#copyright a {color: #333333;}#copyright a:hover {color: #e4e4e4;}#copyright nav .menu li {border-left-color: #c4d600;}#footer .widget_calendar #calendar_wrap, #footer .widget_calendar th, #footer .widget_calendar tbody tr > td, #footer .widget_calendar tbody tr > td.pad {border-color: #c4d600;}.widget input[type="email"] {background: #f7f7f7; color: #999}#footer .widget hr {border-color: #c4d600;}.woocommerce nav.woocommerce-pagination ul li a, .woocommerce nav.woocommerce-pagination ul li span, .modal-body .comment-form-rating, .woocommerce form .form-row input.input-text, ul.checkout-process, #billing .proceed, ul.my-account-nav > li, .woocommerce #payment, .woocommerce-checkout p.thank-you, .woocommerce .order_details, .woocommerce-page .order_details, .woocommerce ul.products li.product figure figcaption .yith-wcwl-add-to-wishlist, #product-accordion .panel, .review-order-wrap { border-color: #e4e4e4 ;}nav.woocommerce-pagination ul li span.current, nav.woocommerce-pagination ul li a:hover {background:#c4d600!important;border-color:#c4d600;color: #ffffff!important;}.woocommerce-account p.myaccount_address, .woocommerce-account .page-content h2, p.no-items, #order_review table.shop_table, #payment_heading, .returning-customer a {border-bottom-color: #e4e4e4;}.woocommerce .products ul, .woocommerce ul.products, .woocommerce-page .products ul, .woocommerce-page ul.products, p.no-items {border-top-color: #e4e4e4;}.woocommerce-ordering .woo-select, .variations_form .woo-select, .add_review a, .woocommerce .quantity, .woocommerce-page .quantity, .woocommerce .coupon input.apply-coupon, .woocommerce table.shop_table tr td.product-remove .remove, .woocommerce .button.update-cart-button, .shipping-calculator-form .woo-select, .woocommerce .shipping-calculator-form .update-totals-button button, .woocommerce #billing_country_field .woo-select, .woocommerce #shipping_country_field .woo-select, .woocommerce #review_form #respond .form-submit input, .woocommerce form .form-row input.input-text, .woocommerce table.my_account_orders .order-actions .button, .woocommerce #payment div.payment_box, .woocommerce .widget_price_filter .price_slider_amount .button, .woocommerce.widget .buttons a, .load-more-btn {background: #f7f7f7; color: #c8d62f}.woocommerce-page nav.woocommerce-pagination ul li span.current, .woocommerce nav.woocommerce-pagination ul li span.current { color: #ffffff;}li.product figcaption a.product-added {color: #ffffff;}.woocommerce ul.products li.product figure figcaption, .yith-wcwl-add-button a, ul.products li.product a.quick-view-button, .yith-wcwl-add-to-wishlist, .woocommerce form.cart button.single_add_to_cart_button, .woocommerce p.cart a.single_add_to_cart_button, .lost_reset_password p.form-row input[type="submit"], .track_order p.form-row input[type="submit"], .change_password_form p input[type="submit"], .woocommerce form.register input[type="submit"], .woocommerce .wishlist_table tr td.product-add-to-cart a, .woocommerce input.button[name="save_address"], .woocommerce .woocommerce-message a.button {background: #f7f7f7;}.woocommerce ul.products li.product figure figcaption .shop-actions > a, .woocommerce .wishlist_table tr td.product-add-to-cart a {color: #444444;}.woocommerce ul.products li.product figure figcaption .shop-actions > a.product-added, .woocommerce ul.products li.product figure figcaption .shop-actions > a.product-added:hover {color: #ffffff;}ul.products li.product .product-details .posted_in a {color: #999999;}.woocommerce ul.products li.product figure figcaption .shop-actions > a:hover, ul.products li.product .product-details .posted_in a:hover {color: #c4d600;}.woocommerce form.cart button.single_add_to_cart_button, .woocommerce p.cart a.single_add_to_cart_button, .woocommerce input[name="save_account_details"] { background: #f7f7f7!important; color: #444444 ;}
+.woocommerce form.cart button.single_add_to_cart_button:disabled, .woocommerce form.cart button.single_add_to_cart_button:disabled[disabled] { background: #f7f7f7!important; color: #444444 ;}
+.woocommerce form.cart button.single_add_to_cart_button:hover, .woocommerce .button.checkout-button, .woocommerce .wc-proceed-to-checkout > a.checkout-button { background: #c4d600!important; color: #ffffff ;}
+.woocommerce p.cart a.single_add_to_cart_button:hover, .woocommerce .button.checkout-button:hover, .woocommerce .wc-proceed-to-checkout > a.checkout-button:hover {background: #c8d62f!important; color: #c4d600!important;}.woocommerce table.shop_table tr td.product-remove .remove:hover, .woocommerce .coupon input.apply-coupon:hover, .woocommerce .shipping-calculator-form .update-totals-button button:hover, .woocommerce .quantity .plus:hover, .woocommerce .quantity .minus:hover, .add_review a:hover, .woocommerce #review_form #respond .form-submit input:hover, .lost_reset_password p.form-row input[type="submit"]:hover, .track_order p.form-row input[type="submit"]:hover, .change_password_form p input[type="submit"]:hover, .woocommerce table.my_account_orders .order-actions .button:hover, .woocommerce .widget_price_filter .price_slider_amount .button:hover, .woocommerce.widget .buttons a:hover, .woocommerce .wishlist_table tr td.product-add-to-cart a:hover, .woocommerce input.button[name="save_address"]:hover, .woocommerce input[name="apply_coupon"]:hover, .woocommerce button[name="apply_coupon"]:hover, .woocommerce .cart input[name="update_cart"]:hover, .woocommerce form.register input[type="submit"]:hover, .woocommerce form.cart button.single_add_to_cart_button:hover, .woocommerce form.cart .yith-wcwl-add-to-wishlist a:hover, .load-more-btn:hover, .woocommerce-account input[name="change_password"]:hover {background: #c4d600; color: #ffffff;}.woocommerce-MyAccount-navigation li {border-color: #e4e4e4;}.woocommerce-MyAccount-navigation li.is-active a, .woocommerce-MyAccount-navigation li a:hover {color: #444444;}.woocommerce #account_details .login, .woocommerce #account_details .login h4.lined-heading span, .my-account-login-wrap .login-wrap, .my-account-login-wrap .login-wrap h4.lined-heading span, .woocommerce div.product form.cart table div.quantity {background: #f7f7f7;}.woocommerce .help-bar ul li a:hover, .woocommerce .continue-shopping:hover, .woocommerce .address .edit-address:hover, .my_account_orders td.order-number a:hover, .product_meta a.inline:hover { border-bottom-color: #c4d600;}.woocommerce .order-info, .woocommerce .order-info mark {background: #c4d600; color: #ffffff;}.woocommerce #payment div.payment_box:after {border-bottom-color: #f7f7f7;}.woocommerce .widget_price_filter .price_slider_wrapper .ui-widget-content {background: #e4e4e4;}.woocommerce .widget_price_filter .ui-slider-horizontal .ui-slider-range {background: #f7f7f7;}.yith-wcwl-wishlistexistsbrowse a:hover, .yith-wcwl-wishlistaddedbrowse a:hover {color: #ffffff;}.woocommerce ul.products li.product .price, .woocommerce div.product p.price {color: #444444;}.woocommerce ul.products li.product-category .product-cat-info {background: #e4e4e4;}.woocommerce ul.products li.product-category .product-cat-info:before {border-bottom-color:#e4e4e4;}.woocommerce ul.products li.product-category a:hover .product-cat-info {background: #c4d600; color: #ffffff;}.woocommerce ul.products li.product-category a:hover .product-cat-info h3 {color: #ffffff!important;}.woocommerce ul.products li.product-category a:hover .product-cat-info:before {border-bottom-color:#c4d600;}.woocommerce input[name="apply_coupon"], .woocommerce button[name="apply_coupon"], .woocommerce .cart input[name="update_cart"], .woocommerce .shipping-calc-wrap button[name="calc_shipping"], .woocommerce-account input[name="change_password"] {background: #f7f7f7!important; color: #c8d62f!important}.woocommerce input[name="apply_coupon"]:hover, .woocommerce button[name="apply_coupon"]:hover, .woocommerce .cart input[name="update_cart"]:hover, .woocommerce .shipping-calc-wrap button[name="calc_shipping"]:hover, .woocommerce-account input[name="change_password"]:hover, .woocommerce input[name="save_account_details"]:hover {background: #c4d600!important; color: #ffffff!important;}#buddypress .activity-meta a, #buddypress .acomment-options a, #buddypress #member-group-links li a {border-color: #e4e4e4;}#buddypress .activity-meta a:hover, #buddypress .acomment-options a:hover, #buddypress #member-group-links li a:hover {border-color: #c4d600;}#buddypress .activity-header a, #buddypress .activity-read-more a {border-color: #c4d600;}#buddypress #members-list .item-meta .activity, #buddypress .activity-header p {color: #999999;}#buddypress .pagination-links span, #buddypress .load-more.loading a {background-color: #c4d600;color: #ffffff;border-color: #c4d600;}span.bbp-admin-links a, li.bbp-forum-info .bbp-forum-content {color: #999999;}span.bbp-admin-links a:hover {color: #c4d600;}.bbp-topic-action #favorite-toggle a, .bbp-topic-action #subscription-toggle a, .bbp-single-topic-meta a, .bbp-topic-tags a, #bbpress-forums li.bbp-body ul.forum, #bbpress-forums li.bbp-body ul.topic, #bbpress-forums li.bbp-header, #bbpress-forums li.bbp-footer, #bbp-user-navigation ul li a, .bbp-pagination-links a, #bbp-your-profile fieldset input, #bbp-your-profile fieldset textarea, #bbp-your-profile, #bbp-your-profile fieldset {border-color: #e4e4e4;}.bbp-topic-action #favorite-toggle a:hover, .bbp-topic-action #subscription-toggle a:hover, .bbp-single-topic-meta a:hover, .bbp-topic-tags a:hover, #bbp-user-navigation ul li a:hover, .bbp-pagination-links a:hover {border-color: #c4d600;}#bbp-user-navigation ul li.current a, .bbp-pagination-links span.current {border-color: #c4d600;background: #c4d600; color: #ffffff;}#bbpress-forums fieldset.bbp-form button[type="submit"], #bbp_user_edit_submit {background: #f7f7f7; color: #c8d62f}#bbpress-forums fieldset.bbp-form button[type="submit"]:hover, #bbp_user_edit_submit:hover {background: #c4d600; color: #ffffff;}.asset-bg {border-color: #e4e4e4;}.asset-bg.alt-one {background-color: #000000;}.asset-bg.alt-one {background-image: url(//livrept.net/wp-content/uploads/2014/03/red_pattern.png); background-repeat: repeat; background-position: center top; background-size:auto;}.asset-bg.alt-one, .asset-bg .alt-one, .asset-bg.alt-one h1, .asset-bg.alt-one h2, .asset-bg.alt-one h3, .asset-bg.alt-one h3, .asset-bg.alt-one h4, .asset-bg.alt-one h5, .asset-bg.alt-one h6, .alt-one .carousel-wrap > a {color: #ffffff;}.asset-bg.alt-one h4.spb-center-heading span:before, .asset-bg.alt-one h4.spb-center-heading span:after {border-color: #ffffff;}.alt-one .full-width-text:after {border-top-color:#000000;}.alt-one h4.spb-text-heading, .alt-one h4.spb-heading {border-bottom-color:#ffffff;}.asset-bg.alt-two {background-color: #FFFFFF;}.asset-bg.alt-two, .asset-bg .alt-two, .asset-bg.alt-two h1, .asset-bg.alt-two h2, .asset-bg.alt-two h3, .asset-bg.alt-two h3, .asset-bg.alt-two h4, .asset-bg.alt-two h5, .asset-bg.alt-two h6, .alt-two .carousel-wrap > a {color: #222222;}.asset-bg.alt-two h4.spb-center-heading span:before, .asset-bg.alt-two h4.spb-center-heading span:after {border-color: #222222;}.alt-two .full-width-text:after {border-top-color:#FFFFFF;}.alt-two h4.spb-text-heading, .alt-two h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-three {background-color: #000000;}.asset-bg.alt-three {background-image: url(//livrept.net/wp-content/uploads/2014/03/crimson_pattern.png); background-repeat: no-repeat; background-position: center center; background-size:cover;}.asset-bg.alt-three, .asset-bg .alt-three, .asset-bg.alt-three h1, .asset-bg.alt-three h2, .asset-bg.alt-three h3, .asset-bg.alt-three h3, .asset-bg.alt-three h4, .asset-bg.alt-three h5, .asset-bg.alt-three h6, .alt-three .carousel-wrap > a {color: #ffffff;}.asset-bg.alt-three h4.spb-center-heading span:before, .asset-bg.alt-three h4.spb-center-heading span:after {border-color: #ffffff;}.alt-three .full-width-text:after {border-top-color:#000000;}.alt-three h4.spb-text-heading, .alt-three h4.spb-heading {border-bottom-color:#ffffff;}.asset-bg.alt-four {background-color: #FFFFFF;}.asset-bg.alt-four {background-image: url(//livrept.net/wp-content/uploads/2014/03/cream_pixels.png); background-repeat: repeat; background-position: center top; background-size:auto;}.asset-bg.alt-four, .asset-bg .alt-four, .asset-bg.alt-four h1, .asset-bg.alt-four h2, .asset-bg.alt-four h3, .asset-bg.alt-four h3, .asset-bg.alt-four h4, .asset-bg.alt-four h5, .asset-bg.alt-four h6, .alt-four .carousel-wrap > a {color: #222222;}.asset-bg.alt-four h4.spb-center-heading span:before, .asset-bg.alt-four h4.spb-center-heading span:after {border-color: #222222;}.alt-four .full-width-text:after {border-top-color:#FFFFFF;}.alt-four h4.spb-text-heading, .alt-four h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-five {background-color: #01439a;}.asset-bg.alt-five {background-image: url(//livrept.net/wp-content/uploads/2014/03/blueglow.png); background-repeat: no-repeat; background-position: center center; background-size:cover;}.asset-bg.alt-five, .asset-bg .alt-five, .asset-bg.alt-five h1, .asset-bg.alt-five h2, .asset-bg.alt-five h3, .asset-bg.alt-five h3, .asset-bg.alt-five h4, .asset-bg.alt-five h5, .asset-bg.alt-five h6, .alt-five .carousel-wrap > a {color: #ffffff;}.asset-bg.alt-five h4.spb-center-heading span:before, .asset-bg.alt-five h4.spb-center-heading span:after {border-color: #ffffff;}.alt-five .full-width-text:after {border-top-color:#01439a;}.alt-five h4.spb-text-heading, .alt-five h4.spb-heading {border-bottom-color:#ffffff;}.asset-bg.alt-six {background-color: #d1ffc9;}.asset-bg.alt-six, .asset-bg .alt-six, .asset-bg.alt-six h1, .asset-bg.alt-six h2, .asset-bg.alt-six h3, .asset-bg.alt-six h3, .asset-bg.alt-six h4, .asset-bg.alt-six h5, .asset-bg.alt-six h6, .alt-six .carousel-wrap > a {color: #222222;}.asset-bg.alt-six h4.spb-center-heading span:before, .asset-bg.alt-six h4.spb-center-heading span:after {border-color: #222222;}.alt-six .full-width-text:after {border-top-color:#d1ffc9;}.alt-six h4.spb-text-heading, .alt-six h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-seven {background-color: #FFFFFF;}.asset-bg.alt-seven, .asset-bg .alt-seven, .asset-bg.alt-seven h1, .asset-bg.alt-seven h2, .asset-bg.alt-seven h3, .asset-bg.alt-seven h3, .asset-bg.alt-seven h4, .asset-bg.alt-seven h5, .asset-bg.alt-seven h6, .alt-seven .carousel-wrap > a {color: #222222;}.asset-bg.alt-seven h4.spb-center-heading span:before, .asset-bg.alt-seven h4.spb-center-heading span:after {border-color: #222222;}.alt-seven .full-width-text:after {border-top-color:#FFFFFF;}.alt-seven h4.spb-text-heading, .alt-seven h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-eight {background-color: #FFFFFF;}.asset-bg.alt-eight, .asset-bg .alt-eight, .asset-bg.alt-eight h1, .asset-bg.alt-eight h2, .asset-bg.alt-eight h3, .asset-bg.alt-eight h3, .asset-bg.alt-eight h4, .asset-bg.alt-eight h5, .asset-bg.alt-eight h6, .alt-eight .carousel-wrap > a {color: #222222;}.asset-bg.alt-eight h4.spb-center-heading span:before, .asset-bg.alt-eight h4.spb-center-heading span:after {border-color: #222222;}.alt-eight .full-width-text:after {border-top-color:#FFFFFF;}.alt-eight h4.spb-text-heading, .alt-eight h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-nine {background-color: #FFFFFF;}.asset-bg.alt-nine, .asset-bg .alt-nine, .asset-bg.alt-nine h1, .asset-bg.alt-nine h2, .asset-bg.alt-nine h3, .asset-bg.alt-nine h3, .asset-bg.alt-nine h4, .asset-bg.alt-nine h5, .asset-bg.alt-nine h6, .alt-nine .carousel-wrap > a {color: #222222;}.asset-bg.alt-nine h4.spb-center-heading span:before, .asset-bg.alt-nine h4.spb-center-heading span:after {border-color: #222222;}.alt-nine .full-width-text:after {border-top-color:#FFFFFF;}.alt-nine h4.spb-text-heading, .alt-nine h4.spb-heading {border-bottom-color:#222222;}.asset-bg.alt-ten {background-color: #FFFFFF;}.asset-bg.alt-ten, .asset-bg .alt-ten, .asset-bg.alt-ten h1, .asset-bg.alt-ten h2, .asset-bg.alt-ten h3, .asset-bg.alt-ten h3, .asset-bg.alt-ten h4, .asset-bg.alt-ten h5, .asset-bg.alt-ten h6, .alt-ten .carousel-wrap > a {color: #222222;}.asset-bg.alt-ten h4.spb-center-heading span:before, .asset-bg.alt-ten h4.spb-center-heading span:after {border-color: #222222;}.alt-ten .full-width-text:after {border-top-color:#FFFFFF;}.alt-ten h4.spb-text-heading, .alt-ten h4.spb-heading {border-bottom-color:#222222;}.asset-bg.light-style, .asset-bg.light-style h1, .asset-bg.light-style h2, .asset-bg.light-style h3, .asset-bg.light-style h3, .asset-bg.light-style h4, .asset-bg.light-style h5, .asset-bg.light-style h6 {color: #fff!important;}.asset-bg.dark-style, .asset-bg.dark-style h1, .asset-bg.dark-style h2, .asset-bg.dark-style h3, .asset-bg.dark-style h3, .asset-bg.dark-style h4, .asset-bg.dark-style h5, .asset-bg.dark-style h6 {color: #222!important;}body, h6, #sidebar .widget-heading h3, #header-search input, .header-items h3.phone-number, .related-wrap h4, #comments-list > h4, .item-heading h1, .sf-button, button, input[type="submit"], input[type="reset"], input[type="button"], input[type="email"], .spb_accordion_section h3, #header-login input, #mobile-navigation > div, .search-form input, input, button, select, textarea {font-family: "Roboto", sans-serif;font-weight: 400;font-style: normal;}strong, .sf-button, h6, .standard-post-date, .sf-count-asset h6.count-subject, .progress-bar-wrap .bar-text > span.progress-value, .portfolio-showcase-wrap ul li .item-info span.item-title, table.sf-table th, .team-member figcaption span, .read-more-button, .pagination-wrap li span.current, #respond .form-submit input#submit, .twitter-link a, .comment-meta .comment-author, .woocommerce span.onsale, .woocommerce .wc-new-badge, .woocommerce .out-of-stock-badge, .woocommerce .free-badge, .woocommerce a.button.alt, .woocommerce .coupon input.apply-coupon, .bag-product-title a, .woocommerce .shipping-calculator-form .update-totals-button button, table.totals_table tr.total, .woocommerce .button.update-cart-button, .woocommerce .button.checkout-button, #product-accordion .accordion-toggle, .woocommerce ul.products li.product-category h3 {font-family: "Roboto", sans-serif;font-style: normal;letter-spacing: normal; font-weight: bold!important;}h1, h2, h3, h4, h5, .heading-font, .custom-caption p, span.dropcap1, span.dropcap2, span.dropcap3, span.dropcap4, .spb_call_text, .impact-text, .impact-text-large, .testimonial-text, .header-advert, .spb_call_text, .impact-text, .sf-count-asset .count-number, #base-promo, .sf-countdown, .fancy-heading h1, .sf-icon-character {font-family: "Roboto", sans-serif;font-weight: 700;font-style: normal;}nav .menu li {font-family: "Roboto", sans-serif;font-weight: 500;font-style: normal;}.mobile-browser .sf-animation, .apple-mobile-browser .sf-animation {
+					opacity: 1!important;
+					left: auto!important;
+					right: auto!important;
+					bottom: auto!important;
+					-webkit-transform: scale(1)!important;
+					-o-transform: scale(1)!important;
+					-moz-transform: scale(1)!important;
+					transform: scale(1)!important;
+				}
+				.mobile-browser .sf-animation.image-banner-content, .apple-mobile-browser .sf-animation.image-banner-content {
+					bottom: 50%!important;
+				}@media only screen and (max-width: 767px) {#top-bar nav .menu > li {border-top-color: #f7f7f7;}nav .menu > li {border-top-color: #e4e4e4;}}</style>
+			<style>
+				.e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload),
+				.e-con.e-parent:nth-of-type(n+4):not(.e-lazyloaded):not(.e-no-lazyload) * {
+					background-image: none !important;
+				}
+				@media screen and (max-height: 1024px) {
+					.e-con.e-parent:nth-of-type(n+3):not(.e-lazyloaded):not(.e-no-lazyload),
+					.e-con.e-parent:nth-of-type(n+3):not(.e-lazyloaded):not(.e-no-lazyload) * {
+						background-image: none !important;
+					}
+				}
+				@media screen and (max-height: 640px) {
+					.e-con.e-parent:nth-of-type(n+2):not(.e-lazyloaded):not(.e-no-lazyload),
+					.e-con.e-parent:nth-of-type(n+2):not(.e-lazyloaded):not(.e-no-lazyload) * {
+						background-image: none !important;
+					}
+				}
+			</style>
+			<script>(()=>{var o=[],i={};["on","off","toggle","show"].forEach(l=>{i[l]=function(){o.push([l,arguments])}}),window.Boxzilla=i,window.boxzilla_queue=o})();</script>			<meta name="theme-color" content="#C4D600">
+			<meta name="generator" content="Powered by Slider Revolution 6.6.8 - responsive, Mobile-Friendly Slider Plugin for WordPress with comfortable drag and drop interface." />
+<link rel="icon" href="https://partidolivre.pt/wp-content/uploads/2025/05/cropped-Simbolosemfundo-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://partidolivre.pt/wp-content/uploads/2025/05/cropped-Simbolosemfundo-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://partidolivre.pt/wp-content/uploads/2025/05/cropped-Simbolosemfundo-180x180.png" />
+<meta name="msapplication-TileImage" content="https://partidolivre.pt/wp-content/uploads/2025/05/cropped-Simbolosemfundo-270x270.png" />
+<script>function setREVStartSize(e){
+			//window.requestAnimationFrame(function() {
+				window.RSIW = window.RSIW===undefined ? window.innerWidth : window.RSIW;
+				window.RSIH = window.RSIH===undefined ? window.innerHeight : window.RSIH;
+				try {
+					var pw = document.getElementById(e.c).parentNode.offsetWidth,
+						newh;
+					pw = pw===0 || isNaN(pw) || (e.l=="fullwidth" || e.layout=="fullwidth") ? window.RSIW : pw;
+					e.tabw = e.tabw===undefined ? 0 : parseInt(e.tabw);
+					e.thumbw = e.thumbw===undefined ? 0 : parseInt(e.thumbw);
+					e.tabh = e.tabh===undefined ? 0 : parseInt(e.tabh);
+					e.thumbh = e.thumbh===undefined ? 0 : parseInt(e.thumbh);
+					e.tabhide = e.tabhide===undefined ? 0 : parseInt(e.tabhide);
+					e.thumbhide = e.thumbhide===undefined ? 0 : parseInt(e.thumbhide);
+					e.mh = e.mh===undefined || e.mh=="" || e.mh==="auto" ? 0 : parseInt(e.mh,0);
+					if(e.layout==="fullscreen" || e.l==="fullscreen")
+						newh = Math.max(e.mh,window.RSIH);
+					else{
+						e.gw = Array.isArray(e.gw) ? e.gw : [e.gw];
+						for (var i in e.rl) if (e.gw[i]===undefined || e.gw[i]===0) e.gw[i] = e.gw[i-1];
+						e.gh = e.el===undefined || e.el==="" || (Array.isArray(e.el) && e.el.length==0)? e.gh : e.el;
+						e.gh = Array.isArray(e.gh) ? e.gh : [e.gh];
+						for (var i in e.rl) if (e.gh[i]===undefined || e.gh[i]===0) e.gh[i] = e.gh[i-1];
+											
+						var nl = new Array(e.rl.length),
+							ix = 0,
+							sl;
+						e.tabw = e.tabhide>=pw ? 0 : e.tabw;
+						e.thumbw = e.thumbhide>=pw ? 0 : e.thumbw;
+						e.tabh = e.tabhide>=pw ? 0 : e.tabh;
+						e.thumbh = e.thumbhide>=pw ? 0 : e.thumbh;
+						for (var i in e.rl) nl[i] = e.rl[i]<window.RSIW ? 0 : e.rl[i];
+						sl = nl[0];
+						for (var i in nl) if (sl>nl[i] && nl[i]>0) { sl = nl[i]; ix=i;}
+						var m = pw>(e.gw[ix]+e.tabw+e.thumbw) ? 1 : (pw-(e.tabw+e.thumbw)) / (e.gw[ix]);
+						newh =  (e.gh[ix] * m) + (e.tabh + e.thumbh);
+					}
+					var el = document.getElementById(e.c);
+					if (el!==null && el) el.style.height = newh+"px";
+					el = document.getElementById(e.c+"_wrapper");
+					if (el!==null && el) {
+						el.style.height = newh+"px";
+						el.style.display = "block";
+					}
+				} catch(e){
+					console.log("Failure at Presize of Slider:" + e)
+				}
+			//});
+		  };</script>
+	
+	<!--// CLOSE HEAD //-->
+	</head>
+	
+	<!--// OPEN BODY //-->
+	<body class="error404 wp-custom-logo wp-theme-dante mini-header-enabled page-shadow layout-fullwidth responsive-fluid search-2 rttpg rttpg-7.8.9 radius-frontend rttpg-body-wrap rttpg-flaticon elementor-default elementor-kit-30216">
+		
+		<div id="header-search">
+			<div class="container clearfix">
+				<i class="ss-search"></i>
+				<form method="get" class="search-form" action="https://partidolivre.pt/"><input type="text" placeholder="Search for something..." name="s" autocomplete="off" /></form>
+				<a id="header-search-close" href="#"><i class="ss-delete"></i></a>
+			</div>
+		</div>
+		
+				
+		<div id="mobile-menu-wrap">
+<form method="get" class="mobile-search-form" action="https://partidolivre.pt/"><input type="text" placeholder="Search" name="s" autocomplete="off" /></form>
+<a class="mobile-menu-close"><i class="ss-delete"></i></a>
+<nav id="mobile-menu" class="clearfix">
+<div class="menu-dante-menu-main-container"><ul id="menu-dante-menu-main" class="menu"><li  class="menu-item-12690 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children   "><a href="/declaracao-de-principios-2"><span class="menu-item-text">LIVRE<span class="nav-line"></span></span></a>
+<ul class="sub-menu">
+	<li  class="menu-item-14360 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/orgaos-nacionais-do-livre">Órgãos Nacionais</a></li>
+	<li  class="menu-item-13341 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/nucleos-territoriais">Núcleos Territoriais</a></li>
+	<li  class="menu-item-42266 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/eleicoes">Eleições</a></li>
+	<li  class="menu-item-15429 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/congressos">Congressos</a></li>
+	<li  class="menu-item-12268 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/circulos-tematicos">Círculos Temáticos</a></li>
+	<li  class="menu-item-35197 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/declaracao-de-principios-2-2">Declaração de Princípios</a></li>
+	<li  class="menu-item-39162 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/carta-verdes-europeus">Carta dos Verdes Europeus</a></li>
+	<li  class="menu-item-42265 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/documentos">Documentos</a></li>
+	<li  class="menu-item-38177 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/dossie-imprensa">Dossiê de Imprensa</a></li>
+</ul>
+</li>
+<li  class="menu-item-35874 menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children   "><a href="https://partidolivre.pt/parlamento"><span class="menu-item-text">Parlamento<span class="nav-line"></span></span></a>
+<ul class="sub-menu">
+	<li  class="menu-item-45465 menu-item menu-item-type-custom menu-item-object-custom   "><a href="https://programa.partidolivre.pt/">Programa</a></li>
+	<li  class="menu-item-42597 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/parlamento/projetos-lei">Projetos de Lei</a></li>
+	<li  class="menu-item-42598 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/parlamento/projetos-resolucao">Projetos de Resolução</a></li>
+	<li  class="menu-item-42596 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/parlamento/outros">Votos e Outras Iniciativas</a></li>
+	<li  class="menu-item-42595 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/parlamento/revisao-constitucional">Revisão Constitucional</a></li>
+	<li  class="menu-item-45227 menu-item menu-item-type-custom menu-item-object-custom   "><a href="https://liberdade.partidolivre.pt">Prémio Liberdade</a></li>
+</ul>
+</li>
+<li  class="menu-item-45448 menu-item menu-item-type-custom menu-item-object-custom   "><a href="https://autarquicas.partidolivre.pt/eleitos"><span class="menu-item-text">Autarquias<span class="nav-line"></span></span></a></li>
+<li  class="menu-item-43418 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/le"><span class="menu-item-text">Jornal Lê<span class="nav-line"></span></span></a></li>
+<li  class="menu-item-18619 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/comunicados"><span class="menu-item-text">Comunicados e Notícias<span class="nav-line"></span></span></a></li>
+<li  class="menu-item-18618 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/eventos"><span class="menu-item-text">Eventos<span class="nav-line"></span></span></a></li>
+<li  class="menu-item-36946 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/contactos"><span class="menu-item-text">Contactos<span class="nav-line"></span></span></a></li>
+<li  class="menu-item-13714 menu-item menu-item-type-post_type menu-item-object-page   "><a href="https://partidolivre.pt/participar"><span class="menu-item-text">Participar<span class="nav-line"></span></span></a></li>
+</ul></div></nav>
+</div>
+		
+		<!--// OPEN #container //-->
+				<div id="container">
+					
+			<!--// HEADER //-->
+			<div class="header-wrap fw-header">
+				
+					
+					
+				<div id="header-section" class="header-6 ">
+					<header id="header" class="sticky-header clearfix">
+<div class="container">
+<div class="row">
+<div id="logo" class="logo-left clearfix">
+<a href="https://partidolivre.pt">
+<img class="standard" src="https://partidolivre.pt/wp-content/uploads/2021/08/LIVRE-Logotipo-e1719943963679.png" alt="LIVRE" width="7533" height="2840" />
+</a>
+<a href="#" class="visible-sm visible-xs mobile-menu-show"><i class="ss-rows"></i></a>
+</div>
+<div class="header-right"><nav class="search-nav std-menu">
+<ul class="menu">
+<li class="menu-search parent"><a href="#" class="header-search-link-alt"><i class="ss-search"></i></a>
+<div class="ajax-search-wrap"><div class="ajax-loading"></div><form method="get" class="ajax-search-form" action="https://partidolivre.pt/"><input type="text" placeholder="Search" name="s" autocomplete="off" /></form><div class="ajax-search-results"></div></div>
+</li>
+</ul>
+</nav>
+<nav id="main-navigation" class="mega-menu clearfix">
+<div class="menu-dante-menu-main-container"><ul id="menu-dante-menu-main-1" class="menu"><li  class="menu-item-12690 menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children       " ><a href="/declaracao-de-principios-2">LIVRE<span class="nav-line"></span></a>
+<ul class="sub-menu">
+	<li  class="menu-item-14360 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/orgaos-nacionais-do-livre">Órgãos Nacionais</a></li>
+	<li  class="menu-item-13341 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/nucleos-territoriais">Núcleos Territoriais</a></li>
+	<li  class="menu-item-42266 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/eleicoes">Eleições</a></li>
+	<li  class="menu-item-15429 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/congressos">Congressos</a></li>
+	<li  class="menu-item-12268 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/circulos-tematicos">Círculos Temáticos</a></li>
+	<li  class="menu-item-35197 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/declaracao-de-principios-2-2">Declaração de Princípios</a></li>
+	<li  class="menu-item-39162 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/carta-verdes-europeus">Carta dos Verdes Europeus</a></li>
+	<li  class="menu-item-42265 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/documentos">Documentos</a></li>
+	<li  class="menu-item-38177 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/dossie-imprensa">Dossiê de Imprensa</a></li>
+</ul>
+</li>
+<li  class="menu-item-35874 menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children       " ><a href="https://partidolivre.pt/parlamento">Parlamento<span class="nav-line"></span></a>
+<ul class="sub-menu">
+	<li  class="menu-item-45465 menu-item menu-item-type-custom menu-item-object-custom       " ><a href="https://programa.partidolivre.pt/">Programa</a></li>
+	<li  class="menu-item-42597 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/parlamento/projetos-lei">Projetos de Lei</a></li>
+	<li  class="menu-item-42598 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/parlamento/projetos-resolucao">Projetos de Resolução</a></li>
+	<li  class="menu-item-42596 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/parlamento/outros">Votos e Outras Iniciativas</a></li>
+	<li  class="menu-item-42595 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/parlamento/revisao-constitucional">Revisão Constitucional</a></li>
+	<li  class="menu-item-45227 menu-item menu-item-type-custom menu-item-object-custom       " ><a href="https://liberdade.partidolivre.pt">Prémio Liberdade</a></li>
+</ul>
+</li>
+<li  class="menu-item-45448 menu-item menu-item-type-custom menu-item-object-custom       " ><a href="https://autarquicas.partidolivre.pt/eleitos">Autarquias<span class="nav-line"></span></a></li>
+<li  class="menu-item-43418 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/le">Jornal Lê<span class="nav-line"></span></a></li>
+<li  class="menu-item-18619 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/comunicados">Comunicados e Notícias<span class="nav-line"></span></a></li>
+<li  class="menu-item-18618 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/eventos">Eventos<span class="nav-line"></span></a></li>
+<li  class="menu-item-36946 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/contactos">Contactos<span class="nav-line"></span></a></li>
+<li  class="menu-item-13714 menu-item menu-item-type-post_type menu-item-object-page       " ><a href="https://partidolivre.pt/participar">Participar<span class="nav-line"></span></a></li>
+</ul></div></nav>
+
+</div>
+</div> <!-- CLOSE .row -->
+</div> <!-- CLOSE .container -->
+</header>
+				</div>
+
+			</div>
+			
+			<!--// OPEN #main-container //-->
+			<div id="main-container" class="clearfix">
+				
+												
+				            
+            			<div class="page-heading  clearfix asset-bg none">
+			                <div class="container">
+                    <div class="heading-text">
+
+                        
+                            <h1 class="entry-title">404</h1>
+						
+						                        
+                        
+                    </div>
+
+					<div id="breadcrumbs">
+<a title="Go to LIVRE." href="https://partidolivre.pt" class="home">LIVRE</a><i class="ss-navigateright"></i>404</div>
+
+                </div>
+            </div>
+        				
+									<!--// OPEN .container //-->
+					<div class="container">
+									
+					<!--// OPEN #page-wrap //-->
+					<div id="page-wrap">
+<div class="container">
+	<div class="inner-page-wrap row has-right-sidebar has-one-sidebar clearfix">
+	
+		<article class="help-text col-sm-8">
+			Sorry but we couldn't find the page you are looking for. Please check to make sure you've typed the URL correctly. You may also want to search for what you are looking for. 
+			<form method="get" class="search-form" action="https://partidolivre.pt/">
+				<input type="text" placeholder="Search" name="s" />
+			</form>
+			<a class="sf-button small accent slightlyroundedarrow" href="javascript:history.go(-1)" target="_self"><span>Return to the previous page</span><span class="arrow"></span></a>
+		</article>
+		
+		<aside class="sidebar right-sidebar col-sm-4">
+			<section id="text-2" class="widget widget_text clearfix"><div class="widget-heading clearfix"><h4 class="spb-heading"><span>Seguir o LIVRE</span></h4></div>			<div class="textwidget"><ul class="social-icons large ">
+<li class="twitter"><a href="http://www.twitter.com/LIVREpt" target="_blank"><i class="fab fa-twitter"></i><i class="fab fa-twitter"></i></a></li>
+<li class="facebook"><a href="https://www.facebook.com/LIVREoficialpt" target="_blank"><i class="fab fa-facebook"></i><i class="fab fa-facebook"></i></a></li>
+<li class="youtube"><a href="https://www.youtube.com/user/LIVREoficialpt" target="_blank"><i class="fab fa-youtube"></i><i class="fab fa-youtube"></i></a></li>
+<li class="linkedin"><a href="https://www.linkedin.com/company/partidolivre" target="_blank"><i class="fab fa-linkedin"></i><i class="fab fa-linkedin"></i></a></li>
+<li class="instagram"><a href="http://instagram.com/partidolivre" target="_blank"><i class="fab fa-instagram"></i><i class="fab fa-instagram"></i></a></li>
+</ul>
+</div>
+		</section>
+		<section id="recent-posts-2" class="widget widget_recent_entries clearfix">
+		<div class="widget-heading clearfix"><h4 class="spb-heading"><span>Últimas notícias</span></h4></div>
+		<ul>
+											<li>
+					<a href="https://partidolivre.pt/nucleos-territoriais/nucleo-maia-resultados-da-eleicao-do-grupo-de-coordenacao-local-2026-2028">Núcleo Maia: Resultados da Eleição do Grupo de Coordenação Local (2026-2028)</a>
+									</li>
+											<li>
+					<a href="https://partidolivre.pt/nucleos-territoriais/arvores-da-rua-lourenco-de-almeida-azevedo">Árvores da Rua Lourenço de Almeida Azevedo</a>
+									</li>
+											<li>
+					<a href="https://partidolivre.pt/nucleos-territoriais/nucleo-maia-lista-candidata-ao-grupo-de-coordenacao-local-2026-2028">Núcleo Maia: Lista Candidata ao Grupo de Coordenação Local (2026-2028)</a>
+									</li>
+											<li>
+					<a href="https://partidolivre.pt/nucleos-territoriais/nomeacao-itap">Nomeação ITAP</a>
+									</li>
+											<li>
+					<a href="https://partidolivre.pt/nucleos-territoriais/nucleo-odivelas-resultados-da-eleicao-do-grupo-de-coordenacao-local-2026-2028">Núcleo Odivelas: Resultados da Eleição do Grupo de Coordenação Local (2026-2028)</a>
+									</li>
+					</ul>
+
+		</section><section id="text-3" class="widget widget_text clearfix">			<div class="textwidget"><ul class="social-icons large ">
+<li class="twitter"><a href="http://www.twitter.com/LIVREpt" target="_blank"><i class="fab fa-twitter"></i><i class="fab fa-twitter"></i></a></li>
+<li class="facebook"><a href="https://www.facebook.com/LIVREoficialpt" target="_blank"><i class="fab fa-facebook"></i><i class="fab fa-facebook"></i></a></li>
+<li class="youtube"><a href="https://www.youtube.com/user/LIVREoficialpt" target="_blank"><i class="fab fa-youtube"></i><i class="fab fa-youtube"></i></a></li>
+<li class="linkedin"><a href="https://www.linkedin.com/company/partidolivre" target="_blank"><i class="fab fa-linkedin"></i><i class="fab fa-linkedin"></i></a></li>
+<li class="instagram"><a href="http://instagram.com/partidolivre" target="_blank"><i class="fab fa-instagram"></i><i class="fab fa-instagram"></i></a></li>
+</ul>
+
+</div>
+		</section>		</aside>
+		
+	</div>
+</div>
+
+<!--// WordPress Hook //-->
+					
+					<!--// CLOSE #page-wrap //-->			
+					</div>
+				
+				<!--// CLOSE .container //-->
+				</div>
+				
+			<!--// CLOSE #main-container //-->
+			</div>
+			
+									
+			<div id="footer-wrap">
+			
+						
+			<!--// OPEN #footer //-->
+			<section id="footer" class="footer-divider">
+				<div class="container">
+					<div id="footer-widgets" class="row clearfix">
+												
+						<div class="col-sm-4">
+													<section id="block-43" class="widget widget_block widget_media_image clearfix"><div class="wp-block-image is-style-default">
+<figure class="alignleft size-full is-resized" id="https://europeangreens.eu/"><a href="https://europeangreens.eu/"><img fetchpriority="high" fetchpriority="high" decoding="async" width="400" height="225" src="https://partidolivre.pt/wp-content/uploads/2024/07/OtherLogos_EGP_0-400x400-3-edited.png" alt="" class="wp-image-42163" style="width:165px;height:auto" srcset="https://partidolivre.pt/wp-content/uploads/2024/07/OtherLogos_EGP_0-400x400-3-edited.png 400w, https://partidolivre.pt/wp-content/uploads/2024/07/OtherLogos_EGP_0-400x400-3-edited-300x169.png 300w" sizes="(max-width: 400px) 100vw, 400px" /></a></figure></div></section>												</div>
+						<div class="col-sm-4">
+													<section id="block-41" class="widget widget_block clearfix">
+<div class="wp-block-buttons has-custom-font-size is-vertical is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-9a7cdcfd wp-block-buttons-is-layout-flex" style="font-size:58px;font-style:normal;font-weight:400;text-transform:lowercase">
+<div class="wp-block-button has-custom-font-size is-style-fill" style="font-size:16px;font-style:normal;font-weight:600;text-transform:none"><a class="wp-block-button__link has-background wp-element-button" href="https://actionnetwork.org/forms/subscreve-os-emails-do-livre/?source=direct_link&amp;" style="border-radius:34px;background-color:#fa4e38" target="_blank" rel="noreferrer noopener">Assina a newsletter</a></div>
+</div>
+</section>												</div>
+						<div class="col-sm-4">
+													<section id="block-51" class="widget widget_block clearfix">
+<ul class="wp-block-social-links alignright has-normal-icon-size has-icon-color has-icon-background-color is-horizontal is-content-justification-right is-nowrap is-layout-flex wp-container-core-social-links-is-layout-1c040b41 wp-block-social-links-is-layout-flex"><li style="color: #000000; background-color: #ffffff00; " class="wp-social-link wp-social-link-instagram has-black-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.instagram.com/partidolivre" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12,4.622c2.403,0,2.688,0.009,3.637,0.052c0.877,0.04,1.354,0.187,1.671,0.31c0.42,0.163,0.72,0.358,1.035,0.673 c0.315,0.315,0.51,0.615,0.673,1.035c0.123,0.317,0.27,0.794,0.31,1.671c0.043,0.949,0.052,1.234,0.052,3.637 s-0.009,2.688-0.052,3.637c-0.04,0.877-0.187,1.354-0.31,1.671c-0.163,0.42-0.358,0.72-0.673,1.035 c-0.315,0.315-0.615,0.51-1.035,0.673c-0.317,0.123-0.794,0.27-1.671,0.31c-0.949,0.043-1.233,0.052-3.637,0.052 s-2.688-0.009-3.637-0.052c-0.877-0.04-1.354-0.187-1.671-0.31c-0.42-0.163-0.72-0.358-1.035-0.673 c-0.315-0.315-0.51-0.615-0.673-1.035c-0.123-0.317-0.27-0.794-0.31-1.671C4.631,14.688,4.622,14.403,4.622,12 s0.009-2.688,0.052-3.637c0.04-0.877,0.187-1.354,0.31-1.671c0.163-0.42,0.358-0.72,0.673-1.035 c0.315-0.315,0.615-0.51,1.035-0.673c0.317-0.123,0.794-0.27,1.671-0.31C9.312,4.631,9.597,4.622,12,4.622 M12,3 C9.556,3,9.249,3.01,8.289,3.054C7.331,3.098,6.677,3.25,6.105,3.472C5.513,3.702,5.011,4.01,4.511,4.511 c-0.5,0.5-0.808,1.002-1.038,1.594C3.25,6.677,3.098,7.331,3.054,8.289C3.01,9.249,3,9.556,3,12c0,2.444,0.01,2.751,0.054,3.711 c0.044,0.958,0.196,1.612,0.418,2.185c0.23,0.592,0.538,1.094,1.038,1.594c0.5,0.5,1.002,0.808,1.594,1.038 c0.572,0.222,1.227,0.375,2.185,0.418C9.249,20.99,9.556,21,12,21s2.751-0.01,3.711-0.054c0.958-0.044,1.612-0.196,2.185-0.418 c0.592-0.23,1.094-0.538,1.594-1.038c0.5-0.5,0.808-1.002,1.038-1.594c0.222-0.572,0.375-1.227,0.418-2.185 C20.99,14.751,21,14.444,21,12s-0.01-2.751-0.054-3.711c-0.044-0.958-0.196-1.612-0.418-2.185c-0.23-0.592-0.538-1.094-1.038-1.594 c-0.5-0.5-1.002-0.808-1.594-1.038c-0.572-0.222-1.227-0.375-2.185-0.418C14.751,3.01,14.444,3,12,3L12,3z M12,7.378 c-2.552,0-4.622,2.069-4.622,4.622S9.448,16.622,12,16.622s4.622-2.069,4.622-4.622S14.552,7.378,12,7.378z M12,15 c-1.657,0-3-1.343-3-3s1.343-3,3-3s3,1.343,3,3S13.657,15,12,15z M16.804,6.116c-0.596,0-1.08,0.484-1.08,1.08 s0.484,1.08,1.08,1.08c0.596,0,1.08-0.484,1.08-1.08S17.401,6.116,16.804,6.116z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Instagram</span></a></li>
+
+<li style="color: #000000; background-color: #ffffff00; " class="wp-social-link wp-social-link-facebook has-black-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.facebook.com/LIVREoficialpt" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12c0-5.5-4.5-10-10-10z"></path></svg><span class="wp-block-social-link-label screen-reader-text">Facebook</span></a></li>
+
+<li style="color: #000000; background-color: #ffffff00; " class="wp-social-link wp-social-link-youtube has-black-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.youtube.com/user/LIVREoficialpt" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M21.8,8.001c0,0-0.195-1.378-0.795-1.985c-0.76-0.797-1.613-0.801-2.004-0.847c-2.799-0.202-6.997-0.202-6.997-0.202 h-0.009c0,0-4.198,0-6.997,0.202C4.608,5.216,3.756,5.22,2.995,6.016C2.395,6.623,2.2,8.001,2.2,8.001S2,9.62,2,11.238v1.517 c0,1.618,0.2,3.237,0.2,3.237s0.195,1.378,0.795,1.985c0.761,0.797,1.76,0.771,2.205,0.855c1.6,0.153,6.8,0.201,6.8,0.201 s4.203-0.006,7.001-0.209c0.391-0.047,1.243-0.051,2.004-0.847c0.6-0.607,0.795-1.985,0.795-1.985s0.2-1.618,0.2-3.237v-1.517 C22,9.62,21.8,8.001,21.8,8.001z M9.935,14.594l-0.001-5.62l5.404,2.82L9.935,14.594z"></path></svg><span class="wp-block-social-link-label screen-reader-text">YouTube</span></a></li>
+
+<li style="color: #000000; background-color: #ffffff00; " class="wp-social-link wp-social-link-linkedin has-black-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.linkedin.com/company/partidolivre" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z"></path></svg><span class="wp-block-social-link-label screen-reader-text">LinkedIn</span></a></li>
+
+<li style="color: #000000; background-color: #ffffff00; " class="wp-social-link wp-social-link-tiktok has-black-color wp-block-social-link"><a rel="noopener nofollow" target="_blank" href="https://www.tiktok.com/@livrenotiktok" class="wp-block-social-link-anchor"><svg width="24" height="24" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M16.708 0.027c1.745-0.027 3.48-0.011 5.213-0.027 0.105 2.041 0.839 4.12 2.333 5.563 1.491 1.479 3.6 2.156 5.652 2.385v5.369c-1.923-0.063-3.855-0.463-5.6-1.291-0.76-0.344-1.468-0.787-2.161-1.24-0.009 3.896 0.016 7.787-0.025 11.667-0.104 1.864-0.719 3.719-1.803 5.255-1.744 2.557-4.771 4.224-7.88 4.276-1.907 0.109-3.812-0.411-5.437-1.369-2.693-1.588-4.588-4.495-4.864-7.615-0.032-0.667-0.043-1.333-0.016-1.984 0.24-2.537 1.495-4.964 3.443-6.615 2.208-1.923 5.301-2.839 8.197-2.297 0.027 1.975-0.052 3.948-0.052 5.923-1.323-0.428-2.869-0.308-4.025 0.495-0.844 0.547-1.485 1.385-1.819 2.333-0.276 0.676-0.197 1.427-0.181 2.145 0.317 2.188 2.421 4.027 4.667 3.828 1.489-0.016 2.916-0.88 3.692-2.145 0.251-0.443 0.532-0.896 0.547-1.417 0.131-2.385 0.079-4.76 0.095-7.145 0.011-5.375-0.016-10.735 0.025-16.093z" /></svg><span class="wp-block-social-link-label screen-reader-text">TikTok</span></a></li></ul>
+</section>												</div>
+						
+												
+					</div>
+				</div>	
+			
+			<!--// CLOSE #footer //-->
+			</section>	
+						
+						
+			<!--// OPEN #copyright //-->
+			<footer id="copyright" class="copyright-divider">
+				<div class="container">
+					<p>
+						<center>
+<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license"><img style="border-width: 0;" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" alt="Creative Commons License" /></a>
+<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license">Creative Commons Attribution-ShareAlike 4.0 International License</a>. 2026 LIVRE | <strong>info@partidolivre.pt</strong>
+<a href="https://partidolivre.pt/politica-de-privacidade">Política de privacidade</a></center>
+												
+					</p>
+					<nav class="footer-menu std-menu">
+											</nav>
+				</div>
+			<!--// CLOSE #copyright //-->
+			</footer>
+			
+						
+			</div>
+		
+		<!--// CLOSE #container //-->
+		</div>
+		
+				
+				<!--// BACK TO TOP //-->
+		<div id="back-to-top" class="animate-top"><i class="ss-navigateup"></i></div>
+				
+		<!--// FULL WIDTH VIDEO //-->
+		<div class="fw-video-area"><div class="fw-video-close"><i class="ss-delete"></i></div></div><div class="fw-video-spacer"></div>
+		
+								
+		<!--// FRAMEWORK INCLUDES //-->
+		<div id="sf-included" class=""></div>
+
+		<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-73762807-1', 'auto');
+  ga('send', 'pageview');
+
+</script>			
+		<!--// WORDPRESS FOOTER HOOK //-->
+		
+		<script>
+			window.RS_MODULES = window.RS_MODULES || {};
+			window.RS_MODULES.modules = window.RS_MODULES.modules || {};
+			window.RS_MODULES.waiting = window.RS_MODULES.waiting || [];
+			window.RS_MODULES.defered = false;
+			window.RS_MODULES.moduleWaiting = window.RS_MODULES.moduleWaiting || {};
+			window.RS_MODULES.type = 'compiled';
+		</script>
+		<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"\/*"},{"not":{"href_matches":["\/wp-*.php","\/wp-admin\/*","\/wp-content\/uploads\/*","\/wp-content\/*","\/wp-content\/plugins\/*","\/wp-content\/themes\/dante\/*","\/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script type="text/javascript">
+  window._mfq = window._mfq || [];
+  (function() {
+    var mf = document.createElement("script");
+    mf.type = "text/javascript"; mf.defer = true;
+    mf.src = "//cdn.mouseflow.com/projects/354e6009-dc85-4212-9c9f-ba819e52454b.js";
+    document.getElementsByTagName("head")[0].appendChild(mf);
+  })();
+</script>			<div id="sf-option-params"
+				data-lightbox-enabled="1"
+				data-lightbox-nav="default"
+				data-lightbox-thumbs="true"
+				data-lightbox-skin="light"
+				data-lightbox-sharing="true"
+				data-slider-slidespeed="7500"
+				data-slider-animspeed="700"
+				data-slider-autoplay="1"></div>
+		
+					<script>
+				const lazyloadRunObserver = () => {
+					const lazyloadBackgrounds = document.querySelectorAll( `.e-con.e-parent:not(.e-lazyloaded)` );
+					const lazyloadBackgroundObserver = new IntersectionObserver( ( entries ) => {
+						entries.forEach( ( entry ) => {
+							if ( entry.isIntersecting ) {
+								let lazyloadBackground = entry.target;
+								if( lazyloadBackground ) {
+									lazyloadBackground.classList.add( 'e-lazyloaded' );
+								}
+								lazyloadBackgroundObserver.unobserve( entry.target );
+							}
+						});
+					}, { rootMargin: '200px 0px 200px 0px' } );
+					lazyloadBackgrounds.forEach( ( lazyloadBackground ) => {
+						lazyloadBackgroundObserver.observe( lazyloadBackground );
+					} );
+				};
+				const events = [
+					'DOMContentLoaded',
+					'elementor/lazyload/observe',
+				];
+				events.forEach( ( event ) => {
+					document.addEventListener( event, lazyloadRunObserver );
+				} );
+			</script>
+			<style id='core-block-supports-inline-css' type='text/css'>
+.wp-container-core-buttons-is-layout-9a7cdcfd{flex-direction:column;align-items:center;}.wp-container-core-social-links-is-layout-1c040b41{flex-wrap:nowrap;justify-content:flex-end;}
+</style>
+<link rel='stylesheet' id='rs-plugin-settings-css' href='https://partidolivre.pt/wp-content/plugins/revslider/public/assets/css/rs6.css?ver=6.6.8' type='text/css' media='all' />
+<style id='rs-plugin-settings-inline-css' type='text/css'>
+#rs-demo-id {}
+</style>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6" id="wp-hooks-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6" id="wp-i18n-js"></script>
+<script type="text/javascript" id="wp-i18n-js-after">
+/* <![CDATA[ */
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/contact-form-7/includes/swv/js/index.js?ver=6.1.5" id="swv-js"></script>
+<script type="text/javascript" id="contact-form-7-js-translations">
+/* <![CDATA[ */
+( function( domain, translations ) {
+	var localeData = translations.locale_data[ domain ] || translations.locale_data.messages;
+	localeData[""].domain = domain;
+	wp.i18n.setLocaleData( localeData, domain );
+} )( "contact-form-7", {"translation-revision-date":"2024-08-13 18:06:19+0000","generator":"GlotPress\/4.0.1","domain":"messages","locale_data":{"messages":{"":{"domain":"messages","plural-forms":"nplurals=2; plural=n != 1;","lang":"pt"},"This contact form is placed in the wrong place.":["Este formul\u00e1rio de contacto est\u00e1 colocado no s\u00edtio errado."],"Error:":["Erro:"]}},"comment":{"reference":"includes\/js\/index.js"}} );
+/* ]]> */
+</script>
+<script type="text/javascript" id="contact-form-7-js-before">
+/* <![CDATA[ */
+var wpcf7 = {
+    "api": {
+        "root": "https:\/\/partidolivre.pt\/wp-json\/",
+        "namespace": "contact-form-7\/v1"
+    },
+    "cached": 1
+};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/contact-form-7/includes/js/index.js?ver=6.1.5" id="contact-form-7-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/revslider/public/assets/js/rbtools.min.js?ver=6.6.8" async id="tp-tools-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/revslider/public/assets/js/rs6.min.js?ver=6.6.8" async id="revmin-js"></script>
+<script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.min.js" id="canvasjs-free-js"></script>
+<script type="text/javascript" id="pojo-a11y-js-extra">
+/* <![CDATA[ */
+var PojoA11yOptions = {"focusable":"","remove_link_target":"","add_role_links":"","enable_save":"","save_expiration":""};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/pojo-accessibility/modules/legacy/assets/js/app.min.js?ver=1.0.0" id="pojo-a11y-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/modernizr.js" id="modernizr-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/bootstrap.min.js" id="bootstrap-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/jquery/ui/core.min.js?ver=1.13.3" id="jquery-ui-core-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/jquery/ui/accordion.min.js?ver=1.13.3" id="jquery-ui-accordion-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.flexslider-min.js" id="flexslider-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.easing.js" id="easing-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/owl.carousel.min.js" id="owlcarousel-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/dcmegamenu.js" id="dcmegamenu-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/imagesloaded.min.js?ver=5.0.0" id="imagesloaded-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-includes/js/masonry.min.js?ver=4.2.2" id="masonry-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.appear.js" id="jquery-appear-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.animatenumber.js" id="jquery-animatenumber-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.animOnScroll.js" id="jquery-animOnScroll-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.classie.js" id="jquery-classie-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.countdown.min.js" id="jquery-countdown-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.countTo.js" id="jquery-countTo-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.easypiechart.min.js" id="jquery-easypiechart-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.equalHeights.js?ver=1.0.1" id="jquery-equalHeights-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.hoverIntent.min.js" id="jquery-hoverIntent-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.infinitescroll.min.js" id="jquery-infinite-scroll-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.isotope.min.js" id="jquery-isotope-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/imagesloaded.js" id="jquery-imagesLoaded-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.parallax.min.js" id="jquery-parallax-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.smartresize.js" id="jquery-smartresize-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.stickem.js" id="jquery-stickem-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.stickyplugin.js" id="jquery-stickyplugin-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/jquery.viewport.js" id="jquery-viewport-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/lib/ilightbox.min.js" id="ilightbox-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/themes/dante/js/functions.js" id="sf-functions-js"></script>
+<script type="text/javascript" src="https://partidolivre.pt/wp-content/plugins/wordpress-countdown-widget/js/jquery.countdown.min.js?ver=1.0" id="countdown-js"></script>
+		<a id="pojo-a11y-skip-content" class="pojo-skip-link pojo-skip-content" tabindex="1" accesskey="s" href="#content">Skip to content</a>
+				<nav id="pojo-a11y-toolbar" class="pojo-a11y-toolbar-right pojo-a11y-" role="navigation">
+			<div class="pojo-a11y-toolbar-toggle">
+				<a class="pojo-a11y-toolbar-link pojo-a11y-toolbar-toggle-link" href="javascript:void(0);" title="Accessibility Tools" role="button">
+					<span class="pojo-sr-only sr-only">Open toolbar</span>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor" width="1em">
+						<title>Accessibility Tools</title>
+						<path d="M50 8.1c23.2 0 41.9 18.8 41.9 41.9 0 23.2-18.8 41.9-41.9 41.9C26.8 91.9 8.1 73.2 8.1 50S26.8 8.1 50 8.1M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 11.3c-21.4 0-38.7 17.3-38.7 38.7S28.6 88.7 50 88.7 88.7 71.4 88.7 50 71.4 11.3 50 11.3zm0 8.9c4 0 7.3 3.2 7.3 7.3S54 34.7 50 34.7s-7.3-3.2-7.3-7.3 3.3-7.2 7.3-7.2zm23.7 19.7c-5.8 1.4-11.2 2.6-16.6 3.2.2 20.4 2.5 24.8 5 31.4.7 1.9-.2 4-2.1 4.7-1.9.7-4-.2-4.7-2.1-1.8-4.5-3.4-8.2-4.5-15.8h-2c-1 7.6-2.7 11.3-4.5 15.8-.7 1.9-2.8 2.8-4.7 2.1-1.9-.7-2.8-2.8-2.1-4.7 2.6-6.6 4.9-11 5-31.4-5.4-.6-10.8-1.8-16.6-3.2-1.7-.4-2.8-2.1-2.4-3.9.4-1.7 2.1-2.8 3.9-2.4 19.5 4.6 25.1 4.6 44.5 0 1.7-.4 3.5.7 3.9 2.4.7 1.8-.3 3.5-2.1 3.9z"/>					</svg>
+				</a>
+			</div>
+			<div class="pojo-a11y-toolbar-overlay">
+				<div class="pojo-a11y-toolbar-inner">
+					<p class="pojo-a11y-toolbar-title">Accessibility Tools</p>
+
+					<ul class="pojo-a11y-toolbar-items pojo-a11y-tools">
+																			<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-resize-font pojo-a11y-btn-resize-plus" data-action="resize-plus" data-action-group="resize" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Increase Text</title><path fill="currentColor" d="M256 200v16c0 4.25-3.75 8-8 8h-56v56c0 4.25-3.75 8-8 8h-16c-4.25 0-8-3.75-8-8v-56h-56c-4.25 0-8-3.75-8-8v-16c0-4.25 3.75-8 8-8h56v-56c0-4.25 3.75-8 8-8h16c4.25 0 8 3.75 8 8v56h56c4.25 0 8 3.75 8 8zM288 208c0-61.75-50.25-112-112-112s-112 50.25-112 112 50.25 112 112 112 112-50.25 112-112zM416 416c0 17.75-14.25 32-32 32-8.5 0-16.75-3.5-22.5-9.5l-85.75-85.5c-29.25 20.25-64.25 31-99.75 31-97.25 0-176-78.75-176-176s78.75-176 176-176 176 78.75 176 176c0 35.5-10.75 70.5-31 99.75l85.75 85.75c5.75 5.75 9.25 14 9.25 22.5z"></path></svg></span><span class="pojo-a11y-toolbar-text">Increase Text</span>								</a>
+							</li>
+
+							<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-resize-font pojo-a11y-btn-resize-minus" data-action="resize-minus" data-action-group="resize" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Decrease Text</title><path fill="currentColor" d="M256 200v16c0 4.25-3.75 8-8 8h-144c-4.25 0-8-3.75-8-8v-16c0-4.25 3.75-8 8-8h144c4.25 0 8 3.75 8 8zM288 208c0-61.75-50.25-112-112-112s-112 50.25-112 112 50.25 112 112 112 112-50.25 112-112zM416 416c0 17.75-14.25 32-32 32-8.5 0-16.75-3.5-22.5-9.5l-85.75-85.5c-29.25 20.25-64.25 31-99.75 31-97.25 0-176-78.75-176-176s78.75-176 176-176 176 78.75 176 176c0 35.5-10.75 70.5-31 99.75l85.75 85.75c5.75 5.75 9.25 14 9.25 22.5z"></path></svg></span><span class="pojo-a11y-toolbar-text">Decrease Text</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-background-group pojo-a11y-btn-grayscale" data-action="grayscale" data-action-group="schema" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Grayscale</title><path fill="currentColor" d="M15.75 384h-15.75v-352h15.75v352zM31.5 383.75h-8v-351.75h8v351.75zM55 383.75h-7.75v-351.75h7.75v351.75zM94.25 383.75h-7.75v-351.75h7.75v351.75zM133.5 383.75h-15.5v-351.75h15.5v351.75zM165 383.75h-7.75v-351.75h7.75v351.75zM180.75 383.75h-7.75v-351.75h7.75v351.75zM196.5 383.75h-7.75v-351.75h7.75v351.75zM235.75 383.75h-15.75v-351.75h15.75v351.75zM275 383.75h-15.75v-351.75h15.75v351.75zM306.5 383.75h-15.75v-351.75h15.75v351.75zM338 383.75h-15.75v-351.75h15.75v351.75zM361.5 383.75h-15.75v-351.75h15.75v351.75zM408.75 383.75h-23.5v-351.75h23.5v351.75zM424.5 383.75h-8v-351.75h8v351.75zM448 384h-15.75v-352h15.75v352z"></path></svg></span><span class="pojo-a11y-toolbar-text">Grayscale</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-background-group pojo-a11y-btn-high-contrast" data-action="high-contrast" data-action-group="schema" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>High Contrast</title><path fill="currentColor" d="M192 360v-272c-75 0-136 61-136 136s61 136 136 136zM384 224c0 106-86 192-192 192s-192-86-192-192 86-192 192-192 192 86 192 192z"></path></svg></span><span class="pojo-a11y-toolbar-text">High Contrast</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-background-group pojo-a11y-btn-negative-contrast" data-action="negative-contrast" data-action-group="schema" tabindex="-1" role="button">
+
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Negative Contrast</title><path fill="currentColor" d="M416 240c-23.75-36.75-56.25-68.25-95.25-88.25 10 17 15.25 36.5 15.25 56.25 0 61.75-50.25 112-112 112s-112-50.25-112-112c0-19.75 5.25-39.25 15.25-56.25-39 20-71.5 51.5-95.25 88.25 42.75 66 111.75 112 192 112s149.25-46 192-112zM236 144c0-6.5-5.5-12-12-12-41.75 0-76 34.25-76 76 0 6.5 5.5 12 12 12s12-5.5 12-12c0-28.5 23.5-52 52-52 6.5 0 12-5.5 12-12zM448 240c0 6.25-2 12-5 17.25-46 75.75-130.25 126.75-219 126.75s-173-51.25-219-126.75c-3-5.25-5-11-5-17.25s2-12 5-17.25c46-75.5 130.25-126.75 219-126.75s173 51.25 219 126.75c3 5.25 5 11 5 17.25z"></path></svg></span><span class="pojo-a11y-toolbar-text">Negative Contrast</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-background-group pojo-a11y-btn-light-background" data-action="light-background" data-action-group="schema" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Light Background</title><path fill="currentColor" d="M184 144c0 4.25-3.75 8-8 8s-8-3.75-8-8c0-17.25-26.75-24-40-24-4.25 0-8-3.75-8-8s3.75-8 8-8c23.25 0 56 12.25 56 40zM224 144c0-50-50.75-80-96-80s-96 30-96 80c0 16 6.5 32.75 17 45 4.75 5.5 10.25 10.75 15.25 16.5 17.75 21.25 32.75 46.25 35.25 74.5h57c2.5-28.25 17.5-53.25 35.25-74.5 5-5.75 10.5-11 15.25-16.5 10.5-12.25 17-29 17-45zM256 144c0 25.75-8.5 48-25.75 67s-40 45.75-42 72.5c7.25 4.25 11.75 12.25 11.75 20.5 0 6-2.25 11.75-6.25 16 4 4.25 6.25 10 6.25 16 0 8.25-4.25 15.75-11.25 20.25 2 3.5 3.25 7.75 3.25 11.75 0 16.25-12.75 24-27.25 24-6.5 14.5-21 24-36.75 24s-30.25-9.5-36.75-24c-14.5 0-27.25-7.75-27.25-24 0-4 1.25-8.25 3.25-11.75-7-4.5-11.25-12-11.25-20.25 0-6 2.25-11.75 6.25-16-4-4.25-6.25-10-6.25-16 0-8.25 4.5-16.25 11.75-20.5-2-26.75-24.75-53.5-42-72.5s-25.75-41.25-25.75-67c0-68 64.75-112 128-112s128 44 128 112z"></path></svg></span><span class="pojo-a11y-toolbar-text">Light Background</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-links-underline" data-action="links-underline" data-action-group="toggle" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Links Underline</title><path fill="currentColor" d="M364 304c0-6.5-2.5-12.5-7-17l-52-52c-4.5-4.5-10.75-7-17-7-7.25 0-13 2.75-18 8 8.25 8.25 18 15.25 18 28 0 13.25-10.75 24-24 24-12.75 0-19.75-9.75-28-18-5.25 5-8.25 10.75-8.25 18.25 0 6.25 2.5 12.5 7 17l51.5 51.75c4.5 4.5 10.75 6.75 17 6.75s12.5-2.25 17-6.5l36.75-36.5c4.5-4.5 7-10.5 7-16.75zM188.25 127.75c0-6.25-2.5-12.5-7-17l-51.5-51.75c-4.5-4.5-10.75-7-17-7s-12.5 2.5-17 6.75l-36.75 36.5c-4.5 4.5-7 10.5-7 16.75 0 6.5 2.5 12.5 7 17l52 52c4.5 4.5 10.75 6.75 17 6.75 7.25 0 13-2.5 18-7.75-8.25-8.25-18-15.25-18-28 0-13.25 10.75-24 24-24 12.75 0 19.75 9.75 28 18 5.25-5 8.25-10.75 8.25-18.25zM412 304c0 19-7.75 37.5-21.25 50.75l-36.75 36.5c-13.5 13.5-31.75 20.75-50.75 20.75-19.25 0-37.5-7.5-51-21.25l-51.5-51.75c-13.5-13.5-20.75-31.75-20.75-50.75 0-19.75 8-38.5 22-52.25l-22-22c-13.75 14-32.25 22-52 22-19 0-37.5-7.5-51-21l-52-52c-13.75-13.75-21-31.75-21-51 0-19 7.75-37.5 21.25-50.75l36.75-36.5c13.5-13.5 31.75-20.75 50.75-20.75 19.25 0 37.5 7.5 51 21.25l51.5 51.75c13.5 13.5 20.75 31.75 20.75 50.75 0 19.75-8 38.5-22 52.25l22 22c13.75-14 32.25-22 52-22 19 0 37.5 7.5 51 21l52 52c13.75 13.75 21 31.75 21 51z"></path></svg></span><span class="pojo-a11y-toolbar-text">Links Underline</span>								</a>
+							</li>
+						
+													<li class="pojo-a11y-toolbar-item">
+								<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-readable-font" data-action="readable-font" data-action-group="toggle" tabindex="-1" role="button">
+									<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Readable Font</title><path fill="currentColor" d="M181.25 139.75l-42.5 112.5c24.75 0.25 49.5 1 74.25 1 4.75 0 9.5-0.25 14.25-0.5-13-38-28.25-76.75-46-113zM0 416l0.5-19.75c23.5-7.25 49-2.25 59.5-29.25l59.25-154 70-181h32c1 1.75 2 3.5 2.75 5.25l51.25 120c18.75 44.25 36 89 55 133 11.25 26 20 52.75 32.5 78.25 1.75 4 5.25 11.5 8.75 14.25 8.25 6.5 31.25 8 43 12.5 0.75 4.75 1.5 9.5 1.5 14.25 0 2.25-0.25 4.25-0.25 6.5-31.75 0-63.5-4-95.25-4-32.75 0-65.5 2.75-98.25 3.75 0-6.5 0.25-13 1-19.5l32.75-7c6.75-1.5 20-3.25 20-12.5 0-9-32.25-83.25-36.25-93.5l-112.5-0.5c-6.5 14.5-31.75 80-31.75 89.5 0 19.25 36.75 20 51 22 0.25 4.75 0.25 9.5 0.25 14.5 0 2.25-0.25 4.5-0.5 6.75-29 0-58.25-5-87.25-5-3.5 0-8.5 1.5-12 2-15.75 2.75-31.25 3.5-47 3.5z"></path></svg></span><span class="pojo-a11y-toolbar-text">Readable Font</span>								</a>
+							</li>
+																		<li class="pojo-a11y-toolbar-item">
+							<a href="#" class="pojo-a11y-toolbar-link pojo-a11y-btn-reset" data-action="reset" tabindex="-1" role="button">
+								<span class="pojo-a11y-toolbar-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 448 448"><title>Reset</title><path fill="currentColor" d="M384 224c0 105.75-86.25 192-192 192-57.25 0-111.25-25.25-147.75-69.25-2.5-3.25-2.25-8 0.5-10.75l34.25-34.5c1.75-1.5 4-2.25 6.25-2.25 2.25 0.25 4.5 1.25 5.75 3 24.5 31.75 61.25 49.75 101 49.75 70.5 0 128-57.5 128-128s-57.5-128-128-128c-32.75 0-63.75 12.5-87 34.25l34.25 34.5c4.75 4.5 6 11.5 3.5 17.25-2.5 6-8.25 10-14.75 10h-112c-8.75 0-16-7.25-16-16v-112c0-6.5 4-12.25 10-14.75 5.75-2.5 12.75-1.25 17.25 3.5l32.5 32.25c35.25-33.25 83-53 132.25-53 105.75 0 192 86.25 192 192z"></path></svg></span>
+								<span class="pojo-a11y-toolbar-text">Reset</span>
+							</a>
+						</li>
+					</ul>
+									</div>
+			</div>
+		</nav>
+		
+<script>(function($) {
+  $.countdown.regional['custom'] = {
+    labels: [
+      'Anos', 
+      'Meses', 
+      'Semanas', 
+      'Dias', 
+      'Horas', 
+      'Minutos', 
+      'Segundos'
+      ], 
+    labels1: [
+      'Ano', 
+      'Mês', 
+      'Semana', 
+      'Dia', 
+      'Hora', 
+      'Minuto', 
+      'Segundo'
+    ], 
+    compactLabels: ['y', 'a', 'h', 'g'], 
+    whichLabels: null, 
+    timeSeparator: ':', 
+    isRTL: false
+  }; 
+  $.countdown.setDefaults($.countdown.regional['custom']); 
+})(jQuery);
+</script>
+
+	
+	<!--// CLOSE BODY //-->
+	</body>
+
+
+<!--// CLOSE HTML //-->
+</html>

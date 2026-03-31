@@ -15,14 +15,8 @@ export default function FAQPage() {
     { q: t('faq.q2'), a: t('faq.a2') },
     { q: t('faq.q3'), a: t('faq.a3') },
     { q: t('faq.q4'), a: t('faq.a4') },
-    { 
-      q: 'Como posso sugerir novos dados?', 
-      a: 'Pode utilizar o botão "Sugerir Nova Fonte" no Explorador de Dados ou enviar-nos uma mensagem direta através da nossa página de contacto.' 
-    },
-    { 
-      q: 'O site tem publicidade?', 
-      a: 'Sim. Utilizamos o Google AdSense para financiar os custos de servidor e processamento de IA, garantindo que o acesso à informação permanece gratuito para todos.' 
-    }
+    { q: t('faq.q5'), a: t('faq.a5') },
+    { q: t('faq.q6'), a: t('faq.a6') },
   ];
 
   return (
@@ -33,7 +27,7 @@ export default function FAQPage() {
           {t('faq.title')}
         </h1>
         <p className="text-xl text-muted-foreground">
-          Respostas rápidas sobre a plataforma e a transparência de dados.
+          {t('faq.subtitle')}
         </p>
       </div>
 
@@ -52,8 +46,8 @@ export default function FAQPage() {
 
       <div className="bg-primary/5 rounded-3xl p-10 border border-primary/10 flex flex-col md:flex-row justify-between items-center gap-8">
         <div className="space-y-2 text-center md:text-left">
-          <h2 className="text-2xl font-bold">Ainda tem dúvidas?</h2>
-          <p className="text-muted-foreground">A nossa equipa está pronta para ajudar com qualquer questão técnica ou de dados.</p>
+          <h2 className="text-2xl font-bold">{t('faq.footerTitle')}</h2>
+          <p className="text-muted-foreground">{t('faq.footerSubtitle')}</p>
         </div>
         <Button asChild size="lg" className="px-8 shadow-lg">
           <Link href="/contact">

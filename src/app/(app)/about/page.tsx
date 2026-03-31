@@ -90,9 +90,9 @@ export default function AboutPage() {
       </div>
 
       <section className="bg-muted/30 p-8 rounded-3xl border text-center space-y-4 shadow-sm">
-        <h2 className="text-2xl font-bold">Compromisso com o Futuro</h2>
+        <h2 className="text-2xl font-bold">{t('about.commitmentTitle')}</h2>
         <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Portugal enfrenta desafios complexos em 2026. A habitação, a demografia e a competitividade fiscal são temas que requerem dados, não ideologias. A Demokratia fornece a bússola para que cada cidadão possa navegar na atualidade política com independência crítica.
+          {t('about.commitmentDesc')}
         </p>
       </section>
     </div>

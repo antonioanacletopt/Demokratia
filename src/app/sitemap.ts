@@ -1,31 +1,76 @@
+import { MetadataRoute } from 'next';
+import { getAllArticles } from '@/lib/articles';
+import { getAllParties } from '@/lib/parties';
 
-import { MetadataRoute } from 'next'
-
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://demokratia.pt'
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const articles = await getAllArticles();
   
-  const routes = [
-    '',
-    '/home',
-    '/explorer',
-    '/budget',
-    '/simulations',
-    '/scenarios',
-    '/fact-check',
-    '/legislation',
-    '/proposals',
-    '/methodology',
-    '/about',
-    '/faq',
-    '/contact',
-    '/terms',
-    '/privacy',
-  ]
+  const parties = await getAllParties();
+  
+  const articleEntries = articles.map(({ slug, frontmatter }) => ({
+    url: `https://demokratia.pt/library/${slug}`,
+    lastModified: new Date(frontmatter.date),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
 
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString().split('T')[0],
-    changeFrequency: route === '/home' ? 'daily' : 'weekly',
-    priority: route === '' || route === '/home' ? 1 : 0.8,
-  }))
+  const partyEntries = parties.map(({ slug }) => ({
+    url: `https://demokratia.pt/partidos/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [
+    {
+      url: 'https://demokratia.pt',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: 'https://demokratia.pt/library',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: 'https://demokratia.pt/methodology',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://demokratia.pt/fact-check',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: 'https://demokratia.pt/legislation',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: 'https://demokratia.pt/explorer',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://demokratia.pt/budget',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://demokratia.pt/partidos',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    ...articleEntries,
+    ...partyEntries,
+  ];
 }

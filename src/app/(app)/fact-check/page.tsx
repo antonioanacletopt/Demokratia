@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Share2, Sparkles } from 'lucide-react';
+import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Sparkles } from 'lucide-react';
+import { SocialShare } from '@/components/SocialShare';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation, Language } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -62,7 +63,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ verdict: string, explanation: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
-  const [copied, setCopied] = useState(false);
+
 
   useEffect(() => {
     if (language === 'en' && result) {
@@ -107,14 +108,9 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
     });
   };
 
-  const handleCopyLink = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('claim', claim);
-    navigator.clipboard.writeText(url.toString());
-    setCopied(true);
-    toast({ title: t('common.linkCopied') });
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const shareUrl = typeof window !== 'undefined'
+    ? (() => { const u = new URL(window.location.href); u.searchParams.set('claim', claim); return u.toString(); })()
+    : '';
 
   const currentVerdict = !showOriginal && translated ? translated.verdict : result.verdict;
   const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
@@ -130,10 +126,11 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
             <CardDescription className="italic mt-1 line-clamp-2">"{claim}"</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={handleCopyLink} className="h-8 gap-1.5 text-xs">
-              {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Share2 className="h-3.5 w-3.5" />}
-              {t('common.share')}
-            </Button>
+            <SocialShare
+              url={shareUrl}
+              title={`Fact-Check: "${claim}"`}
+              description={result.verdict}
+            />
             <RefutationDialog contentId={`factcheck-${generateSlug(claim)}`} trigger={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hover:bg-destructive hover:text-destructive-foreground border-destructive/20 text-destructive"><MessageSquareWarning className="h-3.5 w-3.5" />{t('refutation.refuteBtn')}</Button>} />
             {language !== 'pt' && (
               <Button 
@@ -186,7 +183,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
         )}
       </CardContent>
       <CardFooter className="bg-muted/10 border-t py-3 flex justify-center">
-        <p className="text-[10px] text-muted-foreground italic">Informação gerada por IA baseada em análise rigorosa de fontes públicas e contexto temporal atualizado.</p>
+        <p className="text-[10px] text-muted-foreground italic">{t('factCheck.aiDisclaimer')}</p>
       </CardFooter>
     </Card>
   );
@@ -210,28 +207,32 @@ export default function FactCheckPage() {
     const claimId = generateSlug(textToUse);
 
     startTransition(async () => {
-      setResult(null);
+      try {
+        setResult(null);
 
-      if (firestore) {
-        const publicRef = doc(firestore, 'publicFactChecks', claimId);
-        const snap = await getDoc(publicRef);
-        if (snap.exists()) {
-          setResult(snap.data() as FactCheckOutput);
-          return;
+        if (firestore) {
+          const publicRef = doc(firestore, 'publicFactChecks', claimId);
+          const snap = await getDoc(publicRef);
+          if (snap.exists()) {
+            setResult(snap.data() as FactCheckOutput);
+            return;
+          }
         }
-      }
 
-      const res = await getFactCheck({ claim: textToUse }, language as Language);
-      setResult(res);
-      
-      if (firestore) {
-        const publicRef = doc(firestore, 'publicFactChecks', claimId);
-        setDoc(publicRef, { claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        const res = await getFactCheck({ claim: textToUse }, language as Language);
+        setResult(res);
         
-        if (user) {
-          const userRef = doc(firestore, 'users', user.uid, 'factChecks', claimId);
-          setDoc(userRef, { userId: user.uid, claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+        if (firestore) {
+          const publicRef = doc(firestore, 'publicFactChecks', claimId);
+          setDoc(publicRef, { claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+          
+          if (user) {
+            const userRef = doc(firestore, 'users', user.uid, 'factChecks', claimId);
+            setDoc(userRef, { userId: user.uid, claim: textToUse, ...res, createdAt: serverTimestamp() }, { merge: true }).catch(() => {});
+          }
         }
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: t('common.error'), description: e.message || t('common.genericError') });
       }
     });
   }, [claim, language, user, firestore]);
@@ -307,7 +308,7 @@ export default function FactCheckPage() {
         </CardContent>
         <CardFooter className="bg-muted/30 py-4 flex justify-between items-center">
           <p className="text-xs text-muted-foreground max-w-[60%] italic">
-            A IA utiliza fontes oficiais e analisa o histórico de correções para validar a alegação.
+            {t('factCheck.footerNotice')}
           </p>
           <Button onClick={() => handleFactCheck()} disabled={isPending || !claim.trim()} size="lg" className="px-8 shadow-md">
             {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
@@ -357,7 +358,7 @@ export default function FactCheckPage() {
         <CardContent>
           {!user ? (
             <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
-              <p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p>
+              <p className="text-muted-foreground mb-4 font-medium">{t('common.login_prompt')}</p>
               <Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button>
             </div>
           ) : history && history.length > 0 ? (

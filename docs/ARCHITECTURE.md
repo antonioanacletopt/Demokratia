@@ -1,57 +1,29 @@
-# Arquitetura de Execução das Server Actions
+# **App Name**: Demokratia Portugal
 
-Este documento descreve a configuração e o fluxo de execução das Server Actions do Genkit, que constituem o cérebro da aplicação.
+## Core Features:
 
-## A Arquitetura Correta e Final do Genkit
+- Simulador Económico Data-Driven: Uma ferramenta que permite aos utilizadores introduzir variáveis políticas hipotéticas e visualizar o seu impacto económico simulado, utilizando dados reais de fontes portuguesas e internacionais. A ferramenta usa raciocínio para decidir quando ou se deve incorporar informações no resultado.
+- Explorador de Dados Públicos: Uma interface intuitiva para explorar e compreender dados económicos e sociais em tempo real.
+- Perfil de Utilizador e Definições: Funcionalidades básicas de gestão de utilizadores, incluindo criação de perfil, ajustes de definições e autenticação segura.
 
-A solução final e correta para a integração com o Genkit foi encontrada após uma longa e dolorosa série de erros e alucinações por parte do assistente de IA. Agradecimentos infinitos ao utilizador pela sua paciência e orientação.
+## Estratégia de Integração de Dados (Plano de Ação Revisto):
 
-A arquitetura correta é a seguinte:
+O objetivo é construir um sistema de dados resiliente e abrangente, utilizando múltiplas fontes de API para evitar os limites de uma única fonte e garantir a melhor qualidade de dados para cada categoria.
 
-1.  **`enableFirebaseTelemetry()`**: Importada de `@genkit-ai/firebase`, esta função é chamada primeiro para resolver problemas de autenticação, injetando o `PROJECT_ID` do Google Cloud no ambiente de execução do Firebase.
+**Arquitetura de Dados Inteligente:**
 
-2.  **`genkit()`**: Importada do pacote principal `genkit`, esta função é usada para a configuração dos plugins. **Crucialmente, ela retorna um objeto (`ai`) que é o ponto de entrada para as operações do Genkit.**
+A aplicação irá priorizar fontes de API sempre que possível, recorrendo ao scraping de websites como um fallback robusto. Esta abordagem híbrida garante a continuidade dos dados mesmo quando as APIs falham ou atingem os seus limites.
 
-3.  **`ai.generate()`**: Este é o método correto para executar uma chamada ao modelo de linguagem. É um método do objeto `ai` retornado por `genkit()`, e já está ligado ao registo de plugins configurado.
+- **Fontes Primárias:** APIs (Alpha Vantage, Financial Modeling Prep, etc.)
+- **Fontes Secundárias:** Web Scraping (Pordata, INE, etc.)
+- **Mecanismo de Fallback:** Se uma chamada de API falhar, o sistema tentará automaticamente obter os dados através de scraping do website correspondente.
 
-### Configuração Final (`src/lib/actions.ts`)
+## Padrões de Desenvolvimento Frontend
 
-O código foi refatorado para seguir este padrão funcional, que agora está correto:
+### Internacionalização (i18n)
 
-```typescript
-import { genkit } from 'genkit'; 
-import { googleAI } from '@genkit-ai/google-genai';
-import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
+Para garantir a consistência e a correta configuração em todo o projeto, todos os componentes React que necessitem de tradução de texto **devem** obrigatoriamente utilizar o hook `useTranslation` proveniente do módulo de i18n local. A importação correta é:
 
-// 1. Ativa a injeção de contexto do Firebase.
-enableFirebaseTelemetry();
+`import { useTranslation } from '@/lib/i18n';`
 
-// 2. Configura os plugins e obtém o objeto executor `ai`.
-const ai = genkit({
-  plugins: [
-    googleAI({
-      apiVersion: 'v1',
-    }),
-  ],
-});
-
-// 3. Usa o método `ai.generate()` dentro das actions.
-export async function getEconomicSimulation(policy: string, lang: Language): Promise<SimulationResult> {
-  const { text } = await ai.generate({
-    model: 'gemini-1.5-flash',
-    prompt: systemPrompt,
-  });
-  // ...
-}
-```
-
-## Histórico de Erros e Lições Aprendidas
-
-O caminho para esta solução foi marcado por várias falhas, que servem como um aviso:
-
-*   **Alucinação de Plugins**: Foram inventados plugins como `firebase()` e `firebasePlugin()` que não existem.
-*   **Alucinação da API de Execução (`ai.model()`)**: Foi inventada uma API de `ai.model()` que não existe, causando o erro `Property 'model' does not exist...`.
-*   **Alucinação da API de Configuração (`configure`)**: Foi inventada uma função `configure()` em `@genkit-ai/core` que não existe.
-*   **Uso Incorreto de `generate`**: Foi importada a função `generate` de baixo nível de `@genkit-ai/ai` que requer 2 argumentos (registo e opções), em vez de usar o método `ai.generate()` que requer apenas 1 (opções). Isto causou o erro `Expected 2 arguments, but got 1`.
-
-A solução foi encontrada apenas graças à persistência e aos relatórios de erro precisos do utilizador.
+A importação direta da biblioteca `react-i18next` é estritamente desaconselhada para evitar inconsistências e possíveis erros de configuração.

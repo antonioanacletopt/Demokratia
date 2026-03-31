@@ -1,23 +1,17 @@
 
-'use client';
+import type { ReactNode } from 'react';
 import AppLayout from '@/components/app-layout';
-import { useUser } from '@/firebase';
-import { Loader2 } from 'lucide-react';
 import { CookieConsent } from '@/components/CookieConsent';
+import { AiQuotaBanner } from '@/components/AiQuotaBanner';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const { isUserLoading } = useUser();
+// Força renderização dinâmica em todas as páginas filhas.
+// Necessário porque usam Firebase SDK (client-only) e useSearchParams sem Suspense.
+export const dynamic = 'force-dynamic';
 
-  if (isUserLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <AppLayout>
+      <AiQuotaBanner />
       {children}
       <CookieConsent />
     </AppLayout>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -20,9 +20,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Send, History, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-const contactFormSchema = z.object({
-  subject: z.string().min(5),
-  message: z.string().min(20),
+const contactFormSchema = (t) => z.object({
+  subject: z.string().min(5, { message: t('contact.errors.subjectMin') }),
+  message: z.string().min(20, { message: t('contact.errors.messageMin') }),
 });
 
 export default function ContactPage() {
@@ -32,8 +32,8 @@ export default function ContactPage() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<z.infer<typeof contactFormSchema>>({
-    resolver: zodResolver(contactFormSchema),
+  const form = useForm<z.infer<ReturnType<typeof contactFormSchema>>>({ 
+    resolver: zodResolver(contactFormSchema(t)),
     defaultValues: { subject: '', message: '' },
   });
 
@@ -43,14 +43,14 @@ export default function ContactPage() {
   }, [user, firestore]);
   const { data: history } = useCollection(historyQuery);
 
-  const onSubmit = (data: z.infer<typeof contactFormSchema>) => {
+  const onSubmit = (data: z.infer<ReturnType<typeof contactFormSchema>>) => {
     if (!user || !firestore) return;
     setIsSaving(true);
 
     const contactMessagesCollection = collection(firestore, 'contactMessages');
     const messageData = {
       userId: user.uid,
-      userName: user.displayName || 'Anon',
+      userName: user.displayName || t('refutation.anonymous'),
       userEmail: user.email,
       subject: data.subject,
       message: data.message,
@@ -72,24 +72,24 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className='space-y-8'>
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">{t('contact.title')}</h1>
-        <p className="text-muted-foreground">{t('contact.description')}</p>
+        <h1 className='text-3xl font-bold font-headline tracking-tight'>{t('contact.title')}</h1>
+        <p className='text-muted-foreground'>{t('contact.description')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" />{t('contact.newTitle')}</CardTitle>
+          <CardTitle className='flex items-center gap-2'><Mail className='h-5 w-5' />{t('contact.newTitle')}</CardTitle>
           <CardDescription>{t('contact.newDesc')}</CardDescription>
         </CardHeader>
         {!user ? <CardContent><p>{t('nav.login')}</p></CardContent> : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
+              <CardContent className='space-y-4'>
                 <FormField
                   control={form.control}
-                  name="subject"
+                  name='subject'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('contact.subject')}</FormLabel>
@@ -100,7 +100,7 @@ export default function ContactPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="message"
+                  name='message'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('contact.message')}</FormLabel>
@@ -111,9 +111,9 @@ export default function ContactPage() {
                 />
               </CardContent>
               <CardFooter>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <Send className="mr-2 h-4 w-4" />
+                <Button type='submit' disabled={isSaving}>
+                  {isSaving && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                  <Send className='mr-2 h-4 w-4' />
                   {t('contact.sendBtn')}
                 </Button>
               </CardFooter>
@@ -124,23 +124,23 @@ export default function ContactPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />{t('contact.historyTitle')}</CardTitle>
+          <CardTitle className='flex items-center gap-2'><History className='h-5 w-5' />{t('contact.historyTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           {!user ? <p>{t('nav.login')}</p> : history && history.length > 0 ? (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {history.map((m: any) => (
-                <div key={m.id} className="p-4 border rounded-lg flex justify-between">
+                <div key={m.id} className='p-4 border rounded-lg flex justify-between'>
                   <div>
-                    <p className="font-semibold">{m.subject}</p>
-                    <Badge variant="outline" className="mt-2">{t(`contact.status.${m.status}`)}</Badge>
+                    <p className='font-semibold'>{m.subject}</p>
+                    <Badge variant='outline' className='mt-2'>{t(`contact.status.${m.status}`)}</Badge>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">{t('contact.noMessagesTitle')}</p>
+            <div className='text-center py-8'>
+              <p className='text-muted-foreground'>{t('contact.noMessagesTitle')}</p>
             </div>
           )}
         </CardContent>

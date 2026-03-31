@@ -41,7 +41,8 @@ export function AdBanner() {
   }, [pathname]);
 
   return (
-    <div key={pathname} className="py-6 my-4 border-y border-border/10 bg-muted/5 rounded-lg overflow-hidden flex justify-center items-center min-h-[100px]">
+    <div key={pathname} className="py-6 my-4 border-y border-border/10 bg-muted/5 rounded-lg overflow-hidden flex flex-col justify-center items-center min-h-[100px]">
+      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-2">Publicidade</span>
       <ins
         className="adsbygoogle"
         style={{ display: 'block', minWidth: '250px', height: 'auto' }}

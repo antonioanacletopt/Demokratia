@@ -29,7 +29,7 @@ export function InfoPopover({ title, content, link, linkLabel, className }: Info
           className={cn("h-4 w-4 ml-1.5 rounded-full text-muted-foreground hover:text-primary shrink-0", className)}
         >
           <Info className="h-3.5 w-3.5" />
-          <span className="sr-only">{t('infoPopover.moreInfo', { title })}</span>
+          <span className="sr-only">{t('infoPopover.moreInfo')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-4 shadow-xl border-primary/20 z-[110]">

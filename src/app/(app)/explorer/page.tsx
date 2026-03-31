@@ -464,7 +464,18 @@ export default function ExplorerPage() {
           <h2 className="text-2xl font-bold flex items-center gap-2"><NotebookText className="h-6 w-6 text-accent" />{t('explorer.mySavedViews')}</h2>
           <div className="grid gap-6 md:grid-cols-2">
             {savedViews.map(view => {
-              try { const config = JSON.parse(view.viewConfiguration); return <UniversalDataCard key={view.id} {...config} title={view.name} description={view.description} />; } catch(e) { return null; }
+              try {
+                const config = JSON.parse(view.viewConfiguration);
+                return <UniversalDataCard 
+                  key={view.id} 
+                  {...config}
+                  title={view.name}
+                  description={view.description}
+                />;
+              } catch (e) {
+                console.error("Failed to parse or render saved view:", view.id, e);
+                return null;
+              }
             })}
           </div>
         </div>
@@ -487,24 +498,19 @@ export default function ExplorerPage() {
                     const title = d.titleKey ? t(d.titleKey) : d.title;
                     const description = d.descriptionKey ? t(d.descriptionKey) : d.description;
                     const source = d.sourceKey ? t(d.sourceKey) : d.source;
-                    let reconstructedData = d.data;
 
-                    if (d.headersKey && d.data && d.data.length > 0) {
-                        reconstructedData = d.data.map((row: any) => {
-                            const newRow: Record<string, any> = {};
-                            for (const key in row) {
-                                if (Object.prototype.hasOwnProperty.call(row, key)) {
-                                    const translationKey = `${d.headersKey}.${key}`;
-                                    const translatedHeader = t(translationKey);
-                                    newRow[translatedHeader] = row[key];
-                                }
-                            }
-                            return newRow;
-                        });
+                    let dataArray = [];
+                    try {
+                      if (typeof d.data === 'string') {
+                        dataArray = JSON.parse(d.data);
+                      } else if (Array.isArray(d.data)) {
+                        dataArray = d.data;
+                      }
+                    } catch (error) {
+                      console.error('Failed to parse data for:', d.id, error);
                     }
-                    
-                    const unit = title.includes('%') ? '%' : (title.includes('€') ? '€' : '');
-                    const transformed = transformToChartData(reconstructedData);
+
+                    const transformed = transformToChartData(dataArray);
 
                     return (
                       <UniversalDataCard 
@@ -512,7 +518,7 @@ export default function ExplorerPage() {
                         title={title}
                         description={description || ''} 
                         source={source}
-                        unit={unit}
+                        unit={title.includes('%') ? '%' : (title.includes('€') ? '€' : '')}
                         data={transformed} 
                       />
                     );

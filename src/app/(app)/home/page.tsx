@@ -14,10 +14,28 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Check, Scale, TrendingUp, Loader2, Languages, RefreshCw, 
-  Sparkles, Database, ShieldCheck, Lightbulb, ArrowRight, 
-  BarChart3, Globe, ThumbsUp, Users, Map as MapIcon, 
-  Calculator, Wallet, Zap 
+  Home, 
+  Check, 
+  Scale, 
+  TrendingUp, 
+  Loader2, 
+  Languages, 
+  RefreshCw, 
+  Sparkles, 
+  Database, 
+  ShieldCheck, 
+  Lightbulb, 
+  ArrowRight, 
+  BarChart3, 
+  Globe, 
+  ThumbsUp, 
+  Users, 
+  Map as MapIcon, 
+  Calculator, 
+  Wallet, 
+  Zap, 
+  BookOpen,
+  Landmark
 } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -126,7 +144,12 @@ function FeedItemCard({ item }: { item: NewsFeedItem }) {
             </div>
             <CardDescription className="text-xs">{t('home.source')}: {item.source} &middot; {item.date}</CardDescription>
           </div>
-          <Badge variant="outline" className={config.color}><Icon className="mr-1.5 h-3.5 w-3.5" />{t(`home.newsTypes.${item.type}` as any)}</Badge>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <Badge variant="outline" className={cn(config.color, "whitespace-nowrap")}><Icon className="mr-1.5 h-3.5 w-3.5" />{t(`home.newsTypes.${item.type}` as any)}</Badge>
+            <Badge variant="secondary" className="text-[9px] font-bold bg-primary/5 text-primary/60 border-primary/10 tracking-tight flex items-center gap-1 py-0 px-1.5">
+              <Sparkles className="size-2.5" /> Contexto IA / Original
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-4"><p className="text-muted-foreground leading-relaxed">{currentDesc}</p></CardContent>
@@ -225,6 +248,22 @@ export default function HomePage() {
             </section>
         )}
 
+      <div className="grid gap-8 lg:grid-cols-3 bg-muted/30 p-8 rounded-3xl border shadow-inner">
+        <div className="lg:col-span-2 space-y-4">
+          <Badge variant="outline" className="text-accent border-accent/30">{t('about.missionTitle')}</Badge>
+          <h2 className="text-3xl font-bold font-headline text-primary">Informação Cívica ao Serviço do Cidadão</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            {t('about.missionDesc')}
+          </p>
+        </div>
+        <div className="flex items-center justify-center p-6 bg-background/50 rounded-2xl border border-dashed">
+          <div className="text-center space-y-2">
+            <p className="text-4xl font-black text-accent">100%</p>
+            <p className="text-[10px] uppercase tracking-tighter font-bold text-muted-foreground">Neutralidade Tecnológica</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {[
           { href: '/irs', icon: Calculator, label: t('nav.irs'), desc: t('home.tooltips.irs'), color: 'primary' },
@@ -254,6 +293,20 @@ export default function HomePage() {
           <p className="text-muted-foreground leading-relaxed">
             {t('home.methodologyDesc')}
           </p>
+          <div className="flex flex-wrap gap-4 pt-4">
+            <Button size="lg" className="gap-2" asChild>
+              <Link href="/partidos">
+                <Users className="size-5" />
+                {t('nav.partidos')}
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="gap-2" asChild>
+              <Link href="/instituicoes">
+                <Landmark className="size-5" />
+                {t('nav.instituicoes')}
+              </Link>
+            </Button>
+          </div>
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm font-medium">
               <Check className="text-green-500 h-5 w-5" /> {t('home.methodologySources')}
@@ -284,6 +337,38 @@ export default function HomePage() {
         </div>
       </div>
 
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b pb-4">
+          <div>
+            <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-accent" /> {t('home.learnDesc')}
+            </h2>
+            <p className="text-muted-foreground text-sm">{t('home.learnSub') || 'Artigos estáticos essenciais de literacia económica e financeira.'}</p>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/library">{t('home.seeAll')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            { title: t('home.articles.fiscal.title'), desc: t('home.articles.fiscal.desc'), slug: 'como-funciona-sistema-fiscal' },
+            { title: t('home.articles.deficit.title'), desc: t('home.articles.deficit.desc'), slug: 'o-que-e-defice-orcamental' },
+            { title: t('home.articles.budget.title'), desc: t('home.articles.budget.desc'), slug: 'o-que-e-o-orcamento-de-estado' }
+          ].map(art => (
+            <Card key={art.slug} className="hover:shadow-md transition-all border-accent/10">
+              <Link href={`/library/${art.slug}`}>
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-base font-bold leading-snug">{art.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <p className="text-xs text-muted-foreground line-clamp-3">{art.desc}</p>
+                </CardContent>
+              </Link>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       <AdBanner />
 
       {popularProposals && popularProposals.length > 0 && (
@@ -291,7 +376,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between border-b pb-4">
             <div>
               <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                <Users className="h-6 w-6 text-accent" /> {t('proposals.communityTitle')}
+                <Users className="h-6 w-6 text-accent" /> {t('home.proposals.communityTitle')}
               </h2>
               <p className="text-muted-foreground text-sm">{t('home.proposals.subtitle')}</p>
             </div>

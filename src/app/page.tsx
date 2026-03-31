@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
-export default function HomePage() {
-  redirect('/home');
+export default function RootPage() {
+  permanentRedirect('/home');
 }
+

@@ -3,6 +3,7 @@
 
 import { useState, useTransition, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { AdBanner } from '@/components/AdBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation, Language } from '@/lib/i18n';
 import { getFamilyBudgetAnalysis } from '@/lib/actions';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, serverTimestamp, doc, orderBy } from 'firebase/firestore';
+import { collection, query, serverTimestamp, doc, orderBy, getDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { 
   Wallet, Users, Coins, ArrowDownCircle, Sparkles, 
@@ -27,7 +28,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import { pt, enUS } from 'date-fns/locale';
+import { 
+  ResponsiveContainer, PieChart, Pie, Cell, 
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend 
+} from 'recharts';
 
 interface Movement {
   id: string;
@@ -54,7 +59,7 @@ const DEFAULT_COSTS_2026 = {
   other: 100
 };
 
-function LayeredProgressBar({ budget, real, estimated, className }: { budget: number, real: number, estimated: number, className?: string }) {
+function LayeredProgressBar({ budget, real, estimated, className, t }: { budget: number, real: number, estimated: number, className?: string, t: (key: string) => string }) {
   const totalAccounted = real + estimated;
   const maxScale = Math.max(budget, totalAccounted, 1);
   
@@ -64,9 +69,9 @@ function LayeredProgressBar({ budget, real, estimated, className }: { budget: nu
 
   return (
     <div className={cn("h-2 w-full bg-muted rounded-full overflow-hidden flex mt-2 shadow-inner", className)}>
-      <div style={{ width: `${realPerc}%` }} className="bg-green-500 h-full transition-all duration-500" title="Realizado" />
-      <div style={{ width: `${estimatedPerc}%` }} className="bg-orange-500 h-full transition-all duration-500" title="Previsto" />
-      <div style={{ width: `${budgetPerc}%` }} className="bg-blue-500 h-full transition-all duration-500 opacity-40" title="Orçamentado" />
+      <div style={{ width: `${realPerc}%` }} className="bg-green-500 h-full transition-all duration-500" title={t('budget.movements.real')} />
+      <div style={{ width: `${estimatedPerc}%` }} className="bg-orange-500 h-full transition-all duration-500" title={t('budget.movements.estimated')} />
+      <div style={{ width: `${budgetPerc}%` }} className="bg-blue-500 h-full transition-all duration-500 opacity-40" title={t('budget.budgeted')} />
     </div>
   );
 }
@@ -75,6 +80,13 @@ export default function FamilyBudgetPage() {
   const { t, language: lang } = useTranslation();
   const { user } = useUser();
   const firestore = useFirestore();
+
+  // --- Time State ---
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const monthStart = useMemo(() => new Date(selectedYear, selectedMonth, 1), [selectedMonth, selectedYear]);
+  const monthEnd = useMemo(() => new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59), [selectedMonth, selectedYear]);
 
   // --- Configuration State ---
   const [adults, setAdults] = useState(1);
@@ -88,7 +100,7 @@ export default function FamilyBudgetPage() {
   const [movCategory, setMovCategory] = useState('housing');
   const [movType, setMovType] = useState<'income' | 'expense'>('expense');
   const [movStatus, setMovStatus] = useState<'estimated' | 'real'>('estimated');
-  const [movDate, setMovDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [movDate, setMovDate] = useState(format(monthStart, 'yyyy-MM-dd'));
 
   // --- Editing State ---
   const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
@@ -98,11 +110,30 @@ export default function FamilyBudgetPage() {
   const [error, setError] = useState<string | null>(null);
 
   // --- Firebase Loading ---
-  const configRef = useMemoFirebase(() => user && firestore ? doc(firestore, 'users', user.uid, 'budget', 'config') : null, [user, firestore]);
-  const { data: savedConfig } = useDoc<any>(configRef);
+  const configRef = useMemoFirebase(
+    () => user && firestore ? doc(firestore, 'users', user.uid, 'budget', `config_${selectedYear}_${selectedMonth + 1}`) : null, 
+    [user, firestore, selectedYear, selectedMonth]
+  );
+  const { data: savedConfig, isLoading: loadingConfig } = useDoc<any>(configRef);
 
-  const movementsQuery = useMemoFirebase(() => user && firestore ? query(collection(firestore, 'users', user.uid, 'movements'), orderBy('date', 'desc')) : null, [user, firestore]);
-  const { data: movements } = useCollection<Movement>(movementsQuery);
+  const movementsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(
+      collection(firestore, 'users', user.uid, 'movements'),
+      orderBy('date', 'desc'),
+    );
+  }, [user, firestore]);
+
+  const { data: rawMovements } = useCollection<Movement>(movementsQuery);
+
+  const movements = useMemo(() => {
+    if (!rawMovements) return [];
+    return rawMovements.filter(m => {
+      const d = m.date?.toDate?.() || m.date;
+      const date = new Date(d);
+      return date >= monthStart && date <= monthEnd;
+    });
+  }, [rawMovements, monthStart, monthEnd]);
 
   useEffect(() => {
     if (savedConfig) {
@@ -110,8 +141,32 @@ export default function FamilyBudgetPage() {
       setChildren(savedConfig.children || 0);
       setIncome(savedConfig.income || 1200);
       setExpenses(savedConfig.expenses || DEFAULT_COSTS_2026);
+    } else if (!loadingConfig) {
+      // If no config for this month, reset to defaults (or we can leave as is)
+      setAdults(1);
+      setChildren(0);
+      setIncome(1200);
+      setExpenses(DEFAULT_COSTS_2026);
     }
-  }, [savedConfig]);
+  }, [savedConfig, loadingConfig]);
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === 0) {
+      setSelectedMonth(11);
+      setSelectedYear(v => v - 1);
+    } else {
+      setSelectedMonth(v => v - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 11) {
+      setSelectedMonth(0);
+      setSelectedYear(v => v + 1);
+    } else {
+      setSelectedMonth(v => v + 1);
+    }
+  };
 
   const saveConfig = (newAdults: number, newChildren: number, newIncome: number, newExpenses: any) => {
     if (!user || !configRef) return;
@@ -120,8 +175,29 @@ export default function FamilyBudgetPage() {
       children: newChildren,
       income: newIncome,
       expenses: newExpenses,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
+      month: selectedMonth + 1,
+      year: selectedYear
     }, { merge: true });
+  };
+
+  const handleCopyFromPrevious = async () => {
+    if (!user || !firestore || !configRef) return;
+    
+    let prevMonth = selectedMonth - 1;
+    let prevYear = selectedYear;
+    if (prevMonth < 0) {
+      prevMonth = 11;
+      prevYear -= 1;
+    }
+
+    const prevRef = doc(firestore, 'users', user.uid, 'budget', `config_${prevYear}_${prevMonth + 1}`);
+    const snap = await getDoc(prevRef);
+    
+    if (snap.exists()) {
+      const data = snap.data();
+      saveConfig(data.adults, data.children, data.income, data.expenses);
+    }
   };
 
   const handleAddMovement = () => {
@@ -250,14 +326,31 @@ export default function FamilyBudgetPage() {
     { key: 'insurance', icon: ShieldCheck, label: t('budget.insurance'), min: 0, max: 1000 },
     { key: 'other', icon: MoreHorizontal, label: t('budget.other'), min: 0, max: 1000 },
   ];
+  
+  const dateLocale = lang === 'pt' ? pt : enUS;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-bold font-headline tracking-tight text-primary flex items-center gap-3">
-          <Wallet className="h-10 w-10" /> {t('budget.title')}
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-4xl font-bold font-headline tracking-tight text-primary flex items-center gap-3">
+            <Wallet className="h-10 w-10" /> {t('budget.title')}
+          </h1>
+          
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg w-fit">
+            <Button variant="ghost" size="icon" onClick={handlePrevMonth}>
+              <TrendingDown className="h-4 w-4 rotate-90" />
+            </Button>
+            <div className="px-4 font-bold min-w-[140px] text-center">
+              {format(monthStart, 'MMMM yyyy', { locale: dateLocale })}
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleNextMonth}>
+              <TrendingUp className="h-4 w-4 -rotate-90" />
+            </Button>
+          </div>
+        </div>
         <p className="text-muted-foreground text-lg">{t('budget.description')}</p>
+        <AdBanner />
         
         {overdueMovements.length > 0 && (
           <div className="flex items-center gap-2 text-destructive font-bold animate-pulse bg-destructive/5 p-2 rounded-lg border border-destructive/20 w-fit">
@@ -268,20 +361,106 @@ export default function FamilyBudgetPage() {
       </div>
 
       <Tabs defaultValue="config" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
           <TabsTrigger value="config" className="gap-2"><ListPlus className="h-4 w-4" /> {t('budget.tabs.config')}</TabsTrigger>
           <TabsTrigger value="movements" className="gap-2 relative">
             <Calendar className="h-4 w-4" /> {t('budget.tabs.movements')}
             {overdueMovements.length > 0 && <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full" />}
           </TabsTrigger>
+          <TabsTrigger value="reporting" className="gap-2"><TrendingUp className="h-4 w-4" /> {t('budget.tabs.reporting')}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reporting" className="space-y-8">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" /> {t('budget.reporting.expenseMix')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-[350px] pt-4">
+                {movements.filter(m => m.type === 'expense').length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categories.map(cat => ({
+                          name: cat.label,
+                          value: movements
+                            .filter(m => m.type === 'expense' && m.category === cat.key)
+                            .reduce((acc, curr) => acc + curr.amount, 0)
+                        })).filter(d => d.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {categories.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={[
+                            '#2563eb', '#f97316', '#10b981', '#ef4444', 
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b',
+                            '#64748b', '#78350f', '#065f46'
+                          ][index % 11]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => [`${value.toFixed(2)}€`, '']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground italic">
+                    {t('budget.reporting.noData')}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" /> {t('budget.reporting.incomeVsExpense')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-[350px] pt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      {
+                        name: format(monthStart, 'MMM', { locale: dateLocale }),
+                        in: movements.filter(m => m.type === 'income').reduce((acc, curr) => acc + curr.amount, 0),
+                        out: movements.filter(m => m.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0),
+                        budget: totalBudgeted
+                      }
+                    ]}
+                  >
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => [`${value.toFixed(2)}€`, '']} />
+                    <Legend />
+                    <Bar dataKey="in" name={t('budget.reporting.totalIn')} fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="out" name={t('budget.reporting.totalOut')} fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="budget" name={t('budget.budgeted')} fill="#2563eb" fillOpacity={0.3} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="config" className="space-y-8">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
               <Card className="shadow-md">
-                <CardHeader className="bg-muted/30">
-                  <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> {t('budget.profileTitle')}</CardTitle>
+                <CardHeader className="bg-muted/30 flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" /> {t('budget.profileTitleMonth')} {format(monthStart, 'MMMM yyyy', { locale: dateLocale })}
+                  </CardTitle>
+                  {!savedConfig && (
+                    <Button variant="outline" size="sm" onClick={handleCopyFromPrevious} className="gap-2">
+                      <ListPlus className="h-4 w-4" /> {t('budget.monthSelector.copyFromPrev')}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent className="grid gap-6 sm:grid-cols-3 pt-6">
                   <div className="space-y-2">
@@ -310,9 +489,9 @@ export default function FamilyBudgetPage() {
                 <CardHeader className="bg-muted/30">
                   <CardTitle className="text-lg flex items-center gap-2"><ArrowDownCircle className="h-5 w-5 text-red-500" /> {t('budget.expensesTitle')}</CardTitle>
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-green-500" /> <span className="text-[10px] uppercase font-bold">Real</span></div>
-                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-orange-500" /> <span className="text-[10px] uppercase font-bold">Previsto</span></div>
-                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500" /> <span className="text-[10px] uppercase font-bold">Orçamento</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-green-500" /> <span className="text-[10px] uppercase font-bold">{t('budget.movements.real')}</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-orange-500" /> <span className="text-[10px] uppercase font-bold">{t('budget.movements.estimated')}</span></div>
+                    <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-blue-500" /> <span className="text-[10px] uppercase font-bold">{t('budget.budgeted')}</span></div>
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-x-12 gap-y-8 sm:grid-cols-2 pt-6">
@@ -327,7 +506,7 @@ export default function FamilyBudgetPage() {
                             <span className="text-[10px] text-muted-foreground ml-1">/ {expenses[cat.key]}€</span>
                           </div>
                         </div>
-                        <LayeredProgressBar budget={expenses[cat.key]} real={totals.real} estimated={totals.estimated} />
+                        <LayeredProgressBar budget={expenses[cat.key]} real={totals.real} estimated={totals.estimated} t={t} />
                         <Slider 
                           value={[expenses[cat.key]]} 
                           onValueChange={([v]) => { 
@@ -361,28 +540,28 @@ export default function FamilyBudgetPage() {
                     <div className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-blue-500 opacity-50" />
-                        <span className="text-muted-foreground">Orçamentado</span>
+                        <span className="text-muted-foreground">{t('budget.budgeted')}</span>
                       </div>
                       <span className="font-bold text-blue-600">{totalBudgeted}€</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-green-500" />
-                        <span className="text-muted-foreground">Executado (Real)</span>
+                        <span className="text-muted-foreground">{t('budget.executed')}</span>
                       </div>
                       <span className="font-bold text-green-600">{executionTotals.real}€</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-orange-500" />
-                        <span className="text-muted-foreground">Previsto</span>
+                        <span className="text-muted-foreground">{t('budget.projected')}</span>
                       </div>
                       <span className="font-bold text-orange-500">{executionTotals.estimated}€</span>
                     </div>
                     
                     <div className="pt-2">
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Execução vs. Orçamento</p>
-                      <LayeredProgressBar budget={totalBudgeted} real={executionTotals.real} estimated={executionTotals.estimated} className="h-3" />
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">{t('budget.executionVsBudget')}</p>
+                      <LayeredProgressBar budget={totalBudgeted} real={executionTotals.real} estimated={executionTotals.estimated} className="h-3" t={t} />
                     </div>
                   </div>
 
@@ -452,12 +631,12 @@ export default function FamilyBudgetPage() {
                   <>
                     <div className="space-y-2">
                       <Label>{t('budget.movements.titleLabel')}</Label>
-                      <Input value={movTitle} onChange={(e) => setMovTitle(e.target.value)} placeholder="Ex: Renda Casa, Salário..." />
+                      <Input value={movTitle} onChange={(e) => setMovTitle(e.target.value)} placeholder={t('budget.movements.titlePlaceholder')} />
                     </div>
                     
                     {movType === 'expense' && (
                       <div className="space-y-2">
-                        <Label>Categoria</Label>
+                        <Label>{t('budget.movements.categoryLabel')}</Label>
                         <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movCategory} onChange={(e) => setMovCategory(e.target.value)}>
                           {categories.map(c => (
                             <option key={c.key} value={c.key}>{c.label}</option>
@@ -539,7 +718,7 @@ export default function FamilyBudgetPage() {
                                 <div className="flex items-center gap-2">
                                   {cat && <Badge variant="secondary" className="text-[8px] h-4 uppercase">{cat.label}</Badge>}
                                   <div className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                                    {format(new Date(mov.date?.toDate?.() || mov.date || new Date()), 'dd MMM yyyy', { locale: pt })}
+                                    {format(new Date(mov.date?.toDate?.() || mov.date || new Date()), 'dd MMM yyyy', { locale: dateLocale })}
                                     {mov.status === 'estimated' ? (
                                       <Badge variant="outline" className={cn("text-[8px] h-4", isOverdue && "border-destructive text-destructive")}>
                                         {isOverdue ? t('budget.movements.overdue') : t('budget.movements.estimated')}
@@ -596,7 +775,7 @@ export default function FamilyBudgetPage() {
             
             {movType === 'expense' && (
               <div className="space-y-2">
-                <Label>Categoria</Label>
+                <Label>{t('budget.movements.categoryLabel')}</Label>
                 <select className="w-full h-10 border rounded-md px-2 bg-background text-sm" value={movCategory} onChange={(e) => setMovCategory(e.target.value)}>
                   {categories.map(c => (
                     <option key={c.key} value={c.key}>{c.label}</option>

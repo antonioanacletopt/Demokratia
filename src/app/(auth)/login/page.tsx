@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,36 +23,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [authError, setAuthError] = useState<{title: string, description: string, isDomainError?: boolean} | null>(null);
-  const [isAuthenticating, setIsAuthenticating] = useState(true); 
-
-  useEffect(() => {
-    const processRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result && result.user) {
-          const loggedUser = result.user;
-          const userRef = doc(firestore, 'users', loggedUser.uid);
-          await setDoc(userRef, {
-            id: loggedUser.uid,
-            displayName: loggedUser.displayName,
-            email: loggedUser.email,
-            photoURL: loggedUser.photoURL,
-            updatedAt: serverTimestamp(),
-          }, { merge: true });
-
-          toast({ title: t('common.success') });
-          router.push('/home');
-        } else {
-          setIsAuthenticating(false);
-        }
-      } catch (error: any) {
-        handleAuthError(error);
-        setIsAuthenticating(false);
-      }
-    };
-
-    processRedirectResult();
-  }, [auth, firestore, router, t, toast]);
+  const [isAuthenticating, setIsAuthenticating] = useState(false); 
 
   useEffect(() => {
     if (!isUserLoading && !isAuthenticating && user) {
@@ -81,14 +51,29 @@ export default function LoginPage() {
     setIsAuthenticating(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        const loggedUser = result.user;
+        const userRef = doc(firestore, 'users', loggedUser.uid);
+        await setDoc(userRef, {
+          id: loggedUser.uid,
+          displayName: loggedUser.displayName,
+          email: loggedUser.email,
+          photoURL: loggedUser.photoURL,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+
+        toast({ title: t('common.success') });
+        router.push('/home');
+      }
     } catch (error: any) {
       handleAuthError(error);
+    } finally {
       setIsAuthenticating(false);
     }
   };
 
-  if (isUserLoading || isAuthenticating) {
+  if (isUserLoading) {
     return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
   }
 

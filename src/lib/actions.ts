@@ -72,10 +72,23 @@ const ai = genkit({
   ],
 });
 
-// 2. Instanciação OBRIGATÓRIA via função auxiliar (Golden Rule de docs/AI_COLLABORATION_GUIDELINES.md)
-// Modelos 2.5 conforme TASK_LOG.md. ESTA SINTAXE É IMUTÁVEL.
-const capableModel = googleAI.model('gemini-2.5-pro');
-const fastModel = googleAI.model('gemini-2.5-flash');
+// Tier definitions based on capability and speed
+const MODELS = {
+  capable: [
+    googleAI.model('gemini-2.0-flash'), // Newer and highly capable
+    googleAI.model('gemini-1.5-pro'),   // Pro fallback
+    googleAI.model('gemini-1.5-flash'), // Fast fallback
+  ],
+  fast: [
+    googleAI.model('gemini-2.0-flash'), // Default for fast
+    googleAI.model('gemini-1.5-flash'), // 1.5 fallback
+    googleAI.model('gemini-1.0-pro'),   // Ultra-stable legacy fallback
+  ]
+};
+
+// Compatible aliases for existing code if needed, but we'll use tiers
+const capableModel = MODELS.capable[0];
+const fastModel = MODELS.fast[0];
 
 function cleanAndParseJson<T>(jsonString: string, t: Function): T {
   const cleanedString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -86,6 +99,42 @@ function cleanAndParseJson<T>(jsonString: string, t: Function): T {
     throw new Error(t('errors.invalidJSON'));
   }
 }
+
+async function safeGenerate(tier: 'capable' | 'fast', prompt: string, t: Function, additionalOptions: any = {}): Promise<{ text: string }> {
+  if (process.env.NEXT_PUBLIC_AI_QUOTA_EXHAUSTED === 'true') {
+    throw new Error(t('common.aiUnavailableError'));
+  }
+
+  const modelStack = MODELS[tier];
+  let lastError: any = null;
+
+  for (const model of modelStack) {
+    try {
+      const response = await ai.generate({
+        model,
+        prompt,
+        ...additionalOptions
+      });
+      return response as { text: string };
+    } catch (error: any) {
+      lastError = error;
+      const errorMsg = error?.message || "";
+      
+      // If it's a quota or overload error, we try the next model in the stack
+      if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('overloaded') || errorMsg.includes('503')) {
+        console.warn(`AI Fallback triggered: Model failed, trying next in tier ${tier}...`, errorMsg);
+        continue;
+      }
+      
+      // For other types of errors (e.g. invalid prompt), we might want to stop
+      break;
+    }
+  }
+
+  console.error(`AI Generation failed after exhausting tier ${tier}:`, lastError);
+  throw new Error(t('common.aiUnavailableError'));
+}
+
 
 export async function getLegislationInfo(input: ConsultLegislationInput, lang: Language): Promise<ConsultLegislationOutput> {
     const t = getT(lang);
@@ -99,7 +148,7 @@ export async function getLegislationInfo(input: ConsultLegislationInput, lang: L
       \`\`\`
       ${t('instructions.jsonOnly')}
     `;
-    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    const { text } = await safeGenerate('capable', systemPrompt, t);
     if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.legislation') }));
     const result = cleanAndParseJson<ConsultLegislationOutput>(text, t);
     const validation = schema.consultLegislationOutputSchema.safeParse(result);
@@ -123,7 +172,7 @@ export async function getFactCheck(input: FactCheckInput, lang: Language): Promi
       \`\`\`
       ${t('instructions.jsonOnly')}
     `;
-    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    const { text } = await safeGenerate('capable', systemPrompt, t);
     if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.factCheck') }));
     const result = cleanAndParseJson<FactCheckOutput>(text, t);
     const validation = schema.factCheckOutputSchema.safeParse(result);
@@ -146,7 +195,7 @@ export async function getScenarioAnalysis(input: ScenarioInput, lang: Language):
       \`\`\`
       ${t('instructions.jsonOnly')}
     `;
-    const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+    const { text } = await safeGenerate('capable', systemPrompt, t);
     if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.scenario') }));
     const result = cleanAndParseJson<ScenarioAnalysisResult>(text, t);
     const validation = schema.scenarioAnalysisResultSchema.safeParse(result);
@@ -169,7 +218,7 @@ export async function getNewsFeed(): Promise<NewsFeedOutput> {
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('fast', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.newsFeed') }));
   const result = cleanAndParseJson<NewsFeedOutput>(text, t);
   const validation = schema.newsFeedOutputSchema.safeParse(result);
@@ -189,7 +238,7 @@ export async function getTranslation(text: string, targetLanguage: Language): Pr
     ${t('instructions.textOnly')}
     ${t('instructions.textToTranslate', { text })}
   `;
-  const { text: translatedText } = await ai.generate({ model: fastModel, prompt: systemPrompt, output: { format: 'text' } });
+  const { text: translatedText } = await safeGenerate('fast', systemPrompt, t, { output: { format: 'text' } });
   if (!translatedText) throw new Error(t('errors.translationFailed'));
   return translatedText.trim();
 }
@@ -206,7 +255,7 @@ export async function getEconomicSimulation(policy: string, lang: Language): Pro
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('capable', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.simulation') }));
   const result = cleanAndParseJson<SimulationResult>(text, t);
   const validation = schema.simulationResultSchema.safeParse(result);
@@ -229,7 +278,7 @@ export async function getIRSAssessment(input: IRSAssessmentInput, lang: Language
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('capable', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.irs') }));
   const result = cleanAndParseJson<IRSAssessmentOutput>(text, t);
   const validation = schema.irsAssessmentOutputSchema.safeParse(result);
@@ -253,7 +302,7 @@ export async function getPublicStatistic(input: { request: string }, lang: Langu
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('fast', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.publicStats') }));
   const result = cleanAndParseJson<PublicStatisticOutput>(text, t);
   const validation = schema.publicStatisticSchema.safeParse(result);
@@ -277,7 +326,7 @@ export async function getChartFromRequest(input: { request: string }, lang: Lang
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: fastModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('fast', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.chartRequest') }));
   const result = cleanAndParseJson<ChartOutput>(text, t);
   const validation = schema.chartOutputSchema.safeParse(result);
@@ -300,7 +349,7 @@ export async function getFamilyBudgetAnalysis(input: FamilyBudgetInput, lang: La
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('capable', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.budget') }));
   const result = cleanAndParseJson<FamilyBudgetAnalysis>(text, t);
   const validation = schema.familyBudgetAnalysisSchema.safeParse(result);
@@ -323,7 +372,7 @@ export async function getMarketAnalysis(input: MarketAnalysisInput, lang: Langua
     \`\`\`
     ${t('instructions.jsonOnly')}
   `;
-  const { text } = await ai.generate({ model: capableModel, prompt: systemPrompt });
+  const { text } = await safeGenerate('capable', systemPrompt, t);
   if (!text) throw new Error(t('errors.noResponseFor', { context: t('context.market') }));
   const result = cleanAndParseJson<MarketAnalysisOutput>(text, t);
   const validation = schema.marketAnalysisOutputSchema.safeParse(result);

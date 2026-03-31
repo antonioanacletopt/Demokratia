@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Scale, History, Bot, Sparkles, Languages, RefreshCw, Info, Trash2 } from 'lucide-react';
+import { SocialShare } from '@/components/SocialShare';
 import { AdBanner } from '@/components/AdBanner';
 import { useTranslation } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
@@ -38,6 +39,9 @@ function generateSlug(text: string): string {
 }
 
 function LegislationResultDisplay({ result, questionText }: { result: ConsultLegislationOutput, questionText: string }) {
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/legislation?question=${encodeURIComponent(questionText)}`
+    : '';
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
@@ -100,6 +104,10 @@ function LegislationResultDisplay({ result, questionText }: { result: ConsultLeg
             {t('legislation.resultTitle')}
           </CardTitle>
           <div className="flex gap-2">
+            <SocialShare
+              url={shareUrl}
+              title={`Legislação: "${questionText.substring(0, 60)}${questionText.length > 60 ? '...' : ''}"`}
+            />
             <RefutationDialog contentId={`legislation-${questionId}`} />
             {language !== 'pt' && (
               <Button 
@@ -161,23 +169,27 @@ export default function LegislationPage() {
     const id = generateSlug(textToUse);
 
     startTransition(async () => {
-      setResult(null);
+      try {
+        setResult(null);
 
-      const publicRef = doc(firestore, 'publicLegislationQueries', id);
-      const snap = await getDoc(publicRef);
-      if (snap.exists()) {
-        setResult(snap.data() as ConsultLegislationOutput);
-        return;
-      }
+        const publicRef = doc(firestore, 'publicLegislationQueries', id);
+        const snap = await getDoc(publicRef);
+        if (snap.exists()) {
+          setResult(snap.data() as ConsultLegislationOutput);
+          return;
+        }
 
-      const response = await getLegislationInfo({ question: textToUse }, language);
-      setResult(response);
+        const response = await getLegislationInfo({ question: textToUse }, language);
+        setResult(response);
 
-      setDoc(publicRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
+        setDoc(publicRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
 
-      if (user) {
-        const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', id);
-        setDoc(userHistoryRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
+        if (user) {
+          const userHistoryRef = doc(firestore, 'users', user.uid, 'legislationQueries', id);
+          setDoc(userHistoryRef, { question: textToUse, ...response, createdAt: serverTimestamp() }, { merge: true });
+        }
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: t('common.error'), description: e.message || t('common.genericError') });
       }
     });
   }, [question, firestore, language, user]);
@@ -299,7 +311,7 @@ export default function LegislationPage() {
         <CardContent>
           {!user ? (
             <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
-              <p className="text-muted-foreground mb-4 font-medium">{t('nav.login')}</p>
+              <p className="text-muted-foreground mb-4 font-medium">{t('common.login_prompt')}</p>
               <Button asChild variant="default" size="sm" className="shadow-sm"><Link href="/login">{t('nav.login')}</Link></Button>
             </div>
           ) : pastQueries && pastQueries.length > 0 ? (
