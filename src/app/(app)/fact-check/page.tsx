@@ -51,9 +51,8 @@ const VERDICT_NORMALIZE: Record<string, string> = {
   // valores enum actuais
   'true': 'true', 'false': 'false', 'misleading': 'misleading', 'no_evidence': 'no_evidence',
   // português (legado Firestore)
-  'verdadeiro': 'true', 'falso': 'false', 'enganador': 'misleading', 'sem evidência': 'no_evidence', 'sem evidencia': 'no_evidence',
-  // inglês capitalizado
-  'true': 'true', 'false': 'false', 'misleading': 'misleading', 'no evidence': 'no_evidence',
+  'verdadeiro': 'true', 'falso': 'false', 'enganador': 'misleading',
+  'sem evidência': 'no_evidence', 'sem evidencia': 'no_evidence', 'no evidence': 'no_evidence',
 };
 
 function normalizeVerdict(raw: string): string {
