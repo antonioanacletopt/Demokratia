@@ -204,7 +204,8 @@ export default function FactCheckPage() {
   const handleFactCheck = useCallback((customClaim?: string) => {
     const textToUse = (customClaim || claim).trim();
     if (!textToUse) return;
-    const claimId = generateSlug(textToUse);
+    // Include language in cache key so PT and EN results are stored separately
+    const claimId = generateSlug(textToUse) + '-' + language;
 
     startTransition(async () => {
       try {
@@ -241,7 +242,8 @@ export default function FactCheckPage() {
     const q = searchParams.get('claim');
     if (q && q !== processedRef.current) {
       processedRef.current = q;
-      const decoded = safeDecode(q);
+      // Decode URL slug: converts underscores/hyphens to spaces for readability
+      const decoded = safeDecode(q).replace(/[_-]/g, ' ').trim();
       setClaim(decoded);
       handleFactCheck(decoded);
     }

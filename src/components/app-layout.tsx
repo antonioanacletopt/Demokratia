@@ -189,7 +189,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Languages className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>{t('common.language')}</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('nav.language')}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setLanguage('pt')} className="flex items-center justify-between">
                     <span>{t('common.portuguese')}</span>
