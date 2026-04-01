@@ -24,22 +24,22 @@ import { useToast } from '@/hooks/use-toast';
 const MAX_CACHE_LENGTH = 1000;
 
 const verdictConfig = {
-  Verdadeiro: { 
+  'true': { 
     icon: Check, 
     color: 'bg-green-600 text-white border-green-700 dark:bg-green-700',
     badge: 'bg-green-600 hover:bg-green-700 text-white border-transparent'
   },
-  Falso: { 
+  'false': { 
     icon: X, 
     color: 'bg-red-600 text-white border-red-700 dark:bg-red-700',
     badge: 'bg-red-600 hover:bg-red-700 text-white border-transparent'
   },
-  Enganador: { 
+  'misleading': { 
     icon: AlertTriangle, 
     color: 'bg-amber-500 text-white border-amber-600 dark:bg-amber-600',
     badge: 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'
   },
-  'Sem Evidência': { 
+  'no_evidence': { 
     icon: HelpCircle, 
     color: 'bg-slate-500 text-white border-slate-600 dark:bg-slate-600',
     badge: 'bg-slate-500 hover:bg-slate-600 text-white border-transparent'
@@ -112,10 +112,11 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
     ? (() => { const u = new URL(window.location.href); u.searchParams.set('claim', claim); return u.toString(); })()
     : '';
 
-  const currentVerdict = !showOriginal && translated ? translated.verdict : result.verdict;
   const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
-  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
+  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
   const VerdictIcon = config.icon;
+  // Always use i18n translation for the verdict label — never show the raw enum value
+  const verdictLabel = t(`verdict.${result.verdict}` as any) || result.verdict;
 
   return (
     <Card className="border-primary/10 shadow-lg overflow-hidden">
@@ -154,7 +155,7 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
             <div className="bg-white/20 p-2 rounded-full">
               <VerdictIcon className="h-8 w-8" />
             </div>
-            <span className="text-3xl font-bold font-headline tracking-tight">{currentVerdict}</span>
+            <span className="text-3xl font-bold font-headline tracking-tight">{verdictLabel}</span>
           </div>
         </div>
         <div>
@@ -338,12 +339,12 @@ export default function FactCheckPage() {
           {isLoadingPublic ? <Skeleton className="h-24 w-full" /> : recentPublicChecks && recentPublicChecks.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recentPublicChecks.map((h: any) => {
-                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
+                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
                 return (
                   <button key={h.id} className="p-4 text-left border rounded-xl hover:bg-white hover:shadow-md transition-all group bg-card flex flex-col justify-between h-full" onClick={() => { setClaim(h.claim); setResult(h); }}>
                     <p className="font-semibold italic text-xs line-clamp-3 mb-3 leading-snug">"{h.claim}"</p>
                     <Badge variant="outline" className={cn("text-[8px] uppercase tracking-wider border-none w-fit", config.badge)}>
-                      {h.verdict}
+                      {t(`verdict.${h.verdict}` as any) || h.verdict}
                     </Badge>
                   </button>
                 );
@@ -366,13 +367,13 @@ export default function FactCheckPage() {
           ) : history && history.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {history.map((h: any) => {
-                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['Sem Evidência'];
+                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
                 return (
                   <div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card">
                     <div className="max-w-[75%]">
                       <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">"{h.claim}"</p>
                       <Badge variant="outline" className={cn("text-[9px] uppercase tracking-wider border-none", config.badge)}>
-                        {h.verdict}
+                        {t(`verdict.${h.verdict}` as any) || h.verdict}
                       </Badge>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
