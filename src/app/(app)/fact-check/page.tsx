@@ -46,6 +46,20 @@ const verdictConfig = {
   },
 };
 
+// Mapeia qualquer valor legado (PT, capitalizado, etc.) para a chave enum canónica
+const VERDICT_NORMALIZE: Record<string, string> = {
+  // valores enum actuais
+  'true': 'true', 'false': 'false', 'misleading': 'misleading', 'no_evidence': 'no_evidence',
+  // português (legado Firestore)
+  'verdadeiro': 'true', 'falso': 'false', 'enganador': 'misleading', 'sem evidência': 'no_evidence', 'sem evidencia': 'no_evidence',
+  // inglês capitalizado
+  'true': 'true', 'false': 'false', 'misleading': 'misleading', 'no evidence': 'no_evidence',
+};
+
+function normalizeVerdict(raw: string): string {
+  return VERDICT_NORMALIZE[raw?.toLowerCase().trim()] ?? 'no_evidence';
+}
+
 function generateSlug(text: string): string {
   if (!text) return '';
   return text.toLowerCase().trim()
@@ -113,10 +127,10 @@ function FactCheckResultDisplay({ result, claim }: { result: FactCheckOutput, cl
     : '';
 
   const currentExplanation = !showOriginal && translated ? translated.explanation : result.explanation;
-  const config = verdictConfig[result.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
+  const config = verdictConfig[normalizeVerdict(result.verdict)] || verdictConfig['no_evidence'];
   const VerdictIcon = config.icon;
   // Always use i18n translation for the verdict label — never show the raw enum value
-  const verdictLabel = t(`verdict.${result.verdict}` as any) || result.verdict;
+  const verdictLabel = t(`verdict.${normalizeVerdict(result.verdict)}` as any) || result.verdict;
 
   return (
     <Card className="border-primary/10 shadow-lg overflow-hidden">
@@ -339,12 +353,12 @@ export default function FactCheckPage() {
           {isLoadingPublic ? <Skeleton className="h-24 w-full" /> : recentPublicChecks && recentPublicChecks.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recentPublicChecks.map((h: any) => {
-                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
+                const config = verdictConfig[normalizeVerdict(h.verdict)] || verdictConfig['no_evidence'];
                 return (
                   <button key={h.id} className="p-4 text-left border rounded-xl hover:bg-white hover:shadow-md transition-all group bg-card flex flex-col justify-between h-full" onClick={() => { setClaim(h.claim); setResult(h); }}>
                     <p className="font-semibold italic text-xs line-clamp-3 mb-3 leading-snug">"{h.claim}"</p>
                     <Badge variant="outline" className={cn("text-[8px] uppercase tracking-wider border-none w-fit", config.badge)}>
-                      {t(`verdict.${h.verdict}` as any) || h.verdict}
+                      {t(`verdict.${normalizeVerdict(h.verdict)}` as any)}
                     </Badge>
                   </button>
                 );
@@ -367,13 +381,13 @@ export default function FactCheckPage() {
           ) : history && history.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {history.map((h: any) => {
-                const config = verdictConfig[h.verdict as keyof typeof verdictConfig] || verdictConfig['no_evidence'];
+                const config = verdictConfig[normalizeVerdict(h.verdict)] || verdictConfig['no_evidence'];
                 return (
                   <div key={h.id} className="p-5 border rounded-2xl hover:bg-white hover:shadow-md transition-all flex justify-between items-center group bg-card">
                     <div className="max-w-[75%]">
                       <p className="font-semibold italic text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug">"{h.claim}"</p>
                       <Badge variant="outline" className={cn("text-[9px] uppercase tracking-wider border-none", config.badge)}>
-                        {t(`verdict.${h.verdict}` as any) || h.verdict}
+                        {t(`verdict.${normalizeVerdict(h.verdict)}` as any)}
                       </Badge>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
