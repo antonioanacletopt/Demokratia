@@ -2,8 +2,9 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
+  # Manter sempre pelo menos 1 instância activa para evitar cold starts.
+  # Sem isto, o servidor "dorme" e o crawler do AdSense recebe timeout → "site indisponível".
+  minInstances: 1
   maxInstances: 1
 
 env:
