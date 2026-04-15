@@ -156,6 +156,10 @@ service cloud.firestore {
         allow write: if isSignedIn();
     }
 
+    match /budgets/{userId} {
+        allow read, write: if isOwner(userId);
+    }
+
     match /news_feed_cache/{id} {
         allow read: if true;
         allow write: if isSignedIn();
