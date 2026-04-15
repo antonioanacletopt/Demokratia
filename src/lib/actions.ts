@@ -407,3 +407,77 @@ export async function getMarketAnalysis(input: MarketAnalysisInput, lang: Langua
   }
   return validation.data;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inflation data — fetches from Eurostat HICP API, cached 12h server-side
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { BASELINE_DATA, EUROSTAT_COICOPS, type InflationData } from './inflation-data';
+
+async function fetchEurostatInflation(): Promise<InflationData> {
+  try {
+    const coicopParams = EUROSTAT_COICOPS.map(c => `coicop=${c}`).join('&');
+    const url = `https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr?format=JSON&lang=en&geo=PT&unit=RCH_A&${coicopParams}`;
+
+    const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) return BASELINE_DATA;
+
+    const json = await response.json();
+    const timeDim = json.dimension?.TIME_PERIOD?.category;
+    const coicopDim = json.dimension?.coicop?.category;
+    if (!timeDim || !coicopDim) return BASELINE_DATA;
+
+    const timeKeys: string[] = Object.keys(timeDim.index).sort();
+    const N = timeKeys.length;
+    const values: (number | null)[] = json.value;
+
+    const rates: Record<string, number> = {};
+    let latestPeriod = '';
+
+    for (const coicop of EUROSTAT_COICOPS) {
+      const coicopIdx: number | undefined = coicopDim.index[coicop];
+      if (coicopIdx === undefined) continue;
+      for (let t = N - 1; t >= 0; t--) {
+        const val = values[coicopIdx * N + t];
+        if (val !== null && val !== undefined) {
+          rates[coicop] = val;
+          if (coicop === 'CP00') latestPeriod = timeKeys[t];
+          break;
+        }
+      }
+    }
+
+    if (!rates['CP00'] || !latestPeriod) return BASELINE_DATA;
+
+    const [year, month] = latestPeriod.split('-');
+    const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const periodLabel = `${months[parseInt(month) - 1]} ${year}`;
+
+    return {
+      ...BASELINE_DATA,
+      overall: rates['CP00'],
+      period: latestPeriod,
+      periodLabel,
+      source: 'Eurostat HICP (live)',
+      isLive: true,
+      updatedAt: new Date().toISOString(),
+      categories: BASELINE_DATA.categories.map(cat => ({
+        ...cat,
+        rate: rates[cat.coicop] ?? cat.rate,
+      })),
+    };
+  } catch {
+    return BASELINE_DATA;
+  }
+}
+
+const getCachedInflationData = unstable_cache(
+  fetchEurostatInflation,
+  ['inflation-data'],
+  { revalidate: 12 * 60 * 60 } // 12 hours
+);
+
+export async function getInflationData(): Promise<InflationData> {
+  return getCachedInflationData();
+}
+
