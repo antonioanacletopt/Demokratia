@@ -27,6 +27,7 @@ export function middleware(request: NextRequest) {
     pathname === '/robots.txt' || 
     pathname === '/favicon.ico' || 
     pathname === '/sitemap.xml' ||
+    pathname === '/googlef748ce26d96326d2.html' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api')
   ) {
