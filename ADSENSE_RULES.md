@@ -58,6 +58,52 @@ Usar **sempre** `next/script` com `strategy="afterInteractive"`. Nunca usar `<sc
 ## Publisher ID
 `pub-9018474620860214`
 
+---
+
+## Como fazer Deploy
+
+O projeto usa **Firebase App Hosting** (não Firebase Hosting clássico). Não há `git push` — o deploy é feito directamente via CLI:
+
+```bash
+firebase deploy
+```
+
+Este comando faz deploy de:
+- `apphosting` → build e rollout do Next.js app (pode demorar 2-5 min)
+- `firestore` → regras de segurança (`firestore.rules`)
+
+**Não existe remote Git configurado.** O source é enviado directamente para `gs://firebaseapphosting-sources-*` via a CLI.
+
+### Confirmar que o deploy chegou ao ar
+Depois do `firebase deploy` terminar com `Rollout for backend studio complete!`, verificar:
+- https://demokratia.pt/ (domínio canónico, via custom domain no Firebase)
+- https://studio--studio-1716481110-b0153.us-central1.hosted.app (URL interno Firebase — redireciona para o canónico para humanos, mas bots acedem directamente)
+
+### Consola Firebase
+https://console.firebase.google.com/project/studio-1716481110-b0153/apphosting
+
+---
+
+## Google Search Console
+
+**Propriedade validada:** `https://demokratia.pt/` (método: ficheiro HTML)
+
+**Ficheiro de verificação:** `public/googlef748ce26d96326d2.html`  
+Serve em: `https://demokratia.pt/googlef748ce26d96326d2.html`  
+**NÃO remover este ficheiro** — se for apagado, a propriedade perde validação.
+
+Também está no middleware com bypass explícito para nunca ser redirecionado.
+
+### Como usar o Search Console para diagnosticar o AdSense
+1. **Inspeção de URL** → cola qualquer URL do site → "Testar URL em tempo real"
+   - Mostra o que o Googlebot vê, tempo de resposta, erros de renderização
+2. **Cobertura** → mostra páginas indexadas, erros 404, páginas bloqueadas
+3. **Core Web Vitals** → performance real medida por utilizadores Chrome
+
+O AdsBot usa infraestrutura similar ao Googlebot. Se o Search Console não mostrar erros, o AdSense também não deve ter problemas de acesso.
+
+---
+
 ## Checklist após qualquer deploy que toque em middleware/robots/apphosting
 
 - [ ] `minInstances: 1` presente em `apphosting.yaml`
@@ -65,3 +111,4 @@ Usar **sempre** `next/script` com `strategy="afterInteractive"`. Nunca usar `<sc
 - [ ] `ads.txt` intacto em `public/ads.txt`
 - [ ] `Mediapartners-Google` em `robots.ts`
 - [ ] Script AdSense via `next/script` em `layout.tsx`
+- [ ] `public/googlef748ce26d96326d2.html` intacto (verificação Search Console)
