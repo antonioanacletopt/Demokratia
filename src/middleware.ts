@@ -11,17 +11,17 @@ import type { NextRequest } from 'next/server'
 // =============================================================================
 
 const GOOGLE_BOT_PATTERNS = [
-  'Mediapartners-Google',
-  'AdsBot-Google',
-  'Googlebot',
-  'Google-InspectionTool',
-  'Chrome-Lighthouse',  // PageSpeed Insights
+  'mediapartners-google',
+  'adsbot-google',
+  'googlebot',
+  'google-inspectiontool',
+  'chrome-lighthouse',  // PageSpeed Insights
   'pagespeed',          // PageSpeed variants
 ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const userAgent = request.headers.get('user-agent') ?? '';
+  const userAgent = (request.headers.get('user-agent') ?? '').toLowerCase();
 
   // REGRA 1: Ficheiros de verificação — sempre acesso directo, sem redirect
   if (
@@ -40,11 +40,13 @@ export function middleware(request: NextRequest) {
   // NUNCA usar permanentRedirect() no page.tsx da raiz: o código 308 é cacheado
   // permanentemente pela CDN do Firebase, fazendo com que o pedido nunca chegue
   // ao middleware e os bots (AdSense/Googlebot/PageSpeed) recebam sempre 308.
-  // Bots recebem rewrite (sem redirect HTTP). Humanos recebem redirect 302 (não cacheado).
+  // Bots recebem 200 directo (page.tsx devolve null). Humanos recebem redirect 302.
   if (pathname === '/') {
     const isGoogleBot = GOOGLE_BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
     if (isGoogleBot) {
-      return NextResponse.rewrite(new URL('/home', request.url));
+      // Devolver 200 directo — o page.tsx devolve null (página vazia mas acessível).
+      // O AdSense e PageSpeed ficam satisfeitos com um 200, não precisam de conteúdo.
+      return NextResponse.next();
     }
     return NextResponse.redirect(new URL('/home', request.url), 302);
   }
