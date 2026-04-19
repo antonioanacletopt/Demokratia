@@ -15,6 +15,8 @@ const GOOGLE_BOT_PATTERNS = [
   'AdsBot-Google',
   'Googlebot',
   'Google-InspectionTool',
+  'Chrome-Lighthouse',  // PageSpeed Insights
+  'pagespeed',          // PageSpeed variants
 ];
 
 export function middleware(request: NextRequest) {
@@ -38,6 +40,12 @@ export function middleware(request: NextRequest) {
   // Se um bot recebe um redirect, o AdSense marca o site como "inativo ou indisponível"
   const isGoogleBot = GOOGLE_BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
   if (isGoogleBot) {
+    // Se o bot aceder à raiz "/", reescrever internamente para "/home"
+    // para evitar o permanentRedirect(308) que o page.tsx da raiz emite.
+    // Um rewrite serve o conteúdo de /home no URL / sem emitir qualquer redirect HTTP.
+    if (pathname === '/') {
+      return NextResponse.rewrite(new URL('/home', request.url));
+    }
     return NextResponse.next();
   }
 

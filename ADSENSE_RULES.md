@@ -19,12 +19,18 @@ runConfig:
 ```
 
 ### 2. `src/middleware.ts` — bypass de bots Google
-Os bots `Mediapartners-Google`, `AdsBot-Google`, `Googlebot` **NUNCA** devem receber redirects.
-O middleware deve sempre ter a verificação de User-Agent ANTES de qualquer redirect:
+Os bots `Mediapartners-Google`, `AdsBot-Google`, `Googlebot`, `Chrome-Lighthouse` (PageSpeed) **NUNCA** devem receber redirects.
+O middleware deve sempre ter a verificação de User-Agent ANTES de qualquer redirect.
+
+**IMPORTANTE:** A raiz `/` faz `permanentRedirect('/home')` no `page.tsx` — isso é um **308** que os bots não seguem. O middleware interceta bots no `/` e faz um **rewrite** interno para `/home` (sem emitir redirect HTTP):
 ```ts
 const isGoogleBot = GOOGLE_BOT_PATTERNS.some(p => userAgent.includes(p));
-if (isGoogleBot) return NextResponse.next();
+if (isGoogleBot) {
+  if (pathname === '/') return NextResponse.rewrite(new URL('/home', request.url));
+  return NextResponse.next();
+}
 ```
+Sem este rewrite, o AdSense e o PageSpeed Insights falham com "site inativo" ou "unable to resolve" ao crawlar a raiz.
 
 ### 3. `src/app/robots.ts` — regra explícita Mediapartners-Google
 ```ts
