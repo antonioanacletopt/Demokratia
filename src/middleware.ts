@@ -36,16 +36,21 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // REGRA 2: Bots do Google — NUNCA redirecionar, independentemente do domínio
-  // Se um bot recebe um redirect, o AdSense marca o site como "inativo ou indisponível"
-  const isGoogleBot = GOOGLE_BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
-  if (isGoogleBot) {
-    // Se o bot aceder à raiz "/", reescrever internamente para "/home"
-    // para evitar o permanentRedirect(308) que o page.tsx da raiz emite.
-    // Um rewrite serve o conteúdo de /home no URL / sem emitir qualquer redirect HTTP.
-    if (pathname === '/') {
+  // REGRA 2: Raiz "/" — redirecionar para "/home" aqui no middleware.
+  // NUNCA usar permanentRedirect() no page.tsx da raiz: o código 308 é cacheado
+  // permanentemente pela CDN do Firebase, fazendo com que o pedido nunca chegue
+  // ao middleware e os bots (AdSense/Googlebot/PageSpeed) recebam sempre 308.
+  // Bots recebem rewrite (sem redirect HTTP). Humanos recebem redirect 302 (não cacheado).
+  if (pathname === '/') {
+    const isGoogleBot = GOOGLE_BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
+    if (isGoogleBot) {
       return NextResponse.rewrite(new URL('/home', request.url));
     }
+    return NextResponse.redirect(new URL('/home', request.url), 302);
+  }
+
+  const isGoogleBot = GOOGLE_BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
+  if (isGoogleBot) {
     return NextResponse.next();
   }
 
