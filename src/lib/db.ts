@@ -23,10 +23,10 @@ type Env = {
 function getEnv(): Env {
   // Dynamic require so build tooling doesn't try to resolve it statically.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { getRequestContext } = require('@cloudflare/next-on-pages') as {
-    getRequestContext: () => { env: Env };
+  const { getCloudflareContext } = require('@opennextjs/cloudflare') as {
+    getCloudflareContext: () => { env: Env };
   };
-  return getRequestContext().env;
+  return getCloudflareContext().env;
 }
 
 export type WithId<T> = T & { id: string };
