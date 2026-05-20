@@ -4,6 +4,9 @@ compatibility_flags = ["nodejs_compat"]
 
 pages_build_output_dir = ".open-next/assets"
 
+[build]
+command = "npx @opennextjs/cloudflare build"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "demokratia-db"
