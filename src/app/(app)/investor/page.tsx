@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser } from '@/firebase';
 import { useTranslation, type Language } from '@/lib/i18n';
 import { getMarketAnalysis } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';

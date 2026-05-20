@@ -40,6 +40,9 @@ next-env.d.ts
 .genkit/*
 .env*
 
+# Credenciais e contas (confidencial)
+ACCOUNTS.md
+
 # firebase
 firebase-debug.log
 firestore-debug.log

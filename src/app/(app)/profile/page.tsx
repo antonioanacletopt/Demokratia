@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
-import { deleteUser } from 'firebase/auth';
-
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useClerk } from '@clerk/nextjs';
+import { useUser, useDoc, dbUpdate, dbDelete, dbGetAll, nowTs } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation, type Language } from '@/lib/i18n';
 
@@ -51,7 +49,7 @@ export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const { t, setLanguage } = useTranslation();
   const router = useRouter();
-  const firestore = useFirestore();
+  const { signOut, user: clerkUser } = useClerk();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -62,12 +60,10 @@ export default function ProfilePage() {
     }
   }, [user, isUserLoading, router]);
 
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
+  const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfileData>(
+    user ? 'users' : null,
+    user?.uid,
   );
-  
-  const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfileData>(userProfileRef);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema(t)),
@@ -92,52 +88,40 @@ export default function ProfilePage() {
   }, [profileData, form]);
 
   const onSubmit = async (data: ProfileFormValues) => {
-    if (!userProfileRef) return;
+    if (!user) return;
     setIsSaving(true);
-    const dataToUpdate = {
-      displayName: data.displayName,
-      preferredLanguage: data.preferredLanguage,
-      notificationPreferences: data.notificationPreferences,
-      updatedAt: serverTimestamp(),
-    };
     try {
-      await updateDoc(userProfileRef, dataToUpdate);
+      await dbUpdate('users', user.uid, {
+        displayName: data.displayName,
+        preferredLanguage: data.preferredLanguage,
+        notificationPreferences: data.notificationPreferences,
+        updatedAt: nowTs(),
+      });
       setLanguage(data.preferredLanguage as Language);
       toast({ title: t('common.success') });
-    } catch (error) {
-      const permissionError = new FirestorePermissionError({ path: userProfileRef.path, operation: 'update', requestResourceData: dataToUpdate });
-      errorEmitter.emit('permission-error', permissionError);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!user || !firestore) return;
+    if (!user) return;
     setIsDeleting(true);
     toast({ title: t('profile.deleting'), description: t('profile.deletingDesc') });
-
     try {
-      const batch = writeBatch(firestore);
-      const collectionsToCleanup = [
-        `users/${user.uid}/simulationScenarios`,
-        `users/${user.uid}/savedDataViews`,
-        `users/${user.uid}/factChecks`,
-        `users/${user.uid}/legislationQueries`,
-      ];
-
-      for (const colPath of collectionsToCleanup) {
-        const q = query(collection(firestore, colPath));
-        const snapshot = await getDocs(q);
-        snapshot.forEach(d => batch.delete(d.ref));
-      }
-
-      batch.delete(doc(firestore, 'users', user.uid));
-      await batch.commit();
-      await deleteUser(user);
+      // Delete all user-scoped collections
+      const userCollections = ['user_movements', 'user_budgetConfig', 'user_savedViews'];
+      await Promise.all(
+        userCollections.map(col => dbDelete(col, user.uid))
+      );
+      await dbDelete('users', user.uid);
+      // Delete Clerk account
+      if (clerkUser) await clerkUser.delete();
+      await signOut();
       router.replace('/login');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting account:', error);
+      toast({ title: t('login.errorTitle'), variant: 'destructive' });
     } finally {
       setIsDeleting(false);
     }

@@ -1,10 +1,27 @@
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FirebaseClientProvider } from '@/firebase';
+import { ClerkProvider } from '@clerk/nextjs';
 import { LanguageProvider } from '@/lib/i18n';
+
+// next/font serve as fontes localmente a partir do build Next.js.
+// Elimina requests externos a fonts.googleapis.com (render-blocking)
+// e o FOUT (Flash of Unstyled Text) que causava CLS.
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'optional', // 'optional' = sem layout shift garantido
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta-sans',
+  display: 'optional',
+});
 
 const title = 'Demokratia Portugal: Dados, Análises e Simulações';
 const description = 'Plataforma para exploração de dados públicos, verificação de factos e simulação de políticas económicas e sociais em Portugal.';
@@ -55,24 +72,19 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="pt-PT" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script
+      <body className={`${inter.variable} ${plusJakartaSans.variable} font-body antialiased`}>
+        <ClerkProvider>
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
+        </ClerkProvider>
+        <Toaster />
+        <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9018474620860214"
           crossOrigin="anonymous"
+          strategy="lazyOnload"
         />
-      </head>
-      <body className="font-body antialiased">
-        <LanguageProvider>
-          <FirebaseClientProvider>
-            {children}
-          </FirebaseClientProvider>
-        </LanguageProvider>
-        <Toaster />
       </body>
     </html>
   );

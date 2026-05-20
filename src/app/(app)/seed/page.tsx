@@ -1,9 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useUser } from '@/firebase';
+import { useUser, dbSet, nowTs } from '@/firebase';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
 import { getSystemDataSources } from '@/lib/system-data-sources';
@@ -22,8 +21,7 @@ export default function SeedPage() {
   const [isSeedingStats, setIsSeedingStats] = useState(false);
   const [isSeedingSources, setIsSeedingSources] = useState(false);
   const [isSettingAdmin, setIsSettingAdmin] = useState(false);
-  
-  const firestore = useFirestore();
+
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
@@ -34,7 +32,7 @@ export default function SeedPage() {
       toast({
         variant: 'destructive',
         title: 'Acesso Negado',
-        description: 'Não tem permissão para aceder a esta página.',
+        description: 'NÃ£o tem permissÃ£o para aceder a esta pÃ¡gina.',
       });
       router.replace('/home');
     }
@@ -44,12 +42,11 @@ export default function SeedPage() {
     if (!user || user.email !== ADMIN_EMAIL) return;
     setIsSettingAdmin(true);
     try {
-      const docRef = doc(firestore, 'roles_admin', user.uid);
-      await setDoc(docRef, { 
-        email: user.email, 
+      await dbSet('roles_admin', user.uid, {
+        email: user.email,
         displayName: user.displayName,
-        assignedAt: serverTimestamp(),
-        grantedBy: 'system-bootstrap'
+        assignedAt: nowTs(),
+        grantedBy: 'system-bootstrap',
       });
       toast({ title: 'Perfil de administrador ativado com sucesso!' });
     } catch (e) {
@@ -67,29 +64,24 @@ export default function SeedPage() {
       const dataToSeed = publicDataToSeed(t);
       const dataKeys = Object.keys(dataToSeed) as DataSetKey[];
       for (const key of dataKeys) {
-        const dataSet = dataToSeed[key];
-        const docRef = doc(firestore, 'publicData', key);
-        await setDoc(docRef, dataSet);
+        await dbSet('publicData', key, dataToSeed[key] as unknown as Record<string, unknown>);
       }
       toast({ title: 'Indicadores carregados!' });
-    } catch (error: any) {
+    } catch {
       toast({ variant: 'destructive', title: 'Erro ao carregar indicadores' });
     } finally { setIsSeedingPublic(false); }
   };
 
   const handleSeedStatisticalData = async () => {
     setIsSeedingStats(true);
-    toast({ title: 'A carregar estatísticas...' });
+    toast({ title: 'A carregar estatÃ­sticas...' });
     try {
-      const dataToSeed = statisticalDataToSeed(t);
-      for (const dataSet of dataToSeed) {
-        const docData = { ...dataSet, data: JSON.stringify(dataSet.data) };
-        const docRef = doc(firestore, 'statisticalData', dataSet.id);
-        await setDoc(docRef, docData);
+      for (const dataSet of statisticalDataToSeed(t)) {
+        await dbSet('statisticalData', dataSet.id, { ...dataSet, data: JSON.stringify(dataSet.data) } as unknown as Record<string, unknown>);
       }
-      toast({ title: 'Dados estatísticos carregados!' });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Erro ao carregar estatísticas' });
+      toast({ title: 'Dados estatÃ­sticos carregados!' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Erro ao carregar estatÃ­sticas' });
     } finally { setIsSeedingStats(false); }
   };
 
@@ -98,11 +90,10 @@ export default function SeedPage() {
     toast({ title: 'A carregar fontes...' });
     try {
       for (const source of systemDataSources) {
-        const docRef = doc(firestore, 'dataSources', source.id);
-        await setDoc(docRef, source, { merge: true });
+        await dbSet('dataSources', source.id, source as unknown as Record<string, unknown>);
       }
       toast({ title: 'Fontes carregadas!' });
-    } catch (error: any) {
+    } catch {
       toast({ variant: 'destructive', title: 'Erro ao carregar fontes' });
     } finally { setIsSeedingSources(false); }
   };
@@ -110,7 +101,7 @@ export default function SeedPage() {
   if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
     return (
       <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -118,7 +109,7 @@ export default function SeedPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-10">
       <div>
-        <h1 className="text-4xl font-bold font-headline tracking-tight">Painel de Configuração (Seed)</h1>
+        <h1 className="text-4xl font-bold font-headline tracking-tight">Painel de ConfiguraÃ§Ã£o (Seed)</h1>
         <p className="text-muted-foreground text-lg mt-2">
           Configure o acesso administrativo e carregue os dados de 2026 para o sistema.
         </p>
@@ -128,10 +119,10 @@ export default function SeedPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-2xl">
             <ShieldCheck className="h-8 w-8 text-primary" />
-            1. Ativação Administrativa
+            1. AtivaÃ§Ã£o Administrativa
           </CardTitle>
           <CardDescription className="text-base">
-            Clique neste botão para registar permanentemente o seu acesso como administrador nas regras de segurança do Firestore.
+            Clique neste botÃ£o para registar permanentemente o seu acesso como administrador no sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -141,12 +132,12 @@ export default function SeedPage() {
           </Button>
         </CardContent>
       </Card>
-      
+
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Indicadores</CardTitle>
-            <CardDescription>PIB, Inflação e Desemprego 2026.</CardDescription>
+            <CardDescription>PIB, InflaÃ§Ã£o e Desemprego 2026.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleSeedPublicData} disabled={isSeedingPublic} variant="outline" className="w-full">
@@ -159,7 +150,7 @@ export default function SeedPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" />Explorador</CardTitle>
-            <CardDescription>Dados estatísticos detalhados.</CardDescription>
+            <CardDescription>Dados estatÃ­sticos detalhados.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleSeedStatisticalData} disabled={isSeedingStats} variant="outline" className="w-full">

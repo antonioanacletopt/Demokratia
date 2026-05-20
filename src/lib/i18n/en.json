@@ -4,6 +4,9 @@
     "dashboard": "Dashboard",
     "simulations": "Simulations",
     "explorer": "Data Explorer",
+    "explorar": "Explore",
+    "verificar": "Verify",
+    "financas": "My Finances",
     "map": "Regional Map",
     "budget": "Budget",
     "investor": "Investor",
@@ -15,6 +18,7 @@
     "proposals": "Proposals",
     "partidos": "Parties",
     "instituicoes": "Institutions",
+    "municipios": "Municipalities",
     "library": "Library",
     "methodology": "Methodology",
     "about": "About Us",
@@ -31,7 +35,8 @@
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "transparenciaPolitica": "Political Transparency"
   },
   "home": {
     "title": "Latest News Feed",
@@ -812,10 +817,68 @@
     "poverty": "Poverty Rate",
     "population": "Population",
     "housing": "Housing Price",
+    "crime": "Crime Rate",
     "dataFor": "Data for 2026",
     "source": "Source: INE / Pordata 2026 Estimates",
     "selectDistrict": "Select a district on the map.",
     "atlas": "Atlas 2026"
+  },
+  "municipios": {
+    "title": "Municipalities of Portugal",
+    "description": "Explore municipal indicators, public contracts and crime data by municipality. Data from official sources: INE, BASE Portal and dados.gov.pt.",
+    "searchPlaceholder": "Search municipality...",
+    "tabs": {
+      "overview": "Overview",
+      "contracts": "Public Contracts",
+      "crime": "Crime",
+      "health": "Health"
+    },
+    "contracts": {
+      "title": "Public Contracts",
+      "description": "Data from the BASE Portal (IMPIC). Free and legal extraction.",
+      "entity": "Contracting Entity",
+      "supplier": "Supplier",
+      "value": "Value (EUR)",
+      "type": "Type",
+      "date": "Date",
+      "loading": "Loading contracts...",
+      "error": "Could not load contracts. Please try again later.",
+      "noData": "No contracts found for this municipality.",
+      "source": "Source: BASE Portal — base.gov.pt",
+      "viewAll": "View all on BASE Portal"
+    },
+    "crime": {
+      "title": "Crime Statistics",
+      "description": "Annual data from INE / DGPJ via dados.gov.pt.",
+      "category": "Crime Category",
+      "rate": "Rate (‰)",
+      "year": "Year",
+      "loading": "Loading crime data...",
+      "error": "Could not load crime data.",
+      "noData": "No crime data available for this region.",
+      "source": "Source: INE / DGPJ via dados.gov.pt"
+    },
+    "overview": {
+      "population": "Resident Population",
+      "area": "Area (km²)",
+      "density": "Density (pop/km²)",
+      "unemployment": "Unemployment Rate",
+      "source": "Source: INE / Pordata"
+    },
+    "health": {
+      "title": "Health Indicators",
+      "description": "Data from SNS Transparency (ACSS) and INE, by ARS (Regional Health Administration).",
+      "region": "ARS Region",
+      "indicador": "Indicator",
+      "valor": "Value",
+      "unidade": "Unit",
+      "periodo": "Period",
+      "loading": "Loading health data...",
+      "error": "Could not load health data.",
+      "noData": "No health data available for this region.",
+      "source": "Source: SNS Transparency (ACSS) · dados.gov.pt · INE/DGS",
+      "arsLabel": "Regional Health Administration (ARS)"
+    }
   },
   "dataSources": {
     "pordata": {
@@ -885,6 +948,34 @@
     "financial-modeling-prep": {
       "name": "Financial Modeling Prep",
       "description": "API for real-time and historical financial data, including stocks, forex, and cryptocurrencies."
+    },
+    "dados-gov": {
+      "name": "dados.gov.pt",
+      "description": "Portugal's national open data portal for Public Administration, with over 20,000 free and openly licensed datasets."
+    },
+    "base-gov": {
+      "name": "BASE Portal — Public Contracts",
+      "description": "Official portal for public procurement contracts in Portugal. Free extraction of data on awards, entities, values and categories."
+    },
+    "dgpj": {
+      "name": "DGPJ — Directorate-General for Justice Policy",
+      "description": "Official crime and justice statistics in Portugal, including recorded crimes by type and region."
+    },
+    "sns-transparencia": {
+      "name": "NHS Transparency Portal",
+      "description": "Portugal's National Health Service transparency portal with data on admissions, emergencies, doctors and hospital beds by region."
+    },
+    "apa": {
+      "name": "APA — Portuguese Environment Agency",
+      "description": "Air quality, urban waste and environmental data by region, available via the QualAr API and dados.gov.pt."
+    },
+    "parlamento": {
+      "name": "Assembleia da República – Open Data",
+      "description": "Official API with parliamentary data: deputies, initiatives, votes, attendance. Free reuse with attribution."
+    },
+    "tribunal-constitucional": {
+      "name": "Constitutional Court",
+      "description": "Oversight and publication of annual accounts for political parties and electoral campaigns."
     }
   },
   "categories": {
@@ -1118,7 +1209,7 @@
     "recommendedBooks": "Recommended Books",
     "recommendedBooksDesc": "A selection of fundamental works (focusing on open archive and public domain).",
     "exploreBooks": "Explore Books",
-      "downloadLink": "Read / Download for free"
+    "downloadLink": "Read / Download for free"
   },
   "instituicoes": {
     "title": "Institutions and Organs of Power",
@@ -1183,5 +1274,10 @@
       "legislative": "Legislative: Normally every 4 years (Last: March 2024).",
       "local": "Local: Every 4 years (Next: September/October 2025)."
     }
+  },
+  "transparenciaPolitica": {
+    "title": "Political Transparency",
+    "description": "Parliament composition, MPs, legislative initiatives and official transparency & asset declaration portals.",
+    "source": "Source: parlamento.pt (open data, free reuse with attribution)"
   }
 }

@@ -422,11 +422,10 @@ async function fetchEurostatInflation(): Promise<InflationData> {
     const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!response.ok) return BASELINE_DATA;
 
-    const json = await response.json();
+    const json = await response.json() as any;
     const timeDim = json.dimension?.TIME_PERIOD?.category;
     const coicopDim = json.dimension?.coicop?.category;
     if (!timeDim || !coicopDim) return BASELINE_DATA;
-
     const timeKeys: string[] = Object.keys(timeDim.index).sort();
     const N = timeKeys.length;
     const values: (number | null)[] = json.value;
@@ -471,11 +470,16 @@ async function fetchEurostatInflation(): Promise<InflationData> {
   }
 }
 
-const getCachedInflationData = unstable_cache(
-  fetchEurostatInflation,
-  ['inflation-data'],
-  { revalidate: 12 * 60 * 60 } // 12 hours
-);
+const getCachedInflationData = () =>
+  import('./data-cache').then(({ getWithSWR }) =>
+    getWithSWR(
+      'inflation',
+      'inflation',
+      fetchEurostatInflation,
+      () => BASELINE_DATA,
+      'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr',
+    ).then(r => r.data),
+  );
 
 export async function getInflationData(): Promise<InflationData> {
   return getCachedInflationData();

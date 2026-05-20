@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon, Calculator, TrendingUp, Library, Landmark, Users, LayoutDashboard, ShoppingCart } from "lucide-react";
-import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from "@/firebase";
-import { signOut } from "firebase/auth";
-import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { Lightbulb, User, BarChartHorizontalBig, LogOut, LogIn, ShieldCheck, Wrench, Home, Scale, MessageSquare, Mail, FileText, Languages, Check, Zap, Wallet, Info, HelpCircle, BookOpen, Map as MapIcon, Calculator, TrendingUp, Library, Landmark, Users, LayoutDashboard, ShoppingCart, Building2, BadgeCheck } from "lucide-react";
+import { useAuth, useUser, useDoc } from "@/firebase";
+import { dbSet, dbAdd, nowTs } from '@/lib/db-client';
 import { useTranslation, type Language } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
@@ -37,14 +35,11 @@ import { Logo } from "@/components/Logo";
 import { CookieConsent } from "@/components/CookieConsent";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
-const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
-
 function AppSidebarContent() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
-  const { user } = useUser();
+  const { user, isAdmin } = useUser();
   const { t } = useTranslation();
-  const isAdmin = user && (user.email === ADMIN_EMAIL || user.uid === 'id5hDeMIVZeR9i9HG5vvqnjEto32');
 
   const handleLinkClick = () => {
     if (isMobile) setOpenMobile(false);
@@ -52,16 +47,13 @@ function AppSidebarContent() {
 
   const allNavItems = [
     { href: "/home", icon: Home, label: t('nav.home'), public: true },
-    { href: "/explorer", icon: BarChartHorizontalBig, label: t('nav.explorer'), public: true },
+    { href: "/explorar", icon: BarChartHorizontalBig, label: t('nav.explorar'), public: true },
     { href: "/map", icon: MapIcon, label: t('nav.map'), public: true },
-    { href: "/irs", icon: Calculator, label: t('nav.irs'), public: true },
-    { href: "/budget", icon: Wallet, label: t('nav.budget'), public: true },
-    { href: "/inflation", icon: ShoppingCart, label: t('nav.inflation'), public: true },
+    { href: "/transparencia-politica", icon: BadgeCheck, label: t('nav.transparenciaPolitica'), public: true },
+    { href: "/financas", icon: Wallet, label: t('nav.financas'), public: true },
     { href: "/investor", icon: TrendingUp, label: t('nav.investor'), public: true },
-    { href: "/simulations", icon: Lightbulb, label: t('nav.simulations'), public: true },
     { href: "/scenarios", icon: Zap, label: t('nav.scenarios'), public: true },
-    { href: "/fact-check", icon: ShieldCheck, label: t('nav.factCheck'), public: true },
-    { href: "/legislation", icon: Scale, label: t('nav.legislation'), public: true },
+    { href: "/verificar", icon: ShieldCheck, label: t('nav.verificar'), public: true },
     { href: "/proposals", icon: MessageSquare, label: t('nav.proposals'), public: true },
     { href: "/library", icon: Library, label: t('nav.library'), public: true },
     { id: 'partidos', icon: Users, label: t('nav.partidos'), href: '/partidos' },
@@ -106,49 +98,44 @@ function AppSidebarContent() {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUser();
-  const firestore = useFirestore();
-  const auth = useAuth();
+  const { signOut } = useAuth();
   const router = useRouter();
   const { t, setLanguage, language } = useTranslation();
   
   const [hasSyncedProfile, setHasSyncedProfile] = useState(false);
 
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
+  const { data: profileData, isLoading: isProfileLoading } = useDoc<{ preferredLanguage?: string }>(
+    user ? 'users' : null,
+    user?.uid,
   );
-  const { data: profileData, isLoading: isProfileLoading } = useDoc(userProfileRef);
 
   useEffect(() => {
-    if (!firestore) return;
     const sessionKey = 'demokratia-session-logged';
     const isLoggedThisSession = sessionStorage.getItem(sessionKey);
     if (!isLoggedThisSession) {
-      const sessionsRef = collection(firestore, 'analytics_sessions');
-      addDocumentNonBlocking(sessionsRef, {
-        timestamp: serverTimestamp(),
+      dbAdd('analytics_sessions', {
+        timestamp: nowTs(),
         isAnonymous: !user,
-        userId: user?.uid || null,
-        path: window.location.pathname
-      });
+        userId: user?.uid ?? null,
+        path: window.location.pathname,
+      }).catch(() => {});
       sessionStorage.setItem(sessionKey, 'true');
     }
-  }, [firestore, user]);
+  }, [user]);
 
   useEffect(() => {
-    if (user && !isProfileLoading && !profileData && firestore) {
-      const userRef = doc(firestore, 'users', user.uid);
-      setDoc(userRef, {
+    if (user && !isProfileLoading && !profileData) {
+      dbSet('users', user.uid, {
         id: user.uid,
         displayName: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        preferredLanguage: 'pt'
-      }, { merge: true });
+        createdAt: nowTs(),
+        updatedAt: nowTs(),
+        preferredLanguage: 'pt',
+      }, true);
     }
-  }, [user, profileData, isProfileLoading, firestore]);
+  }, [user, profileData, isProfileLoading]);
 
   useEffect(() => {
     if (profileData?.preferredLanguage && !hasSyncedProfile) {
@@ -162,7 +149,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const handleSignOut = async () => {
-    await signOut(auth);
+    await signOut();
     router.push('/home');
   };
 
@@ -187,7 +174,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Languages className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" aria-label="Selecionar idioma"><Languages className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t('nav.language')}</DropdownMenuLabel>
@@ -247,9 +234,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="space-y-4">
                   <h4 className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t('footer.resources')}</h4>
                   <ul className="space-y-2 text-sm">
-                    <li><Link href="/explorer" className="hover:text-primary">{t('nav.explorer')}</Link></li>
+                    <li><Link href="/explorar" className="hover:text-primary">{t('nav.explorar')}</Link></li>
                     <li><Link href="/map" className="hover:text-primary">{t('nav.map')}</Link></li>
-                    <li><Link href="/simulations" className="hover:text-primary">{t('nav.simulations')}</Link></li>
+                    <li><Link href="/verificar" className="hover:text-primary">{t('nav.verificar')}</Link></li>
                     <li><Link href="/methodology" className="hover:text-primary">{t('nav.methodology')}</Link></li>
                   </ul>
                 </div>
@@ -280,7 +267,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{t('footer.copyright').replace('{year}', new Date().getFullYear().toString())}</span>
+                  <span>{t('footer.copyright').replace('{{year}}', new Date().getFullYear().toString())}</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground/60 text-center sm:text-right leading-relaxed max-w-lg">
                   {t('footer.disclaimer')}

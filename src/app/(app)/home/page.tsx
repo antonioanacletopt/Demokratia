@@ -42,8 +42,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { getNewsFeed, getTranslation, type NewsFeedOutput, type NewsFeedItem } from '@/lib/actions';
 import { useTranslation, Language } from '@/lib/i18n';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, serverTimestamp, doc, getDoc, setDoc, orderBy, limit, where, getDocs } from 'firebase/firestore';
+import { useUser, useCollection } from '@/firebase';
 import AIResultButton from '@/components/AIResultButton';
 import { cn } from '@/lib/utils';
 
@@ -64,9 +63,10 @@ const typeConfig = {
   },
 };
 
+const translationsCache = new Map<string, string>();
+
 function FeedItemCard({ item }: { item: NewsFeedItem }) {
   const { t, language } = useTranslation();
-  const firestore = useFirestore();
   const config = typeConfig[item.type as keyof typeof typeConfig];
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string, actionLabel?: string } | null>(null);
@@ -74,29 +74,17 @@ function FeedItemCard({ item }: { item: NewsFeedItem }) {
 
   useEffect(() => {
     if (language === 'en' && item) {
-      const checkCache = async () => {
-        const cacheRef = collection(firestore, 'translations_cache');
-        const fetchCached = async (text: string) => {
-          if (!text || text.length > MAX_CACHE_LENGTH) return null;
-          const q = query(cacheRef, where('originalText', '==', text), where('targetLanguage', '==', 'English'), limit(1));
-          const snap = await getDocs(q);
-          return !snap.empty ? snap.docs[0].data().translatedText : null;
-        };
-        const [tTitle, tDesc] = await Promise.all([
-          fetchCached(item.title),
-          fetchCached(item.description)
-        ]);
-        if (tTitle && tDesc) {
-          setTranslated({ title: tTitle, desc: tDesc });
-          setShowOriginal(false);
-        }
-      };
-      checkCache();
+      const cachedTitle = translationsCache.get(item.title + ':en');
+      const cachedDesc = translationsCache.get(item.description + ':en');
+      if (cachedTitle && cachedDesc) {
+        setTranslated({ title: cachedTitle, desc: cachedDesc });
+        setShowOriginal(false);
+      }
     } else {
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, item, firestore]);
+  }, [language, item]);
 
   if (!config) return null;
   const Icon = config.icon;
@@ -107,13 +95,8 @@ function FeedItemCard({ item }: { item: NewsFeedItem }) {
       const resDesc = await getTranslation(item.description, language as Language);
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
-      const cacheRef = collection(firestore, 'translations_cache');
-      const saveToCache = (orig: string, trans: string) => {
-        if (orig.length > MAX_CACHE_LENGTH) return;
-        setDoc(doc(cacheRef), { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() }, { merge: true });
-      };
-      saveToCache(item.title, resTitle);
-      saveToCache(item.description, resDesc);
+      translationsCache.set(item.title + ':en', resTitle);
+      translationsCache.set(item.description + ':en', resDesc);
     });
   };
 
@@ -162,7 +145,6 @@ function FeedItemCard({ item }: { item: NewsFeedItem }) {
 
 export default function HomePage() {
   const { t } = useTranslation();
-  const firestore = useFirestore();
   const [feedItems, setFeedItems] = useState<NewsFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -187,8 +169,16 @@ export default function HomePage() {
     };
   }, [t]);
 
-  const proposalsRef = useMemoFirebase(() => query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc'), limit(3)), [firestore]);
-  const { data: popularProposals } = useCollection<any>(proposalsRef);
+  const [proposalsLoaded, setProposalsLoaded] = useState(false);
+  const { data: popularProposals } = useCollection<any>(
+    'communityProposals',
+    { orderBy: 'voteCount', orderDir: 'desc', limit: 3 },
+    60_000,
+  );
+
+  useEffect(() => {
+    if (popularProposals !== undefined) setProposalsLoaded(true);
+  }, [popularProposals]);
 
   useEffect(() => {
     async function loadFeed() {
@@ -211,6 +201,8 @@ export default function HomePage() {
                     fill 
                     className="object-cover opacity-30 mix-blend-overlay" 
                     priority
+                    quality={30}
+                    sizes="100vw"
                     data-ai-hint={heroImg.imageHint}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
@@ -361,47 +353,62 @@ export default function HomePage() {
 
       <AdBanner />
 
-      {popularProposals && popularProposals.length > 0 && (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between border-b pb-4">
-            <div>
-              <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                <Users className="h-6 w-6 text-accent" /> {t('home.proposals.communityTitle')}
-              </h2>
-              <p className="text-muted-foreground text-sm">{t('home.proposals.subtitle')}</p>
+      {/* Reserva espaço fixo para evitar CLS quando os dados do Firestore carregam */}
+      <section className="space-y-6" style={{ minHeight: proposalsLoaded && (!popularProposals || popularProposals.length === 0) ? '0' : '300px' }}>
+        {!proposalsLoaded ? (
+          <>
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="space-y-2">
+                <div className="h-7 w-64 bg-muted animate-pulse rounded" />
+                <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+              </div>
             </div>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/proposals">{t('home.proposals.seeAll')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {popularProposals.map((p: any) => (
-              <Card key={p.id} className="hover:shadow-md transition-all border-accent/10">
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="text-sm font-bold line-clamp-2 leading-snug">{p.title}</CardTitle>
-                    <Badge variant="secondary" className="text-[10px] gap-1 px-1.5 shrink-0">
-                      <ThumbsUp className="h-3 w-3" /> {p.voteCount}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <p className="text-xs text-muted-foreground line-clamp-3 italic">\"{p.description}\"</p>
-                </CardContent>
-                <CardFooter className="p-3 bg-muted/30 flex justify-center">
-                  <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-accent">
-                    <Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('home.simImpact')}</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
+            <div className="grid gap-6 md:grid-cols-3">
+              {[1,2,3].map(i => <div key={i} className="h-40 bg-muted animate-pulse rounded-xl" />)}
+            </div>
+          </>
+        ) : popularProposals && popularProposals.length > 0 ? (
+          <>
+            <div className="flex items-center justify-between border-b pb-4">
+              <div>
+                <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
+                  <Users className="h-6 w-6 text-accent" /> {t('home.proposals.communityTitle')}
+                </h2>
+                <p className="text-muted-foreground text-sm">{t('home.proposals.subtitle')}</p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/proposals">{t('home.proposals.seeAll')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {popularProposals.map((p: any) => (
+                <Card key={p.id} className="hover:shadow-md transition-all border-accent/10">
+                  <CardHeader className="p-4 pb-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <CardTitle className="text-sm font-bold line-clamp-2 leading-snug">{p.title}</CardTitle>
+                      <Badge variant="secondary" className="text-[10px] gap-1 px-1.5 shrink-0">
+                        <ThumbsUp className="h-3 w-3" /> {p.voteCount}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <p className="text-xs text-muted-foreground line-clamp-3 italic">&quot;{p.description}&quot;</p>
+                  </CardContent>
+                  <CardFooter className="p-3 bg-muted/30 flex justify-center">
+                    <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold text-accent">
+                      <Link href={`/simulations?policy=${encodeURIComponent(p.description)}`}>{t('home.simImpact')}</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : null}
+      </section>
 
         {regionalImg && (
             <div className="relative h-[300px] w-full rounded-3xl overflow-hidden shadow-xl border">
-                <Image src={regionalImg.imageUrl} alt={regionalImg.description} fill className="object-cover" data-ai-hint={regionalImg.imageHint} />
+                <Image src={regionalImg.imageUrl} alt={regionalImg.description} fill priority quality={70} sizes="100vw" className="object-cover" data-ai-hint={regionalImg.imageHint} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-8">
                 <div className="max-w-xl space-y-2">
                     <h3 className="text-2xl font-bold text-white">{t('home.regionalTitle')}</h3>

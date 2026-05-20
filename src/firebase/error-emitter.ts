@@ -1,15 +1,29 @@
 'use client';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * Defines the shape of all possible events and their corresponding payload types.
- * This centralizes event definitions for type safety across the application.
+ * error-emitter.ts — Lightweight typed pub/sub event emitter.
+ * Provides app-level error broadcasting (e.g. permission errors).
+ */
+
+export class FirestorePermissionError extends Error {
+  path: string;
+  operation: string;
+
+  constructor(ctx: { path: string; operation: string; requestResourceData?: unknown }) {
+    super(`Permission denied: ${ctx.operation} at ${ctx.path}`);
+    this.name = 'FirestorePermissionError';
+    this.path = ctx.path;
+    this.operation = ctx.operation;
+  }
+}
+
+/**
+ * Shape of all application-level events and their payload types.
  */
 export interface AppEvents {
   'permission-error': FirestorePermissionError;
 }
 
-// A generic type for a callback function.
 type Callback<T> = (data: T) => void;
 
 /**

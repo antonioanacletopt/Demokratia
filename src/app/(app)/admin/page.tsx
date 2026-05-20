@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, doc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { setDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useUser, useCollection, dbSet, dbDelete, dbUpdate, nowTs } from '@/firebase';
 import { getSystemDataSources, type DataSource } from '@/lib/system-data-sources';
 import { publicDataToSeed, DataSetKey } from '@/lib/data';
 import { statisticalDataToSeed } from '@/lib/statistical-data';
@@ -30,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User, Scale } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User, Scale, RefreshCw, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 
 const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
 
@@ -185,7 +183,6 @@ function DataSourceForm({ source, onSave, onFinished, isSaving }: { source?: Dat
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
   const { t, language } = useTranslation();
@@ -201,33 +198,19 @@ export default function AdminPage() {
   const [isSeedingSources, setIsSeedingSources] = useState(false);
   const [isSettingAdmin, setIsSettingAdmin] = useState(false);
   const [viewingRefutation, setViewingRefutation] = useState<Refutation | null>(null);
+  const [cacheStatuses, setCacheStatuses] = useState<any[]>([]);
+  const [isLoadingCache, setIsLoadingCache] = useState(false);
+  const [refreshingType, setRefreshingType] = useState<string | null>(null);
 
-  const dataSourcesCollection = useMemoFirebase(() => collection(firestore, 'dataSources'), [firestore]);
-  const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<any>(dataSourcesCollection);
-  
-  const contactMessagesCollection = useMemoFirebase(() => collection(firestore, 'contactMessages'), [firestore]);
-  const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>(contactMessagesCollection);
-
-  const refutationsCollection = useMemoFirebase(() => collection(firestore, 'refutations'), [firestore]);
-  const { data: refutations, isLoading: isLoadingRefutations } = useCollection<Refutation>(refutationsCollection);
-
-  const statisticalDataCollection = useMemoFirebase(() => collection(firestore, 'statisticalData'), [firestore]);
-  const { data: statsData, isLoading: isLoadingStats } = useCollection<StatisticalData>(statisticalDataCollection);
-
-  const usersCollection = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
-  const { data: appUsers, isLoading: isLoadingUsers } = useCollection<UserProfile>(usersCollection);
-
-  const sessionsCollection = useMemoFirebase(() => collection(firestore, 'analytics_sessions'), [firestore]);
-  const { data: analyticsSessions, isLoading: isLoadingSessions } = useCollection<AnalyticsSession>(sessionsCollection);
-
-  const publicSimsCollection = useMemoFirebase(() => collection(firestore, 'publicSimulations'), [firestore]);
-  const { data: publicSims, isLoading: isLoadingPublicSims } = useCollection<PublicSimulation>(publicSimsCollection);
-
-  const publicFactChecksCollection = useMemoFirebase(() => collection(firestore, 'publicFactChecks'), [firestore]);
-  const { data: publicFactChecks, isLoading: isLoadingPublicFactChecks } = useCollection<PublicFactCheck>(publicFactChecksCollection);
-
-  const publicLegislationCollection = useMemoFirebase(() => collection(firestore, 'publicLegislationQueries'), [firestore]);
-  const { data: publicLegislation, isLoading: isLoadingPublicLegislation } = useCollection<PublicLegislation>(publicLegislationCollection);
+  const { data: dataSources, isLoading: isLoadingDataSources } = useCollection<any>('dataSources');
+  const { data: contactMessages, isLoading: isLoadingMessages } = useCollection<ContactMessage>('contactMessages');
+  const { data: refutations, isLoading: isLoadingRefutations } = useCollection<Refutation>('refutations');
+  const { data: statsData, isLoading: isLoadingStats } = useCollection<StatisticalData>('statisticalData');
+  const { data: appUsers, isLoading: isLoadingUsers } = useCollection<UserProfile>('users');
+  const { data: analyticsSessions, isLoading: isLoadingSessions } = useCollection<AnalyticsSession>('analytics_sessions');
+  const { data: publicSims, isLoading: isLoadingPublicSims } = useCollection<PublicSimulation>('publicSimulations');
+  const { data: publicFactChecks, isLoading: isLoadingPublicFactChecks } = useCollection<PublicFactCheck>('publicFactChecks');
+  const { data: publicLegislation, isLoading: isLoadingPublicLegislation } = useCollection<PublicLegislation>('publicLegislationQueries');
   
   const sortedMessages = useMemo(() => {
     if (!contactMessages) return [];
@@ -284,11 +267,10 @@ export default function AdminPage() {
     if (!user) return;
     setIsSettingAdmin(true);
     try {
-      const docRef = doc(firestore, 'roles_admin', user.uid);
-      setDocumentNonBlocking(docRef, { 
-        email: user.email, 
-        displayName: user.displayName,
-        assignedAt: serverTimestamp(),
+      await dbSet('roles_admin', user.uid, {
+        email: user.email ?? '',
+        displayName: user.displayName ?? '',
+        assignedAt: nowTs(),
         grantedBy: 'admin-panel'
       });
       toast({ title: t('admin.adminProfileActivated') });
@@ -300,8 +282,7 @@ export default function AdminPage() {
   const handleSaveDataSource = (data: DataSourceFormValues) => {
     setIsSaving(true);
     const id = data.id || generateSlug(data.name);
-    const docRef = doc(firestore, 'dataSources', id);
-    setDocumentNonBlocking(docRef, { ...data, id }, { merge: true });
+    dbSet('dataSources', id, { ...data, id });
     setTimeout(() => {
       toast({ title: t('common.success') });
       setIsSaving(false);
@@ -311,7 +292,7 @@ export default function AdminPage() {
   };
 
   const handleApproveSource = (id: string) => {
-    updateDocumentNonBlocking(doc(firestore, 'dataSources', id), { isSystemSource: true, status: 'approved' });
+    dbUpdate('dataSources', id, { isSystemSource: true, status: 'approved' });
     toast({ title: t('common.success') });
   };
 
@@ -320,8 +301,7 @@ export default function AdminPage() {
     try {
       for (const key in publicDataToSeed) {
         const dataSet = publicDataToSeed(t)[key as DataSetKey];
-        const docRef = doc(firestore, 'publicData', key);
-        setDocumentNonBlocking(docRef, dataSet, { merge: true });
+        await dbSet('publicData', key, dataSet);
       }
       toast({ title: t('common.success') });
     } catch (e) { toast({ variant: 'destructive', title: t('common.error') }); }
@@ -332,8 +312,7 @@ export default function AdminPage() {
     setIsSeedingStats(true);
     try {
       for (const dataSet of statisticalDataToSeed(t)) {
-        const docRef = doc(firestore, 'statisticalData', dataSet.id);
-        setDocumentNonBlocking(docRef, { ...dataSet, data: JSON.stringify(dataSet.data) }, { merge: true });
+        await dbSet('statisticalData', dataSet.id, { ...dataSet, data: JSON.stringify(dataSet.data) });
       }
       toast({ title: t('common.success') });
     } catch (e) { toast({ variant: 'destructive', title: t('common.error') }); }
@@ -344,8 +323,7 @@ export default function AdminPage() {
     setIsSeedingSources(true);
     try {
       for (const source of systemDataSources) {
-        const docRef = doc(firestore, 'dataSources', source.id);
-        setDocumentNonBlocking(docRef, source, { merge: true });
+        await dbSet('dataSources', source.id, source as unknown as Record<string, unknown>);
       }
       toast({ title: t('common.success') });
     } catch (e) { toast({ variant: 'destructive', title: t('common.error') }); }
@@ -353,38 +331,75 @@ export default function AdminPage() {
   };
 
   const handleUpdateRefutationStatus = (id: string, status: 'approved' | 'rejected') => {
-    updateDocumentNonBlocking(doc(firestore, 'refutations', id), { status, adminReviewDate: serverTimestamp() });
+    dbUpdate('refutations', id, { status, adminReviewDate: nowTs() });
     toast({ title: t('common.success') });
   };
 
   const handleDeleteDataSource = (id: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'dataSources', id));
+    dbDelete('dataSources', id);
     toast({ title: t('common.success') });
   };
 
   const handleDeleteStatisticalData = (id: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'statisticalData', id));
+    dbDelete('statisticalData', id);
     toast({ title: t('common.success') });
   };
 
   const handleDeletePublicSimulation = (id: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'publicSimulations', id));
+    dbDelete('publicSimulations', id);
     toast({ title: t('common.success') });
   };
 
   const handleDeletePublicFactCheck = (id: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'publicFactChecks', id));
+    dbDelete('publicFactChecks', id);
     toast({ title: t('common.success') });
   };
 
   const handleDeletePublicLegislation = (id: string) => {
-    deleteDocumentNonBlocking(doc(firestore, 'publicLegislationQueries', id));
+    dbDelete('publicLegislationQueries', id);
     toast({ title: t('common.success') });
   };
 
   const handleUpdateMessageStatus = (id: string, status: 'read' | 'archived') => {
-    updateDocumentNonBlocking(doc(firestore, 'contactMessages', id), { status });
+    dbUpdate('contactMessages', id, { status });
     toast({ title: t('common.success') });
+  };
+
+  const loadCacheStatuses = async () => {
+    if (!user) return;
+    setIsLoadingCache(true);
+    try {
+      const res = await fetch('/api/admin/cache', { headers: { Authorization: `Bearer ${user.uid}` } });
+      const json = await res.json() as { statuses?: any[] };
+      setCacheStatuses(json.statuses ?? []);
+    } catch {
+      toast({ variant: 'destructive', title: 'Erro ao carregar estado do cache' });
+    } finally {
+      setIsLoadingCache(false);
+    }
+  };
+
+  const handleRefreshCache = async (dataType: string) => {
+    if (!user) return;
+    setRefreshingType(dataType);
+    try {
+      const res = await fetch('/api/admin/cache', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${user.uid}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataType }),
+      });
+      const json = await res.json() as { success?: boolean; status?: string; error?: string };
+      if (json.success) {
+        toast({ title: `Cache "${dataType}" actualizado`, description: `Status: ${json.status}` });
+        await loadCacheStatuses();
+      } else {
+        toast({ variant: 'destructive', title: 'Erro', description: json.error });
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Erro ao actualizar cache' });
+    } finally {
+      setRefreshingType(null);
+    }
   };
 
   if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
@@ -411,6 +426,7 @@ export default function AdminPage() {
           <TabsTrigger value="data" className="gap-2"><FileSpreadsheet className="h-4 w-4" />{t('admin.tabs.data')}</TabsTrigger>
           <TabsTrigger value="messages" className="gap-2"><Inbox className="h-4 w-4" />{t('admin.tabs.messages')}</TabsTrigger>
           <TabsTrigger value="seed" className="gap-2"><Sparkles className="h-4 w-4" />{t('admin.tabs.seed')}</TabsTrigger>
+          <TabsTrigger value="cache" className="gap-2" onClick={loadCacheStatuses}><RefreshCw className="h-4 w-4" />Cache</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
@@ -875,6 +891,114 @@ export default function AdminPage() {
                   {isSeedingSources ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Globe className="mr-2 h-4 w-4" />}
                   {t('admin.loadSources')}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Cache de Dados Externos ── */}
+        <TabsContent value="cache" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Cache de Dados Externos</CardTitle>
+                  <CardDescription>Estado do cache Firestore para todas as fontes de dados externos. Os dados são servidos daqui em vez de chamar APIs externas a cada pedido.</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={loadCacheStatuses} disabled={isLoadingCache}>
+                  {isLoadingCache ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  <span className="ml-2 hidden sm:inline">Actualizar estado</span>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoadingCache && cacheStatuses.length === 0 ? (
+                <div className="flex h-32 items-center justify-center text-muted-foreground text-sm"><Loader2 className="animate-spin mr-2" />A carregar estado do cache…</div>
+              ) : cacheStatuses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 gap-3 text-muted-foreground">
+                  <Database className="h-8 w-8 opacity-30" />
+                  <p className="text-sm">Clique em "Actualizar estado" para ver o estado do cache</p>
+                  <Button variant="outline" size="sm" onClick={loadCacheStatuses}>Ver estado</Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cacheStatuses.map((s: any) => {
+                    const isExpired = s.isExpired || s.status === 'missing';
+                    const statusIcon = s.status === 'ok' && !isExpired
+                      ? <CheckCircle className="h-4 w-4 text-green-500" />
+                      : s.status === 'fallback'
+                        ? <AlertCircle className="h-4 w-4 text-amber-500" />
+                        : s.status === 'missing'
+                          ? <XCircle className="h-4 w-4 text-muted-foreground" />
+                          : <Clock className="h-4 w-4 text-orange-400" />;
+                    const statusLabel = s.status === 'ok' && !isExpired ? 'Válido'
+                      : s.status === 'fallback' ? 'Fallback'
+                      : s.status === 'missing' ? 'Sem dados'
+                      : 'Expirado';
+                    return (
+                      <div key={s.key} className="flex items-center justify-between rounded-lg border p-4 gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {statusIcon}
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">{s.label}</p>
+                            <p className="text-xs text-muted-foreground">{s.updateFrequency}</p>
+                            {s.fetchedAt && (
+                              <p className="text-xs text-muted-foreground">
+                                Actualizado: {new Date(s.fetchedAt).toLocaleString('pt-PT')}
+                                {s.expiresAt && ` · Expira: ${new Date(s.expiresAt).toLocaleString('pt-PT')}`}
+                              </p>
+                            )}
+                            {s.errorMsg && <p className="text-xs text-red-500 truncate">Erro: {s.errorMsg}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge variant={s.status === 'ok' && !isExpired ? 'default' : s.status === 'fallback' ? 'secondary' : 'outline'} className="text-xs">{statusLabel}</Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRefreshCache(s.dataType)}
+                            disabled={refreshingType === s.dataType}
+                          >
+                            {refreshingType === s.dataType
+                              ? <Loader2 className="h-3 w-3 animate-spin" />
+                              : <RefreshCw className="h-3 w-3" />}
+                            <span className="ml-1 hidden sm:inline">Forçar</span>
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Política de Actualização</CardTitle>
+              <CardDescription>Tempos de TTL configurados por tipo de dado, baseados na frequência real de publicação de cada fonte.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b"><th className="py-2 px-3 text-left">Tipo</th><th className="py-2 px-3 text-left">Fonte</th><th className="py-2 px-3 text-left">TTL</th><th className="py-2 px-3 text-left hidden md:table-cell">Justificação</th></tr></thead>
+                  <tbody>
+                    {[
+                      { label: 'Contratos Públicos', source: 'base.gov.pt', ttl: '30 min', rationale: 'Novos contratos diariamente' },
+                      { label: 'Crime (RASI)', source: 'DGPJ / dados.gov.pt', ttl: '7 dias', rationale: 'Publicação anual em março/abril' },
+                      { label: 'Saúde (SNS)', source: 'transparencia.sns.gov.pt', ttl: '24 horas', rationale: 'Dados mensais/sazonais' },
+                      { label: 'Deputados (AR)', source: 'parlamento.pt', ttl: '24 horas', rationale: 'Estável por legislatura (4 anos)' },
+                      { label: 'Iniciativas (AR)', source: 'parlamento.pt', ttl: '1 hora', rationale: 'Actividade parlamentar semanal' },
+                    ].map(row => (
+                      <tr key={row.label} className="border-b last:border-0 hover:bg-muted/30">
+                        <td className="py-2 px-3 font-medium">{row.label}</td>
+                        <td className="py-2 px-3 text-muted-foreground">{row.source}</td>
+                        <td className="py-2 px-3"><Badge variant="outline">{row.ttl}</Badge></td>
+                        <td className="py-2 px-3 text-muted-foreground hidden md:table-cell">{row.rationale}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

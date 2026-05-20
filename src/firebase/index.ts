@@ -1,50 +1,31 @@
-'use client';
+/**
+ * @/firebase — central barrel for auth, data hooks, and DB helpers.
+ *
+ * Stack: Clerk (auth) · Cloudflare D1 via REST API (data) · polling hooks
+ * All Firebase SDK dependencies have been removed.
+ */
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+// ── Auth (Clerk) ──────────────────────────────────────────────────────────────
+export { useUser, useAuth, type AppUser, type UserHookResult, type AuthHookResult } from '@/providers/auth-provider';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
-export function initializeFirebase() {
-  if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
-    let firebaseApp;
-    try {
-      // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp();
-    } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
+// ── Data hooks (D1 REST + polling) ───────────────────────────────────────────
+export { useCollection, type UseCollectionResult, type WithId } from '@/hooks/use-collection';
+export { useDoc, type UseDocResult } from '@/hooks/use-doc';
 
-    return getSdks(firebaseApp);
-  }
+// ── DB write helpers ──────────────────────────────────────────────────────────
+export {
+  dbAdd,
+  dbSet,
+  dbUpdate,
+  dbDelete,
+  dbGet,
+  dbGetAll,
+  dbIncrement,
+  dbArrayUnion,
+  dbArrayRemove,
+  nowTs,
+  type ClientQueryParams,
+} from '@/lib/db-client';
 
-  // If already initialized, return the SDKs with the already initialized App
-  return getSdks(getApp());
-}
-
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
-  };
-}
-
-export * from './provider';
-export * from './client-provider';
-export * from './firestore/use-collection';
-export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
-export * from './errors';
-export * from './error-emitter';
+// ── Error broadcasting ────────────────────────────────────────────────────────
+export { errorEmitter, FirestorePermissionError } from '@/firebase/error-emitter';

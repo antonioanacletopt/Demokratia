@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useUser } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useUser, dbAdd, nowTs } from '@/firebase';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -31,7 +29,6 @@ interface RefutationDialogProps {
 export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) {
   const { t } = useTranslation();
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,21 +39,17 @@ export function RefutationDialog({ contentId, trigger }: RefutationDialogProps) 
   });
 
   const onSubmit = (values: RefutationFormValues) => {
-    if (!user || !firestore) return;
+    if (!user) return;
     setIsSubmitting(true);
-
-    const refutationsCollection = collection(firestore, 'refutations');
-    const data = {
+    dbAdd('refutations', {
       userId: user.uid,
       userName: user.displayName || t('refutation.anonymous'),
       aiContentIdentifier: contentId,
       refutationText: values.refutationText,
       evidenceLinks: values.evidenceLinks,
       status: 'pending',
-      submissionDate: serverTimestamp(),
-    };
-
-    addDocumentNonBlocking(refutationsCollection, data)
+      submissionDate: nowTs(),
+    })
       .then(() => {
         toast({ title: t('common.success'), description: t('refutation.success') });
         setIsOpen(false);

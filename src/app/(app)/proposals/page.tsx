@@ -2,8 +2,7 @@
 
 import { useState, useMemo, useTransition, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc, updateDoc, doc, query, orderBy, increment, arrayUnion, deleteDoc, where, limit, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useCollection, dbAdd, dbUpdate, dbDelete, dbIncrement, dbArrayUnion, nowTs } from '@/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,6 +23,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import AIResultButton from '@/components/AIResultButton';
 
 const MAX_CACHE_LENGTH = 1000;
+// In-memory translation cache to avoid redundant API calls within the session
+const translationCache = new Map<string, string>();
 
 interface CommunityProposal {
   id: string;
@@ -46,33 +47,23 @@ type ProposalFormValues = z.infer<ReturnType<typeof proposalFormSchema>>;
 
 function TranslatedContent({ originalTitle, originalDescription }: { originalTitle: string, originalDescription: string }) {
   const { t, language } = useTranslation();
-  const firestore = useFirestore();
   const [isTranslating, startTransition] = useTransition();
   const [translated, setTranslated] = useState<{ title: string, desc: string } | null>(null);
   const [showOriginal, setShowOriginal] = useState(true);
 
   useEffect(() => {
     if (language === 'en') {
-      const checkCache = async () => {
-        if (originalTitle.length > MAX_CACHE_LENGTH || originalDescription.length > MAX_CACHE_LENGTH) return;
-        const cacheRef = collection(firestore, 'translations_cache');
-        const q = query(cacheRef, where('originalText', '==', originalTitle), where('targetLanguage', '==', 'English'), limit(1));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const qDesc = query(cacheRef, where('originalText', '==', originalDescription), where('targetLanguage', '==', 'English'), limit(1));
-          const snapDesc = await getDocs(qDesc);
-          if (!snapDesc.empty) {
-            setTranslated({ title: snap.docs[0].data().translatedText, desc: snapDesc.docs[0].data().translatedText });
-            setShowOriginal(false);
-          }
-        }
-      };
-      checkCache();
+      const cachedTitle = translationCache.get(`${originalTitle}:en`);
+      const cachedDesc = translationCache.get(`${originalDescription}:en`);
+      if (cachedTitle && cachedDesc) {
+        setTranslated({ title: cachedTitle, desc: cachedDesc });
+        setShowOriginal(false);
+      }
     } else {
       setTranslated(null);
       setShowOriginal(true);
     }
-  }, [language, originalTitle, originalDescription, firestore]);
+  }, [language, originalTitle, originalDescription]);
 
   const handleTranslate = () => {
     startTransition(async () => {
@@ -80,13 +71,8 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
       const resDesc = await getTranslation(originalDescription, language);
       setTranslated({ title: resTitle, desc: resDesc });
       setShowOriginal(false);
-      const cacheRef = collection(firestore, 'translations_cache');
-      const saveToCache = (orig: string, trans: string) => {
-        if (orig.length > MAX_CACHE_LENGTH) return;
-        addDoc(cacheRef, { originalText: orig, translatedText: trans, targetLanguage: 'English', createdAt: serverTimestamp() });
-      };
-      saveToCache(originalTitle, resTitle);
-      saveToCache(originalDescription, resDesc);
+      if (originalTitle.length <= MAX_CACHE_LENGTH) translationCache.set(`${originalTitle}:en`, resTitle);
+      if (originalDescription.length <= MAX_CACHE_LENGTH) translationCache.set(`${originalDescription}:en`, resDesc);
     });
   };
 
@@ -118,7 +104,6 @@ function TranslatedContent({ originalTitle, originalDescription }: { originalTit
 export default function ProposalsPage() {
   const { t } = useTranslation();
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   
@@ -127,8 +112,10 @@ export default function ProposalsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingProposal, setEditingProposal] = useState<CommunityProposal | null>(null);
   
-  const proposalsCollectionRef = useMemoFirebase(() => { if (!firestore) return null; return query(collection(firestore, 'communityProposals'), orderBy('voteCount', 'desc')); }, [firestore]);
-  const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommunityProposal>(proposalsCollectionRef);
+  const { data: proposals, isLoading: isLoadingProposals } = useCollection<CommunityProposal>(
+    'communityProposals',
+    { orderBy: 'voteCount', orderDir: 'desc' },
+  );
 
   const filteredProposals = useMemo(() => {
     if (!proposals) return [];
@@ -137,12 +124,12 @@ export default function ProposalsPage() {
     return proposals.filter(p => p.title.toLowerCase().includes(low) || p.description.toLowerCase().includes(low));
   }, [proposals, searchTerm]);
   
-  const form = useForm<ProposalFormValues>({ 
-    resolver: zodResolver(proposalFormSchema(t)), 
-    defaultValues: { 
-      title: searchParams.get('title') || '', 
-      description: searchParams.get('description') || '' 
-    } 
+  const form = useForm<ProposalFormValues>({
+    resolver: zodResolver(proposalFormSchema(t)),
+    defaultValues: {
+      title: searchParams.get('title') || '',
+      description: searchParams.get('description') || ''
+    }
   });
 
   useEffect(() => {
@@ -154,24 +141,38 @@ export default function ProposalsPage() {
   }, [searchParams, form]);
 
   const handleNewProposalSubmit = async (values: ProposalFormValues) => {
-    if (!user || !firestore) return;
+    if (!user) return;
     setIsSubmitting(true);
     try {
-        await addDoc(collection(firestore, 'communityProposals'), { userId: user.uid, userName: user.displayName || 'Anon', userPhotoURL: user.photoURL || '', title: values.title, description: values.description, createdAt: serverTimestamp(), voteCount: 0, votedBy: [], });
-        toast({ title: t('common.success') });
-        form.reset();
+      await dbAdd('communityProposals', {
+        userId: user.uid,
+        userName: user.displayName || 'Anon',
+        userPhotoURL: user.photoURL || '',
+        title: values.title,
+        description: values.description,
+        createdAt: nowTs(),
+        voteCount: 0,
+        votedBy: [],
+      });
+      toast({ title: t('common.success') });
+      form.reset();
     } finally { setIsSubmitting(false); }
   };
 
   const handleEditProposalSubmit = async (values: ProposalFormValues) => {
-    if (!user || !firestore || !editingProposal) return;
+    if (!user || !editingProposal) return;
     setIsEditing(true);
-    try { await updateDoc(doc(firestore, 'communityProposals', editingProposal.id), values); toast({ title: t('common.success') }); setEditingProposal(null); } finally { setIsEditing(false); }
+    try {
+      await dbUpdate('communityProposals', editingProposal.id, values);
+      toast({ title: t('common.success') });
+      setEditingProposal(null);
+    } finally { setIsEditing(false); }
   };
 
   const handleVote = async (id: string) => {
-    if (!user || !firestore) return;
-    await updateDoc(doc(firestore, 'communityProposals', id), { voteCount: increment(1), votedBy: arrayUnion(user.uid) });
+    if (!user) return;
+    await dbIncrement('communityProposals', id, 'voteCount', 1);
+    await dbArrayUnion('communityProposals', id, 'votedBy', user.uid);
     toast({ title: t('proposals.votedBtn') });
   };
   
@@ -195,7 +196,7 @@ export default function ProposalsPage() {
       <div className="space-y-4">
         <div className="flex justify-between items-center"><h2 className="text-2xl font-bold">{t('proposals.communityTitle')}</h2><Input className="w-72" placeholder={t('proposals.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
         {isLoadingProposals && <div className="grid gap-6 md:grid-cols-2"><Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader></Card><Card><CardHeader><Skeleton className="h-24 w-full" /></CardHeader></Card></div>}
-        {!isLoadingProposals && filteredProposals.length > 0 ? (<div className="grid gap-6 md:grid-cols-2">{filteredProposals.map((p) => { const hasVoted = !!(user && p.votedBy?.includes(user.uid)); const isOwner = !!(user && user.uid === p.userId); const proposalShareUrl = typeof window !== 'undefined' ? `${window.location.origin}/proposals?title=${encodeURIComponent(p.title)}&description=${encodeURIComponent(p.description)}` : ''; return (<Card key={p.id} className="flex flex-col"><CardHeader><div className="flex justify-between items-center"><div className="flex items-center gap-3"><Avatar><AvatarImage src={p.userPhotoURL} /><AvatarFallback>{p.userName[0]}</AvatarFallback></Avatar><div><p className="font-semibold">{p.userName}</p></div></div>{isOwner && <div className="flex"><Button variant="ghost" size="icon" onClick={() => { setEditingProposal(p); form.reset({ title: p.title, description: p.description }); }}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => deleteDoc(doc(firestore, 'communityProposals', p.id))}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>}</div></CardHeader><CardContent className="flex-grow"><TranslatedContent originalTitle={p.title} originalDescription={p.description} /></CardContent><CardFooter className="flex justify-between bg-muted/50 p-4"><div className="flex items-center gap-2 font-bold"><ThumbsUp className="h-4 w-4" />{p.voteCount}</div><div className="flex gap-2 flex-wrap"><SocialShare url={proposalShareUrl} title={p.title} description={p.description.substring(0, 100)} /><AIResultButton href={`/simulations?policy=${encodeURIComponent(p.description)}`} label={t('common.simulate')} /><Button size="sm" onClick={() => handleVote(p.id)} disabled={!user || hasVoted || isOwner}>{hasVoted ? t('common.supported') : t('common.support')}</Button></div></CardFooter></Card>)})}</div>) : !isLoadingProposals && <p className="text-center py-12 text-muted-foreground">{t('common.noResults')}</p>}
+        {!isLoadingProposals && filteredProposals.length > 0 ? (<div className="grid gap-6 md:grid-cols-2">{filteredProposals.map((p) => { const hasVoted = !!(user && p.votedBy?.includes(user.uid)); const isOwner = !!(user && user.uid === p.userId); const proposalShareUrl = typeof window !== 'undefined' ? `${window.location.origin}/proposals?title=${encodeURIComponent(p.title)}&description=${encodeURIComponent(p.description)}` : ''; return (<Card key={p.id} className="flex flex-col"><CardHeader><div className="flex justify-between items-center"><div className="flex items-center gap-3"><Avatar><AvatarImage src={p.userPhotoURL} /><AvatarFallback>{p.userName[0]}</AvatarFallback></Avatar><div><p className="font-semibold">{p.userName}</p></div></div>{isOwner && <div className="flex"><Button variant="ghost" size="icon" onClick={() => { setEditingProposal(p); form.reset({ title: p.title, description: p.description }); }}><Edit className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => dbDelete('communityProposals', p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>}</div></CardHeader><CardContent className="flex-grow"><TranslatedContent originalTitle={p.title} originalDescription={p.description} /></CardContent><CardFooter className="flex justify-between bg-muted/50 p-4"><div className="flex items-center gap-2 font-bold"><ThumbsUp className="h-4 w-4" />{p.voteCount}</div><div className="flex gap-2 flex-wrap"><SocialShare url={proposalShareUrl} title={p.title} description={p.description.substring(0, 100)} /><AIResultButton href={`/simulations?policy=${encodeURIComponent(p.description)}`} label={t('common.simulate')} /><Button size="sm" onClick={() => handleVote(p.id)} disabled={!user || hasVoted || isOwner}>{hasVoted ? t('common.supported') : t('common.support')}</Button></div></CardFooter></Card>)})}</div>) : !isLoadingProposals && <p className="text-center py-12 text-muted-foreground">{t('common.noResults')}</p>}
       </div>
     </div>
   );

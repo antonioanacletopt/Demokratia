@@ -28,28 +28,32 @@ export function AdBanner() {
         // O AdSense adiciona o atributo 'data-adsbygoogle-status' quando preenche o bloco.
         const unpopulatedAds = document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])');
         
-        if (unpopulatedAds.length > 0 && window.adsbygoogle) {
-          window.adsbygoogle.push({});
+        if (unpopulatedAds.length > 0) {
+          // Inicializa a fila se o script ainda não carregou (lazyOnload).
+          // O AdSense drena a fila quando o script finalmente executa.
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
         }
       } catch (err) {
         // Silenciamos o erro "All ins elements already have ads" que é comum em SPAs
         // e não deve interromper a experiência do utilizador nem o build do Next.js.
       }
-    }, 1000);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [pathname]);
 
   return (
-    <div key={pathname} className="py-6 my-4 border-y border-border/10 bg-muted/5 rounded-lg overflow-hidden flex flex-col justify-center items-center min-h-[100px]">
+    // Altura fixa reservada ANTES do anúncio carregar — impede CLS.
+    // 290px = 40px (label + padding) + 250px (medium rectangle, formato mais comum).
+    <div key={pathname} className="my-4 border-y border-border/10 bg-muted/5 rounded-lg overflow-hidden flex flex-col justify-center items-center" style={{ minHeight: '290px', height: '290px' }}>
       <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-2">Publicidade</span>
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', minWidth: '250px', height: 'auto' }}
+        style={{ display: 'block', width: '100%', height: '250px' }}
         data-ad-client={AD_CLIENT}
         data-ad-slot={AD_SLOT}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
+        data-ad-format="rectangle"
+        data-full-width-responsive="false"
       ></ins>
     </div>
   );

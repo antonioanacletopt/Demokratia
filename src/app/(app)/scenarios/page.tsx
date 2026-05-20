@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, serverTimestamp, addDoc, query, orderBy, limit, where, getDocs } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useCollection, dbAdd, nowTs } from '@/firebase';
 import { getScenarioAnalysis, getTranslation } from '@/lib/actions';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
@@ -28,35 +27,14 @@ import { SocialShare } from '@/components/SocialShare';
 import { AdBanner } from '@/components/AdBanner';
 import { InfoPopover } from '@/components/InfoPopover';
 import { cn } from '@/lib/utils';
+import { REALITY_2026, BUDGET_2026 } from '@/lib/statistical-data';
 
 const MAX_CACHE_LENGTH = 1000;
-
-const REALITY_2026 = {
-  irs: 25, 
-  iva: 23, 
-  irc: 21, 
-  investment: 2.5, 
-  smn: 870, 
-  gdp: 2.4, 
-  unemployment: 6.1, 
-  inflation: 2.0, 
-  debt: 88.5, 
-  balance: 0.2 
-};
-
-const BUDGET_2026 = {
-  health: 15.2,
-  education: 9.8,
-  social: 24.5,
-  defense: 2.8,
-  infra: 5.4,
-  revenue: 72.5 
-};
+const translationCache = new Map<string, string>();
 
 export default function ScenariosPage() {
   const { t, language } = useTranslation();
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
@@ -97,22 +75,13 @@ export default function ScenariosPage() {
 
   useEffect(() => {
     if (language === 'en' && aiAnalysis) {
-      const checkCache = async () => {
-        if (aiAnalysis.length > MAX_CACHE_LENGTH) return;
-        const cacheRef = collection(firestore, 'translations_cache');
-        const q = query(cacheRef, where('originalText', '==', aiAnalysis), where('targetLanguage', '==', 'English'), limit(1));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          setTranslatedAnalysis(snap.docs[0].data().translatedText);
-          setShowOriginal(false);
-        }
-      };
-      checkCache();
+      const cached = translationCache.get(`${aiAnalysis}:en`);
+      if (cached) { setTranslatedAnalysis(cached); setShowOriginal(false); }
     } else {
       setTranslatedAnalysis(null);
       setShowOriginal(true);
     }
-  }, [language, aiAnalysis, firestore]);
+  }, [language, aiAnalysis]);
 
   const handleTranslate = () => {
     if (!aiAnalysis) return;
@@ -120,11 +89,7 @@ export default function ScenariosPage() {
       const res = await getTranslation(aiAnalysis, language);
       setTranslatedAnalysis(res);
       setShowOriginal(false);
-      
-      if (aiAnalysis.length <= MAX_CACHE_LENGTH) {
-        const cacheRef = collection(firestore, 'translations_cache');
-        addDoc(cacheRef, { originalText: aiAnalysis, translatedText: res, targetLanguage: 'English', createdAt: serverTimestamp() });
-      }
+      translationCache.set(`${aiAnalysis}:en`, res);
     });
   };
 
@@ -217,19 +182,17 @@ export default function ScenariosPage() {
   };
 
   const handleSave = async () => {
-    if (!user || !firestore || !scenarioTitle.trim()) return;
+    if (!user || !scenarioTitle.trim()) return;
     setIsSaving(true);
     try {
-      const scenarioData = {
+      await dbAdd('publicScenarios', {
         userId: user.uid,
         userName: user.displayName,
-        title: scenarioTitle,
-        parameters: { fiscal: params, budget: budget },
-        results: results,
+        parameters: { fiscal: params, budget },
+        results,
         aiFeedback: aiAnalysis,
-        createdAt: serverTimestamp()
-      };
-      await addDoc(collection(firestore, 'publicScenarios'), scenarioData);
+        createdAt: nowTs()
+      });
       toast({ title: t('common.success') });
       setSaveDialogOpen(false);
     } catch (e) {
@@ -240,17 +203,17 @@ export default function ScenariosPage() {
   };
 
   const handleSuggest = async () => {
-    if (!user || !firestore || !suggestText.trim()) return;
+    if (!user || !suggestText.trim()) return;
     setIsSuggesting(true);
     try {
-      await addDoc(collection(firestore, 'contactMessages'), {
+      await dbAdd('contactMessages', {
         userId: user.uid,
         userName: user.displayName,
         userEmail: user.email,
         subject: 'Sugestão de Indicador Macro/Orçamental',
         message: `Sugestão: ${suggestText}`,
         status: 'new',
-        createdAt: serverTimestamp()
+        createdAt: nowTs()
       });
       toast({ title: t('common.success'), description: t('scenarios.suggestionSent') });
       setSuggestDialogOpen(false);
@@ -268,8 +231,7 @@ export default function ScenariosPage() {
     return Object.values(budget).reduce((a, b) => a + b, 0);
   }, [budget]);
 
-  const publicScenariosQuery = useMemoFirebase(() => query(collection(firestore, 'publicScenarios'), orderBy('createdAt', 'desc'), limit(6)), [firestore]);
-  const { data: publicScenarios } = useCollection<any>(publicScenariosQuery);
+  const { data: publicScenarios } = useCollection<any>('publicScenarios', { orderBy: 'createdAt', orderDir: 'desc', limit: 6 });
 
   const displayAnalysis = !showOriginal && translatedAnalysis ? translatedAnalysis : aiAnalysis;
 

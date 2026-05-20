@@ -4,6 +4,9 @@
     "dashboard": "Painel",
     "simulations": "Simulações",
     "explorer": "Explorador",
+    "explorar": "Explorar",
+    "verificar": "Verificar",
+    "financas": "As Minhas Finanças",
     "map": "Mapa Regional",
     "budget": "Orçamento",
     "investor": "Investidor",
@@ -15,6 +18,8 @@
     "proposals": "Propostas",
     "partidos": "Partidos",
     "instituicoes": "Instituições",
+    "municipios": "Municípios",
+    "transparenciaPolitica": "Transparência Política",
     "library": "Biblioteca",
     "methodology": "Metodologia",
     "about": "Sobre Nós",
@@ -814,10 +819,68 @@
     "poverty": "Taxa de Pobreza",
     "population": "População",
     "housing": "Preço da Habitação",
+    "crime": "Taxa de Criminalidade",
     "dataFor": "Dados para 2026",
     "source": "Fonte: Estimativas INE / Pordata 2026",
     "selectDistrict": "Selecione um distrito no mapa.",
     "atlas": "Atlas 2026"
+  },
+  "municipios": {
+    "title": "Municípios de Portugal",
+    "description": "Explora indicadores municipais, contratos públicos e dados de criminalidade por município. Dados provenientes de fontes oficiais: INE, Portal BASE e dados.gov.pt.",
+    "searchPlaceholder": "Pesquisar município...",
+    "tabs": {
+      "overview": "Visão Geral",
+      "contracts": "Contratos Públicos",
+      "crime": "Criminalidade",
+      "health": "Saúde"
+    },
+    "contracts": {
+      "title": "Contratos Públicos",
+      "description": "Dados do Portal BASE (IMPIC). Extração gratuita e legal.",
+      "entity": "Entidade Adjudicante",
+      "supplier": "Adjudicatário",
+      "value": "Valor (EUR)",
+      "type": "Tipo",
+      "date": "Data",
+      "loading": "A carregar contratos...",
+      "error": "Não foi possível carregar os contratos. Tente mais tarde.",
+      "noData": "Sem contratos encontrados para este município.",
+      "source": "Fonte: Portal BASE — base.gov.pt",
+      "viewAll": "Ver todos no Portal BASE"
+    },
+    "crime": {
+      "title": "Estatistícas de Criminalidade",
+      "description": "Dados anuais do INE / DGPJ via dados.gov.pt.",
+      "category": "Categoria de Crime",
+      "rate": "Taxa (‰)",
+      "year": "Ano",
+      "loading": "A carregar dados de criminalidade...",
+      "error": "Não foi possível carregar os dados de criminalidade.",
+      "noData": "Sem dados de criminalidade disponíveis para esta região.",
+      "source": "Fonte: INE / DGPJ via dados.gov.pt"
+    },
+    "overview": {
+      "population": "População Residente",
+      "area": "Área (km²)",
+      "density": "Densidade (hab/km²)",
+      "unemployment": "Taxa de Desemprego",
+      "source": "Fonte: INE / Pordata"
+    },
+    "health": {
+      "title": "Indicadores de Saúde",
+      "description": "Dados do SNS Transparência (ACSS) e INE, por ARS (Administração Regional de Saúde).",
+      "region": "Região ARS",
+      "indicador": "Indicador",
+      "valor": "Valor",
+      "unidade": "Unidade",
+      "periodo": "Período",
+      "loading": "A carregar dados de saúde...",
+      "error": "Não foi possível carregar os dados de saúde.",
+      "noData": "Sem dados de saúde disponíveis para esta região.",
+      "source": "Fonte: SNS Transparência (ACSS) · dados.gov.pt · INE/DGS",
+      "arsLabel": "Administração Regional de Saúde (ARS)"
+    }
   },
   "dataSources": {
     "pordata": {
@@ -887,6 +950,34 @@
     "financial-modeling-prep": {
       "name": "Financial Modeling Prep",
       "description": "API para dados financeiros em tempo real e históricos, incluindo ações, forex e criptomoedas."
+    },
+    "dados-gov": {
+      "name": "dados.gov.pt",
+      "description": "Portal nacional de dados abertos da Administração Pública Portuguesa, com mais de 20.000 datasets gratuitos com licença aberta."
+    },
+    "base-gov": {
+      "name": "Portal BASE — Contratos Públicos",
+      "description": "Portal oficial de contratos públicos em Portugal. Dados de adjudicações, entidades, valores e categorias, de extração gratuita e em formatos abertos."
+    },
+    "dgpj": {
+      "name": "DGPJ — Direção-Geral da Política de Justiça",
+      "description": "Estatísticas oficiais de criminalidade e justiça em Portugal, incluindo crimes registados por tipo e região."
+    },
+    "sns-transparencia": {
+      "name": "Transparência SNS",
+      "description": "Portal de transparência do Serviço Nacional de Saúde com dados de internamentos, urgências, médicos e camas hospitalares por hospital e região."
+    },
+    "apa": {
+      "name": "APA — Agência Portuguesa do Ambiente",
+      "description": "Dados de qualidade do ar, resíduos urbanos e ambiente por região, disponíveis via API QualAr e dados.gov.pt."
+    },
+    "parlamento": {
+      "name": "Assembleia da República – Dados Abertos",
+      "description": "API oficial com dados parlamentares: deputados, iniciativas, votações, presenças. Reutilização livre com menção à fonte."
+    },
+    "tribunal-constitucional": {
+      "name": "Tribunal Constitucional",
+      "description": "Fiscalização e publicação das contas anuais dos partidos políticos e campanhas eleitorais."
     }
   },
   "categories": {
@@ -1120,74 +1211,79 @@
     "recommendedBooks": "Livros Recomendados",
     "recommendedBooksDesc": "Uma seleção de obras fundamentais (foco em arquivo aberto e domínio público).",
     "exploreBooks": "Explorar Livros",
-      "booksTitle": "Livros & Obras Clássicas",
-      "booksSubtitle": "Acesso Livre ao Conhecimento Económico",
-      "booksDescription": "Curadoria de obras de domínio público e arquivo aberto sobre política, economia e progresso social.",
-      "isFreeBadge": "Acesso Livre",
-      "downloadLink": "Ler / Descarregar gratuitamente"
-    },
-    "instituicoes": {
-      "title": "Instituições e Órgãos de Soberania",
-      "subtitle": "Os pilares da democracia portuguesa: funções, limites e ciclos de poder.",
-      "intro": "Portugal é uma República soberana, baseada na dignidade da pessoa humana e na vontade popular, que se organiza como um Estado de direito democrático. O poder político reside no povo, que o exerce através do sufrágio universal e das instituições previstas na Constituição.",
-      "pr": {
-        "title": "Presidente da República",
-        "role": "O Chefe de Estado",
-        "desc": "Representa a República Portuguesa, garante a independência nacional, a unidade do Estado e o regular funcionamento das instituições democráticas.",
-        "election": "Eleito por sufrágio direto e universal para um mandato de 5 anos. Pode cumprir no máximo dois mandatos consecutivos.",
-        "powers": {
-          "title": "Principais Competências",
-          "p1": "Veto de leis (político ou por inconstitucionalidade).",
-          "p2": "Dissolução da Assembleia da República e marcação de eleições.",
-          "p3": "Nomeação do Primeiro-Ministro (ouvindo os partidos com assento parlamentar).",
-          "p4": "Comando Supremo das Forças Armadas."
-        }
-      },
-      "ar": {
-        "title": "Assembleia da República",
-        "role": "O Órgão Legislativo",
-        "desc": "A assembleia representativa de todos os cidadãos portugueses, composta por 230 deputados eleitos por círculos eleitorais.",
-        "election": "Mandato de 4 anos (legislatura), salvo em caso de dissolução antecipada.",
-        "powers": {
-          "title": "Principais Competências",
-          "p1": "Aprovação de leis e revisão da Constituição.",
-          "p2": "Fiscalização do Governo e da Administração Pública.",
-          "p3": "Aprovação do Orçamento do Estado.",
-          "p4": "Aprovação de tratados internacionais."
-        }
-      },
-      "gov": {
-        "title": "Governo",
-        "role": "O Órgão Executivo",
-        "desc": "O órgão de condução da política geral do país e o órgão superior da administração pública.",
-        "composition": "Composto pelo Primeiro-Ministro, Ministros e Secretários de Estado.",
-        "powers": {
-          "title": "Principais Competências",
-          "p1": "Execução das leis e do Orçamento do Estado.",
-          "p2": "Elaboração de decretos-lei e regulamentos.",
-          "p3": "Gestão dos serviços públicos e do património do Estado.",
-          "p4": "Representação externa e negociação internacional."
-        }
-      },
-      "courts": {
-        "title": "Tribunais",
-        "role": "O Poder Judicial",
-        "desc": "Órgãos de soberania com competência para administrar a justiça em nome do povo, garantindo a defesa dos direitos e interesses legalmente protegidos.",
-        "independence": "Os juízes são independentes e inamovíveis, não podendo ser responsabilizados pelas suas decisões.",
-        "types": {
-          "title": "Tipos de Tribunais",
-          "tc": "Tribunal Constitucional (fiscaliza a lei).",
-          "tj": "Tribunais Judiciais (comuns).",
-          "taf": "Tribunais Administrativos e Fiscais.",
-          "tcontas": "Tribunal de Contas (fiscaliza gastos públicos)."
-        }
-      },
-      "legalBasis": "Base Legal: Constituição da República Portuguesa (CRP), Parte III - Organização do Poder Político.",
-      "cycle": {
-        "title": "Ciclo Político e Nomeações",
-        "presidential": "Presidenciais: Próximas em Janeiro de 2026.",
-        "legislative": "Legislativas: Normalmente a cada 4 anos (Últimas: Março 2024).",
-        "local": "Autárquicas: A cada 4 anos (Próximas: Setembro/Outubro 2025)."
+    "booksTitle": "Livros & Obras Clássicas",
+    "booksSubtitle": "Acesso Livre ao Conhecimento Económico",
+    "booksDescription": "Curadoria de obras de domínio público e arquivo aberto sobre política, economia e progresso social.",
+    "isFreeBadge": "Acesso Livre",
+    "downloadLink": "Ler / Descarregar gratuitamente"
+  },
+  "instituicoes": {
+    "title": "Instituições e Órgãos de Soberania",
+    "subtitle": "Os pilares da democracia portuguesa: funções, limites e ciclos de poder.",
+    "intro": "Portugal é uma República soberana, baseada na dignidade da pessoa humana e na vontade popular, que se organiza como um Estado de direito democrático. O poder político reside no povo, que o exerce através do sufrágio universal e das instituições previstas na Constituição.",
+    "pr": {
+      "title": "Presidente da República",
+      "role": "O Chefe de Estado",
+      "desc": "Representa a República Portuguesa, garante a independência nacional, a unidade do Estado e o regular funcionamento das instituições democráticas.",
+      "election": "Eleito por sufrágio direto e universal para um mandato de 5 anos. Pode cumprir no máximo dois mandatos consecutivos.",
+      "powers": {
+        "title": "Principais Competências",
+        "p1": "Veto de leis (político ou por inconstitucionalidade).",
+        "p2": "Dissolução da Assembleia da República e marcação de eleições.",
+        "p3": "Nomeação do Primeiro-Ministro (ouvindo os partidos com assento parlamentar).",
+        "p4": "Comando Supremo das Forças Armadas."
       }
+    },
+    "ar": {
+      "title": "Assembleia da República",
+      "role": "O Órgão Legislativo",
+      "desc": "A assembleia representativa de todos os cidadãos portugueses, composta por 230 deputados eleitos por círculos eleitorais.",
+      "election": "Mandato de 4 anos (legislatura), salvo em caso de dissolução antecipada.",
+      "powers": {
+        "title": "Principais Competências",
+        "p1": "Aprovação de leis e revisão da Constituição.",
+        "p2": "Fiscalização do Governo e da Administração Pública.",
+        "p3": "Aprovação do Orçamento do Estado.",
+        "p4": "Aprovação de tratados internacionais."
+      }
+    },
+    "gov": {
+      "title": "Governo",
+      "role": "O Órgão Executivo",
+      "desc": "O órgão de condução da política geral do país e o órgão superior da administração pública.",
+      "composition": "Composto pelo Primeiro-Ministro, Ministros e Secretários de Estado.",
+      "powers": {
+        "title": "Principais Competências",
+        "p1": "Execução das leis e do Orçamento do Estado.",
+        "p2": "Elaboração de decretos-lei e regulamentos.",
+        "p3": "Gestão dos serviços públicos e do património do Estado.",
+        "p4": "Representação externa e negociação internacional."
+      }
+    },
+    "courts": {
+      "title": "Tribunais",
+      "role": "O Poder Judicial",
+      "desc": "Órgãos de soberania com competência para administrar a justiça em nome do povo, garantindo a defesa dos direitos e interesses legalmente protegidos.",
+      "independence": "Os juízes são independentes e inamovíveis, não podendo ser responsabilizados pelas suas decisões.",
+      "types": {
+        "title": "Tipos de Tribunais",
+        "tc": "Tribunal Constitucional (fiscaliza a lei).",
+        "tj": "Tribunais Judiciais (comuns).",
+        "taf": "Tribunais Administrativos e Fiscais.",
+        "tcontas": "Tribunal de Contas (fiscaliza gastos públicos)."
+      }
+    },
+    "legalBasis": "Base Legal: Constituição da República Portuguesa (CRP), Parte III - Organização do Poder Político.",
+    "cycle": {
+      "title": "Ciclo Político e Nomeações",
+      "presidential": "Presidenciais: Próximas em Janeiro de 2026.",
+      "legislative": "Legislativas: Normalmente a cada 4 anos (Últimas: Março 2024).",
+      "local": "Autárquicas: A cada 4 anos (Próximas: Setembro/Outubro 2025)."
     }
+  },
+  "transparenciaPolitica": {
+    "title": "Transparência Política",
+    "description": "Composição da Assembleia da República, deputados, iniciativas legislativas e portais de transparência e declarações patrimoniais.",
+    "source": "Fonte: parlamento.pt (dados abertos, licença livre com menção à fonte)"
   }
+}

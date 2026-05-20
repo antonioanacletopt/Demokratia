@@ -1,0 +1,20 @@
+name = "demokratia"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = ".vercel/output/static"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "demokratia-db"
+database_id = "e4e15f70-3083-42c5-8089-012bde457068"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "015597d9492744dcae9360026adcbf3b"
+
+[vars]
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ""
+# As restantes variáveis sensitivas (CLERK_SECRET_KEY, GEMINI_API_KEY)
+# devem ser configuradas no Cloudflare Dashboard → Pages → Settings → Environment Variables
+# e NÃO colocadas aqui (este ficheiro está no git)

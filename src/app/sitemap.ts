@@ -41,27 +41,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
-      url: 'https://demokratia.pt/fact-check',
+      url: 'https://demokratia.pt/verificar',
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
-      url: 'https://demokratia.pt/legislation',
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: 'https://demokratia.pt/explorer',
+      url: 'https://demokratia.pt/explorar',
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: 'https://demokratia.pt/budget',
+      url: 'https://demokratia.pt/financas',
       lastModified: new Date(),
       changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://demokratia.pt/map',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {

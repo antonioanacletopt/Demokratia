@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { collection, serverTimestamp, query, where } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useUser, useCollection, dbAdd, nowTs } from '@/firebase';
 import { useTranslation } from '@/lib/i18n';
 
 import { Button } from '@/components/ui/button';
@@ -28,47 +26,39 @@ const contactFormSchema = (t) => z.object({
 export default function ContactPage() {
   const { t } = useTranslation();
   const { user } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<z.infer<ReturnType<typeof contactFormSchema>>>({ 
+  const form = useForm<z.infer<ReturnType<typeof contactFormSchema>>>({
     resolver: zodResolver(contactFormSchema(t)),
     defaultValues: { subject: '', message: '' },
   });
 
-  const historyQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(collection(firestore, 'contactMessages'), where('userId', '==', user.uid));
-  }, [user, firestore]);
-  const { data: history } = useCollection(historyQuery);
+  const { data: history } = useCollection<{ subject: string; status: string }>(
+    user ? 'contactMessages' : null,
+    { where: [['userId', '==', user?.uid]], orderBy: 'createdAt', orderDir: 'desc' },
+  );
 
-  const onSubmit = (data: z.infer<ReturnType<typeof contactFormSchema>>) => {
-    if (!user || !firestore) return;
+  const onSubmit = async (data: z.infer<ReturnType<typeof contactFormSchema>>) => {
+    if (!user) return;
     setIsSaving(true);
-
-    const contactMessagesCollection = collection(firestore, 'contactMessages');
-    const messageData = {
-      userId: user.uid,
-      userName: user.displayName || t('refutation.anonymous'),
-      userEmail: user.email,
-      subject: data.subject,
-      message: data.message,
-      status: 'new',
-      createdAt: serverTimestamp(),
-    };
-
-    addDocumentNonBlocking(contactMessagesCollection, messageData)
-      .then(() => {
-        toast({ title: t('common.success') });
-        form.reset();
-      })
-      .catch((error) => {
-        // O erro já é emitido pelo non-blocking-updates, mas podemos tratar feedback local se necessário
-      })
-      .finally(() => {
-        setIsSaving(false);
+    try {
+      await dbAdd('contactMessages', {
+        userId: user.uid,
+        userName: user.displayName || t('refutation.anonymous'),
+        userEmail: user.email,
+        subject: data.subject,
+        message: data.message,
+        status: 'new',
+        createdAt: nowTs(),
       });
+      toast({ title: t('common.success') });
+      form.reset();
+    } catch {
+      toast({ title: t('login.errorTitle'), variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

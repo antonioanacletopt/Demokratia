@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { collection, query, where, limit } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, X, AlertTriangle, HelpCircle, Zap, Eye } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
@@ -43,28 +42,17 @@ export default function AIResultButton({ href, label, variant = "default", size 
     }
   }, [href]);
 
-  const db = useFirestore();
-
-  const factCheckQuery = useMemoFirebase(
-    () => articleId ? query(
-      collection(db, 'fact-checks'),
-      where('articleId', '==', articleId),
-      limit(1)
-    ) : null,
-    [db, articleId]
-  );
-  
-  const simulationQuery = useMemoFirebase(
-    () => articleId ? query(
-      collection(db, 'simulations'),
-      where('articleId', '==', articleId),
-      limit(1)
-    ) : null,
-    [db, articleId]
+  const { data: factCheckResults } = useCollection(
+    articleId ? 'fact-checks' : null,
+    { where: [['articleId', '==', articleId]], limit: 1 },
+    30_000, // slower poll for badge enrichment
   );
 
-  const { data: factCheckResults } = useCollection(factCheckQuery);
-  const { data: simulationResults } = useCollection(simulationQuery);
+  const { data: simulationResults } = useCollection(
+    articleId ? 'simulations' : null,
+    { where: [['articleId', '==', articleId]], limit: 1 },
+    30_000,
+  );
 
   const factCheck = factCheckResults?.[0];
   const simulation = simulationResults?.[0];
