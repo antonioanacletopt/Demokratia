@@ -1,8 +1,9 @@
 name = "demokratia"
+account_id = "8f241006e1d83ab15f11ddb57f79d6ed"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-pages_build_output_dir = ".vercel/output/static"
+pages_build_output_dir = ".open-next/assets"
 
 [[d1_databases]]
 binding = "DB"

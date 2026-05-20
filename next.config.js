@@ -1,10 +1,6 @@
 // @ts-check
 
-// Cloudflare Pages local dev bindings (D1, KV)
-if (process.env.NODE_ENV === 'development') {
-  const { setupDevPlatform } = require('@cloudflare/next-on-pages/next-dev');
-  setupDevPlatform().catch(console.error);
-}
+// Cloudflare Pages local dev bindings - use wrangler dev for local D1/KV access
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
