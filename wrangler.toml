@@ -12,7 +12,7 @@ database_id = "b22a35d4-d754-4862-ad18-08776dcc97ff"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "015597d9492744dcae9360026adcbf3b"
+id = "e5245242b82b4b4eb8ee014c237c3cdd"
 
 [vars]
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ""
