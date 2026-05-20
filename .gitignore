@@ -40,6 +40,9 @@ next-env.d.ts
 .genkit/*
 .env*
 
+# Cloudflare Wrangler local state
+.wrangler/
+
 # Credenciais e contas (confidencial)
 ACCOUNTS.md
 
