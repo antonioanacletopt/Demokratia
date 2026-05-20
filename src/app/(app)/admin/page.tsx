@@ -30,7 +30,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle, Edit, Trash2, Database, Inbox, MailWarning, MailCheck, Archive, ShieldAlert, CheckCircle2, XCircle, Server, Globe, Sparkles, TrendingUp, BarChartBig, ExternalLink, ShieldCheck, FileSpreadsheet, Fingerprint, Users, UserCheck, Eye, MousePointer2, Zap, User, Scale, RefreshCw, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 
-const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
 
 const dataSourceSchema = (t: any) => z.object({
   id: z.string().optional(),
@@ -257,7 +258,7 @@ export default function AdminPage() {
   }, [analyticsSessions]);
 
   useEffect(() => {
-    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
+    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== ADMIN_UID))) {
       toast({ variant: 'destructive', title: t('admin.accessDenied') });
       router.replace('/home');
     }
@@ -402,7 +403,7 @@ export default function AdminPage() {
     }
   };
 
-  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
+  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== ADMIN_UID)) {
     return <div className="flex h-full items-center justify-center py-12"><Loader2 className="animate-spin" /></div>;
   }
 

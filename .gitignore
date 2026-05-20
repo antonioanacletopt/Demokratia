@@ -46,6 +46,10 @@ next-env.d.ts
 # Credenciais e contas (confidencial)
 ACCOUNTS.md
 
+# Ficheiros sensíveis/obsoletos
+yahoo.cookie
+studio.json
+
 # firebase
 firebase-debug.log
 firestore-debug.log

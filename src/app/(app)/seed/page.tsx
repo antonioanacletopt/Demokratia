@@ -13,7 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ShieldCheck, Database, Server, Sparkles } from 'lucide-react';
 
-const ADMIN_EMAIL = 'antonio.anacleto@gmail.com';
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? '';
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
 
 export default function SeedPage() {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ export default function SeedPage() {
   const systemDataSources = getSystemDataSources(t);
 
   useEffect(() => {
-    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32'))) {
+    if (!isUserLoading && (!user || (user.email !== ADMIN_EMAIL && user.uid !== ADMIN_UID))) {
       toast({
         variant: 'destructive',
         title: 'Acesso Negado',
@@ -98,7 +99,7 @@ export default function SeedPage() {
     } finally { setIsSeedingSources(false); }
   };
 
-  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== 'id5hDeMIVZeR9i9HG5vvqnjEto32')) {
+  if (isUserLoading || !user || (user.email !== ADMIN_EMAIL && user.uid !== ADMIN_UID)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

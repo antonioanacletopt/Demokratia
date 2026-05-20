@@ -6,10 +6,10 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 
 export const ADMIN_UIDS: string[] =
-  (process.env.ADMIN_UIDS ?? 'id5hDeMIVZeR9i9HG5vvqnjEto32').split(',').map(s => s.trim());
+  (process.env.ADMIN_UIDS ?? '').split(',').map(s => s.trim()).filter(Boolean);
 
 export const ADMIN_EMAILS: string[] =
-  (process.env.ADMIN_EMAILS ?? 'antonio.anacleto@gmail.com').split(',').map(s => s.trim());
+  (process.env.ADMIN_EMAILS ?? '').split(',').map(s => s.trim()).filter(Boolean);
 
 export function isAdminId(userId: string | null | undefined): boolean {
   return userId ? ADMIN_UIDS.includes(userId) : false;
