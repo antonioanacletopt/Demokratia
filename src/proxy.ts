@@ -2,6 +2,8 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export const runtime = 'edge';
+
 // =============================================================================
 // REGRA CRÍTICA — ADSENSE / GOOGLE CRAWLERS
 // NUNCA remover estas excepções. Os bots do Google NÃO seguem redirects e
