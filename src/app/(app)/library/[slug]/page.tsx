@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata, ResolvingMetadata } from 'next';
 import { getArticleBySlug, getAllArticles } from '@/lib/articles';
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import { marked } from 'marked';
 import { SocialShare } from '@/components/SocialShare';
 
 type Props = {
@@ -27,6 +27,8 @@ export default async function LibraryArticlePage({ params }: Props) {
     notFound();
   }
 
+  const contentHtml = await marked.parse(article.content);
+
   return (
     <div className="container max-w-3xl py-8">
       <article>
@@ -36,9 +38,7 @@ export default async function LibraryArticlePage({ params }: Props) {
           <SocialShare title={article.frontmatter.title} description={article.frontmatter.description} />
         </div>
         
-        <div className="prose dark:prose-invert max-w-none">
-          <MDXRemote source={article.content} />
-        </div>
+        <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: contentHtml }} />
       </article>
     </div>
   );

@@ -50,9 +50,9 @@
     "genkit": "^1.29.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.475.0",
+    "marked": "^18.0.4",
     "nanoid": "^5.1.11",
     "next": "^16.2.6",
-    "next-mdx-remote": "^6.0.0",
     "patch-package": "^8.0.0",
     "react": "^18",
     "react-day-picker": "^9.11.3",
@@ -64,8 +64,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.19.11",
     "@cloudflare/workers-types": "^4.20260520.1",
+    "@opennextjs/cloudflare": "^1.19.11",
     "@types/aws-lambda": "^8.10.161",
     "@types/bunyan": "^1.8.11",
     "@types/caseless": "^0.12.5",

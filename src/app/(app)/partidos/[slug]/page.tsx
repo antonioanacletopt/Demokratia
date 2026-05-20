@@ -1,6 +1,6 @@
 import { getPartyBySlug, getAllParties } from '@/lib/parties';
 import { notFound } from 'next/navigation';
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import { marked } from 'marked';
 import { ArrowLeft, ExternalLink, Calendar, Landmark } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,7 @@ export default async function PartyDetailPage({ params, searchParams }: { params
     notFound();
   }
 
+  const contentHtml = await marked.parse(party.content);
   const fm = party.frontmatter;
 
   return (
@@ -86,9 +87,7 @@ export default async function PartyDetailPage({ params, searchParams }: { params
 
       <AdBanner />
 
-      <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-headline prose-headings:text-primary prose-a:text-accent prose-li:marker:text-primary prose-lg leading-relaxed">
-        <MDXRemote source={party.content} />
-      </div>
+      <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-headline prose-headings:text-primary prose-a:text-accent prose-li:marker:text-primary prose-lg leading-relaxed" dangerouslySetInnerHTML={{ __html: contentHtml }} />
 
       <div className="mt-16 pt-8 border-t bg-muted/30 p-6 rounded-2xl border flex items-start gap-4">
           <div className="p-3 bg-secondary rounded-full shrink-0">
