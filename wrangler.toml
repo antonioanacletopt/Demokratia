@@ -8,7 +8,7 @@ pages_build_output_dir = ".open-next/assets"
 [[d1_databases]]
 binding = "DB"
 database_name = "demokratia-db"
-database_id = "e4e15f70-3083-42c5-8089-012bde457068"
+database_id = "b22a35d4-d754-4862-ad18-08776dcc97ff"
 
 [[kv_namespaces]]
 binding = "KV"
