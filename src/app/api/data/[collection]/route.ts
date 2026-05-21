@@ -37,71 +37,105 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ collection: string }> },
 ) {
-  const { collection } = await params;
-  const { userId } = await auth();
+  try {
+    const { collection } = await params;
 
-  // User-scoped collections require auth
-  if (USER_SCOPED.has(collection) && !userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // auth() may fail gracefully if Clerk is not configured; default to no user
+    let userId: string | null = null;
+    try {
+      const session = await auth();
+      userId = session.userId;
+    } catch {
+      // Clerk not available or misconfigured — treat as unauthenticated
+    }
+
+    // User-scoped collections require auth
+    if (USER_SCOPED.has(collection) && !userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    const queryParams: QueryParams = {};
+
+    const orderBy = searchParams.get('orderBy');
+    if (orderBy) queryParams.orderBy = orderBy;
+
+    const orderDir = searchParams.get('orderDir');
+    if (orderDir === 'asc' || orderDir === 'desc') queryParams.orderDir = orderDir;
+
+    const limitStr = searchParams.get('limit');
+    if (limitStr) queryParams.limit = parseInt(limitStr, 10);
+
+    // User-scoped: always filter by authenticated user
+    if (USER_SCOPED.has(collection) && userId) {
+      queryParams.userId = userId;
+    }
+
+    // Explicit userId filter override (admin use)
+    const userIdParam = searchParams.get('userId');
+    if (userIdParam && !USER_SCOPED.has(collection)) {
+      queryParams.userId = userIdParam;
+    }
+
+    // where[]=field,op,value
+    const whereParams = searchParams.getAll('where');
+    if (whereParams.length > 0) {
+      queryParams.where = whereParams.map(w => {
+        const [field, op, ...rest] = w.split(',');
+        const value: unknown = rest.join(',');
+        return [field, op as '==', value] as [string, '==', unknown];
+      });
+    }
+
+    const data = await dbGetDocs(collection, queryParams);
+    return NextResponse.json({ data });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    console.error('[api/data GET]', message, stack);
+    return NextResponse.json({ error: message, stack }, { status: 500 });
   }
-
-  const searchParams = request.nextUrl.searchParams;
-  const queryParams: QueryParams = {};
-
-  const orderBy = searchParams.get('orderBy');
-  if (orderBy) queryParams.orderBy = orderBy;
-
-  const orderDir = searchParams.get('orderDir');
-  if (orderDir === 'asc' || orderDir === 'desc') queryParams.orderDir = orderDir;
-
-  const limitStr = searchParams.get('limit');
-  if (limitStr) queryParams.limit = parseInt(limitStr, 10);
-
-  // User-scoped: always filter by authenticated user
-  if (USER_SCOPED.has(collection) && userId) {
-    queryParams.userId = userId;
-  }
-
-  // Explicit userId filter override (admin use)
-  const userIdParam = searchParams.get('userId');
-  if (userIdParam && !USER_SCOPED.has(collection)) {
-    queryParams.userId = userIdParam;
-  }
-
-  // where[]=field,op,value
-  const whereParams = searchParams.getAll('where');
-  if (whereParams.length > 0) {
-    queryParams.where = whereParams.map(w => {
-      const [field, op, ...rest] = w.split(',');
-      const value: unknown = rest.join(',');
-      return [field, op as '==', value] as [string, '==', unknown];
-    });
-  }
-
-  const data = await dbGetDocs(collection, queryParams);
-  return NextResponse.json({ data });
 }
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ collection: string }> },
 ) {
-  const { collection } = await params;
-  const { userId } = await auth();
+  try {
+    const { collection } = await params;
 
-  if (AUTH_WRITE.has(collection) && !userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (ADMIN_WRITE.has(collection)) {
-    const { sessionClaims } = await auth();
-    const email = sessionClaims?.email as string | undefined;
-    if (!isAdmin(userId, email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    let userId: string | null = null;
+    try {
+      const session = await auth();
+      userId = session.userId;
+    } catch {
+      // Clerk not available or misconfigured — treat as unauthenticated
     }
-  }
 
-  const body = await request.json() as Record<string, unknown>;
-  const id = await dbAddDoc(collection, body, userId ?? undefined);
-  return NextResponse.json({ id }, { status: 201 });
+    if (AUTH_WRITE.has(collection) && !userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (ADMIN_WRITE.has(collection)) {
+      let email: string | undefined;
+      try {
+        const { sessionClaims } = await auth();
+        email = sessionClaims?.email as string | undefined;
+      } catch {
+        // ignore
+      }
+      if (!isAdmin(userId, email)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+    const id = await dbAddDoc(collection, body, userId ?? undefined);
+    return NextResponse.json({ id }, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    console.error('[api/data POST]', message, stack);
+    return NextResponse.json({ error: message, stack }, { status: 500 });
+  }
 }
