@@ -3,7 +3,6 @@ import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/componen
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { AdBanner } from '@/components/AdBanner';
 import { getT, Language } from '@/lib/i18n-server';
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
@@ -31,8 +30,6 @@ export default async function PartiesIndexPage({ searchParams }: { searchParams:
           {t('parties.description')}
         </PageHeaderDescription>
       </PageHeader>
-
-      <AdBanner />
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8">
         {parties.map((p) => (

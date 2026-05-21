@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AdBanner } from "@/components/AdBanner";
 import StockMarketTicker from "@/components/StockMarketTicker";
 import CommoditiesWatch from "@/components/CommoditiesWatch";
 import { FinancialNewsFeed } from "@/components/FinancialNewsFeed";
@@ -239,7 +238,6 @@ function InvestorPageContents() {
 
         {!isLoading && 
           <div className="space-y-6 pt-6">
-             <AdBanner />
              <CommoditiesWatch />
              <FinancialNewsFeed />
           </div>

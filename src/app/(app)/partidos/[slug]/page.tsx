@@ -4,7 +4,6 @@ import { marked } from 'marked';
 import { ArrowLeft, ExternalLink, Calendar, Landmark } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { AdBanner } from '@/components/AdBanner';
 import { getT, Language } from '@/lib/i18n-server';
 import { SocialShare } from '@/components/SocialShare';
 
@@ -88,8 +87,6 @@ export default async function PartyDetailPage({ params, searchParams }: { params
           <SocialShare title={fm.name} description={`${fm.spectrum} · ${t('parties.founded')} ${fm.founded}`} />
         </div>
       </div>
-
-      <AdBanner />
 
       <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-headline prose-headings:text-primary prose-a:text-accent prose-li:marker:text-primary prose-lg leading-relaxed" dangerouslySetInnerHTML={{ __html: contentHtml }} />
 

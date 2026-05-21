@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldCheck, History, Check, X, AlertTriangle, HelpCircle, Languages, RefreshCw, MessageSquareWarning, ExternalLink, Info, Trash2, Sparkles } from 'lucide-react';
 import { SocialShare } from '@/components/SocialShare';
-import { AdBanner } from '@/components/AdBanner';
 import { useTranslation, Language } from '@/lib/i18n';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { safeDecode } from '@/lib/safe-decode';
@@ -233,7 +232,7 @@ export default function FactCheckPage() {
     }
   }, [searchParams, handleFactCheck]);
 
-  const { data: history } = useCollection<any>('user_factChecks', user ? { where: [['userId', '==', user.uid]], orderBy: 'createdAt', orderDir: 'desc', limit: 10 } : undefined);
+  const { data: history } = useCollection<any>(user ? 'user_factChecks' : null, user ? { where: [['userId', '==', user.uid]], orderBy: 'createdAt', orderDir: 'desc', limit: 10 } : {});
   const { data: recentPublicChecks, isLoading: isLoadingPublic } = useCollection<any>('publicFactChecks', { orderBy: 'createdAt', orderDir: 'desc', limit: 6 });
 
   useEffect(() => { 
@@ -294,8 +293,6 @@ export default function FactCheckPage() {
         </CardFooter>
       </Card>
       
-      <AdBanner />
-
       <div ref={resultRef} className="scroll-mt-20">
         {isPending && <Card className="border-primary/10 shadow-lg"><CardHeader className="bg-muted/30"><Skeleton className="h-8 w-1/3" /><Skeleton className="h-4 w-full mt-2" /></CardHeader><CardContent className="space-y-6 pt-6"><Skeleton className="h-20 w-full rounded-2xl" /><Skeleton className="h-48 w-full rounded-2xl" /><div className="space-y-3"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></CardContent></Card>}
         {result && <FactCheckResultDisplay result={result} claim={claim} />}

@@ -37,7 +37,6 @@ import {
   BookOpen,
   Landmark
 } from 'lucide-react';
-import { AdBanner } from '@/components/AdBanner';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 import { getNewsFeed, getTranslation, type NewsFeedOutput, type NewsFeedItem } from '@/lib/actions';
@@ -350,8 +349,6 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-
-      <AdBanner />
 
       {/* Reserva espaço fixo para evitar CLS quando os dados do Firestore carregam */}
       <section className="space-y-6" style={{ minHeight: proposalsLoaded && (!popularProposals || popularProposals.length === 0) ? '0' : '300px' }}>

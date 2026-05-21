@@ -16,7 +16,6 @@ import { Separator } from '@/components/ui/separator';
 import { Search, Bot, Loader2, BarChart3, Table as TableIcon, Download, Save, NotebookText, Maximize2, Zap, Info, PlusCircle, Languages, RefreshCw, ExternalLink, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { AdBanner } from '@/components/AdBanner';
 import { RefutationDialog } from '@/components/RefutationDialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
@@ -351,8 +350,8 @@ export default function ExplorerPage() {
   });
 
   const { data: savedViews } = useCollection<any>(
-    'user_savedViews',
-    user ? { userId: user.uid, orderBy: 'createdAt', orderDir: 'desc' as const } : undefined,
+    user ? 'user_savedViews' : null,
+    user ? { userId: user.uid, orderBy: 'createdAt', orderDir: 'desc' as const } : {},
   );
 
   const handleSave = async () => {
@@ -432,8 +431,6 @@ export default function ExplorerPage() {
         </CardContent>
         <CardFooter className="bg-muted/30 py-4 flex justify-between"><p className="text-xs text-muted-foreground italic max-w-[60%]">{t('explorer.officialFooter')}</p><Button onClick={() => performSearch(request)} disabled={isAiLoading || !request.trim()} size="lg" className="px-8">{isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{t('explorer.searchBtn')}</Button></CardFooter>
       </Card>
-
-      <AdBanner />
 
       {savedViews && savedViews.length > 0 && (
         <div className="space-y-4">

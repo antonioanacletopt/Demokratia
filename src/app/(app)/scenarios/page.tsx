@@ -24,7 +24,6 @@ import {
   Languages, RefreshCw
 } from 'lucide-react';
 import { SocialShare } from '@/components/SocialShare';
-import { AdBanner } from '@/components/AdBanner';
 import { InfoPopover } from '@/components/InfoPopover';
 import { cn } from '@/lib/utils';
 import { REALITY_2026, BUDGET_2026 } from '@/lib/statistical-data';
@@ -470,8 +469,6 @@ export default function ScenariosPage() {
           )}
         </div>
       </div>
-
-      <AdBanner />
 
       <div className="space-y-6">
         <h2 className="text-2xl font-bold flex items-center gap-2">

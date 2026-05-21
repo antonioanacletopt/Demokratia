@@ -36,6 +36,9 @@ export function useCollection<T = Record<string, unknown>>(
   const paramsRef = useRef(params);
   paramsRef.current = params;
 
+  // Track whether polling should be aborted (e.g. 401 auth error)
+  const abortPollingRef = useRef(false);
+
   const fetchData = useCallback(async (showLoading: boolean) => {
     if (!collection) {
       setData(null);
@@ -47,8 +50,14 @@ export function useCollection<T = Record<string, unknown>>(
       const result = await dbGetAll<T>(collection, paramsRef.current);
       setData(result);
       setError(null);
+      abortPollingRef.current = false;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
+      const e = err instanceof Error ? err : new Error(String(err));
+      // Stop polling on auth errors to avoid console spam
+      if (e.message.includes('401') || e.message.includes('403')) {
+        abortPollingRef.current = true;
+      }
+      setError(e);
     } finally {
       setIsLoading(false);
     }
@@ -62,11 +71,16 @@ export function useCollection<T = Record<string, unknown>>(
       return;
     }
 
+    // Reset abort flag when collection changes
+    abortPollingRef.current = false;
+
     // Initial fetch — show spinner
     fetchData(true);
 
-    // Subsequent polls — silent refresh (no spinner)
-    const timer = setInterval(() => fetchData(false), pollMs);
+    // Subsequent polls — silent refresh (no spinner), skip if aborted
+    const timer = setInterval(() => {
+      if (!abortPollingRef.current) fetchData(false);
+    }, pollMs);
     return () => clearInterval(timer);
   }, [collection, pollMs, fetchData]);
 
