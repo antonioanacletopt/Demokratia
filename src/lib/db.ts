@@ -10,23 +10,17 @@
  */
 
 import { nanoid } from 'nanoid';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-// ─── Cloudflare context helper (lazily imported to avoid SSR issues) ──────────
+// ─── Cloudflare context helper ────────────────────────────────────────────────
 
 type Env = {
   DB: D1Database;
   KV: KVNamespace;
 };
 
-// This file runs only inside Cloudflare Workers (server-side route handlers).
-// At runtime, getRequestContext() exposes the bindings.
 function getEnv(): Env {
-  // Dynamic require so build tooling doesn't try to resolve it statically.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { getCloudflareContext } = require('@opennextjs/cloudflare') as {
-    getCloudflareContext: () => { env: Env };
-  };
-  return getCloudflareContext().env;
+  return (getCloudflareContext() as { env: Env }).env;
 }
 
 export type WithId<T> = T & { id: string };
