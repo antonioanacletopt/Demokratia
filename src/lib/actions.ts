@@ -1,9 +1,6 @@
 
 'use server';
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { unstable_cache } from 'next/cache';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -64,32 +61,11 @@ export type MarketAnalysisOutput = z.infer<typeof schema.marketAnalysisOutputSch
 export type FactCheckInput = z.infer<typeof schema.factCheckInputSchema>;
 export type FactCheckOutput = z.infer<typeof schema.factCheckOutputSchema>;
 
-enableFirebaseTelemetry();
-
-// 1. Ativação de telemetria e injeção de contexto do Firebase.
-const ai = genkit({
-  plugins: [
-    googleAI({ apiKey: process.env.GEMINI_API_KEY }),
-  ],
-});
-
-// Tier definitions based on capability and speed
-const MODELS = {
-  capable: [
-    googleAI.model('gemini-2.5-pro'),         // Most capable (March 2026)
-    googleAI.model('gemini-2.0-flash-001'),    // Stable versioned flash
-    googleAI.model('gemini-1.5-pro-002'),      // Legacy pro fallback
-  ],
-  fast: [
-    googleAI.model('gemini-2.5-flash'),        // Fast + smart (March 2026)
-    googleAI.model('gemini-2.0-flash-001'),    // Stable versioned flash
-    googleAI.model('gemini-1.5-flash-002'),    // Legacy flash fallback
-  ]
+// Direct Gemini REST API — no heavy SDK dependencies
+const GEMINI_MODELS = {
+  capable: ['gemini-2.5-pro', 'gemini-2.0-flash-001', 'gemini-1.5-pro-002'],
+  fast: ['gemini-2.5-flash', 'gemini-2.0-flash-001', 'gemini-1.5-flash-002'],
 };
-
-// Compatible aliases for existing code if needed, but we'll use tiers
-const capableModel = MODELS.capable[0];
-const fastModel = MODELS.fast[0];
 
 function cleanAndParseJson<T>(jsonString: string, t: Function): T {
   const cleanedString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -106,34 +82,50 @@ async function safeGenerate(tier: 'capable' | 'fast', prompt: string, t: Functio
     throw new Error(t('common.aiUnavailableError'));
   }
 
-  const modelStack = MODELS[tier];
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error(t('common.aiUnavailableError'));
+
+  const models = GEMINI_MODELS[tier];
   let lastError: any = null;
 
-  for (const model of modelStack) {
+  for (const model of models) {
     try {
-      const response = await ai.generate({
-        model,
-        prompt,
-        ...additionalOptions
+      const isText = additionalOptions?.output?.format === 'text';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: isText ? {} : { responseMimeType: 'application/json' },
+        }),
       });
-      return response as { text: string };
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        if (response.status === 429 || response.status === 503) {
+          lastError = new Error(errorBody);
+          console.warn(`AI Fallback triggered: ${model} returned ${response.status}, trying next...`);
+          continue;
+        }
+        throw new Error(errorBody);
+      }
+
+      const data = await response.json() as any;
+      const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      return { text };
     } catch (error: any) {
       lastError = error;
-      const errorMsg = error?.message || "";
-      
-      // If it's a quota or overload error, we try the next model in the stack
+      const errorMsg = error?.message || '';
       if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('overloaded') || errorMsg.includes('503')) {
         console.warn(`AI Fallback triggered: Model failed, trying next in tier ${tier}...`, errorMsg);
         continue;
       }
-      
-      // For other types of errors (e.g. invalid prompt), we might want to stop
       break;
     }
   }
 
-  const errMsg = lastError?.message || String(lastError);
-  console.error(`AI Generation failed after exhausting tier ${tier}. Last error: ${errMsg}`, lastError);
+  console.error(`AI Generation failed after exhausting tier ${tier}.`, lastError);
   throw new Error(t('common.aiUnavailableError'));
 }
 
