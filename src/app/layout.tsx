@@ -1,27 +1,11 @@
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ClientClerkProvider } from '@/components/clerk-provider';
 import { LanguageProvider } from '@/lib/i18n';
-
-// next/font serve as fontes localmente a partir do build Next.js.
-// Elimina requests externos a fonts.googleapis.com (render-blocking)
-// e o FOUT (Flash of Unstyled Text) que causava CLS.
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'optional', // 'optional' = sem layout shift garantido
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-plus-jakarta-sans',
-  display: 'optional',
-});
 
 const title = 'Demokratia Portugal: Dados, Análises e Simulações';
 const description = 'Plataforma para exploração de dados públicos, verificação de factos e simulação de políticas económicas e sociais em Portugal.';
@@ -72,7 +56,7 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="pt-PT" suppressHydrationWarning>
-      <body className={`${inter.variable} ${plusJakartaSans.variable} font-body antialiased`}>
+      <body className="font-body antialiased">
         <ClientClerkProvider>
           <LanguageProvider>
             {children}
