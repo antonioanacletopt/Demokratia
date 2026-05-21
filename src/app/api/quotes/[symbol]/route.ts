@@ -21,8 +21,8 @@ export interface QuoteData {
 }
 
 async function fetchQuote(symbol: string): Promise<QuoteData | null> {
-  const apiKey = process.env.NEXT_PUBLIC_DEMOKRATIA_APIKEY;
-  if (!apiKey) throw new Error('NEXT_PUBLIC_DEMOKRATIA_APIKEY not set');
+  const apiKey = process.env.NEXT_PUBLIC_DEMOKRATIA_APIKEY || process.env.DEMOKRATIA_APIKEY;
+  if (!apiKey) throw new Error('DEMOKRATIA_APIKEY not set');
 
   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -71,7 +71,7 @@ export async function GET(
     if (!data) {
       return NextResponse.json(
         { quote: null, meta: { stale, cacheStatus } },
-        { status: 404 },
+        { status: 503 },
       );
     }
 

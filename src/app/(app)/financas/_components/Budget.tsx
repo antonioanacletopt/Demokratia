@@ -111,7 +111,7 @@ export default function FamilyBudgetPage() {
   const { data: savedConfig, isLoading: loadingConfig } = useDoc<any>('user_budgetConfig', configId);
 
   const { data: rawMovements } = useCollection<Movement>(
-    'user_movements',
+    user ? 'user_movements' : null,
     user ? { userId: user.uid, orderBy: 'date', orderDir: 'desc' as const } : undefined,
   );
 
