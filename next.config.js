@@ -4,6 +4,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: false,
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
