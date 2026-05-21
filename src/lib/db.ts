@@ -20,7 +20,7 @@ type Env = {
 };
 
 function getEnv(): Env {
-  return (getCloudflareContext() as { env: Env }).env;
+  return (getCloudflareContext() as unknown as { env: Env }).env;
 }
 
 export type WithId<T> = T & { id: string };
