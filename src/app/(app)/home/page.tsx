@@ -220,7 +220,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex flex-wrap gap-4 pt-4">
                     <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg">
-                    <Link href="/explorer"><Database className="mr-2 h-5 w-5" /> {t('nav.explorer')}</Link>
+                    <Link href="/explorar"><Database className="mr-2 h-5 w-5" /> {t('nav.explorer')}</Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white/10 font-bold">
                     <Link href="/map"><MapIcon className="mr-2 h-5 w-5" /> {t('nav.map')}</Link>
