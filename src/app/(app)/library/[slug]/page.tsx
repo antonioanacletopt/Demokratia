@@ -5,7 +5,7 @@ import { marked } from 'marked';
 import { SocialShare } from '@/components/SocialShare';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
@@ -21,7 +21,8 @@ export async function generateStaticParams() {
 }
 
 export default async function LibraryArticlePage({ params }: Props) {
-  const article = await getArticleBySlug(params.slug);
+  const { slug } = await params;
+  const article = await getArticleBySlug(slug);
 
   if (!article) {
     notFound();
@@ -48,7 +49,8 @@ export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const article = await getArticleBySlug(params.slug);
+    const { slug } = await params;
+    const article = await getArticleBySlug(slug);
 
     if (!article) {
         return {

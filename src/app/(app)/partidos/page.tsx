@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { AdBanner } from '@/components/AdBanner';
 import { getT, Language } from '@/lib/i18n-server';
 
-export async function generateMetadata({ searchParams }: { searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const t = getT(lang);
   
   return {
@@ -16,8 +17,9 @@ export async function generateMetadata({ searchParams }: { searchParams: { lang?
   };
 }
 
-export default async function PartiesIndexPage({ searchParams }: { searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export default async function PartiesIndexPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const parties = await getAllParties();
   const t = getT(lang);
 

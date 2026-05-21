@@ -70,8 +70,9 @@ const recommendedBooks = [
   }
 ];
 
-export default function LibraryBooksPage({ searchParams }: { searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export default async function LibraryBooksPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const t = getT(lang);
 
   return (

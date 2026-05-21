@@ -13,10 +13,12 @@ export async function generateStaticParams() {
   return parties.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params, searchParams }: { params: { slug: string }, searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ lang?: string }> }) {
+  const { slug } = await params;
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const t = getT(lang);
-  const party = await getPartyBySlug(params.slug);
+  const party = await getPartyBySlug(slug);
   if (!party) return { title: t('common.not_found') };
   
   return {
@@ -25,10 +27,12 @@ export async function generateMetadata({ params, searchParams }: { params: { slu
   };
 }
 
-export default async function PartyDetailPage({ params, searchParams }: { params: { slug: string }, searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export default async function PartyDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ lang?: string }> }) {
+  const { slug } = await params;
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const t = getT(lang);
-  const party = await getPartyBySlug(params.slug);
+  const party = await getPartyBySlug(slug);
 
   if (!party) {
     notFound();

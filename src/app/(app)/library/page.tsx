@@ -4,8 +4,9 @@ import LibraryClient from './library-client';
 import { AdBanner } from '@/components/AdBanner';
 import { getT, Language } from '@/lib/i18n-server';
 
-export default async function LibraryPage({ searchParams }: { searchParams: { lang?: string } }) {
-  const lang = (searchParams?.lang as Language) || 'pt';
+export default async function LibraryPage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
+  const { lang: langParam } = await searchParams;
+  const lang = (langParam as Language) || 'pt';
   const t = getT(lang);
   const articles = await getAllArticles();
 
