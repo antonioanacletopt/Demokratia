@@ -15,7 +15,5 @@ binding = "KV"
 id = "e5245242b82b4b4eb8ee014c237c3cdd"
 
 [vars]
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ""
-# As restantes variáveis sensitivas (CLERK_SECRET_KEY, GEMINI_API_KEY)
-# devem ser configuradas no Cloudflare Dashboard → Pages → Settings → Environment Variables
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_aHVtYW5lLW1vbmtleS0yNS5jbGVyay5hY2NvdW50cy5kZXYk"
 # e NÃO colocadas aqui (este ficheiro está no git)
