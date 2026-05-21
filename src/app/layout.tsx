@@ -5,7 +5,7 @@ import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClientClerkProvider } from '@/components/clerk-provider';
 import { LanguageProvider } from '@/lib/i18n';
 
 // next/font serve as fontes localmente a partir do build Next.js.
@@ -73,11 +73,11 @@ export default function RootLayout({
   return (
     <html lang="pt-PT" suppressHydrationWarning>
       <body className={`${inter.variable} ${plusJakartaSans.variable} font-body antialiased`}>
-        <ClerkProvider>
+        <ClientClerkProvider>
           <LanguageProvider>
             {children}
           </LanguageProvider>
-        </ClerkProvider>
+        </ClientClerkProvider>
         <Toaster />
         <Script
           async
